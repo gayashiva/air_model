@@ -4,15 +4,19 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.backends.backend_pdf import PdfPages
+import os
 from src.models.air_forecast import icestupa
 import time
-import os
+
+# python -m src.features.build_features
 
 dirname = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', '..'))
 
 input_folder = os.path.join(dirname, "data/interim/")
 
 output_folder = os.path.join(dirname, "data/processed")
+
+start = time.time()
 
 #  read files
 filename0 = os.path.join(input_folder, "model_input.csv")
