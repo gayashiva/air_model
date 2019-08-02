@@ -10,16 +10,18 @@ import time
 
 # python -m src.features.build_features
 
+site = input("Input the Field Site Name: ")
+
 dirname = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', '..'))
 
-input_folder = os.path.join(dirname, "data/interim/")
+input_folder = os.path.join(dirname, "data/interim/" )
 
-output_folder = os.path.join(dirname, "data/processed")
+output_folder = os.path.join(dirname, "data/processed" )
 
 start = time.time()
 
 #  read files
-filename0 = os.path.join(input_folder, "model_input.csv")
+filename0 = os.path.join(input_folder, site + "_model_input.csv")
 df_in = pd.read_csv(filename0, sep=",")
 df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 

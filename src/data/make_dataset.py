@@ -9,11 +9,13 @@ import math
 from pathlib import Path
 import os
 
+site = input("Input the Field Site Name: ")
+
 dirname = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', '..'))
 
-data_folder = os.path.join(dirname, "data/raw/Plaffeien_aws/order_73544_data.txt")
+data_file = os.path.join(dirname, "data/raw/" + site + "_aws.txt")
 
-interim_folder = os.path.join(dirname, "data/interim")
+interim_folder = os.path.join(dirname, "data/interim/")
 
 
 # settings
@@ -36,7 +38,7 @@ fkl010z0  m/s                                  Wind speed scalar; ten minutes me
 
 # read files
 df_in = pd.read_csv(
-    data_folder, encoding="latin-1", skiprows=2, sep=";"
+    data_file, encoding="latin-1", skiprows=2, sep=";"
 )
 
 df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
@@ -184,10 +186,10 @@ for i in range(1, df_out.shape[0]):
 df_out.Fountain[df_out.TotalE < -100] = 1
 
 df_out = df_out.round(5)
-df_out.to_csv(interim_folder + "/model_input.csv", sep=",")
+df_out.to_csv(interim_folder + site + "_model_input.csv", sep=",")
 
 # Plots
-filename = interim_folder + "/all_data" + str(end_date.day) + ".pdf"
+filename = interim_folder + site + "_all_data_" + str(end_date.day) + ".pdf"
 pp = PdfPages(filename)
 
 x = df_out["When"]
@@ -353,7 +355,7 @@ pp.close()
 
 
 # Plots
-filename = interim_folder + "/data" + ".pdf"
+filename = interim_folder + site + "_data" + ".pdf"
 pp = PdfPages(filename)
 
 fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
