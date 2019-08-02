@@ -350,7 +350,7 @@ def icestupa(
             ] * math.pi * math.pow(R_f, 2)
 
             # Vapor Pressure empirical relations
-            if "pva200s0" not in list(df.columns):
+            if "vp_a" not in list(df.columns):
                 Ea = (
                     6.11
                     * math.pow(
@@ -360,7 +360,7 @@ def icestupa(
                     / 100
                 )
             else:
-                Ea = df.loc[i, "pva200s0"]
+                Ea = df.loc[i, "vp_a"]
 
             Ew = 6.112 * np.exp(17.62 * T_f / (T_f + 243.12))
             Eice = 6.112 * np.exp(

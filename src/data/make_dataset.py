@@ -43,149 +43,209 @@ df_in = pd.read_csv(
 
 df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
-# Model Time Window
-mask = (df_in["When"] >= start_date) & (df_in["When"] <= end_date)
-df_in = df_in.loc[mask]
-df_in = df_in.reset_index()
-
-# Add Radiation data
-df_in["ods000z0"] = pd.to_numeric(df_in["ods000z0"], errors="coerce")
-df_in["gre000z0"] = pd.to_numeric(df_in["gre000z0"], errors="coerce")
-df_in["Rad"] = df_in["gre000z0"] - df_in["ods000z0"]
-df_in["DRad"] = df_in["ods000z0"]
-df_in["T_a"] = pd.to_numeric(df_in["tre200s0"], errors="coerce")  # Add Temperature data
-df_in["Prec"] = pd.to_numeric(
-    df_in["rre150z0"], errors="coerce"
-)  # Add Precipitation data
-df_in["RH"] = pd.to_numeric(df_in["ure200s0"], errors="coerce")  # Add Humidity data
-df_in["v_a"] = pd.to_numeric(df_in["fkl010z0"], errors="coerce")  # Add wind speed data
-df_in["p_a"] = pd.to_numeric(df_in["prestas0"], errors="coerce")  # Air pressure
-df_in["vp_a"] = pd.to_numeric(
-    df_in["pva200s0"], errors="coerce"
-)  # Vapour pressure over air
-df_in["vp_w"] = pd.to_numeric(
-    df_in["pvawats0"], errors="coerce"
-)  # Vapour pressure over ice
-df_in["vp_i"] = pd.to_numeric(
-    df_in["pvaices0"], errors="coerce"
-)  # Vapour pressure over water
-
-df_in["Prec"] = df_in["Prec"] / 1000
-
-df_in["Fountain"] = 0
-df_in["Discharge"] = 4  # litres per minute
-
-# Fill nans
-df_in = df_in.fillna(method="ffill")
 
 
-df_out = df_in[
-    [
-        "When",
-        "T_a",
-        "RH",
-        "v_a",
-        "Rad",
-        "DRad",
-        "Prec",
-        "p_a",
-        "vp_a",
-        "vp_w",
-        "vp_i",
-        "pva200s0",
-        "Fountain",
-        "Discharge",
+if site == 'plaffeien':
+
+    # Model Time Window
+    start_date = datetime(2019, 1, 29)
+    end_date = datetime(2019, 5, 1)
+    mask = (df_in["When"] >= start_date) & (df_in["When"] <= end_date)
+    df_in = df_in.loc[mask]
+    df_in = df_in.reset_index()
+
+    # Add Radiation data
+    df_in["ods000z0"] = pd.to_numeric(df_in["ods000z0"], errors="coerce")
+    df_in["gre000z0"] = pd.to_numeric(df_in["gre000z0"], errors="coerce")
+    df_in["Rad"] = df_in["gre000z0"] - df_in["ods000z0"]
+    df_in["DRad"] = df_in["ods000z0"]
+    df_in["T_a"] = pd.to_numeric(df_in["tre200s0"], errors="coerce")  # Add Temperature data
+    df_in["Prec"] = pd.to_numeric(
+        df_in["rre150z0"], errors="coerce"
+    )  # Add Precipitation data
+    df_in["RH"] = pd.to_numeric(df_in["ure200s0"], errors="coerce")  # Add Humidity data
+    df_in["v_a"] = pd.to_numeric(df_in["fkl010z0"], errors="coerce")  # Add wind speed data
+    df_in["p_a"] = pd.to_numeric(df_in["prestas0"], errors="coerce")  # Air pressure
+    df_in["vp_a"] = pd.to_numeric(
+        df_in["pva200s0"], errors="coerce"
+    )  # Vapour pressure over air
+
+    df_in["Prec"] = df_in["Prec"] / 1000
+
+    df_in["Fountain"] = 0
+    df_in["Discharge"] = 4  # litres per minute
+
+    # Fill nans
+    df_in = df_in.fillna(method="ffill")
+
+
+    df_out = df_in[
+        [
+            "When",
+            "T_a",
+            "RH",
+            "v_a",
+            "Rad",
+            "DRad",
+            "Prec",
+            "p_a",
+            "vp_a",
+            "Fountain",
+            "Discharge",
+        ]
     ]
-]
 
 
-# 5 minute sum
-cols = ["T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a", "vp_w", "vp_i","pva200s0"]
-df_out[cols] = df_out[cols] / 2
-df_out = df_out.set_index("When").resample("5T").ffill().reset_index()
+    # 5 minute sum
+    cols = ["T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a"]
+    df_out[cols] = df_out[cols] / 2
+    df_out = df_out.set_index("When").resample("5T").ffill().reset_index()
 
 
 
-'''Fountain Runtime'''
+    '''Fountain Runtime'''
 
-"""Settings"""
-z = 2  # m height of AWS
+    """Settings"""
+    z = 2  # m height of AWS
 
-"""Material Properties"""
-a_w = 0.6
-we = 0.95
-z0mi=0.001
-z0ms=0.0015
-z0hi=0.0001
-c = 0.5
-Lf = 334 * 1000  #  J/kg Fusion
-cw = 4.186 * 1000  # J/kg Specific heat water
-rho_w = 1000  # Density of water
-rho_a = 1.29  # kg/m3 air density at mean sea level
-p0 = 1013  # hPa
-k = 0.4  # Van Karman constant
-bc = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
+    """Material Properties"""
+    a_w = 0.6
+    we = 0.95
+    z0mi=0.001
+    z0ms=0.0015
+    z0hi=0.0001
+    c = 0.5
+    Lf = 334 * 1000  #  J/kg Fusion
+    cw = 4.186 * 1000  # J/kg Specific heat water
+    rho_w = 1000  # Density of water
+    rho_a = 1.29  # kg/m3 air density at mean sea level
+    p0 = 1013  # hPa
+    k = 0.4  # Van Karman constant
+    bc = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
 
-"""Initialise"""
-df_out["TotalE"] = 0
-df_out["SW"] = 0
-df_out["LW"] = 0
-df_out["Qs"] = 0
+    """Initialise"""
+    df_out["TotalE"] = 0
+    df_out["SW"] = 0
+    df_out["LW"] = 0
+    df_out["Qs"] = 0
 
-""" Simulation """
-for i in range(1, df_out.shape[0]):
+    """ Simulation """
+    for i in range(1, df_out.shape[0]):
 
-    # Vapor Pressure empirical relations
-    if "pva200s0" not in list(df_out.columns):
-        Ea = (
-            6.11
-            * math.pow(
-                10, 7.5 * df_out.loc[i - 1, "T_a"] / (df_out.loc[i - 1, "T_a"] + 237.3)
+        # Vapor Pressure empirical relations
+        if "vp_a" not in list(df_out.columns):
+            Ea = (
+                6.11
+                * math.pow(
+                    10, 7.5 * df_out.loc[i - 1, "T_a"] / (df_out.loc[i - 1, "T_a"] + 237.3)
+                )
+                * df_out.loc[i, "RH"]
+                / 100
             )
-            * df_out.loc[i, "RH"]
-            / 100
+        else:
+            Ea = df_out.loc[i, "vp_a"]
+
+        df_out.loc[i, "e_a"] = (
+            1.24
+            * math.pow(abs(Ea / (df_out.loc[i, "T_a"] + 273.15)), 1 / 7)
+            * (1 + 0.22 * math.pow(c, 2))
         )
-    else:
-        Ea = df_out.loc[i, "pva200s0"]
 
-    df_out.loc[i, "e_a"] = (
-        1.24
-        * math.pow(abs(Ea / (df_out.loc[i, "T_a"] + 273.15)), 1 / 7)
-        * (1 + 0.22 * math.pow(c, 2))
-    )
+        # Short Wave Radiation SW
+        df_out.loc[i, "SW"] = (1 - a_w) * (
+            df_out.loc[i, "Rad"] + df_out.loc[i, "DRad"]
+        )
 
-    # Short Wave Radiation SW
-    df_out.loc[i, "SW"] = (1 - a_w) * (
-        df_out.loc[i, "Rad"] + df_out.loc[i, "DRad"]
-    )
+        # Long Wave Radiation LW
+        if "oli000z0" not in list(df_out.columns):
+            df_out.loc[i, "LW"] = df_out.loc[i, "e_a"] * bc * math.pow(
+                df_out.loc[i, "T_a"] + 273.15, 4
+            ) - we * bc * math.pow(0 + 273.15, 4)
+        else:
+            df_out.loc[i, "LW"] = df_out.loc[i, "oli000z0"] - we * bc * math.pow(0 + 273.15, 4)
 
-    # Long Wave Radiation LW
-    if "oli000z0" not in list(df_out.columns):
-        df_out.loc[i, "LW"] = df_out.loc[i, "e_a"] * bc * math.pow(
-            df_out.loc[i, "T_a"] + 273.15, 4
-        ) - we * bc * math.pow(0 + 273.15, 4)
-    else:
-        df_out.loc[i, "LW"] = df_out.loc[i, "oli000z0"] - we * bc * math.pow(0 + 273.15, 4)
+        # Sensible Heat Qs
+        df_out.loc[i, "Qs"] = (
+            cw
+            * rho_a
+            * df_out.loc[i, "p_a"]
+            / p0
+            * math.pow(k, 2)
+            * df_out.loc[i, "v_a"]
+            * (df_out.loc[i, "T_a"])
+            / (np.log(z / z0mi) * np.log(z / z0hi))
+        )
 
-    # Sensible Heat Qs
-    df_out.loc[i, "Qs"] = (
-        cw
-        * rho_a
-        * df_out.loc[i, "p_a"]
-        / p0
-        * math.pow(k, 2)
-        * df_out.loc[i, "v_a"]
-        * (df_out.loc[i, "T_a"])
-        / (np.log(z / z0mi) * np.log(z / z0hi))
-    )
+        # Total Energy W/m2
+        df_out.loc[i, "TotalE"] = df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
 
-    # Total Energy W/m2
-    df_out.loc[i, "TotalE"] = df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
+    # df_in.Fountain[df_in.T_a < -5] = 1
+    df_out.Fountain[df_out.TotalE < -100] = 1
 
-# df_in.Fountain[df_in.T_a < -5] = 1
-df_out.Fountain[df_out.TotalE < -100] = 1
+    df_out = df_out.round(5)
 
-df_out = df_out.round(5)
+if site == 'guttannen':
+
+    # Model Time Window
+    start_date = datetime(2017, 11, 1)
+    end_date = datetime(2018, 11, 1)
+    mask = (df_in["When"] >= start_date) & (df_in["When"] <= end_date)
+    df_in = df_in.loc[mask]
+    df_in = df_in.reset_index()
+
+    # Convert to int
+    df_in["oli000z0"] = pd.to_numeric(
+        df_in["oli000z0"], errors="coerce"
+    )  # Add Radiation data
+    df_in["gre000z0"] = pd.to_numeric(
+        df_in["gre000z0"], errors="coerce"
+    )  # Add Radiation data
+    df_in["T_a"] = pd.to_numeric(df_in["tre200s0"], errors="coerce")  # Add Temperature data
+    df_in["Prec"] = pd.to_numeric(
+        df_in["rre150z0"], errors="coerce"
+    )  # Add Precipitation data
+    df_in["RH"] = pd.to_numeric(df_in["ure200s0"], errors="coerce")  # Add Humidity data
+    df_in["v_a"] = pd.to_numeric(df_in["fkl010z0"], errors="coerce")  # Add wind speed data
+    df_in["p_a"] = pd.to_numeric(df_in["prestas0"], errors="coerce")  # Air pressure
+    df_in["vp_a"] = pd.to_numeric(
+        df_in["pva200s0"], errors="coerce"
+    )  # Vapour pressure over air
+
+    df_in["Rad"] = df_in["gre000z0"] - df_in["gre000z0"] * 0.1
+    df_in["DRad"] = df_in["gre000z0"] * 0.1
+    df_in["LW"] = df_in["oli000z0"]
+    df_in["Prec"] = df_in["Prec"] / 1000
+
+    df_in["Fountain"] = 0
+    df_in.Fountain[df_in.T_a < -5] = 1
+    df_in["Discharge"] = 4  # litres per minute
+
+    # Fill nans
+    df_in = df_in.fillna(method="ffill")
+
+    df_out = df_in[
+        [
+            "When",
+            "T_a",
+            "RH",
+            "v_a",
+            "Rad",
+            "DRad",
+            "oli000z0",
+            "Prec",
+            "p_a",
+            "vp_a",
+            "Fountain",
+            "Discharge",
+        ]
+    ]
+    df_out = df_out.round(5)
+
+    # 5 minute sum
+    cols = ["T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a", "oli000z0"]
+    df_out[cols] = df_out[cols] / 2
+    df_out = df_out.set_index("When").resample("5T").ffill().reset_index()
+
 df_out.to_csv(interim_folder + site + "_model_input.csv", sep=",")
 
 # Plots
@@ -274,19 +334,12 @@ plt.clf()
 
 
 y1 = df_out["vp_a"]
-y2 = df_out["vp_w"]
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", linewidth=0.5)
 ax1.set_ylabel("Vapour Pressure air")
 ax1.set_xlabel("Days")
-
-ax2 = ax1.twinx()
-ax2.plot(x, y2, "b-", linewidth=0.5)
-ax2.set_ylabel("DR", color="b")
-for tl in ax2.get_yticklabels():
-    tl.set_color("b")
 
 # format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())

@@ -16,7 +16,7 @@ dirname = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', '..'))
 
 input_folder = os.path.join(dirname, "data/interim/" )
 
-output_folder = os.path.join(dirname, "data/processed" )
+output_folder = os.path.join(dirname, "data/processed/" )
 
 start = time.time()
 
@@ -35,13 +35,13 @@ total = time.time() - start
 print("Total time : ", total / 60)
 
 # Output for manim
-filename2 = os.path.join(output_folder, "model_gif.csv")
+filename2 = os.path.join(output_folder, site + "_model_gif.csv")
 cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Fountain"]
 df[cols].to_csv(filename2, sep=",")
 
 
 # Plots
-filename3 = os.path.join(output_folder, "model_results.pdf")
+filename3 = os.path.join(output_folder, site + "_model_results.pdf")
 pp = PdfPages(filename3)
 
 x1 = df.When
@@ -274,7 +274,7 @@ plt.clf()
 pp.close()
 
 # Plots
-filename = os.path.join(output_folder, "plots.pdf")
+filename = os.path.join(output_folder, site + "_plots.pdf")
 pp = PdfPages(filename)
 
 x1 = df.When
@@ -295,7 +295,7 @@ ax1.grid()
 fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 
-plt.savefig(os.path.join(output_folder, "result.jpg"), bbox_inches="tight", dpi=300)
+plt.savefig(os.path.join(output_folder, site + "_result.jpg"), bbox_inches="tight", dpi=300)
 plt.clf()
 
 fig, (ax1, ax2, ax3) = plt.subplots(nrows=3, ncols=1, sharex=True, figsize=(10, 5))

@@ -30,10 +30,14 @@ class Forecast(Scene):
 
         site = input("Input the Field Site Name: ")
 
-        dirname = os.path.join('C:/Users/Balasubr/Dropbox/Surya/Modelling_AIR/Data_Analysis/Sites/' + site + "/output_data/")
+        dirname = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', '..'))
+
+        input_folder = os.path.join(dirname, "data/processed/" )
+
+        # output_folder = os.path.join(dirname, "data/processed/" )
 
         # read files
-        filename0 = os.path.join(dirname, "model_gif.csv")
+        filename0 = os.path.join(input_folder, site + "_model_gif.csv")
         df= pd.read_csv(filename0)
         df['When'] = pd.to_datetime(df['When'], format = '%Y.%m.%d %H:%M:%S')
         df=df.round(2)
