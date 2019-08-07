@@ -44,31 +44,13 @@ df[cols].to_csv(filename2, sep=",")
 filename3 = os.path.join(output_folder, site + "_model_results.pdf")
 pp = PdfPages(filename3)
 
-x1 = df.When
+x = df.When
 y1 = df.iceV
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(x1, y1, "k-")
-ax1.set_ylabel("Ice Volume[$m^3$]")
-ax1.set_xlabel("Days")
-
-#  format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-x = df.When
-y1 = df.ice
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-")
-ax1.set_ylabel("Water Frozen[kg]")
+ax1.set_ylabel("Ice Volume[$m^3$]")
 ax1.set_xlabel("Days")
 
 #  format the ticks
@@ -277,13 +259,13 @@ pp.close()
 filename = os.path.join(output_folder, site + "_plots.pdf")
 pp = PdfPages(filename)
 
-x1 = df.When
+x = df.When
 y1 = df.iceV
 y2 = df.TotalE + df.Ql
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(x1, y1, "k-", lw=1)
+ax1.plot(x, y1, "k-", lw=1)
 ax1.set_ylabel("Cone Ice Volume[$m^3$]")
 ax1.set_xlabel("Days")
 

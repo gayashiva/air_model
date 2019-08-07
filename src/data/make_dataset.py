@@ -22,20 +22,6 @@ interim_folder = os.path.join(dirname, "data/interim/")
 start_date = datetime(2019, 2, 1)
 end_date = datetime(2019, 5, 1)
 
-"""
-Parameter
----------
-          Unit                                 Description
-pva200s0  hPa                                  Vapour pressure 2 m above ground; current value
-prestas0  hPa                                  Pressure at station level (QFE); current value
-ods000z0  W/m²                                 diffuse radiation, average 10 minutes
-gre000z0  W/m²                                 Global radiation; ten minutes mean
-tre200s0  °C                                   Air temperature 2 m above ground; current value
-rre150z0  mm                                   Precipitation; ten minutes total
-ure200s0  %                                    Relative air humidity 2 m above ground; current value
-fkl010z0  m/s                                  Wind speed scalar; ten minutes mean
-"""
-
 # read files
 df_in = pd.read_csv(
     data_file, encoding="latin-1", skiprows=2, sep=";"
@@ -43,9 +29,21 @@ df_in = pd.read_csv(
 
 df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
-
-
 if site == 'plaffeien':
+
+    """
+    Parameter
+    ---------
+              Unit                                 Description
+    pva200s0  hPa                                  Vapour pressure 2 m above ground; current value
+    prestas0  hPa                                  Pressure at station level (QFE); current value
+    ods000z0  W/m²                                 diffuse radiation, average 10 minutes
+    gre000z0  W/m²                                 Global radiation; ten minutes mean
+    tre200s0  °C                                   Air temperature 2 m above ground; current value
+    rre150z0  mm                                   Precipitation; ten minutes total
+    ure200s0  %                                    Relative air humidity 2 m above ground; current value
+    fkl010z0  m/s                                  Wind speed scalar; ten minutes mean
+    """
 
     # Model Time Window
     start_date = datetime(2019, 1, 29)
@@ -186,6 +184,20 @@ if site == 'plaffeien':
 
 if site == 'guttannen':
 
+    """
+    Parameter
+    ---------
+              Unit                                 Description
+    pva200s0  hPa                                  Vapour pressure 2 m above ground; current value
+    prestas0  hPa                                  Pressure at station level (QFE); current value
+    gre000z0  W/m²                                 Global radiation; ten minutes mean
+    oli000z0  W/m²                                 Longwave incoming radiation; ten minute average
+    tre200s0  °C                                   Air temperature 2 m above ground; current value
+    rre150z0  mm                                   Precipitation; ten minutes total
+    ure200s0  %                                    Relative air humidity 2 m above ground; current value
+    fkl010z0  m/s                                  Wind speed scalar; ten minutes mean
+    """
+
     # Model Time Window
     start_date = datetime(2017, 11, 1)
     end_date = datetime(2018, 11, 1)
@@ -196,7 +208,7 @@ if site == 'guttannen':
     # Convert to int
     df_in["oli000z0"] = pd.to_numeric(
         df_in["oli000z0"], errors="coerce"
-    )  # Add Radiation data
+    )  # Add Longwave Radiation data
     df_in["gre000z0"] = pd.to_numeric(
         df_in["gre000z0"], errors="coerce"
     )  # Add Radiation data

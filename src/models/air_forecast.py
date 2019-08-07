@@ -196,10 +196,10 @@ def icestupa(
     theta_f = math.radians(theta_f)  # Angle of Spray
     theta_s = math.radians(theta_s)  # solar angle
 
-    # Estimating Albedo
+    ''' Estimating Albedo '''
     df["a"] = albedo(df, a_i, a_s, a_w, t_d)
 
-    # Estimating Fountain Spray radius
+    ''' Estimating Fountain Spray radius '''
     Area = 3.14 * math.pow(d_f, 2) / 4
     df["v"] = 0
     df["r"] = 0
@@ -388,7 +388,7 @@ def icestupa(
                 / (60)
             )
 
-            # When fountain run
+            ''' When fountain run '''
             if df.loc[i, "liquid"] > 0:
 
                 # Does water droplet cool down enough to nucleate
@@ -439,8 +439,7 @@ def icestupa(
 
                 df.loc[i, "e_s"] = we
 
-            else:  # When fountain off
-
+            else: # When fountain off
                 # Sublimation or condensation
                 df.loc[i, "Ql"] = (
                     0.623
@@ -612,7 +611,7 @@ def icestupa(
                             )
                             df.loc[i, "T_s"] = 0
 
-            # Quantities of all phases
+            ''' Quantities of all phases '''
             df.loc[i, "water"] = df.loc[i - 1, "water"] + df.loc[i, "liquid"]
             df.loc[i, "meltwater"] = df.loc[i - 1, "meltwater"] + df.loc[i, "melted"]
             df.loc[i, "ice"] = df.loc[i - 1, "ice"] + df.loc[i, "solid"]
