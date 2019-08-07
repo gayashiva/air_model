@@ -28,7 +28,7 @@ import os
 class Forecast(Scene):
     def construct(self):
 
-        site = input("Input the Field Site Name: ")
+        site = input("Input the Field Site Name: ") or 'plaffeien'
 
         dirname = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', '..'))
 

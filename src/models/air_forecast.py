@@ -558,6 +558,7 @@ def icestupa(
                         df.loc[i, "liquid"] -= (df.loc[i, "EJoules"]) / (
                             -Lf + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
                         )
+                        
                         if df.loc[i, "liquid"] < 0:
                             df.loc[i, "liquid"] += (df.loc[i, "EJoules"]) / (
                                 -Lf + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
@@ -568,10 +569,6 @@ def icestupa(
                             df.loc[i, "solid"] += (df.loc[i, "EJoules"]) / (
                                 -Lf + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
                             )
-
-                        df.loc[i, "solid"] += (df.loc[i, "EJoules"]) / (
-                            -Lf + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
-                        )
 
                     else:
                         # Cooling Ice

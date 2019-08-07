@@ -10,7 +10,7 @@ import time
 
 # python -m src.features.build_features
 
-site = input("Input the Field Site Name: ")
+site = input("Input the Field Site Name: ") or 'plaffeien'
 
 dirname = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', '..'))
 
@@ -36,7 +36,7 @@ print("Total time : ", total / 60)
 
 # Output for manim
 filename2 = os.path.join(output_folder, site + "_model_gif.csv")
-cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Fountain"]
+cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
 df[cols].to_csv(filename2, sep=",")
 
 
@@ -103,9 +103,9 @@ pp.savefig(bbox_inches="tight")
 plt.clf()
 
 df3 = df_in.set_index("When").resample("D").mean().reset_index()
-df3["Fountain"] = df3["Fountain"] == 0
-df3["Fountain"] = df3["Fountain"].astype(int)
-df3["Fountain"] = df3["Fountain"].astype(str)
+df3["Discharge"] = df3["Discharge"] == 0
+df3["Discharge"] = df3["Discharge"].astype(int)
+df3["Discharge"] = df3["Discharge"].astype(str)
 
 df2 = df[["When", "SW", "LW", "Qs", "Ql"]]
 x3 = df2.set_index("When").resample("D").mean().reset_index()
@@ -113,7 +113,7 @@ x3.index = np.arange(1, len(x3) + 1)
 
 fig = plt.figure()
 y = x3[["SW", "LW", "Qs", "Ql"]]
-y.plot.bar(stacked=True, edgecolor=df3["Fountain"], linewidth=0.5)
+y.plot.bar(stacked=True, edgecolor=df3["Discharge"], linewidth=0.5)
 plt.xlabel("Days")
 plt.ylabel("Energy[$Wm^{-2}]$")
 pp.savefig(bbox_inches="tight")
@@ -323,9 +323,9 @@ pp.savefig(bbox_inches="tight")
 plt.clf()
 
 df3 = df_in.set_index("When").resample("D").mean().reset_index()
-df3["Fountain"] = df3["Fountain"] == 0
-df3["Fountain"] = df3["Fountain"].astype(int)
-df3["Fountain"] = df3["Fountain"].astype(str)
+df3["Discharge"] = df3["Discharge"] == 0
+df3["Discharge"] = df3["Discharge"].astype(int)
+df3["Discharge"] = df3["Discharge"].astype(str)
 
 df2 = df[["When", "SW", "LW", "Qs", "Ql"]]
 x3 = df2.set_index("When").resample("D").mean().reset_index()
@@ -333,7 +333,7 @@ x3.index = np.arange(1, len(x3) + 1)
 
 fig = plt.figure()
 y = x3[["SW", "LW", "Qs", "Ql"]]
-y.plot.bar(stacked=True, edgecolor=df3["Fountain"], linewidth=0.5)
+y.plot.bar(stacked=True, edgecolor=df3["Discharge"], linewidth=0.5)
 plt.xlabel("Days")
 plt.ylabel("Energy[$Wm^{-2}]$")
 plt.ylim(-200, 200)

@@ -9,7 +9,7 @@ import math
 from pathlib import Path
 import os
 
-site = input("Input the Field Site Name: ")
+site = input("Input the Field Site Name: ") or 'plaffeien'
 
 dirname = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', '..'))
 
@@ -70,8 +70,6 @@ if site == 'plaffeien':
 
     df_in["Prec"] = df_in["Prec"] / 1000
 
-    df_in["Fountain"] = 0
-    df_in["Discharge"] = df_in.Fountain * 1  # litres per minute
 
     # Fill nans
     df_in = df_in.fillna(method="ffill")
@@ -88,14 +86,12 @@ if site == 'plaffeien':
             "Prec",
             "p_a",
             "vp_a",
-            "Fountain",
-            "Discharge",
         ]
     ]
 
 
     # 5 minute sum
-    cols = ["T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a", 'Discharge']
+    cols = ["T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a"]
     df_out[cols] = df_out[cols] / 2
     df_out = df_out.set_index("When").resample("5T").ffill().reset_index()
 
@@ -178,8 +174,11 @@ if site == 'plaffeien':
         df_out.loc[i, "TotalE"] = df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
 
     # df_in.Fountain[df_in.T_a < -5] = 1
-    df_out.Fountain[df_out.TotalE < -100] = 1
+    df_out["Discharge"] = 0  # litres per minute
+    df_out.Discharge[df_out.TotalE < -100] = 1 # litres per minute
 
+    cols = ['When', "T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a", 'Discharge']
+    df_out = df_out[cols]
     df_out = df_out.round(5)
 
 if site == 'guttannen':
@@ -391,19 +390,12 @@ pp.savefig(bbox_inches="tight")
 plt.clf()
 
 y1 = df_out["Discharge"]
-y2 = df_out["Fountain"]
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Discharge[$lmin^{-1}$]")
+ax1.set_ylabel("Discharge[$kg$]")
 ax1.set_xlabel("Days")
-
-ax2 = ax1.twinx()
-ax2.plot(x, y2, "b-", linewidth=0.5)
-ax2.set_ylabel("Fountain On/Off", color="b")
-for tl in ax2.get_yticklabels():
-    tl.set_color("b")
 
 # format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -411,7 +403,6 @@ ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
 ax1.xaxis.set_minor_locator(mdates.DayLocator())
 ax1.grid()
 
-# rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
 fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
@@ -438,7 +429,7 @@ ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
 ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
 ax1.xaxis.set_minor_locator(mdates.DayLocator())
 
-y2 = df_out.Discharge * df_out.Fountain * 5
+y2 = df_out.Discharge * 5
 ax2.plot(x, y2, "k-", linewidth=0.5)
 ax2.set_ylabel("Discharge[$kg$]")
 ax2.grid()
