@@ -175,7 +175,7 @@ if site == 'plaffeien':
 
     # df_in.Fountain[df_in.T_a < -5] = 1
     df_out["Discharge"] = 0  # litres per minute
-    df_out.Discharge[df_out.TotalE < -100] = 1 # litres per minute
+    df_out.Discharge[df_out.TotalE < -100] = 4 # litres per minute
 
     cols = ['When', "T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a", 'Discharge']
     df_out = df_out[cols]
@@ -487,7 +487,7 @@ plt.clf()
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 
-y2 = df_out.Discharge * 10
+y2 = df_out.Discharge * 5
 ax1.plot(x, y2, "k-", linewidth=0.5)
 ax1.set_ylabel("Discharge[$kg$]")
 ax1.grid()

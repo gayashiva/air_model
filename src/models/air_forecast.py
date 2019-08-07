@@ -505,7 +505,6 @@ def icestupa(
                         )
                         df.loc[i, "T_s"] = 0
 
-
                 else:
                     df.loc[i, "ice"] = 0
                     df.loc[i, "gas"] = df.loc[i - 1, "ice"]
@@ -517,6 +516,8 @@ def icestupa(
 
             # Long Wave Radiation LW
             if "oli000z0" not in list(df.columns):
+                if df.loc[i - 1, "T_s"] < -100 :
+                    df.loc[i - 1, "T_s"] = -100
                 df.loc[i, "LW"] = df.loc[i, "e_a"] * bc * math.pow(
                     df.loc[i, "T_a"] + 273.15, 4
                 ) - df.loc[i, "e_s"] * bc * math.pow(df.loc[i - 1, "T_s"] + 273.15, 4)
@@ -558,17 +559,17 @@ def icestupa(
                         df.loc[i, "liquid"] -= (df.loc[i, "EJoules"]) / (
                             -Lf + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
                         )
-                        
-                        if df.loc[i, "liquid"] < 0:
-                            df.loc[i, "liquid"] += (df.loc[i, "EJoules"]) / (
-                                -Lf + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
-                            )
-                            df.loc[i, "solid"] += df.loc[i, "liquid"]
-                            df.loc[i, "liquid"] = 0
-                        else :
-                            df.loc[i, "solid"] += (df.loc[i, "EJoules"]) / (
-                                -Lf + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
-                            )
+
+                        # if df.loc[i, "liquid"] < 0:
+                        #     df.loc[i, "liquid"] += (df.loc[i, "EJoules"]) / (
+                        #         -Lf + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
+                        #     )
+                        #     df.loc[i, "solid"] += df.loc[i, "liquid"]
+                        #     df.loc[i, "liquid"] = 0
+                        # else :
+                        df.loc[i, "solid"] += (df.loc[i, "EJoules"]) / (
+                            -Lf + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
+                        )
 
                     else:
                         # Cooling Ice
