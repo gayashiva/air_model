@@ -71,7 +71,7 @@ if site == 'plaffeien':
     df_in["Prec"] = df_in["Prec"] / 1000
 
     df_in["Fountain"] = 0
-    df_in["Discharge"] = 4  # litres per minute
+    df_in["Discharge"] = df_in.Fountain * 1  # litres per minute
 
     # Fill nans
     df_in = df_in.fillna(method="ffill")
@@ -95,7 +95,7 @@ if site == 'plaffeien':
 
 
     # 5 minute sum
-    cols = ["T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a"]
+    cols = ["T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a", 'Discharge']
     df_out[cols] = df_out[cols] / 2
     df_out = df_out.set_index("When").resample("5T").ffill().reset_index()
 
@@ -230,7 +230,7 @@ if site == 'guttannen':
 
     df_in["Fountain"] = 0
     df_in.Fountain[df_in.T_a < -5] = 1
-    df_in["Discharge"] = 1  # litres per minute
+    df_in["Discharge"] = df_in.Fountain * 1 # litres per minute
 
     # Fill nans
     df_in = df_in.fillna(method="ffill")
@@ -254,7 +254,7 @@ if site == 'guttannen':
     df_out = df_out.round(5)
 
     # 5 minute sum
-    cols = ["T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a", "oli000z0"]
+    cols = ["T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a", "oli000z0", 'Discharge']
     df_out[cols] = df_out[cols] / 2
     df_out = df_out.set_index("When").resample("5T").ffill().reset_index()
 
@@ -496,7 +496,7 @@ plt.clf()
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 
-y2 = df_out.Discharge * df_out.Fountain * 10
+y2 = df_out.Discharge * 10
 ax1.plot(x, y2, "k-", linewidth=0.5)
 ax1.set_ylabel("Discharge[$kg$]")
 ax1.grid()

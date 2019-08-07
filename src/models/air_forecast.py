@@ -57,7 +57,7 @@ def albedo(df, a_i, a_s, a_w, t):
     for i in range(1, df.shape[0]):
 
         # Wind Sensor Snow covered and fountain off
-        if (df.loc[i, "v_a"] == 0) & (df.loc[i, "Fountain"] == 0):
+        if (df.loc[i, "v_a"] == 0) & (df.loc[i, "Discharge"] == 0):
             if df.loc[i, "Prec"] > 0 & (
                 df.loc[i, "T_a"] < Ts
             ):  # Assumes snow ppt because of wind sensor
@@ -69,12 +69,12 @@ def albedo(df, a_i, a_s, a_w, t):
             s = s + 1
 
         # No snow and fountain off
-        if (df.loc[i, "v_a"] != 0) & (df.loc[i, "Fountain"] == 0):
+        if (df.loc[i, "v_a"] != 0) & (df.loc[i, "Discharge"] == 0):
             df.loc[i, "a"] = a_w + (a_i - a_w) * math.exp(-w / tw)
             w = w + 1
 
         # Fountain on
-        if df.loc[i, "Fountain"] == 1:
+        if df.loc[i, "Discharge"] > 0:
             df.loc[i, "a"] = a_w
             w = 0
             s = 0
@@ -206,7 +206,7 @@ def icestupa(
 
     for j in range(1, df.shape[0]):
         df.loc[j, "v_f"] = (
-            df.loc[j, "Discharge"] * df.loc[j, "Fountain"] / (60 * 1000 * Area)
+            df.loc[j, "Discharge"] / (60 * 1000 * Area)
         )
         df.loc[j, "r_f"], df.loc[j, "d_t"] = projectile_xy(
             df.loc[j, "v_f"], theta_f, h_f
@@ -226,7 +226,7 @@ def icestupa(
         if (df.loc[i, "When"] > datetime(2019, 2, 14, 18)) & (stop == i - 1):
             break
 
-        if (df.loc[i, "Fountain"]) > 0:
+        if (df.loc[i, "Discharge"]) > 0:
             state = 1
             # Set Model start time
             if df.loc[i - 1, "ice"] > 0:
@@ -237,7 +237,7 @@ def icestupa(
         if state == 1:
 
             if (
-                df.Fountain[i:].sum() > 0
+                df.Discharge[i:].sum() > 0
             ):  # Keeping Radius for the given fountain parameters
 
                 # Ice radius same as Fountain Spray Radius
@@ -284,7 +284,6 @@ def icestupa(
                     for j in range(1, df.shape[0]):
                         df.loc[j, "v_f"] = (
                             df.loc[j, "Discharge"]
-                            * df.loc[j, "Fountain"]
                             / (60 * 1000 * Area)
                         )
                         df.loc[j, "r_f"], df.loc[j, "d_t"] = projectile_xy(
@@ -381,8 +380,7 @@ def icestupa(
 
             # Fountain water output
             df.loc[i, "liquid"] = (
-                df.loc[i, "Fountain"]
-                * df.loc[i, "Discharge"]
+                df.loc[i, "Discharge"]
                 * (1 - ftl)
                 * time_steps
                 / (60)
@@ -555,12 +553,23 @@ def icestupa(
                 if df.loc[i, "EJoules"] < 0:  # Energy Negative
                     if (
                         df.loc[i - 1, "liquid"] > 0
-                    ):  # Water Surface only contain water from previous 5 minutes
-                        # Freezing water
-                        df.loc[i, "solid"] += (df.loc[i, "EJoules"]) / (
+                    ):
+                        '''Freezing water'''
+                        df.loc[i, "liquid"] -= (df.loc[i, "EJoules"]) / (
                             -Lf + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
                         )
-                        df.loc[i, "liquid"] -= (df.loc[i, "EJoules"]) / (
+                        if df.loc[i, "liquid"] < 0:
+                            df.loc[i, "liquid"] += (df.loc[i, "EJoules"]) / (
+                                -Lf + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
+                            )
+                            df.loc[i, "solid"] += df.loc[i, "liquid"]
+                            df.loc[i, "liquid"] = 0
+                        else :
+                            df.loc[i, "solid"] += (df.loc[i, "EJoules"]) / (
+                                -Lf + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
+                            )
+
+                        df.loc[i, "solid"] += (df.loc[i, "EJoules"]) / (
                             -Lf + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
                         )
 
@@ -614,10 +623,7 @@ def icestupa(
             ''' Quantities of all phases '''
             df.loc[i, "water"] = df.loc[i - 1, "water"] + df.loc[i, "liquid"]
             df.loc[i, "meltwater"] = df.loc[i - 1, "meltwater"] + df.loc[i, "melted"]
-            if df.loc[i, "solid"] < df.loc[i, "Discharge"]:
-                df.loc[i, "ice"] = df.loc[i - 1, "ice"] + df.loc[i, "solid"]
-            else :
-                df.loc[i, "solid"] = df.loc[i, "Discharge"]
+            df.loc[i, "ice"] = df.loc[i - 1, "ice"] + df.loc[i, "solid"]
             df.loc[i, "vapour"] = df.loc[i - 1, "vapour"] + df.loc[i, "gas"]
             df.loc[i, "iceV"] = df.loc[i, "ice"] / rho_i
 
