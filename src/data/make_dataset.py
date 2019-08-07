@@ -230,7 +230,7 @@ if site == 'guttannen':
 
     df_in["Fountain"] = 0
     df_in.Fountain[df_in.T_a < -5] = 1
-    df_in["Discharge"] = 4  # litres per minute
+    df_in["Discharge"] = 1  # litres per minute
 
     # Fill nans
     df_in = df_in.fillna(method="ffill")

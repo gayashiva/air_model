@@ -614,7 +614,10 @@ def icestupa(
             ''' Quantities of all phases '''
             df.loc[i, "water"] = df.loc[i - 1, "water"] + df.loc[i, "liquid"]
             df.loc[i, "meltwater"] = df.loc[i - 1, "meltwater"] + df.loc[i, "melted"]
-            df.loc[i, "ice"] = df.loc[i - 1, "ice"] + df.loc[i, "solid"]
+            if df.loc[i, "solid"] < df.loc[i, "Discharge"]:
+                df.loc[i, "ice"] = df.loc[i - 1, "ice"] + df.loc[i, "solid"]
+            else :
+                df.loc[i, "solid"] = df.loc[i, "Discharge"]
             df.loc[i, "vapour"] = df.loc[i - 1, "vapour"] + df.loc[i, "gas"]
             df.loc[i, "iceV"] = df.loc[i, "ice"] / rho_i
 
