@@ -174,7 +174,7 @@ if site == 'plaffeien':
 
     # df_in.Fountain[df_in.T_a < -5] = 1
     df_out["Discharge"] = 0  # litres per minute
-    df_out.Discharge[df_out.TotalE < -100] = 2 # litres per minute
+    df_out.Discharge[df_out.TotalE < -100] = 4 # litres per minute
 
     cols = ['When', "T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a", 'Discharge']
     df_out = df_out[cols]
