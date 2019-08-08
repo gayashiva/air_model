@@ -48,6 +48,7 @@ if site == 'plaffeien':
     # Model Time Window
     start_date = datetime(2019, 1, 29)
     end_date = datetime(2019, 5, 1)
+    time_steps = 5 * 60  # s # Model time steps
     mask = (df_in["When"] >= start_date) & (df_in["When"] <= end_date)
     df_in = df_in.loc[mask]
     df_in = df_in.reset_index()
@@ -70,10 +71,8 @@ if site == 'plaffeien':
 
     df_in["Prec"] = df_in["Prec"] / 1000
 
-
     # Fill nans
     df_in = df_in.fillna(method="ffill")
-
 
     df_out = df_in[
         [
@@ -175,7 +174,7 @@ if site == 'plaffeien':
 
     # df_in.Fountain[df_in.T_a < -5] = 1
     df_out["Discharge"] = 0  # litres per minute
-    df_out.Discharge[df_out.TotalE < -100] = 4 # litres per minute
+    df_out.Discharge[df_out.TotalE < -100] = 2 # litres per minute
 
     cols = ['When', "T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a", 'Discharge']
     df_out = df_out[cols]
@@ -429,9 +428,9 @@ ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
 ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
 ax1.xaxis.set_minor_locator(mdates.DayLocator())
 
-y2 = df_out.Discharge * 5
+y2 = df_out.Discharge
 ax2.plot(x, y2, "k-", linewidth=0.5)
-ax2.set_ylabel("Discharge[$kg$]")
+ax2.set_ylabel("Discharge[$l/min$]")
 ax2.grid()
 
 y3 = df_out.Rad
