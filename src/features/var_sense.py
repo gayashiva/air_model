@@ -39,7 +39,7 @@ problem = {
 }
 
 # Generate samples
-param_values = saltelli.sample(problem, 3)
+param_values = saltelli.sample(problem, 10)
 
 #Plots
 fig = plt.figure()
@@ -78,7 +78,7 @@ cbar.set_label('Ice layer thickness[$m$]')
 
 # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
 fig.autofmt_xdate()
-plt.savefig(os.path.join(output_folder, site + "_simulations__"+ str(problem['names'][0])  + '.jpg', bbox_inches  =  "tight", dpi=300))
+plt.savefig(os.path.join(output_folder, site + "_simulations__"+ str(problem['names'][0])  + '.jpg') , bbox_inches  =  "tight", dpi=300)
 plt.clf()
 
 dfo=dfo.round(4)
