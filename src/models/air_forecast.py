@@ -138,7 +138,7 @@ def icestupa(
     z0hi=0.0001,
     s=0,
     h_f=3,
-    dx = 0.0001,
+    dx = 0.001,
 ):
 
     """Fountain Charecteristics"""
@@ -471,40 +471,37 @@ def icestupa(
                     else:
                         ice_layer = dx * df.loc[i, "SA"] * rho_i
 
-                    '''Melting Ice by layers'''
-                    Ql = df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
-                    ctr = 0
-                    #melted layers
-                    ctr = int(Ql/  (ice_layer  * Lf))
-
-                    if ctr > 0 :
-
-                        print("188", ctr)
-
-                        # Subtract layers meltwater
-                        Ql -= ctr * ice_layer  * Lf
-
-                        df.loc[i, "solid"] -= (
-                            (ctr * ice_layer)
-                        )
-                        df.loc[i, "melted"] += (
-                            (ctr * ice_layer)
-                        )
-
-                    print("1.", df.loc[i, "Ql"], ice_layer)
+                    print("1..", df.loc[i, "Ql"], ice_layer)
 
                     if not ice_layer == df.loc[i - 1, "ice"]:
 
                         # Ice Temperature
-                        df.loc[i, "temp"] += (Ql) / (
+                        df.loc[i, "temp"] += (df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps) / (
                             ice_layer * ci
                         )
 
-                    print("1", df.loc[i, "temp"])
+                    print("1.", df.loc[i, "temp"])
 
-                    # if df.loc[i, "temp"] < -100 :
-                    #     print(df.loc[i, 'When'], df.loc[i, "temp"], df.loc[i-1, "T_s"])
-                    #     df.loc[i, "temp"] = -100
+                    # '''Melting Ice by layers'''
+                    # Ql = df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
+                    # ctr = 0
+                    # # melted layers
+                    # ctr = int(Ql/  (ice_layer  * Lf))
+                    #
+                    # if ctr > 0 :
+                    #
+                    #     print("188", ctr)
+                    #
+                    #     # Subtract layers meltwater
+                    #     Ql -= ctr * ice_layer  * Lf
+                    #
+                    #     df.loc[i, "solid"] -= (
+                    #         (ctr * ice_layer)
+                    #     )
+                    #     df.loc[i, "melted"] += (
+                    #         (ctr * ice_layer)
+                    #     )
+
 
                     '''Hot Ice'''
                     if df.loc[i-1, "T_s"] + df.loc[i, "temp"] > 0:
@@ -521,6 +518,7 @@ def icestupa(
                         )
                         df.loc[i-1, "T_s"] = 0
                         df.loc[i, "temp"] = 0
+                    print("1", df.loc[i, "temp"])
 
                 else:
                     df.loc[i, "ice"] = 0
@@ -604,35 +602,38 @@ def icestupa(
 
                     if df.loc[i - 1, "ice"] > 0:
 
-                        '''Melting Ice by layers'''
-                        ctr = 0
-                        #melted layers
-                        ctr = df.loc[i, "EJoules"]/  (ice_layer  * Lf)
+                        if not df.loc[i - 1, "ice"] == ice_layer:
 
-                        print(df.loc[i, "When"], ctr, df.loc[i, "EJoules"], ice_layer  * Lf)
-
-                        ctr = int(ctr)
-
-                        if ctr > 0 :
-
-                            print(199, ctr)
-                            # Subtract layers meltwater
-                            df.loc[i, "EJoules"] -= ctr * ice_layer  * Lf
-
-                            df.loc[i, "solid"] -= (
-                                (ctr * ice_layer)
-                            )
-                            df.loc[i, "melted"] += (
-                                (ctr * ice_layer)
+                            # Heating Ice
+                            df.loc[i, "temp"] += (df.loc[i, "EJoules"]) / (
+                                ice_layer * ci
                             )
 
-                        # Heating Ice
-                        df.loc[i, "temp"] += (df.loc[i, "EJoules"]) / (
-                            ice_layer * ci
-                        )
+                        print("3", df.loc[i, "temp"], df.loc[i, "TotalE"], df.loc[i, "Qs"])
 
-                        print("3", df.loc[i, "temp"])
+                        # '''Melting Ice by layers'''
+                        # ctr = 0
+                        # #melted layers
+                        # ctr = df.loc[i, "EJoules"]/  (ice_layer  * Lf)
+                        #
+                        # print(df.loc[i, "When"], ctr, df.loc[i, "EJoules"], ice_layer  * Lf)
+                        #
+                        # ctr = int(ctr)
+                        #
+                        # if ctr > 0 :
+                        #
+                        #     print(199, ctr)
+                        #     # Subtract layers meltwater
+                        #     df.loc[i, "EJoules"] -= ctr * ice_layer  * Lf
+                        #
+                        #     df.loc[i, "solid"] -= (
+                        #         (ctr * ice_layer)
+                        #     )
+                        #     df.loc[i, "melted"] += (
+                        #         (ctr * ice_layer)
+                        #     )
 
+                        '''Hot Ice'''
                         if (df.loc[i-1, "T_s"] + df.loc[i, "temp"]) > 0 :
                             # Melting Ice by Temperature
                             df.loc[i, "solid"] -= (
@@ -648,6 +649,14 @@ def icestupa(
                             df.loc[i-1, "T_s"] = 0
                             df.loc[i, "temp"] = 0
 
+            if df.loc[i, "temp"] < -50 :
+                print(df.loc[i, "When"], round(df.loc[i, "T_s"]), round(df.loc[i, "solid"]), round(df.loc[i, "melted"]), round(df.loc[i, "liquid"]))
+                sys.exit()
+
+            if ice_layer < df.loc[i,'solid']:
+                print(df.loc[i, "When"], round(df.loc[i, "T_s"]), round(df.loc[i, "solid"]), round(df.loc[i, "melted"]), round(df.loc[i, "liquid"]))
+                sys.exit()
+
             ''' Quantities of all phases '''
             df.loc[i, "T_s"] = df.loc[i-1, "T_s"] + df.loc[i, "temp"]
             df.loc[i, "water"] = df.loc[i - 1, "water"] + df.loc[i, "liquid"]
@@ -656,8 +665,7 @@ def icestupa(
             df.loc[i, "vapour"] = df.loc[i - 1, "vapour"] + df.loc[i, "gas"]
             df.loc[i, "iceV"] = df.loc[i, "ice"] / rho_i
 
-            if abs(df.loc[i, "temp"]) > 50 :
-                sys.exit()
+
 
             print(df.loc[i, "When"], round(df.loc[i, "T_s"]), round(df.loc[i, "solid"]), round(df.loc[i, "melted"]), round(df.loc[i, "liquid"]))
 
