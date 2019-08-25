@@ -216,16 +216,16 @@ def icestupa(
     R_f = df["r_f"].replace(0, np.NaN).mean()
     D_t = df["d_t"].replace(0, np.NaN).mean()
 
+    df.Discharge[df.When > datetime(2019, 2, 14, 18)] = 0 # Set Fountain Off
+
     """ Simulation """
     for i in range(1, df.shape[0]):
 
-        if df.loc[i - 1, "iceV"] < 0.001:
+        if (df.loc[i - 1, "ice"] < 0.001) & (df.Discharge[i:].sum() == 0):
             df.loc[i - 1, "solid"] = 0
             df.loc[i - 1, "ice"] = 0
             df.loc[i - 1, "iceV"] = 0
             stop = i - 1
-
-        if (df.loc[i, "When"] > datetime(2019, 2, 14, 18)) & (stop == i - 1):
             break
 
         if (df.loc[i, "Discharge"]) > 0:
