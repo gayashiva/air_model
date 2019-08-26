@@ -197,7 +197,7 @@ def icestupa(
     """ Simulation """
     for i in range(1, df.shape[0]):
 
-        if (df.loc[i - 1, "ice"] < 0.001) & (df.Discharge[i:].sum() == 0):
+        if (df.loc[i - 1, "ice"] < 0.001) & ((df.Discharge[i:].sum() == 0) or (df.loc[i - 1, "ice"] < 0)) :
             df.loc[i - 1, "solid"] = 0
             df.loc[i - 1, "ice"] = 0
             df.loc[i - 1, "iceV"] = 0
@@ -396,11 +396,12 @@ def icestupa(
                     df.loc[i, "liquid"] = 0
                     logger.critical('Nucleation at %s C at %s', round(T_droplet), df.loc[i, "When"])
                     df.loc[i - 1, "T_s"] = 0
+
                 else:
 
                     df.loc[i - 1, "T_s"] = (T_droplet + df.loc[i - 1, "T_s"]) / 2  # No Nucleation
                     logger.error('Fountain cools ice surface to %s C as droplet temp is %s', round(df.loc[i - 1, "T_s"]), round(T_droplet))
-                    T_droplet = 0
+
                 # Evaporation or condensation
                 df.loc[i, "Ql"] = (
                     0.623
@@ -513,17 +514,17 @@ def icestupa(
                     if df.loc[i - 1, "liquid"] > 0:
                         """Freezing water"""
 
-                        if df.loc[i - 1, "T_s"] <= 0 :
+                        if T_droplet >= 0 :
                             df.loc[i, "liquid"] -= (df.loc[i, "EJoules"]) / (
                                 -Lf
-                                + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
+                                + (df.loc[i - 1, "liquid"] * cw) * (-T_droplet)
                             )
 
                             if df.loc[i, "liquid"] < 0:
                                 df.loc[i, "liquid"] += (df.loc[i, "EJoules"]) / (
                                     -Lf
                                     + (df.loc[i - 1, "liquid"] * cw)
-                                    * (-df.loc[i - 1, "T_s"])
+                                    * (-T_droplet)
                                 )
                                 df.loc[i, "solid"] += df.loc[i, "liquid"]
                                 df.loc[i, "liquid"] = 0
@@ -531,7 +532,7 @@ def icestupa(
                                 df.loc[i, "solid"] += (df.loc[i, "EJoules"]) / (
                                     -Lf
                                     + (df.loc[i - 1, "liquid"] * cw)
-                                    * (-df.loc[i - 1, "T_s"])
+                                    * (-T_droplet)
                                 )
                         else :
                             df.loc[i, "liquid"] -= (df.loc[i, "EJoules"]) / (
