@@ -35,11 +35,11 @@ end_date = df_in['When'].iloc[-1]
 problem = {
   'num_vars': 1,
   'names': ['dx'],
-  'bounds': [[0.0001, 0.001]]
+  'bounds': [[0.001, 0.01]]
 }
 
 # Generate samples
-param_values = saltelli.sample(problem, 5)
+param_values = saltelli.sample(problem, 10)
 
 #Plots
 fig = plt.figure()
@@ -54,12 +54,8 @@ dfo = dfo.fillna(0)
 
 for i, X in enumerate(param_values):
     print(X)
-    df = icestupa(df_in, h_f = 1.35, dx = X[0])
-    dfo.loc[i,'Ice']=float(df['ice'].tail(1))
-    dfo.loc[i,'Meltwater']=float(df['meltwater'].tail(1))
-    dfo.loc[i,'Vapour']=float(df['vapour'].tail(1))
-    dfo.loc[i,'Ice Max']= df["ice"].max()
-    dfo.loc[i,'Runtime']= df['When'].iloc[-1]
+    df = icestupa(df_in, dx = X[0])
+
 
     x=df['When']
     y1=df['iceV']
