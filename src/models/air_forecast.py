@@ -7,40 +7,9 @@ from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.colors import LightSource
 import math
 import sys
+import logging
 
 np.seterr(all="raise")
-
-
-def euler(T, L=1, d=916, T_S=253.15, dx=0.0001):
-
-    """Spatial Grid"""
-    nx = int(L / dx) + 1
-    x = np.linspace(0, L, nx)
-
-    """Time Grid"""
-    t_sim = 5 * 60  # 5 minute time step
-    dt = 1
-    nt = int(t_sim / dt)
-
-    """Material Properties"""
-    ci = 2.108 * 1000  # J/kg/K Specific heat ice
-    d = 916
-    lamda = 2.09  # W/m/K Thermal Conductivity of Ice at 0 C
-
-    """Simulation"""
-    for n in range(1, nt):
-        Tn = T.copy()
-
-        T[1:-1] = (
-            Tn[1:-1]
-            + dt * lamda / (d * ci) * (Tn[2:] - 2 * Tn[1:-1] + Tn[0:-2]) / dx ** 2
-        )
-
-        T[0] = T_S
-        T[-1] = T[-2]
-
-    return x, T
-
 
 def albedo(df, a_i, a_s, a_w, t):
 
@@ -140,6 +109,15 @@ def icestupa(
     dx=0.001,
 ):
 
+    logger = logging.getLogger(__name__)
+
+
+    logger.debug('This is a debug message')
+    logger.info('This is for temp')
+    logger.warning('This is for solid')
+    logger.error('This is for melted')
+    logger.critical('This is a critical message')
+
     """Fountain Charecteristics"""
     d_f = 0.005  # Fountain hole diameter
     theta_f = 45  # Fountain aperture angle
@@ -151,7 +129,6 @@ def icestupa(
     time_steps = 5 * 60  # s # Model time steps
     z = 2  # m height of AWS
     theta_s = 45  # Solar Angle
-    # dx = 0.005  # Layers for temp profile
 
     """Material Properties"""
     Ls = 2848 * 1000  # J/kg Sublimation

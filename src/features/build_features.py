@@ -7,6 +7,9 @@ from matplotlib.backends.backend_pdf import PdfPages
 import os
 from src.models.air_forecast import icestupa
 import time
+import logging
+from logging import StreamHandler
+from logging.handlers import RotatingFileHandler
 
 # python -m src.features.build_features
 
@@ -19,6 +22,36 @@ input_folder = os.path.join(dirname, "data/interim/")
 output_folder = os.path.join(dirname, "data/processed/")
 
 start = time.time()
+
+# Create the Logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Create the Handler for logging data to a file
+logger_handler = RotatingFileHandler(input_folder + 'app.log', maxBytes=1024, backupCount=5)
+logger_handler.setLevel(logging.DEBUG)
+
+#Create the Handler for logging data to console.
+console_handler = StreamHandler()
+console_handler.setLevel(logging.WARNING)
+
+# Create a Formatter for formatting the log messages
+logger_formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+
+# Add the Formatter to the Handler
+logger_handler.setFormatter(logger_formatter)
+console_handler.setFormatter(logger_formatter)
+
+# Add the Handler to the Logger
+logger.addHandler(logger_handler)
+logger.addHandler(console_handler)
+
+
+
+logging.basicConfig(filename='app.log', level=logging.INFO, filemode='w', format='%(name)s - %(levelname)s - %(message)s')
+
+with open(input_folder + 'app.log', 'w'):
+    pass
 
 #  read files
 filename0 = os.path.join(input_folder, site + "_model_input.csv")

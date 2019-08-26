@@ -9,6 +9,8 @@ import math
 from pathlib import Path
 import os
 
+# python -m src.data.make_dataset
+
 site = input("Input the Field Site Name: ") or 'plaffeien'
 
 dirname = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', '..'))
