@@ -600,7 +600,7 @@ def icestupa(
     print("Ice Mass Remaining", float(df["ice"].tail(1)))
     print("Meltwater", float(df["meltwater"].tail(1)))
     print("Evaporated/sublimated", float(df["vapour"].tail(1)))
-    print("Ice Volume Max", float(df["iceV"].max()))
+    print("Ice Mass Max", float(df["ice"].max()))
     print("Ppt", prec)
     print("Model ended", df.loc[i - 1, "When"])
     print("Model runtime", df.loc[i - 1, "When"] - df.loc[start, "When"])
