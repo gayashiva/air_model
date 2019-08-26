@@ -13,7 +13,7 @@ from logging.handlers import RotatingFileHandler
 
 # python -m src.features.build_features
 
-site = input("Input the Field Site Name: ") or "plaffeien"
+site = input("Input the Field Site Name: ") or "schwarzsee"
 
 dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -28,7 +28,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # Create the Handler for logging data to a file
-logger_handler = RotatingFileHandler(input_folder + 'app.log', maxBytes=1024, backupCount=5)
+logger_handler = logging.FileHandler(input_folder + 'app.log', mode = 'w')
 logger_handler.setLevel(logging.DEBUG)
 
 #Create the Handler for logging data to console.
@@ -45,13 +45,6 @@ console_handler.setFormatter(logger_formatter)
 # Add the Handler to the Logger
 logger.addHandler(logger_handler)
 logger.addHandler(console_handler)
-
-
-
-logging.basicConfig(filename='app.log', level=logging.INFO, filemode='w', format='%(name)s - %(levelname)s - %(message)s')
-
-with open(input_folder + 'app.log', 'w'):
-    pass
 
 #  read files
 filename0 = os.path.join(input_folder, site + "_model_input.csv")

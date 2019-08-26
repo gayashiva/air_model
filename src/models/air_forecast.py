@@ -170,6 +170,7 @@ def icestupa(
     stop = 0  # model end step
     state = 0
     df["SRf"] = 0
+    ice_layer = 0
 
     theta_f = math.radians(theta_f)  # Angle of Spray
     theta_s = math.radians(theta_s)  # solar angle
@@ -313,6 +314,13 @@ def icestupa(
                     )
                 )  # Area of Conical Ice Surface
 
+
+            if (ice_layer != 0) & (df.loc[i - 1, "SA"] != df.loc[i, "SA"]):
+                ice_layer = (
+                    dx * df.loc[i, "SA"] * rho_i
+                )
+                logger.debug('Ice layer is %s thick at %s', ice_layer, df.loc[i, "When"])
+
             # Precipitation to ice quantity
             prec = prec + dp * df.loc[i, "Prec"] * math.pi * math.pow(R_f, 2)
             df.loc[i - 1, "ice"] = df.loc[i - 1, "ice"] + dp * df.loc[
@@ -355,14 +363,14 @@ def icestupa(
             """ When fountain run """
             if df.loc[i, "liquid"] > 0:
 
-                # Initialize AIR
+                # Initialize AIR ice layer
                 if df.loc[i - 1, "ice"] == 0:
-
-                    ice_layer = ice_layer = (
+                    ice_layer = (
                         dx * df.loc[i, "SA"] * rho_i
-                    )  # Initialize Ice Layer
+                    )
+                    logger.info('Ice layer is %s thick at %s', ice_layer, df.loc[i, "When"])
+
                     df.loc[i - 1, "ice"] = ice_layer
-                    print(df.loc[i, "When"], df.loc[i - 1, "ice"])
 
                 # # Does water droplet cool down enough to nucleate
                 # m_d = rho_w * math.pi * d_f ** 3 / 6  # mass of droplet
