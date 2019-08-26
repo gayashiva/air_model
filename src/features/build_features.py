@@ -55,7 +55,6 @@ df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 end_date = df_in["When"].iloc[-1]
 
 if site == "schwarzsee":
-    df_in.Discharge = df_in.Discharge * df_in.Fountain
     df = icestupa(df_in, h_f=1.35)
 else:
     df = icestupa(df_in)
