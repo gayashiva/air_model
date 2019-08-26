@@ -28,12 +28,12 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # Create the Handler for logging data to a file
-logger_handler = logging.FileHandler(input_folder + 'app.log', mode = 'w')
+logger_handler = logging.FileHandler(os.path.join(input_folder, site + '_site.log'), mode = 'w')
 logger_handler.setLevel(logging.DEBUG)
 
 #Create the Handler for logging data to console.
 console_handler = StreamHandler()
-console_handler.setLevel(logging.WARNING)
+console_handler.setLevel(logging.CRITICAL)
 
 # Create a Formatter for formatting the log messages
 logger_formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
@@ -295,8 +295,16 @@ y2 = df.TotalE + df.Ql
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", lw=1)
-ax1.set_ylabel("Cone Ice Volume[$m^3$]")
+ax1.set_ylabel("Ice Volume[$m^3$]")
 ax1.set_xlabel("Days")
+
+if site == 'schwarzsee' :
+    # Include Validation line segment 1
+    ax1.plot([datetime(2019,2,14,16), datetime(2019,2,14,16)], [0.67115, 1.042], color='green', lw=1)
+    ax1.scatter(datetime(2019,2,14,16), 0.856575, color='green', marker='o')
+
+    # Include Validation line segment 2
+    ax1.plot([datetime(2019,3,10,18), datetime(2019,3,10,18)], [0.037, 0.222 ], color='green', lw=1)
 
 #  format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
