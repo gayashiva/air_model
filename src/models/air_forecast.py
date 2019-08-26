@@ -11,8 +11,7 @@ import sys
 np.seterr(all="raise")
 
 
-def euler(T, L=1, d=916, T_S=253.15, dx = 0.0001):
-
+def euler(T, L=1, d=916, T_S=253.15, dx=0.0001):
 
     """Spatial Grid"""
     nx = int(L / dx) + 1
@@ -138,7 +137,7 @@ def icestupa(
     z0hi=0.0001,
     s=0,
     h_f=3,
-    dx = 0.001,
+    dx=0.001,
 ):
 
     """Fountain Charecteristics"""
@@ -198,25 +197,23 @@ def icestupa(
     theta_f = math.radians(theta_f)  # Angle of Spray
     theta_s = math.radians(theta_s)  # solar angle
 
-    ''' Estimating Albedo '''
+    """ Estimating Albedo """
     df["a"] = albedo(df, a_i, a_s, a_w, t_d)
 
-    ''' Estimating Fountain Spray radius '''
+    """ Estimating Fountain Spray radius """
     Area = 3.14 * math.pow(d_f, 2) / 4
     df["v"] = 0
     df["r"] = 0
 
     for j in range(1, df.shape[0]):
-        df.loc[j, "v_f"] = (
-            df.loc[j, "Discharge"] / (60 * 1000 * Area)
-        )
+        df.loc[j, "v_f"] = df.loc[j, "Discharge"] / (60 * 1000 * Area)
         df.loc[j, "r_f"], df.loc[j, "d_t"] = projectile_xy(
             df.loc[j, "v_f"], theta_f, h_f
         )
     R_f = df["r_f"].replace(0, np.NaN).mean()
     D_t = df["d_t"].replace(0, np.NaN).mean()
 
-    df.Discharge[df.When > datetime(2019, 2, 14, 18)] = 0 # Set Fountain Off
+    # df.Discharge[df.When > datetime(2019, 2, 14, 18)] = 0 # Set Fountain Off
 
     """ Simulation """
     for i in range(1, df.shape[0]):
@@ -282,10 +279,7 @@ def icestupa(
                     df.loc[i:, "h_f"] = y  # Reset height
 
                     for j in range(1, df.shape[0]):
-                        df.loc[j, "v_f"] = (
-                            df.loc[j, "Discharge"]
-                            / (60 * 1000 * Area)
-                        )
+                        df.loc[j, "v_f"] = df.loc[j, "Discharge"] / (60 * 1000 * Area)
                         df.loc[j, "r_f"], df.loc[j, "d_t"] = projectile_xy(
                             df.loc[j, "v_f"], theta_f, df.loc[i, "h_f"]
                         )
@@ -379,22 +373,19 @@ def icestupa(
                 )
 
             # Fountain water output
-            df.loc[i, "liquid"] = (
-                df.loc[i, "Discharge"]
-                * (1 - ftl)
-                * time_steps
-                / (60)
-            )
+            df.loc[i, "liquid"] = df.loc[i, "Discharge"] * (1 - ftl) * time_steps / (60)
 
-            ''' When fountain run '''
+            """ When fountain run """
             if df.loc[i, "liquid"] > 0:
 
                 # Initialize AIR
                 if df.loc[i - 1, "ice"] == 0:
 
-                    ice_layer = ice_layer = dx * df.loc[i, "SA"] * rho_i # Initialize Ice Layer
+                    ice_layer = ice_layer = (
+                        dx * df.loc[i, "SA"] * rho_i
+                    )  # Initialize Ice Layer
                     df.loc[i - 1, "ice"] = ice_layer
-                    print(df.loc[i, "When"], df.loc[i-1, "ice"])
+                    print(df.loc[i, "When"], df.loc[i - 1, "ice"])
 
                 # # Does water droplet cool down enough to nucleate
                 # m_d = rho_w * math.pi * d_f ** 3 / 6  # mass of droplet
@@ -434,61 +425,61 @@ def icestupa(
                 )
 
                 df.loc[i, "gas"] -= (
-                     (df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps) / Le
-                )
+                    df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
+                ) / Le
 
                 # Removing water quantity generated from previous time step
                 df.loc[i, "liquid"] += (
-                    (df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps) / Le
-                )
+                    df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
+                ) / Le
 
                 df.loc[i, "e_s"] = we
 
-            else: # When fountain off
-
-                # Sublimation or condensation
-                df.loc[i, "Ql"] = (
-                    0.623
-                    * Ls
-                    * rho_a
-                    / p0
-                    * math.pow(k, 2)
-                    * df.loc[i, "v_a"]
-                    * (Ea - Eice)
-                    / (np.log(z / z0mi) * np.log(z / z0hi))
-                )
-
-                df.loc[i, 'gas'] -= (
-                     (df.loc[i, 'Ql'] * (df.loc[i, 'SA']) * time_steps) / Ls
-                )
-
-                # Removing gas quantity generated from previous time step
-                df.loc[i - 1, 'ice'] += (
-                     (df.loc[i, 'Ql'] * (df.loc[i, 'SA']) * time_steps) / Ls
-                )
+            else:  # When fountain off
 
                 if df.loc[i - 1, "ice"] > 0:
 
-                    # Ice Temperature
-                    df.loc[i, "temp"] += (df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps) / (
-                        ice_layer * ci
+                    # Sublimation or condensation
+                    df.loc[i, "Ql"] = (
+                        0.623
+                        * Ls
+                        * rho_a
+                        / p0
+                        * math.pow(k, 2)
+                        * df.loc[i, "v_a"]
+                        * (Ea - Eice)
+                        / (np.log(z / z0mi) * np.log(z / z0hi))
                     )
 
-                    '''Hot Ice'''
-                    if df.loc[i-1, "T_s"] + df.loc[i, "temp"] > 0:
+                    df.loc[i, "gas"] -= (
+                        df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
+                    ) / Ls
+
+                    # Removing gas quantity generated from previous time step
+                    df.loc[i - 1, "ice"] += (
+                        df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
+                    ) / Ls
+
+                    # Ice Temperature
+                    df.loc[i, "temp"] += (
+                        df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
+                    ) / (ice_layer * ci)
+
+                    """Hot Ice"""
+                    if df.loc[i - 1, "T_s"] + df.loc[i, "temp"] > 0:
 
                         # Melting Ice by Temperature
                         df.loc[i, "solid"] -= (
                             (ice_layer * ci)
-                            * (-(df.loc[i-1, "T_s"] + df.loc[i, "temp"]))
+                            * (-(df.loc[i - 1, "T_s"] + df.loc[i, "temp"]))
                             / (-Lf)
                         )
                         df.loc[i, "melted"] += (
                             (ice_layer * ci)
-                            * (-(df.loc[i-1, "T_s"] + df.loc[i, "temp"]))
+                            * (-(df.loc[i - 1, "T_s"] + df.loc[i, "temp"]))
                             / (-Lf)
                         )
-                        df.loc[i-1, "T_s"] = 0
+                        df.loc[i - 1, "T_s"] = 0
                         df.loc[i, "temp"] = 0
 
             # Short Wave Radiation SW
@@ -528,67 +519,71 @@ def icestupa(
             if df.loc[i - 1, "ice"] > 0:
 
                 if df.loc[i, "EJoules"] < 0:  # Energy Negative
-                    if (
-                        df.loc[i - 1, "liquid"] > 0
-                    ):
-                        '''Freezing water'''
+                    if df.loc[i - 1, "liquid"] > 0:
+                        """Freezing water"""
                         df.loc[i, "liquid"] -= (df.loc[i, "EJoules"]) / (
-                            -Lf + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
+                            -Lf
+                            + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
                         )
 
                         if df.loc[i, "liquid"] < 0:
                             df.loc[i, "liquid"] += (df.loc[i, "EJoules"]) / (
-                                -Lf + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
+                                -Lf
+                                + (df.loc[i - 1, "liquid"] * cw)
+                                * (-df.loc[i - 1, "T_s"])
                             )
                             df.loc[i, "solid"] += df.loc[i, "liquid"]
                             df.loc[i, "liquid"] = 0
-                        else :
+                        else:
                             df.loc[i, "solid"] += (df.loc[i, "EJoules"]) / (
-                                -Lf + (df.loc[i - 1, "liquid"] * cw) * (-df.loc[i - 1, "T_s"])
+                                -Lf
+                                + (df.loc[i - 1, "liquid"] * cw)
+                                * (-df.loc[i - 1, "T_s"])
                             )
 
                     else:
 
                         # Cooling Ice
-                        df.loc[i, "temp"] += (df.loc[i, "EJoules"]) / (
-                            ice_layer * ci
-                        )
+                        df.loc[i, "temp"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
 
-
-                else: # Energy Positive
+                else:  # Energy Positive
 
                     if df.loc[i - 1, "ice"] > 0:
 
                         # Heating Ice
-                        df.loc[i, "temp"] += (df.loc[i, "EJoules"]) / (
-                            ice_layer * ci
-                        )
+                        df.loc[i, "temp"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
 
-                        '''Hot Ice'''
-                        if (df.loc[i-1, "T_s"] + df.loc[i, "temp"]) > 0 :
+                        """Hot Ice"""
+                        if (df.loc[i - 1, "T_s"] + df.loc[i, "temp"]) > 0:
 
                             # Melting Ice by Temperature
                             df.loc[i, "solid"] -= (
                                 (ice_layer * ci)
-                                * (-(df.loc[i-1, "T_s"] + df.loc[i, "temp"]))
+                                * (-(df.loc[i - 1, "T_s"] + df.loc[i, "temp"]))
                                 / (-Lf)
                             )
 
                             df.loc[i, "melted"] += (
                                 (ice_layer * ci)
-                                * (-(df.loc[i-1, "T_s"] + df.loc[i, "temp"]))
+                                * (-(df.loc[i - 1, "T_s"] + df.loc[i, "temp"]))
                                 / (-Lf)
                             )
 
-                            df.loc[i-1, "T_s"] = 0
+                            df.loc[i - 1, "T_s"] = 0
                             df.loc[i, "temp"] = 0
 
-            if df.loc[i, "temp"] < -50 :
-                print(df.loc[i, "When"], round(df.loc[i, "T_s"]), round(df.loc[i, "solid"]), round(df.loc[i, "melted"]), round(df.loc[i, "liquid"]))
+            if df.loc[i, "temp"] < -50:
+                print(
+                    df.loc[i, "When"],
+                    round(df.loc[i, "T_s"]),
+                    round(df.loc[i, "solid"]),
+                    round(df.loc[i, "melted"]),
+                    round(df.loc[i, "liquid"]),
+                )
                 sys.exit()
 
-            ''' Quantities of all phases '''
-            df.loc[i, "T_s"] = df.loc[i-1, "T_s"] + df.loc[i, "temp"]
+            """ Quantities of all phases """
+            df.loc[i, "T_s"] = df.loc[i - 1, "T_s"] + df.loc[i, "temp"]
             df.loc[i, "water"] = df.loc[i - 1, "water"] + df.loc[i, "liquid"]
             df.loc[i, "meltwater"] = df.loc[i - 1, "meltwater"] + df.loc[i, "melted"]
             df.loc[i, "ice"] = df.loc[i - 1, "ice"] + df.loc[i, "solid"]
