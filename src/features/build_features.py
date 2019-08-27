@@ -287,6 +287,7 @@ if site == 'schwarzsee' :
 
     # Include Validation line segment 2
     ax1.plot([datetime(2019,3,10,18), datetime(2019,3,10,18)], [0.037, 0.222 ], color='green', lw=1)
+    ax1.scatter(datetime(2019,3,10,18), 0.1295, color='green', marker='o')
 
 #  format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
