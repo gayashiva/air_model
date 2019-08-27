@@ -12,7 +12,7 @@ import logging
 
 # python -m src.data.make_dataset
 
-site = input("Input the Field Site Name: ") or 'plaffeien'
+site = input("Input the Field Site Name: ") or 'schwarzsee'
 
 dirname = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', '..'))
 
@@ -390,7 +390,7 @@ if site == 'guttannen':
 
     df_in["Fountain"] = 0
     df_in.Fountain[df_in.T_a < -5] = 1
-    df_in["Discharge"] = df_in.Fountain * 1 # litres per minute
+    df_in["Discharge"] = df_in.Fountain * 4 # litres per minute
 
     # Fill nans
     df_in = df_in.fillna(method="ffill")
@@ -627,6 +627,11 @@ ax6.grid()
 # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
 fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
+
+plt.savefig(
+    os.path.join(interim_folder, site + "_data.jpg"), bbox_inches="tight", dpi=300
+)
+
 plt.clf()
 
 fig = plt.figure()

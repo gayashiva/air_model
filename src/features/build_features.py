@@ -9,7 +9,6 @@ from src.models.air_forecast import icestupa
 import time
 import logging
 from logging import StreamHandler
-from logging.handlers import RotatingFileHandler
 
 # python -m src.features.build_features
 
@@ -29,7 +28,7 @@ logger.setLevel(logging.INFO)
 
 # Create the Handler for logging data to a file
 logger_handler = logging.FileHandler(os.path.join(os.path.join(dirname, "data/logs/"), site + '_site.log'), mode = 'w')
-logger_handler.setLevel(logging.DEBUG)
+logger_handler.setLevel(logging.INFO)
 
 #Create the Handler for logging data to console.
 console_handler = StreamHandler()
@@ -57,7 +56,7 @@ end_date = df_in["When"].iloc[-1]
 if site == "schwarzsee":
     df = icestupa(df_in, h_f=1.35)
 else:
-    df = icestupa(df_in, h_f=1.35)
+    df = icestupa(df_in)
 
 total = time.time() - start
 
@@ -300,6 +299,7 @@ pp.savefig(bbox_inches="tight")
 plt.savefig(
     os.path.join(output_folder, site + "_result.jpg"), bbox_inches="tight", dpi=300
 )
+
 plt.clf()
 
 fig, (ax1, ax2, ax3) = plt.subplots(nrows=3, ncols=1, sharex=True, figsize=(10, 5))

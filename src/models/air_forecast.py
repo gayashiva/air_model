@@ -369,6 +369,9 @@ def icestupa(
                     )
                     logger.warning('Ice layer is %s thick at %s', ice_layer, df.loc[i, "When"])
 
+                    if ice_layer == 0 :
+                        logger.critical('Ice layer is %s thick at %s', ice_layer, df.loc[i, "SA"], df.loc[i, "When"])
+                        break
                     df.loc[i - 1, "ice"] = ice_layer
 
                 if df.loc[ i-1 , "T_s"] < 0 :

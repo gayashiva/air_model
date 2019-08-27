@@ -10,11 +10,13 @@ from src.models.air_forecast import icestupa
 import time
 from SALib.sample import saltelli
 from SALib.analyze import sobol
+import logging
+from logging import StreamHandler
 
 # python -m src.features.var_sense
 
 
-site = input("Input the Field Site Name: ") or "plaffeien"
+site = input("Input the Field Site Name: ") or "schwarzsee"
 
 dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -24,6 +26,29 @@ output_folder = os.path.join(dirname, "data/processed/")
 
 start = time.time()
 
+# Create the Logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Create the Handler for logging data to a file
+logger_handler = logging.FileHandler(os.path.join(os.path.join(dirname, "data/logs/"), site + '_site.log'), mode = 'w')
+logger_handler.setLevel(logging.CRITICAL)
+
+#Create the Handler for logging data to console.
+console_handler = StreamHandler()
+console_handler.setLevel(logging.CRITICAL)
+
+# Create a Formatter for formatting the log messages
+logger_formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+
+# Add the Formatter to the Handler
+logger_handler.setFormatter(logger_formatter)
+console_handler.setFormatter(logger_formatter)
+
+# Add the Handler to the Logger
+logger.addHandler(logger_handler)
+logger.addHandler(console_handler)
+
 #  read files
 filename0 = os.path.join(input_folder, site + "_model_input.csv")
 df_in = pd.read_csv(filename0, sep=",")
@@ -32,10 +57,10 @@ df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 # end
 end_date = df_in["When"].iloc[-1]
 
-problem = {"num_vars": 1, "names": ["dx"], "bounds": [[0.001, 0.01]]}
+problem = {"num_vars": 1, "names": ["dx"], "bounds": [[0.0005, 0.005]]}
 
 # Generate samples
-param_values = saltelli.sample(problem, 10)
+param_values = saltelli.sample(problem, 5)
 
 # Plots
 fig = plt.figure()
@@ -52,7 +77,7 @@ dfo = dfo.fillna(0)
 
 for i, X in enumerate(param_values):
     print(X)
-    df = icestupa(df_in, dx=X[0])
+    df = icestupa(df_in, h_f=1.35, dx=X[0])
     dfo.loc[i, "Ice"] = float(df["ice"].tail(1))
     dfo.loc[i, "Meltwater"] = float(df["meltwater"].tail(1))
     dfo.loc[i, "Vapour"] = float(df["vapour"].tail(1))
