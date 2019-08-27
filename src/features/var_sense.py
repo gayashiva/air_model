@@ -57,10 +57,10 @@ df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 # end
 end_date = df_in["When"].iloc[-1]
 
-problem = {"num_vars": 1, "names": ["dx"], "bounds": [[0.0005, 0.005]]}
+problem = {"num_vars": 1, "names": ["dx"], "bounds": [[0.005, 0.05]]}
 
 # Generate samples
-param_values = saltelli.sample(problem, 5)
+param_values = saltelli.sample(problem, 10)
 
 # Plots
 fig = plt.figure()
