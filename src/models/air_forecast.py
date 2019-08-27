@@ -194,7 +194,7 @@ def icestupa(
     """ Simulation """
     for i in range(1, df.shape[0]):
 
-        if (df.loc[i - 1, "ice"] < 0.001) & ((df.Discharge[i:].sum() == 0) or (df.loc[i - 1, "ice"] < 0)) :
+        if (df.loc[i - 1, "ice"] < 0.001) & ((df.Discharge[i:].sum() == 0)) :
             df.loc[i - 1, "solid"] = 0
             df.loc[i - 1, "ice"] = 0
             df.loc[i - 1, "iceV"] = 0
@@ -362,7 +362,12 @@ def icestupa(
             if df.loc[i, "liquid"] > 0:
 
                 # Initialize AIR ice layer
-                if df.loc[i - 1, "ice"] == 0:
+                if df.loc[i - 1, "ice"] <= 0:
+
+                    # if (ice_layer != 0) :
+                    #     ice_layer = df.loc[i - 1, "ice"]
+                    #
+                    # else :
                     ice_layer = (
                         dx * df.loc[i, "SA"] * rho_i
                     )
