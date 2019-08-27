@@ -28,12 +28,12 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # Create the Handler for logging data to a file
-logger_handler = logging.FileHandler(os.path.join(input_folder, site + '_site.log'), mode = 'w')
+logger_handler = logging.FileHandler(os.path.join(os.path.join(dirname, "data/logs/"), site + '_site.log'), mode = 'w')
 logger_handler.setLevel(logging.DEBUG)
 
 #Create the Handler for logging data to console.
 console_handler = StreamHandler()
-console_handler.setLevel(logging.ERROR)
+console_handler.setLevel(logging.CRITICAL)
 
 # Create a Formatter for formatting the log messages
 logger_formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
@@ -57,7 +57,7 @@ end_date = df_in["When"].iloc[-1]
 if site == "schwarzsee":
     df = icestupa(df_in, h_f=1.35)
 else:
-    df = icestupa(df_in)
+    df = icestupa(df_in, h_f=1.35)
 
 total = time.time() - start
 

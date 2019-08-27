@@ -374,9 +374,14 @@ def icestupa(
                 if df.loc[ i-1 , "T_s"] < 0 :
 
                     # Initial freeze up due to ice layer
-                    df.loc[i,'solid'] = (ice_layer * ci * (-df.loc[ i-1, "T_s"])) / (
+                    df.loc[i,'solid'] += (ice_layer * ci * (-df.loc[ i-1, "T_s"])) / (
                         Lf
                     )
+
+                    df.loc[i,'liquid'] -=(ice_layer * ci * (-df.loc[ i-1, "T_s"])) / (
+                        Lf
+                    )
+
                     logger.error('Ice layer made %s thick ice at %s', df.loc[i,'solid'], df.loc[i, "When"])
                     df.loc[i, "temp"] = -df.loc[i-1, "T_s"]
 
@@ -447,10 +452,10 @@ def icestupa(
                             * (-(df.loc[i - 1, "T_s"] + df.loc[i, "temp"]))
                             / (-Lf)
                         )
-                        df.loc[i - 1, "T_s"] = 0
-                        df.loc[i, "temp"] = 0
 
-            logger.info('Ice made after sublimation is %s thick at %s', round(df.loc[i, "solid"]), df.loc[i, "When"])
+                        df.loc[i, "temp"] = -df.loc[i - 1, "T_s"]
+
+            logger.debug('Ice made after sublimation is %s thick at %s', round(df.loc[i, "solid"]), df.loc[i, "When"])
 
             # Short Wave Radiation SW
             df.loc[i, "SW"] = (1 - df.loc[i, "a"]) * (
@@ -512,10 +517,20 @@ def icestupa(
 
                     else: # When fountain off and energy negative
 
+                        if df.loc[i - 1, "liquid"] < 0:
+                            logger.critical(
+                                'Liquid is %s at %s',
+                                round(df.loc[i, "temp"]),
+                                round(df.loc[i, "When"]),
+                            )
+                            df.loc[i - 1, "liquid"] = 0
+
+
                         # Cooling Ice
                         df.loc[i, "temp"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
 
-                    logger.info('Ice made after energy neg is %s thick at %s', round(df.loc[i, "solid"]), df.loc[i, "When"])
+
+                    logger.debug('Ice made after energy neg is %s thick at %s', round(df.loc[i, "solid"]), df.loc[i, "When"])
 
                 else:  # Energy Positive
 
@@ -543,10 +558,10 @@ def icestupa(
                             df.loc[i - 1, "T_s"] = 0
                             df.loc[i, "temp"] = 0
 
-                        logger.info('Ice melted is %s thick at %s', round(df.loc[i, "solid"]), df.loc[i, "When"])
+                        logger.debug('Ice melted is %s thick at %s', round(df.loc[i, "solid"]), df.loc[i, "When"])
 
             if df.loc[i, "temp"] < -50:
-                logger.error(
+                logger.critical(
                     'Temperature change is %s at %s',
                     round(df.loc[i, "temp"]),
                     round(df.loc[i, "When"]),

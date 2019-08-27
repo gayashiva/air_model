@@ -8,6 +8,7 @@ import scipy.integrate as spi
 import math
 from pathlib import Path
 import os
+import logging
 
 # python -m src.data.make_dataset
 
@@ -23,6 +24,7 @@ interim_folder = os.path.join(dirname, "data/interim/")
 # settings
 start_date = datetime(2019, 1, 29, 16)
 end_date = datetime(2019, 3, 10, 18)
+# logger.info('Model time period  %s to %s', ice_layer, df.loc[i, "When"])
 
 if site == 'schwarzsee':
     # read files
@@ -132,12 +134,12 @@ if site == 'schwarzsee':
         df_nights.loc[i,'Start']=df_nights.loc[i,'Start']- pd.Timedelta(days=1)
         df.loc[(df['When'] >= df_nights.loc[i,'Start']) & (df['When'] <= df_nights.loc[i,'End']),'Fountain']=1
 
-    #Volume used
-    df['Used'] = df.Fountain * (df.Discharge *5)/1000
-    for i in range(0, df.shape[0]):
-        ts = pd.Series(df.Used[:i])
-        v=spi.trapz(ts.values)
-        df.loc[i,'Volume']=v
+    # #Volume used
+    # df['Used'] = df.Fountain * (df.Discharge *5)/1000
+    # for i in range(0, df.shape[0]):
+    #     ts = pd.Series(df.Used[:i])
+    #     v=spi.trapz(ts.values)
+    #     df.loc[i,'Volume']=v
 
     df.Discharge = df.Discharge * df.Fountain
 
@@ -172,9 +174,10 @@ if site == 'plaffeien':
     )
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
-    # Model Time Window
-    start_date = datetime(2019, 1, 29)
-    end_date = datetime(2019, 5, 1)
+    # # Model Time Window
+    # start_date = datetime(2019, 1, 29)
+    # end_date = datetime(2019, 5, 1)
+
     time_steps = 5 * 60  # s # Model time steps
     mask = (df_in["When"] >= start_date) & (df_in["When"] <= end_date)
     df_in = df_in.loc[mask]
@@ -221,10 +224,32 @@ if site == 'plaffeien':
     df_out[cols] = df_out[cols] / 2
     df_out = df_out.set_index("When").resample("5T").ffill().reset_index()
 
-
-
     '''Fountain Runtime'''
 
+    # ''' Use Schwarzsee'''
+    #
+    # df_out['Fountain'] = 0 # Fountain run time
+    # df_out['Discharge'] = 0 # Fountain run time
+    #
+    # df_nights = pd.read_csv( os.path.join(dirname,'data/raw/schwarzsee_fountain_time.txt') ,sep='\s+')
+    #
+    # df_nights['Start'] = pd.to_datetime(df_nights['Date'] + ' ' + df_nights['start'])
+    # df_nights['End'] = pd.to_datetime(df_nights['Date'] + ' ' + df_nights['end'])
+    # df_nights['Start'] = pd.to_datetime(df_nights['Start'], format='%Y-%m-%d %H:%M:%S')
+    # df_nights['End']=pd.to_datetime(df_nights['End'], format='%Y-%m-%d %H:%M:%S')
+    #
+    # df_nights['Date']=pd.to_datetime(df_nights['Date'], format='%Y-%m-%d')
+    # mask=(df_nights['Date'] >= start_date) & (df_nights['Date'] <= end_date)
+    # df_nights=df_nights.loc[mask]
+    # df_nights=df_nights.reset_index()
+    #
+    # for i in range(0, df_nights.shape[0]):
+    #     df_nights.loc[i,'Start']=df_nights.loc[i,'Start']- pd.Timedelta(days=1)
+    #     df_out.loc[(df_out['When'] >= df_nights.loc[i,'Start']) & (df_out['When'] <= df_nights.loc[i,'End']),'Fountain']=1
+    #
+    # df_out.Discharge = 4 * df_out.Fountain # Litres per minute
+
+    ''' Use Energy Flux '''
     """Settings"""
     z = 2  # m height of AWS
 
@@ -298,10 +323,14 @@ if site == 'plaffeien':
 
         # Total Energy W/m2
         df_out.loc[i, "TotalE"] = df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
-
-    # df_in.Fountain[df_in.T_a < -5] = 1
     df_out["Discharge"] = 0  # litres per minute
     df_out.Discharge[df_out.TotalE < -100] = 4 # litres per minute
+
+    # ''' Use Temperature '''
+    # df_in.Fountain[df_in.T_a < -5] = 1
+
+
+
 
     cols = ['When', "T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a", 'Discharge']
     df_out = df_out[cols]
@@ -527,7 +556,7 @@ y1 = df_out["Discharge"]
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Discharge[$kg$]")
+ax1.set_ylabel("Discharge[$l/min$]")
 ax1.set_xlabel("Days")
 
 # format the ticks
@@ -562,9 +591,9 @@ ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
 ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
 ax1.xaxis.set_minor_locator(mdates.DayLocator())
 
-y2 = df_out.Discharge
+y2 = df_out.Discharge * 5
 ax2.plot(x, y2, "k-", linewidth=0.5)
-ax2.set_ylabel("Discharge[$l/min$]")
+ax2.set_ylabel("Discharge[$l$]")
 ax2.grid()
 
 y3 = df_out.Rad
