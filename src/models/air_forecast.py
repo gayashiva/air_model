@@ -194,7 +194,7 @@ def icestupa(
     """ Simulation """
     for i in range(1, df.shape[0]):
 
-        if (df.loc[i - 1, "ice"] < 0.001) & ((df.Discharge[i:].sum() == 0)) :
+        if (df.loc[i - 1, "ice"] < 0) & (df.Discharge[i:].sum() == 0) :
             df.loc[i - 1, "solid"] = 0
             df.loc[i - 1, "ice"] = 0
             df.loc[i - 1, "iceV"] = 0
@@ -371,9 +371,18 @@ def icestupa(
                     ice_layer = (
                         dx * df.loc[i, "SA"] * rho_i
                     )
-                    logger.info('Ice layer is %s thick at %s', ice_layer, df.loc[i, "When"])
+                    logger.warning('Ice layer is %s thick at %s', ice_layer, df.loc[i, "When"])
 
                     df.loc[i - 1, "ice"] = ice_layer
+
+                if df.loc[i - 1, "T_s"] < 0 :
+
+                    # Initial freeze up due to ice layer
+                    df.loc[i,'solid'] = (ice_layer * ci * (-df.loc[i - 1, "T_s"])) / (
+                        -Lf
+                    )
+                    logger.error('Ice layer made %s thick ice at %s', ice_layer, df.loc[i, "When"])
+                    df.loc[i - 1, "T_s"] = 0
 
                 # Evaporation or condensation
                 df.loc[i, "Ql"] = (
