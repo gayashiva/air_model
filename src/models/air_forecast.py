@@ -194,7 +194,7 @@ def icestupa(
     """ Simulation """
     for i in range(1, df.shape[0]):
 
-        if (df.loc[i - 1, "ice"] < 0) & (df.Discharge[i:].sum() == 0) :
+        if (df.loc[i - 1, "ice"] <= 0) & (df.Discharge[i:].sum() == 0) :
             df.loc[i - 1, "solid"] = 0
             df.loc[i - 1, "ice"] = 0
             df.loc[i - 1, "iceV"] = 0
@@ -312,7 +312,7 @@ def icestupa(
                     )
                 )  # Area of Conical Ice Surface
 
-
+            # Update Ice Layer
             if (ice_layer != 0) & (df.loc[i - 1, "SA"] != df.loc[i, "SA"]):
                 ice_layer = (
                     dx * df.loc[i, "SA"] * rho_i
@@ -364,10 +364,6 @@ def icestupa(
                 # Initialize AIR ice layer
                 if df.loc[i - 1, "ice"] <= 0:
 
-                    # if (ice_layer != 0) :
-                    #     ice_layer = df.loc[i - 1, "ice"]
-                    #
-                    # else :
                     ice_layer = (
                         dx * df.loc[i, "SA"] * rho_i
                     )
@@ -375,14 +371,14 @@ def icestupa(
 
                     df.loc[i - 1, "ice"] = ice_layer
 
-                if df.loc[i - 1, "T_s"] < 0 :
+                if df.loc[ i-1 , "T_s"] < 0 :
 
                     # Initial freeze up due to ice layer
-                    df.loc[i,'solid'] = (ice_layer * ci * (-df.loc[i - 1, "T_s"])) / (
-                        -Lf
+                    df.loc[i,'solid'] = (ice_layer * ci * (-df.loc[ i-1, "T_s"])) / (
+                        Lf
                     )
-                    logger.error('Ice layer made %s thick ice at %s', ice_layer, df.loc[i, "When"])
-                    df.loc[i - 1, "T_s"] = 0
+                    logger.error('Ice layer made %s thick ice at %s', df.loc[i,'solid'], df.loc[i, "When"])
+                    df.loc[i, "temp"] = -df.loc[i-1, "T_s"]
 
                 # Evaporation or condensation
                 df.loc[i, "Ql"] = (
