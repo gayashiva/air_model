@@ -524,7 +524,7 @@ def icestupa(
                             logger.critical(
                                 'Liquid is %s at %s',
                                 round(df.loc[i, "temp"]),
-                                round(df.loc[i, "When"]),
+                                df.loc[i, "When"],
                             )
                             df.loc[i - 1, "liquid"] = 0
 
