@@ -57,7 +57,7 @@ df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 # end
 end_date = df_in["When"].iloc[-1]
 
-problem = {"num_vars": 1, "names": ["dx"], "bounds": [[0.005, 0.05]]}
+problem = {"num_vars": 1, "names": ["dx"], "bounds": [[0.00005, 0.0005]]}
 
 # Generate samples
 param_values = saltelli.sample(problem, 10)

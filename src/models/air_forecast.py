@@ -567,7 +567,7 @@ def icestupa(
                 logger.critical(
                     'Temperature change is %s at %s',
                     round(df.loc[i, "temp"]),
-                    round(df.loc[i, "When"]),
+                    df.loc[i, "When"],
                 )
 
             """ Quantities of all phases """
