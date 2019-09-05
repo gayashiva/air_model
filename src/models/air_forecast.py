@@ -415,7 +415,7 @@ def icestupa(
 
                 if df.loc[i - 1, "ice"] > 0:
 
-                    # Sublimation or condensation
+                    # Sublimation, Evaporation or condensation
                     df.loc[i, "Ql"] = (
                         0.623
                         * Ls
