@@ -12,7 +12,9 @@ import logging
 
 # python -m src.data.make_dataset
 
-site = input("Input the Field Site Name: ") or 'schwarzsee'
+site = input("Input the Field Site Name: ") or 'plaffeien'
+
+option = input("Fountain discharge option(energy, temperature, schwarzsee): ") or "energy"
 
 dirname = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', '..'))
 
@@ -24,7 +26,6 @@ interim_folder = os.path.join(dirname, "data/interim/")
 # settings
 start_date = datetime(2019, 1, 29, 16)
 end_date = datetime(2019, 3, 10, 18)
-# logger.info('Model time period  %s to %s', ice_layer, df.loc[i, "When"])
 
 if site == 'schwarzsee':
     # read files
@@ -134,12 +135,6 @@ if site == 'schwarzsee':
         df_nights.loc[i,'Start']=df_nights.loc[i,'Start']- pd.Timedelta(days=1)
         df.loc[(df['When'] >= df_nights.loc[i,'Start']) & (df['When'] <= df_nights.loc[i,'End']),'Fountain']=1
 
-    # #Volume used
-    # df['Used'] = df.Fountain * (df.Discharge *5)/1000
-    # for i in range(0, df.shape[0]):
-    #     ts = pd.Series(df.Used[:i])
-    #     v=spi.trapz(ts.values)
-    #     df.loc[i,'Volume']=v
 
     df.Discharge = df.Discharge * df.Fountain
 
@@ -174,9 +169,9 @@ if site == 'plaffeien':
     )
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
-    # # Model Time Window
-    # start_date = datetime(2019, 1, 29)
-    # end_date = datetime(2019, 5, 1)
+    # Model Time Window
+    start_date = datetime(2018, 11, 1)
+    end_date = datetime(2019, 5, 1)
 
     time_steps = 5 * 60  # s # Model time steps
     mask = (df_in["When"] >= start_date) & (df_in["When"] <= end_date)
@@ -224,113 +219,116 @@ if site == 'plaffeien':
     df_out[cols] = df_out[cols] / 2
     df_out = df_out.set_index("When").resample("5T").ffill().reset_index()
 
-    '''Fountain Runtime'''
-
-    # ''' Use Schwarzsee'''
-    #
-    # df_out['Fountain'] = 0 # Fountain run time
-    # df_out['Discharge'] = 0 # Fountain run time
-    #
-    # df_nights = pd.read_csv( os.path.join(dirname,'data/raw/schwarzsee_fountain_time.txt') ,sep='\s+')
-    #
-    # df_nights['Start'] = pd.to_datetime(df_nights['Date'] + ' ' + df_nights['start'])
-    # df_nights['End'] = pd.to_datetime(df_nights['Date'] + ' ' + df_nights['end'])
-    # df_nights['Start'] = pd.to_datetime(df_nights['Start'], format='%Y-%m-%d %H:%M:%S')
-    # df_nights['End']=pd.to_datetime(df_nights['End'], format='%Y-%m-%d %H:%M:%S')
-    #
-    # df_nights['Date']=pd.to_datetime(df_nights['Date'], format='%Y-%m-%d')
-    # mask=(df_nights['Date'] >= start_date) & (df_nights['Date'] <= end_date)
-    # df_nights=df_nights.loc[mask]
-    # df_nights=df_nights.reset_index()
-    #
-    # for i in range(0, df_nights.shape[0]):
-    #     df_nights.loc[i,'Start']=df_nights.loc[i,'Start']- pd.Timedelta(days=1)
-    #     df_out.loc[(df_out['When'] >= df_nights.loc[i,'Start']) & (df_out['When'] <= df_nights.loc[i,'End']),'Fountain']=1
-    #
-    # df_out.Discharge = 4 * df_out.Fountain # Litres per minute
-
-    ''' Use Energy Flux '''
-    """Settings"""
-    z = 2  # m height of AWS
-
-    """Material Properties"""
-    a_w = 0.6
-    we = 0.95
-    z0mi=0.001
-    z0ms=0.0015
-    z0hi=0.0001
-    c = 0.5
-    Lf = 334 * 1000  #  J/kg Fusion
-    cw = 4.186 * 1000  # J/kg Specific heat water
-    rho_w = 1000  # Density of water
-    rho_a = 1.29  # kg/m3 air density at mean sea level
-    p0 = 1013  # hPa
-    k = 0.4  # Van Karman constant
-    bc = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
-
-    """Initialise"""
-    df_out["TotalE"] = 0
-    df_out["SW"] = 0
-    df_out["LW"] = 0
-    df_out["Qs"] = 0
-
-    """ Simulation """
-    for i in range(1, df_out.shape[0]):
-
-        # Vapor Pressure empirical relations
-        if "vp_a" not in list(df_out.columns):
-            Ea = (
-                6.11
-                * math.pow(
-                    10, 7.5 * df_out.loc[i - 1, "T_a"] / (df_out.loc[i - 1, "T_a"] + 237.3)
-                )
-                * df_out.loc[i, "RH"]
-                / 100
-            )
-        else:
-            Ea = df_out.loc[i, "vp_a"]
-
-        df_out.loc[i, "e_a"] = (
-            1.24
-            * math.pow(abs(Ea / (df_out.loc[i, "T_a"] + 273.15)), 1 / 7)
-            * (1 + 0.22 * math.pow(c, 2))
-        )
-
-        # Short Wave Radiation SW
-        df_out.loc[i, "SW"] = (1 - a_w) * (
-            df_out.loc[i, "Rad"] + df_out.loc[i, "DRad"]
-        )
-
-        # Long Wave Radiation LW
-        if "oli000z0" not in list(df_out.columns):
-            df_out.loc[i, "LW"] = df_out.loc[i, "e_a"] * bc * math.pow(
-                df_out.loc[i, "T_a"] + 273.15, 4
-            ) - we * bc * math.pow(0 + 273.15, 4)
-        else:
-            df_out.loc[i, "LW"] = df_out.loc[i, "oli000z0"] - we * bc * math.pow(0 + 273.15, 4)
-
-        # Sensible Heat Qs
-        df_out.loc[i, "Qs"] = (
-            cw
-            * rho_a
-            * df_out.loc[i, "p_a"]
-            / p0
-            * math.pow(k, 2)
-            * df_out.loc[i, "v_a"]
-            * (df_out.loc[i, "T_a"])
-            / (np.log(z / z0mi) * np.log(z / z0hi))
-        )
-
-        # Total Energy W/m2
-        df_out.loc[i, "TotalE"] = df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
     df_out["Discharge"] = 0  # litres per minute
-    df_out.Discharge[df_out.TotalE < -100] = 4 # litres per minute
 
-    # ''' Use Temperature '''
-    # df_in.Fountain[df_in.T_a < -5] = 1
+    '''Fountain Discharge'''
 
+    if option == 'schwarzsee':
 
+        ''' Use Schwarzsee'''
 
+        df_out['Fountain'] = 0 # Fountain run time
+        df_out['Discharge'] = 0 # Fountain run time
+
+        df_nights = pd.read_csv( os.path.join(dirname,'data/raw/schwarzsee_fountain_time.txt') ,sep='\s+')
+
+        df_nights['Start'] = pd.to_datetime(df_nights['Date'] + ' ' + df_nights['start'])
+        df_nights['End'] = pd.to_datetime(df_nights['Date'] + ' ' + df_nights['end'])
+        df_nights['Start'] = pd.to_datetime(df_nights['Start'], format='%Y-%m-%d %H:%M:%S')
+        df_nights['End']=pd.to_datetime(df_nights['End'], format='%Y-%m-%d %H:%M:%S')
+
+        df_nights['Date']=pd.to_datetime(df_nights['Date'], format='%Y-%m-%d')
+        mask=(df_nights['Date'] >= start_date) & (df_nights['Date'] <= end_date)
+        df_nights=df_nights.loc[mask]
+        df_nights=df_nights.reset_index()
+
+        for i in range(0, df_nights.shape[0]):
+            df_nights.loc[i,'Start']=df_nights.loc[i,'Start']- pd.Timedelta(days=1)
+            df_out.loc[(df_out['When'] >= df_nights.loc[i,'Start']) & (df_out['When'] <= df_nights.loc[i,'End']),'Fountain']=1
+
+        df_out.Discharge = 4 * df_out.Fountain # Litres per minute
+
+    if option == 'energy':
+        ''' Use Energy Flux '''
+        """Settings"""
+        z = 2  # m height of AWS
+
+        """Material Properties"""
+        a_w = 0.6
+        we = 0.95
+        z0mi=0.001
+        z0ms=0.0015
+        z0hi=0.0001
+        c = 0.5
+        Lf = 334 * 1000  #  J/kg Fusion
+        cw = 4.186 * 1000  # J/kg Specific heat water
+        rho_w = 1000  # Density of water
+        rho_a = 1.29  # kg/m3 air density at mean sea level
+        p0 = 1013  # hPa
+        k = 0.4  # Van Karman constant
+        bc = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
+
+        """Initialise"""
+        df_out["TotalE"] = 0
+        df_out["SW"] = 0
+        df_out["LW"] = 0
+        df_out["Qs"] = 0
+
+        """ Simulation """
+        for i in range(1, df_out.shape[0]):
+
+            # Vapor Pressure empirical relations
+            if "vp_a" not in list(df_out.columns):
+                Ea = (
+                    6.11
+                    * math.pow(
+                        10, 7.5 * df_out.loc[i - 1, "T_a"] / (df_out.loc[i - 1, "T_a"] + 237.3)
+                    )
+                    * df_out.loc[i, "RH"]
+                    / 100
+                )
+            else:
+                Ea = df_out.loc[i, "vp_a"]
+
+            df_out.loc[i, "e_a"] = (
+                1.24
+                * math.pow(abs(Ea / (df_out.loc[i, "T_a"] + 273.15)), 1 / 7)
+                * (1 + 0.22 * math.pow(c, 2))
+            )
+
+            # Short Wave Radiation SW
+            df_out.loc[i, "SW"] = (1 - a_w) * (
+                df_out.loc[i, "Rad"] + df_out.loc[i, "DRad"]
+            )
+
+            # Long Wave Radiation LW
+            if "oli000z0" not in list(df_out.columns):
+                df_out.loc[i, "LW"] = df_out.loc[i, "e_a"] * bc * math.pow(
+                    df_out.loc[i, "T_a"] + 273.15, 4
+                ) - we * bc * math.pow(0 + 273.15, 4)
+            else:
+                df_out.loc[i, "LW"] = df_out.loc[i, "oli000z0"] - we * bc * math.pow(0 + 273.15, 4)
+
+            # Sensible Heat Qs
+            df_out.loc[i, "Qs"] = (
+                cw
+                * rho_a
+                * df_out.loc[i, "p_a"]
+                / p0
+                * math.pow(k, 2)
+                * df_out.loc[i, "v_a"]
+                * (df_out.loc[i, "T_a"])
+                / (np.log(z / z0mi) * np.log(z / z0hi))
+            )
+
+            # Total Energy W/m2
+            df_out.loc[i, "TotalE"] = df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
+
+        df_out.Discharge[df_out.TotalE < -100] = 4 # litres per minute
+
+    if option == 'temperature':
+        ''' Use Temperature '''
+        df_out.Discharge[df_out.T_a < 0] = 4
 
     cols = ['When', "T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a", 'Discharge']
     df_out = df_out[cols]
@@ -359,7 +357,7 @@ if site == 'guttannen':
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
     # Model Time Window
-    start_date = datetime(2018, 1, 29)
+    start_date = datetime(2017, 11, 1)
     end_date = datetime(2018, 11, 1)
     mask = (df_in["When"] >= start_date) & (df_in["When"] <= end_date)
     df_in = df_in.loc[mask]
@@ -419,10 +417,10 @@ if site == 'guttannen':
     df_out = df_out.set_index("When").resample("5T").ffill().reset_index()
 
 
-df_out.to_csv(interim_folder + site + "_model_input.csv", sep=",")
+df_out.to_csv(interim_folder + site + '_' + option +"_input.csv", sep=",")
 
 # Plots
-filename = interim_folder + site + "_all_data_" + str(end_date.day) + ".pdf"
+filename = interim_folder + site + '_' + option +"_all_data" + ".pdf"
 pp = PdfPages(filename)
 
 x = df_out["When"]
@@ -573,7 +571,7 @@ pp.close()
 
 
 # Plots
-filename = interim_folder + site + "_data" + ".pdf"
+filename = interim_folder + site + '_' + option + "_data" + ".pdf"
 pp = PdfPages(filename)
 
 fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(

@@ -12,7 +12,9 @@ from logging import StreamHandler
 
 # python -m src.features.build_features
 
-site = input("Input the Field Site Name: ") or "schwarzsee"
+site = input("Input the Field Site Name: ") or "plaffeien"
+
+option = input("Fountain discharge option(energy, temperature, schwarzsee): ") or "energy"
 
 dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -46,7 +48,7 @@ logger.addHandler(logger_handler)
 logger.addHandler(console_handler)
 
 #  read files
-filename0 = os.path.join(input_folder, site + "_model_input.csv")
+filename0 = os.path.join(input_folder, site + '_' + option +"_input.csv")
 df_in = pd.read_csv(filename0, sep=",")
 df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
@@ -69,7 +71,7 @@ df[cols].to_csv(filename2, sep=",")
 
 
 # Plots
-filename3 = os.path.join(output_folder, site + "_model_results.pdf")
+filename3 = os.path.join(output_folder, site + '_' + option + "_results.pdf")
 pp = PdfPages(filename3)
 
 x = df.When
@@ -266,7 +268,7 @@ plt.clf()
 pp.close()
 
 # Plots
-filename = os.path.join(output_folder, site + "_plots.pdf")
+filename = os.path.join(output_folder, site + '_' + option + "_plots.pdf")
 pp = PdfPages(filename)
 
 x = df.When
@@ -383,7 +385,7 @@ plt.clf()
 pp.close()
 
 # Plots
-filename = os.path.join(output_folder, site + "_energybar.pdf")
+filename = os.path.join(output_folder, site + option + "_energybar.pdf")
 pp  =  PdfPages(filename)
 
 df2= df[['When','SW','LW','Qs','Ql' ]]
