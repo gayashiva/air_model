@@ -384,54 +384,54 @@ plt.clf()
 
 pp.close()
 
-# Plots
-filename = os.path.join(output_folder, site + option + "_energybar.pdf")
-pp  =  PdfPages(filename)
-
-df2= df[['When','SW','LW','Qs','Ql' ]]
-
-x= df2.set_index('When').resample('D').mean().reset_index()
-x.index = np.arange(1, len(x) + 1)
-
-fig, ax = plt.subplots(1)
-y= x[['SW','LW']]
-y.plot.bar(stacked=True, edgecolor = df3['Discharge'], linewidth=0.5)
-plt.xlabel('Days')
-plt.ylabel('Energy[$Wm^{-2}]$')
-plt.ylim(-150, 150)
-# plt.legend(loc=1, bbox_to_anchor=(0, 1))
-pp.savefig(bbox_inches  =  "tight")
-# plt.savefig(os.path.join(output_folder, site + "_energybar1.jpg"), bbox_inches  =  "tight", dpi=300)
-plt.clf()
-
-fig, ax = plt.subplots(1)
-y= x[['SW','LW','Qs']]
-y.plot.bar(stacked=True, edgecolor = df3['Discharge'], linewidth=0.5)
-plt.xlabel('Days')
-plt.ylabel('Energy[$Wm^{-2}]$')
-plt.ylim(-150, 150)
-pp.savefig(bbox_inches  =  "tight")
-# plt.savefig(os.path.join(output_folder, site + "_energybar2.jpg"), bbox_inches  =  "tight", dpi=300)
-plt.clf()
-
-fig, ax = plt.subplots(1)
-y= x[['SW','LW','Qs','Ql' ]]
-y.plot.bar(stacked=True, edgecolor = df3['Discharge'], linewidth=0.5)
-plt.xlabel('Days')
-plt.ylabel('Energy[$Wm^{-2}]$')
-plt.ylim(-150, 150)
-pp.savefig( bbox_inches  =  "tight")
-# plt.savefig(os.path.join(output_folder, site + "_energybar3.jpg"), bbox_inches  =  "tight", dpi=300)
-plt.clf()
-
-fig, ax = plt.subplots(1)
-y= x[['SW','LW','Qs','Ql' ]]
-y.plot.bar(stacked=True, edgecolor = df3['Discharge'], linewidth=0.5)
-plt.xlabel('Days')
-plt.ylabel('Energy[$Wm^{-2}]$')
-plt.ylim(-150, 150)
-pp.savefig(bbox_inches  =  "tight")
-plt.savefig(os.path.join(output_folder, site + "_energybar4.jpg"), bbox_inches  =  "tight", dpi=300)
-plt.clf()
-
-pp.close()
+# # Plots
+# filename = os.path.join(output_folder, site + '_' + option + "_energybar.pdf")
+# pp  =  PdfPages(filename)
+#
+# df2= df[['When','SW','LW','Qs','Ql' ]]
+#
+# x= df2.set_index('When').resample('D').mean().reset_index()
+# x.index = np.arange(1, len(x) + 1)
+#
+# fig, ax = plt.subplots(1)
+# y= x[['SW','LW']]
+# y.plot.bar(stacked=True, edgecolor = df3['Discharge'], linewidth=0.5)
+# plt.xlabel('Days')
+# plt.ylabel('Energy[$Wm^{-2}]$')
+# plt.ylim(-150, 150)
+# # plt.legend(loc=1, bbox_to_anchor=(0, 1))
+# pp.savefig(bbox_inches  =  "tight")
+# # plt.savefig(os.path.join(output_folder, site + "_energybar1.jpg"), bbox_inches  =  "tight", dpi=300)
+# plt.clf()
+#
+# fig, ax = plt.subplots(1)
+# y= x[['SW','LW','Qs']]
+# y.plot.bar(stacked=True, edgecolor = df3['Discharge'], linewidth=0.5)
+# plt.xlabel('Days')
+# plt.ylabel('Energy[$Wm^{-2}]$')
+# plt.ylim(-150, 150)
+# pp.savefig(bbox_inches  =  "tight")
+# # plt.savefig(os.path.join(output_folder, site + "_energybar2.jpg"), bbox_inches  =  "tight", dpi=300)
+# plt.clf()
+#
+# fig, ax = plt.subplots(1)
+# y= x[['SW','LW','Qs','Ql' ]]
+# y.plot.bar(stacked=True, edgecolor = df3['Discharge'], linewidth=0.5)
+# plt.xlabel('Days')
+# plt.ylabel('Energy[$Wm^{-2}]$')
+# plt.ylim(-150, 150)
+# pp.savefig( bbox_inches  =  "tight")
+# # plt.savefig(os.path.join(output_folder, site + "_energybar3.jpg"), bbox_inches  =  "tight", dpi=300)
+# plt.clf()
+#
+# fig, ax = plt.subplots(1)
+# y= x[['SW','LW','Qs','Ql' ]]
+# y.plot.bar(stacked=True, edgecolor = df3['Discharge'], linewidth=0.5)
+# plt.xlabel('Days')
+# plt.ylabel('Energy[$Wm^{-2}]$')
+# plt.ylim(-150, 150)
+# pp.savefig(bbox_inches  =  "tight")
+# plt.savefig(os.path.join(output_folder, site + "_energybar4.jpg"), bbox_inches  =  "tight", dpi=300)
+# plt.clf()
+#
+# pp.close()
