@@ -324,7 +324,7 @@ if site == 'plaffeien':
             # Total Energy W/m2
             df_out.loc[i, "TotalE"] = df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
 
-        df_out.Discharge[df_out.TotalE < -100] = 4 # litres per minute
+        df_out.Discharge[df_out.TotalE < 0] = 4 # litres per minute
 
     if option == 'temperature':
         ''' Use Temperature '''
