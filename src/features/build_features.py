@@ -28,7 +28,7 @@ logger.setLevel(logging.INFO)
 
 # Create the Handler for logging data to a file
 logger_handler = logging.FileHandler(os.path.join(os.path.join(dirname, "data/logs/"), site + '_site.log'), mode = 'w')
-logger_handler.setLevel(logging.INFO)
+logger_handler.setLevel(logging.DEBUG)
 
 #Create the Handler for logging data to console.
 console_handler = StreamHandler()

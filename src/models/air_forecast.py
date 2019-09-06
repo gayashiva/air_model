@@ -317,7 +317,7 @@ def icestupa(
                 ice_layer = (
                     dx * df.loc[i, "SA"] * rho_i
                 )
-                logger.debug('Ice layer is %s thick at %s', ice_layer, df.loc[i, "When"])
+                logger.info('Ice layer is %s thick at %s', ice_layer, df.loc[i, "When"])
 
             # Precipitation to ice quantity
             prec = prec + dp * df.loc[i, "Prec"] * math.pi * math.pow(R_f, 2)
@@ -362,7 +362,7 @@ def icestupa(
             if df.loc[i, "liquid"] > 0:
 
                 # Initialize AIR ice layer
-                if df.loc[i - 1, "ice"] <= 0:
+                if ice_layer == 0:
 
                     ice_layer = (
                         dx * df.loc[i, "SA"] * rho_i
@@ -458,7 +458,7 @@ def icestupa(
 
                         df.loc[i, "temp"] = -df.loc[i - 1, "T_s"]
 
-            logger.debug('Ice made after sublimation is %s thick at %s', round(df.loc[i, "solid"]), df.loc[i, "When"])
+            logger.info('Ice made after sublimation is %s thick at %s', round(df.loc[i, "solid"]), df.loc[i, "When"])
 
             # Short Wave Radiation SW
             df.loc[i, "SW"] = (1 - df.loc[i, "a"]) * (
@@ -533,7 +533,7 @@ def icestupa(
                         df.loc[i, "temp"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
 
 
-                    logger.debug('Ice made after energy neg is %s thick at %s', round(df.loc[i, "solid"]), df.loc[i, "When"])
+                    logger.info('Ice made after energy neg is %s thick at %s', round(df.loc[i, "solid"]), df.loc[i, "When"])
 
                 else:  # Energy Positive
 
@@ -561,7 +561,7 @@ def icestupa(
                             df.loc[i - 1, "T_s"] = 0
                             df.loc[i, "temp"] = 0
 
-                        logger.debug('Ice melted is %s thick at %s', round(df.loc[i, "solid"]), df.loc[i, "When"])
+                        logger.info('Ice melted is %s thick at %s', round(df.loc[i, "solid"]), df.loc[i, "When"])
 
             if df.loc[i, "temp"] < -50:
                 logger.critical(
@@ -577,6 +577,8 @@ def icestupa(
             df.loc[i, "ice"] = df.loc[i - 1, "ice"] + df.loc[i, "solid"]
             df.loc[i, "vapour"] = df.loc[i - 1, "vapour"] + df.loc[i, "gas"]
             df.loc[i, "iceV"] = df.loc[i, "ice"] / rho_i
+
+            logger.debug('Surface temp. %s, is Ice is %s at %s', round(df.loc[i, "T_s"]), round(df.loc[i, "ice"]), df.loc[i, "When"])
 
     df = df[start:i]
 

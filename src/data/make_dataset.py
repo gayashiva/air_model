@@ -359,7 +359,7 @@ if site == 'guttannen':
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
     # Model Time Window
-    start_date = datetime(2017, 11, 1)
+    start_date = datetime(2018, 1, 29)
     end_date = datetime(2018, 11, 1)
     mask = (df_in["When"] >= start_date) & (df_in["When"] <= end_date)
     df_in = df_in.loc[mask]
