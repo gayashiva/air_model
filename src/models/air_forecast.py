@@ -11,11 +11,11 @@ import logging
 
 np.seterr(all="raise")
 
-def albedo(df, a_i, a_s, a_w, t):
+def albedo(df, a_i, a_s, a_w, t_d):
 
-    t = t * 24 * 60 / 5  # convert to 5 minute time steps
-    ti = t
-    tw = t
+    t_d = t_d * 24 * 60 / 5  # convert to 5 minute time steps
+    ti = t_d
+    tw = t_d
     s = 0  # Initialised
     w = 0
     j = 0  # Account for decay rate after rain
@@ -32,7 +32,7 @@ def albedo(df, a_i, a_s, a_w, t):
                 s = 0
                 w = 0
                 j = 0
-                tw = t  # Decay rate reset after snowfall
+                tw = t_d  # Decay rate reset after snowfall
             df.loc[i, "a"] = a_i + (a_s - a_i) * math.exp(-s / ti)
             s = s + 1
 
@@ -47,7 +47,7 @@ def albedo(df, a_i, a_s, a_w, t):
             w = 0
             s = 0
             j = 0
-            tw = t  # Decay rate reset after fountain
+            tw = t_d  # Decay rate reset after fountain
 
         # Liquid Ppt
         if (df.loc[i, "Prec"] > 0) & (df.loc[i, "T_a"] > Ts):

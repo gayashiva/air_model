@@ -9,13 +9,12 @@ import math
 from pathlib import Path
 import os
 import logging
-from tqdm import tqdm, tqdm_notebook
 
 # python -m src.data.make_dataset
 
-site = input("Input the Field Site Name: ") or 'guttannen'
+site = input("Input the Field Site Name: ") or 'schwarzsee'
 
-option = input("Fountain discharge option(energy, temperature, schwarzsee): ") or "temperature"
+option = input("Fountain discharge option(energy, temperature, schwarzsee): ") or "schwarzsee"
 
 dirname = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', '..'))
 
