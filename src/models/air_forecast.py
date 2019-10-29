@@ -12,7 +12,7 @@ from src.data.config import fountain, materials, weather, aws
 
 np.seterr(all="raise")
 
-def albedo(df, **materials):
+def albedo(df, materials):
 
     materials['t_d'] = materials['t_d'] * 24 * 60 / 5  # convert to 5 minute time steps
     ti = materials['t_d']
@@ -97,8 +97,6 @@ def icestupa(
 ):
 
     logger = logging.getLogger(__name__)
-
-
     logger.debug('This is a debug message')
     logger.info('This is for temp')
     logger.warning('This is for solid')
@@ -152,7 +150,7 @@ def icestupa(
     weather['theta_s'] = math.radians(weather['theta_s'])  # solar angle
 
     """ Estimating Albedo """
-    df["a"] = albedo(df, **materials)
+    df["a"] = albedo(df, materials)
 
     """ Estimating Fountain Spray radius """
     Area = 3.14 * math.pow(fountain['d_f'], 2) / 4
