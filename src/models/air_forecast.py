@@ -415,6 +415,9 @@ def icestupa(
 
                 if df.loc[i - 1, "ice"] > 0:
 
+                    # Initialise with zero value
+                    df.loc[i, "e_s"] = ie
+
                     # Sublimation, Evaporation or condensation
                     df.loc[i, "Ql"] = (
                         0.623
