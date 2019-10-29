@@ -8,14 +8,15 @@ from matplotlib.colors import LightSource
 import math
 import sys
 import logging
+from src.data.config import fountain, materials, weather, aws
 
 np.seterr(all="raise")
 
-def albedo(df, a_i, a_s, a_w, t_d):
+def albedo(df, **materials):
 
-    t_d = t_d * 24 * 60 / 5  # convert to 5 minute time steps
-    ti = t_d
-    tw = t_d
+    materials['t_d'] = materials['t_d'] * 24 * 60 / 5  # convert to 5 minute time steps
+    ti = materials['t_d']
+    tw = materials['t_d']
     s = 0  # Initialised
     w = 0
     j = 0  # Account for decay rate after rain
@@ -32,29 +33,29 @@ def albedo(df, a_i, a_s, a_w, t_d):
                 s = 0
                 w = 0
                 j = 0
-                tw = t_d  # Decay rate reset after snowfall
-            df.loc[i, "a"] = a_i + (a_s - a_i) * math.exp(-s / ti)
+                tw = materials['t_d']  # Decay rate reset after snowfall
+            df.loc[i, "a"] = materials['a_i'] + (materials['a_s'] - materials['a_i']) * math.exp(-s / ti)
             s = s + 1
 
         # No snow and fountain off
         if (df.loc[i, "v_a"] != 0) & (df.loc[i, "Discharge"] == 0):
-            df.loc[i, "a"] = a_w + (a_i - a_w) * math.exp(-w / tw)
+            df.loc[i, "a"] = materials['a_w'] + (materials['a_i'] - materials['a_w']) * math.exp(-w / tw)
             w = w + 1
 
         # Fountain on
         if df.loc[i, "Discharge"] > 0:
-            df.loc[i, "a"] = a_w
+            df.loc[i, "a"] = materials['a_w']
             w = 0
             s = 0
             j = 0
-            tw = t_d  # Decay rate reset after fountain
+            tw = materials['t_d']  # Decay rate reset after fountain
 
         # Liquid Ppt
         if (df.loc[i, "Prec"] > 0) & (df.loc[i, "T_a"] > Ts):
             if j == 0:
                 tw = tw / rf  # Decay rate speeds up after rain
                 j = 1
-            df.loc[i, "a"] = a_w
+            df.loc[i, "a"] = materials['a_w']
 
     return df["a"]
 
@@ -89,23 +90,10 @@ def projectile_xy(v, theta_f, hs=0.0, g=9.8):
 
 def icestupa(
     df,
-    T_f=5,
-    ftl=0.5,
-    ie=0.96,
-    we=0.95,
-    rho_i=916,
-    c=0.5,
-    a_i=0.6,
-    a_s=0.75,
-    a_w=0.1,
-    t_d=21.9,
-    dp=70,
-    z0mi=0.001,
-    z0ms=0.0015,
-    z0hi=0.0001,
-    s=0,
-    h_f=3,
-    dx=0.001,
+    fountain,
+    weather,
+    aws,
+    materials,
 ):
 
     logger = logging.getLogger(__name__)
@@ -117,18 +105,6 @@ def icestupa(
     logger.error('This is for melted')
     logger.critical('This is a critical message')
 
-    """Fountain Charecteristics"""
-    d_f = 0.005  # Fountain hole diameter
-    theta_f = 45  # Fountain aperture angle
-    # h_f = 1.35  # Schwarzsee Fountain height
-    # ftl = 0.5 # Flight time loss from 0 to 0.9
-    # T_f = 5 # c Fountain water temperature from 4 to 9
-
-    """Settings"""
-    time_steps = 5 * 60  # s # Model time steps
-    z = 2  # m height of AWS
-    theta_s = 45  # Solar Angle
-
     """Material Properties"""
     Ls = 2848 * 1000  # J/kg Sublimation
     Le = 2514 * 1000  # J/kg Evaporation
@@ -136,15 +112,15 @@ def icestupa(
     cw = 4.186 * 1000  # J/kg Specific heat water
     ci = 2.108 * 1000  # J/kgC Specific heat ice
     rho_w = 1000  # Density of water
+    rho_i = 916  # Density of Ice rho_i
     rho_a = 1.29  # kg/m3 air density at mean sea level
-    p0 = 1013  # hPa
     k = 0.4  # Van Karman constant
     bc = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
 
     """Initialise"""
     df["T_s"] = 0  # Surface Temperature
     df["temp"] = 0  # Temperature Change
-    df["e_s"] = ie  # Surface Emissivity
+    df["e_s"] = materials['ie']  # Surface Emissivity
     df["ice"] = 0
     df["iceV"] = 0
     df["solid"] = 0
@@ -161,8 +137,8 @@ def icestupa(
     df["meltwater"] = 0
     df["SA"] = 0  # Surface Area
     df["h_ice"] = 0
-    df["h_f"] = h_f
-    y = h_f
+    df["h_f"] = fountain['h_f']
+    y = fountain['h_f']
     df["d_t"] = 0
     prec = 0  # Precipitation
     start = 0  # model start step
@@ -172,21 +148,21 @@ def icestupa(
     ice_layer = 0
     T_droplet = 0
 
-    theta_f = math.radians(theta_f)  # Angle of Spray
-    theta_s = math.radians(theta_s)  # solar angle
+    fountain['theta_f'] = math.radians(fountain['theta_f'])  # Angle of Spray
+    weather['theta_s'] = math.radians(weather['theta_s'])  # solar angle
 
     """ Estimating Albedo """
-    df["a"] = albedo(df, a_i, a_s, a_w, t_d)
+    df["a"] = albedo(df, **materials)
 
     """ Estimating Fountain Spray radius """
-    Area = 3.14 * math.pow(d_f, 2) / 4
+    Area = 3.14 * math.pow(fountain['d_f'], 2) / 4
     df["v"] = 0
     df["r"] = 0
 
     for j in range(1, df.shape[0]):
         df.loc[j, "v_f"] = df.loc[j, "Discharge"] / (60 * 1000 * Area)
         df.loc[j, "r_f"], df.loc[j, "d_t"] = projectile_xy(
-            df.loc[j, "v_f"], theta_f, h_f
+            df.loc[j, "v_f"], fountain['theta_f'], fountain['h_f']
         )
     R_f = df["r_f"].replace(0, np.NaN).mean()
     D_t = df["d_t"].replace(0, np.NaN).mean()
@@ -251,13 +227,13 @@ def icestupa(
 
                 else:
 
-                    y = y + h_f
+                    y = y + fountain['h_f']
                     df.loc[i:, "h_f"] = y  # Reset height
 
                     for j in range(1, df.shape[0]):
                         df.loc[j, "v_f"] = df.loc[j, "Discharge"] / (60 * 1000 * Area)
                         df.loc[j, "r_f"], df.loc[j, "d_t"] = projectile_xy(
-                            df.loc[j, "v_f"], theta_f, df.loc[i, "h_f"]
+                            df.loc[j, "v_f"], fountain['theta_f'], df.loc[i, "h_f"]
                         )
                     R_f = df["r_f"].replace(0, np.NaN).mean()
                     D_t = df["d_t"].replace(0, np.NaN).mean()
@@ -315,13 +291,13 @@ def icestupa(
             # Update Ice Layer
             if (ice_layer != 0) & (df.loc[i - 1, "SA"] != df.loc[i, "SA"]):
                 ice_layer = (
-                    dx * df.loc[i, "SA"] * rho_i
+                    materials['dx'] * df.loc[i, "SA"] * rho_i
                 )
                 logger.info('Ice layer is %s thick at %s', ice_layer, df.loc[i, "When"])
 
             # Precipitation to ice quantity
-            prec = prec + dp * df.loc[i, "Prec"] * math.pi * math.pow(R_f, 2)
-            df.loc[i - 1, "ice"] = df.loc[i - 1, "ice"] + dp * df.loc[
+            prec = prec + weather['dp'] * df.loc[i, "Prec"] * math.pi * math.pow(R_f, 2)
+            df.loc[i - 1, "ice"] = df.loc[i - 1, "ice"] + weather['dp'] * df.loc[
                 i, "Prec"
             ] * math.pi * math.pow(R_f, 2)
 
@@ -338,7 +314,7 @@ def icestupa(
             else:
                 Ea = df.loc[i, "vp_a"]
 
-            Ew = 6.112 * np.exp(17.62 * T_f / (T_f + 243.12))
+            Ew = 6.112 * np.exp(17.62 * fountain['T_f'] / (fountain['T_f'] + 243.12))
             Eice = 6.112 * np.exp(
                 22.46 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
             )
@@ -352,11 +328,11 @@ def icestupa(
                 df.loc[i, "e_a"] = (
                     1.24
                     * math.pow(abs(Ea / (df.loc[i, "T_a"] + 273.15)), 1 / 7)
-                    * (1 + 0.22 * math.pow(c, 2))
+                    * (1 + 0.22 * math.pow(weather['c'], 2))
                 )
 
             # Fountain water output
-            df.loc[i, "liquid"] = df.loc[i, "Discharge"] * (1 - ftl) * time_steps / (60)
+            df.loc[i, "liquid"] = df.loc[i, "Discharge"] * (1 - fountain['ftl']) * aws['time_steps'] / (60)
 
             """ When fountain run """
             if df.loc[i, "liquid"] > 0:
@@ -365,7 +341,7 @@ def icestupa(
                 if ice_layer == 0:
 
                     ice_layer = (
-                        dx * df.loc[i, "SA"] * rho_i
+                        materials['dx'] * df.loc[i, "SA"] * rho_i
                     )
                     logger.warning('Ice layer is %s thick at %s', ice_layer, df.loc[i, "When"])
 
@@ -393,55 +369,55 @@ def icestupa(
                     0.623
                     * Le
                     * rho_a
-                    / p0
+                    / materials['p0']
                     * math.pow(k, 2)
                     * df.loc[i, "v_a"]
                     * (Ea - Ew)
-                    / (np.log(z / z0mi) * np.log(z / z0hi))
+                    / (np.log(aws['z'] / weather['z0mi']) * np.log(aws['z'] / weather['z0hi']))
                 )
 
                 df.loc[i, "gas"] -= (
-                    df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
+                    df.loc[i, "Ql"] * df.loc[i, "SA"] * aws['time_steps']
                 ) / Le
 
                 # Removing water quantity generated from previous time step
                 df.loc[i, "liquid"] += (
-                    df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
+                    df.loc[i, "Ql"] * df.loc[i, "SA"] * aws['time_steps']
                 ) / Le
 
-                df.loc[i, "e_s"] = we
+                df.loc[i, "e_s"] = materials['we']
 
             else:  # When fountain off
 
                 if df.loc[i - 1, "ice"] > 0:
 
                     # Initialise with zero value
-                    df.loc[i, "e_s"] = ie
+                    df.loc[i, "e_s"] = materials['ie']
 
                     # Sublimation, Evaporation or condensation
                     df.loc[i, "Ql"] = (
                         0.623
                         * Ls
                         * rho_a
-                        / p0
+                        / materials['p0']
                         * math.pow(k, 2)
                         * df.loc[i, "v_a"]
                         * (Ea - Eice)
-                        / (np.log(z / z0mi) * np.log(z / z0hi))
+                        / (np.log(aws['z'] / weather['z0mi']) * np.log(aws['z'] / weather['z0hi']))
                     )
 
                     df.loc[i, "gas"] -= (
-                        df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
+                        df.loc[i, "Ql"] * (df.loc[i, "SA"]) * aws['time_steps']
                     ) / Ls
 
                     # Removing gas quantity generated from previous time step
                     df.loc[i - 1, "ice"] += (
-                        df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
+                        df.loc[i, "Ql"] * (df.loc[i, "SA"]) * aws['time_steps']
                     ) / Ls
 
                     # Ice Temperature
                     df.loc[i, "temp"] += (
-                        df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
+                        df.loc[i, "Ql"] * (df.loc[i, "SA"]) * aws['time_steps']
                     ) / (ice_layer * ci)
 
                     """Hot Ice"""
@@ -484,18 +460,18 @@ def icestupa(
                 ci
                 * rho_a
                 * df.loc[i, "p_a"]
-                / p0
+                / materials['p0']
                 * math.pow(k, 2)
                 * df.loc[i, "v_a"]
                 * (df.loc[i, "T_a"] - df.loc[i - 1, "T_s"])
-                / (np.log(z / z0mi) * np.log(z / z0hi))
+                / (np.log(aws['z'] / weather['z0mi']) * np.log(aws['z'] / weather['z0hi']))
             )
 
             # Total Energy W/m2
             df.loc[i, "TotalE"] = df.loc[i, "SW"] + df.loc[i, "LW"] + df.loc[i, "Qs"]
 
             # Total Energy Joules
-            df.loc[i, "EJoules"] = df.loc[i, "TotalE"] * time_steps * df.loc[i, "SA"]
+            df.loc[i, "EJoules"] = df.loc[i, "TotalE"] * aws['time_steps'] * df.loc[i, "SA"]
 
             if df.loc[i - 1, "ice"] > 0:
 
