@@ -9,7 +9,7 @@ from src.models.air_forecast import icestupa
 import time
 import logging
 from logging import StreamHandler
-from src.data.config import site, option, fountain, materials, aws, weather
+from src.data.config import site, option, fountain, surface, weather
 
 # python -m src.features.build_features
 
@@ -57,7 +57,7 @@ end_date = df_in["When"].iloc[-1]
 if site == "schwarzsee":
     fountain["h_f"] = 1.35
 
-df = icestupa(df_in, fountain, weather, aws, materials)
+df = icestupa(df_in, fountain, weather, surface)
 
 total = time.time() - start
 
