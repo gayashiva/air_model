@@ -9,15 +9,9 @@ from src.models.air_forecast import icestupa
 import time
 import logging
 from logging import StreamHandler
-from src.data.config import site, option, fountain, surface, weather
+from src.data.config import site, option, folders, fountain, surface, weather
 
 # python -m src.features.build_features
-
-dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-
-input_folder = os.path.join(dirname, "data/interim/")
-
-output_folder = os.path.join(dirname, "data/processed/")
 
 start = time.time()
 
@@ -27,7 +21,7 @@ logger.setLevel(logging.INFO)
 
 # Create the Handler for logging data to a file
 logger_handler = logging.FileHandler(
-    os.path.join(os.path.join(dirname, "data/logs/"), site + "_site.log"), mode="w"
+    os.path.join(os.path.join(folders['dirname'], "data/logs/"), site + "_site.log"), mode="w"
 )
 logger_handler.setLevel(logging.DEBUG)
 
@@ -47,7 +41,7 @@ logger.addHandler(logger_handler)
 logger.addHandler(console_handler)
 
 #  read files
-filename0 = os.path.join(input_folder, site + "_" + option + "_input.csv")
+filename0 = os.path.join(folders['input_folder'], site + "_" + option + "_input.csv")
 df_in = pd.read_csv(filename0, sep=",")
 df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
@@ -64,13 +58,13 @@ total = time.time() - start
 print("Total time : ", total / 60)
 
 # Output for manim
-filename2 = os.path.join(output_folder, site + "_model_gif.csv")
+filename2 = os.path.join(folders['output_folder'], site + "_model_gif.csv")
 cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
 df[cols].to_csv(filename2, sep=",")
 
 
 # Plots
-filename3 = os.path.join(output_folder, site + "_" + option + "_results.pdf")
+filename3 = os.path.join(folders['output_folder'], site + "_" + option + "_results.pdf")
 pp = PdfPages(filename3)
 
 x = df.When
@@ -267,7 +261,7 @@ plt.clf()
 pp.close()
 
 # Plots
-filename = os.path.join(output_folder, site + "_" + option + "_plots.pdf")
+filename = os.path.join(folders['output_folder'], site + "_" + option + "_plots.pdf")
 pp = PdfPages(filename)
 
 x = df.When
@@ -308,7 +302,7 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 
 plt.savefig(
-    os.path.join(output_folder, site + "_result.jpg"), bbox_inches="tight", dpi=300
+    os.path.join(folders['output_folder'], site + "_result.jpg"), bbox_inches="tight", dpi=300
 )
 
 plt.clf()
@@ -394,7 +388,7 @@ plt.clf()
 pp.close()
 
 # # Plots
-# filename = os.path.join(output_folder, site + '_' + option + "_energybar.pdf")
+# filename = os.path.join(folders['output_folder'], site + '_' + option + "_energybar.pdf")
 # pp  =  PdfPages(filename)
 #
 # df2= df[['When','SW','LW','Qs','Ql' ]]
@@ -410,7 +404,7 @@ pp.close()
 # plt.ylim(-150, 150)
 # # plt.legend(loc=1, bbox_to_anchor=(0, 1))
 # pp.savefig(bbox_inches  =  "tight")
-# # plt.savefig(os.path.join(output_folder, site + "_energybar1.jpg"), bbox_inches  =  "tight", dpi=300)
+# # plt.savefig(os.path.join(folders['output_folder'], site + "_energybar1.jpg"), bbox_inches  =  "tight", dpi=300)
 # plt.clf()
 #
 # fig, ax = plt.subplots(1)
@@ -420,7 +414,7 @@ pp.close()
 # plt.ylabel('Energy[$Wm^{-2}]$')
 # plt.ylim(-150, 150)
 # pp.savefig(bbox_inches  =  "tight")
-# # plt.savefig(os.path.join(output_folder, site + "_energybar2.jpg"), bbox_inches  =  "tight", dpi=300)
+# # plt.savefig(os.path.join(folders['output_folder'], site + "_energybar2.jpg"), bbox_inches  =  "tight", dpi=300)
 # plt.clf()
 #
 # fig, ax = plt.subplots(1)
@@ -430,7 +424,7 @@ pp.close()
 # plt.ylabel('Energy[$Wm^{-2}]$')
 # plt.ylim(-150, 150)
 # pp.savefig( bbox_inches  =  "tight")
-# # plt.savefig(os.path.join(output_folder, site + "_energybar3.jpg"), bbox_inches  =  "tight", dpi=300)
+# # plt.savefig(os.path.join(folders['output_folder'], site + "_energybar3.jpg"), bbox_inches  =  "tight", dpi=300)
 # plt.clf()
 #
 # fig, ax = plt.subplots(1)
@@ -440,7 +434,7 @@ pp.close()
 # plt.ylabel('Energy[$Wm^{-2}]$')
 # plt.ylim(-150, 150)
 # pp.savefig(bbox_inches  =  "tight")
-# plt.savefig(os.path.join(output_folder, site + "_energybar4.jpg"), bbox_inches  =  "tight", dpi=300)
+# plt.savefig(os.path.join(folders['output_folder'], site + "_energybar4.jpg"), bbox_inches  =  "tight", dpi=300)
 # plt.clf()
 #
 # pp.close()

@@ -9,19 +9,9 @@ import math
 from pathlib import Path
 import os
 import logging
+from src.data.config import site, option, folders
 
 # python -m src.data.make_dataset
-
-site = input("Input the Field Site Name: ") or 'schwarzsee'
-
-option = input("Fountain discharge option(energy, temperature, schwarzsee): ") or "schwarzsee"
-
-dirname = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', '..'))
-
-data_file = os.path.join(dirname, "data/raw/" + site + "_aws.txt")
-
-interim_folder = os.path.join(dirname, "data/interim/")
-
 
 # settings
 start_date = datetime(2019, 1, 29, 16)
@@ -31,7 +21,7 @@ if site == 'schwarzsee':
 
     # read files
     df_in=(
-        pd.read_csv( data_file , header=None, encoding='latin-1', skiprows=7, sep='\s+',
+        pd.read_csv( folders['data_file'] , header=None, encoding='latin-1', skiprows=7, sep='\s+',
         names=['Date','Time', 'Discharge', 'Wind Direction','Wind Speed','Maximum Wind Speed', 'Temperature', 'Humidity', 'Pressure', 'Pluviometer'])
     )
 
@@ -39,7 +29,7 @@ if site == 'schwarzsee':
     df_in=df_in.drop(['Pluviometer'],axis=1)
 
     #Add Radiation data
-    df_in2=pd.read_csv( os.path.join(dirname, "data/raw/plaffeien_rad.txt") ,sep='\s+',skiprows=2)
+    df_in2=pd.read_csv( os.path.join(folders['dirname'], "data/raw/plaffeien_rad.txt") ,sep='\s+',skiprows=2)
     df_in2['When']=pd.to_datetime(df_in2['time'], format='%Y%m%d%H%M')
     df_in2['ods000z0']=pd.to_numeric(df_in2['ods000z0'],errors='coerce')
     df_in2['gre000z0']=pd.to_numeric(df_in2['gre000z0'],errors='coerce')
@@ -120,7 +110,7 @@ if site == 'schwarzsee':
 
     df['Fountain']=0 # Fountain run time
 
-    df_nights=pd.read_csv( os.path.join(dirname,'data/raw/schwarzsee_fountain_time.txt') ,sep='\s+')
+    df_nights=pd.read_csv( os.path.join(folders['dirname'],'data/raw/schwarzsee_fountain_time.txt') ,sep='\s+')
 
     df_nights['Start']=pd.to_datetime(df_nights['Date'] + ' ' + df_nights['start'])
     df_nights['End']=pd.to_datetime(df_nights['Date'] + ' ' + df_nights['end'])
@@ -166,7 +156,7 @@ if site == 'plaffeien':
 
     # read files
     df_in = pd.read_csv(
-        data_file, encoding="latin-1", skiprows=2, sep=";"
+        folders['data_file'], encoding="latin-1", skiprows=2, sep=";"
     )
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
@@ -232,7 +222,7 @@ if site == 'plaffeien':
         df_out['Fountain'] = 0 # Fountain run time
         df_out['Discharge'] = 0 # Fountain run time
 
-        df_nights = pd.read_csv( os.path.join(dirname,'data/raw/schwarzsee_fountain_time.txt') ,sep='\s+')
+        df_nights = pd.read_csv( os.path.join(folders['dirname'],'data/raw/schwarzsee_fountain_time.txt') ,sep='\s+')
 
         df_nights['Start'] = pd.to_datetime(df_nights['Date'] + ' ' + df_nights['start'])
         df_nights['End'] = pd.to_datetime(df_nights['Date'] + ' ' + df_nights['end'])
@@ -356,7 +346,7 @@ if site == 'guttannen':
 
     # read files
     df_in = pd.read_csv(
-        data_file, encoding="latin-1", skiprows=2, sep=";"
+        folders['data_file'], encoding="latin-1", skiprows=2, sep=";"
     )
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
@@ -426,7 +416,7 @@ if site == 'guttannen':
 
         df_out['Fountain'] = 0 # Fountain run time
 
-        df_nights = pd.read_csv( os.path.join(dirname,'data/raw/schwarzsee_fountain_time.txt') ,sep='\s+')
+        df_nights = pd.read_csv( os.path.join(folders['dirname'],'data/raw/schwarzsee_fountain_time.txt') ,sep='\s+')
 
         df_nights['Start'] = pd.to_datetime(df_nights['Date'] + ' ' + df_nights['start'])
         df_nights['End'] = pd.to_datetime(df_nights['Date'] + ' ' + df_nights['end'])
@@ -532,10 +522,10 @@ if site == 'guttannen':
     df_out = df_out[cols]
     df_out = df_out.round(5)
 
-df_out.to_csv(interim_folder + site + '_' + option +"_input.csv", sep=",")
+df_out.to_csv(folders['interim_folder'] + site + '_' + option +"_input.csv", sep=",")
 
 # Plots
-filename = interim_folder + site + '_' + option +"_all_data" + ".pdf"
+filename = folders['interim_folder'] + site + '_' + option +"_all_data" + ".pdf"
 pp = PdfPages(filename)
 
 x = df_out["When"]
@@ -686,7 +676,7 @@ pp.close()
 
 
 # Plots
-filename = interim_folder + site + '_' + option + "_data" + ".pdf"
+filename = folders['interim_folder'] + site + '_' + option + "_data" + ".pdf"
 pp = PdfPages(filename)
 
 fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
@@ -742,7 +732,7 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 
 plt.savefig(
-    os.path.join(interim_folder, site + "_data.jpg"), bbox_inches="tight", dpi=300
+    os.path.join(folders['interim_folder'], site + "_data.jpg"), bbox_inches="tight", dpi=300
 )
 
 plt.clf()

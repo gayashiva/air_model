@@ -1,8 +1,19 @@
+import os
+
+dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
 site = input("Input the Field Site Name: ") or "schwarzsee"
 
 option = (
     input("Fountain discharge option(energy, temperature, schwarzsee): ")
     or "schwarzsee"
+)
+
+folders = dict(
+    input_folder = os.path.join(dirname, "data/interim/"),
+    output_folder = os.path.join(dirname, "data/processed/"),
+    data_file = os.path.join(dirname, "data/raw/" + site + "_aws.txt"),
+    interim_folder = os.path.join(dirname, "data/interim/"),
 )
 
 fountain = dict(
