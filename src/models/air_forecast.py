@@ -102,7 +102,7 @@ def icestupa(df, fountain, weather, aws, materials):
     logger.error("This is for melted")
     logger.critical("This is a critical message")
 
-    """Material Properties"""
+    """Constants"""
     Ls = 2848 * 1000  # J/kg Sublimation
     Le = 2514 * 1000  # J/kg Evaporation
     Lf = 334 * 1000  #  J/kg Fusion
@@ -113,6 +113,9 @@ def icestupa(df, fountain, weather, aws, materials):
     rho_a = 1.29  # kg/m3 air density at mean sea level
     k = 0.4  # Van Karman constant
     bc = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
+
+    """Miscellaneous"""
+    dp = 70  # Density of Precipitation dp
 
     """Initialise"""
     df["T_s"] = 0  # Surface Temperature

@@ -26,15 +26,17 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # Create the Handler for logging data to a file
-logger_handler = logging.FileHandler(os.path.join(os.path.join(dirname, "data/logs/"), site + '_site.log'), mode = 'w')
+logger_handler = logging.FileHandler(
+    os.path.join(os.path.join(dirname, "data/logs/"), site + "_site.log"), mode="w"
+)
 logger_handler.setLevel(logging.DEBUG)
 
-#Create the Handler for logging data to console.
+# Create the Handler for logging data to console.
 console_handler = StreamHandler()
 console_handler.setLevel(logging.CRITICAL)
 
 # Create a Formatter for formatting the log messages
-logger_formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+logger_formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
 
 # Add the Formatter to the Handler
 logger_handler.setFormatter(logger_formatter)
@@ -45,7 +47,7 @@ logger.addHandler(logger_handler)
 logger.addHandler(console_handler)
 
 #  read files
-filename0 = os.path.join(input_folder, site + '_' + option +"_input.csv")
+filename0 = os.path.join(input_folder, site + "_" + option + "_input.csv")
 df_in = pd.read_csv(filename0, sep=",")
 df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
@@ -53,7 +55,7 @@ df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 end_date = df_in["When"].iloc[-1]
 
 if site == "schwarzsee":
-    fountain['h_f'] = 1.35
+    fountain["h_f"] = 1.35
 
 df = icestupa(df_in, fountain, weather, aws, materials)
 
@@ -68,7 +70,7 @@ df[cols].to_csv(filename2, sep=",")
 
 
 # Plots
-filename3 = os.path.join(output_folder, site + '_' + option + "_results.pdf")
+filename3 = os.path.join(output_folder, site + "_" + option + "_results.pdf")
 pp = PdfPages(filename3)
 
 x = df.When
@@ -265,7 +267,7 @@ plt.clf()
 pp.close()
 
 # Plots
-filename = os.path.join(output_folder, site + '_' + option + "_plots.pdf")
+filename = os.path.join(output_folder, site + "_" + option + "_plots.pdf")
 pp = PdfPages(filename)
 
 x = df.When
@@ -278,14 +280,24 @@ ax1.plot(x, y1, "k-", lw=1)
 ax1.set_ylabel("Ice Volume[$m^3$]")
 ax1.set_xlabel("Days")
 
-if site == 'schwarzsee' :
+if site == "schwarzsee":
     # Include Validation line segment 1
-    ax1.plot([datetime(2019,2,14,16), datetime(2019,2,14,16)], [0.67115, 1.042], color='green', lw=1)
-    ax1.scatter(datetime(2019,2,14,16), 0.856575, color='green', marker='o')
+    ax1.plot(
+        [datetime(2019, 2, 14, 16), datetime(2019, 2, 14, 16)],
+        [0.67115, 1.042],
+        color="green",
+        lw=1,
+    )
+    ax1.scatter(datetime(2019, 2, 14, 16), 0.856575, color="green", marker="o")
 
     # Include Validation line segment 2
-    ax1.plot([datetime(2019,3,10,18), datetime(2019,3,10,18)], [0.037, 0.222 ], color='green', lw=1)
-    ax1.scatter(datetime(2019,3,10,18), 0.1295, color='green', marker='o')
+    ax1.plot(
+        [datetime(2019, 3, 10, 18), datetime(2019, 3, 10, 18)],
+        [0.037, 0.222],
+        color="green",
+        lw=1,
+    )
+    ax1.scatter(datetime(2019, 3, 10, 18), 0.1295, color="green", marker="o")
 
 #  format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
