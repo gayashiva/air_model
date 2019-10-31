@@ -1,6 +1,6 @@
 import os
 
-dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 site = input("Input the Field Site Name: ") or "schwarzsee"
 
@@ -10,26 +10,17 @@ option = (
 )
 
 folders = dict(
-    input_folder = os.path.join(dirname, "data/interim/"),
-    output_folder = os.path.join(dirname, "data/processed/"),
-    data_file = os.path.join(dirname, "data/raw/" + site + "_aws.txt"),
-    interim_folder = os.path.join(dirname, "data/interim/"),
+    dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
+    input_folder = os.path.join(dir, "data/interim/"),
+    output_folder = os.path.join(dir, "data/processed/"),
+    data_file = os.path.join(dir, "data/raw/" + site + "_aws.txt"),
+    interim_folder = os.path.join(dir, "data/interim/"),
 )
 
 fountain = dict(
     T_f=5,  # Fountain Water Temperature T_f
-    ftl=0.5,  # Fountain flight time loss ftl
     d_f=0.005,  # Fountain hole diameter
     h_f=3,  # Fountain steps h_f
-    theta_f=45,  # Fountain aperture angle
-    s=0,  # Shape s
-)
-
-weather = dict(
-    c=0.5,  # Cloudiness c
-    theta_s=45,  # Solar Angle
-    z0mi=0.001,  # Ice Momentum roughness length
-    z0hi=0.0001,  # Ice Scalar roughness length
 )
 
 surface = dict(
@@ -39,4 +30,6 @@ surface = dict(
     a_s=0.75,  # Albedo of Snow a_s
     a_w=0.1,  # Albedo of Water a_w
     t_d=21.9,  # Albedo decay rate t_d
+    z0mi=0.001,  # Ice Momentum roughness length
+    z0hi=0.0001,  # Ice Scalar roughness length
 )

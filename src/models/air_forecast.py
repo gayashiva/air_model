@@ -8,10 +8,9 @@ from matplotlib.colors import LightSource
 import math
 import sys
 import logging
-from src.data.config import fountain, surface, weather
+from src.data.config import fountain, surface
 
 np.seterr(all="raise")
-
 
 def albedo(df, surface):
 
@@ -93,7 +92,7 @@ def projectile_xy(v, theta_f, hs=0.0, g=9.8):
     return max(data_xy)[0], t
 
 
-def icestupa(df, fountain, weather, surface):
+def icestupa(df, fountain, surface):
 
     logger = logging.getLogger(__name__)
     logger.debug("This is a debug message")
@@ -116,9 +115,14 @@ def icestupa(df, fountain, weather, surface):
 
     """Miscellaneous"""
     z=2         # m height of AWS
+    c=0.5  # Cloudiness c
+    theta_s=45  # Solar Angle
     time_steps=5 * 60   # s Model time steps
     dp = 70  # Density of Precipitation dp
     p0=1013  # Standar air pressure hPa
+    theta_f=45  # Fountain aperture angle
+    ftl=0.5  # Fountain flight time loss ftl
+    s=0  # Shape s
     dx=0.001  # Ice layer thickness dx
 
     """Initialise"""
@@ -152,8 +156,8 @@ def icestupa(df, fountain, weather, surface):
     ice_layer = 0
     T_droplet = 0
 
-    fountain["theta_f"] = math.radians(fountain["theta_f"])  # Angle of Spray
-    weather["theta_s"] = math.radians(weather["theta_s"])  # solar angle
+    theta_f = math.radians(theta_f)  # Angle of Spray
+    theta_s = math.radians(theta_s)  # solar angle
 
     """ Estimating Albedo """
     df["a"] = albedo(df, surface)
@@ -166,7 +170,7 @@ def icestupa(df, fountain, weather, surface):
     for j in range(1, df.shape[0]):
         df.loc[j, "v_f"] = df.loc[j, "Discharge"] / (60 * 1000 * Area)
         df.loc[j, "r_f"], df.loc[j, "d_t"] = projectile_xy(
-            df.loc[j, "v_f"], fountain["theta_f"], fountain["h_f"]
+            df.loc[j, "v_f"], theta_f, fountain["h_f"]
         )
     R_f = df["r_f"].replace(0, np.NaN).mean()
     D_t = df["d_t"].replace(0, np.NaN).mean()
@@ -235,7 +239,7 @@ def icestupa(df, fountain, weather, surface):
                     for j in range(1, df.shape[0]):
                         df.loc[j, "v_f"] = df.loc[j, "Discharge"] / (60 * 1000 * Area)
                         df.loc[j, "r_f"], df.loc[j, "d_t"] = projectile_xy(
-                            df.loc[j, "v_f"], fountain["theta_f"], df.loc[i, "h_f"]
+                            df.loc[j, "v_f"], theta_f, df.loc[i, "h_f"]
                         )
                     R_f = df["r_f"].replace(0, np.NaN).mean()
                     D_t = df["d_t"].replace(0, np.NaN).mean()
@@ -329,13 +333,13 @@ def icestupa(df, fountain, weather, surface):
                 df.loc[i, "e_a"] = (
                     1.24
                     * math.pow(abs(Ea / (df.loc[i, "T_a"] + 273.15)), 1 / 7)
-                    * (1 + 0.22 * math.pow(weather["c"], 2))
+                    * (1 + 0.22 * math.pow(c, 2))
                 )
 
             # Fountain water output
             df.loc[i, "liquid"] = (
                 df.loc[i, "Discharge"]
-                * (1 - fountain["ftl"])
+                * (1 - ftl)
                 * time_steps
                 / (60)
             )
@@ -389,8 +393,8 @@ def icestupa(df, fountain, weather, surface):
                     * df.loc[i, "v_a"]
                     * (Ea - Ew)
                     / (
-                        np.log(z / weather["z0mi"])
-                        * np.log(z / weather["z0hi"])
+                        np.log(z / surface["z0mi"])
+                        * np.log(z / surface["z0hi"])
                     )
                 )
 
@@ -423,8 +427,8 @@ def icestupa(df, fountain, weather, surface):
                         * df.loc[i, "v_a"]
                         * (Ea - Eice)
                         / (
-                            np.log(z / weather["z0mi"])
-                            * np.log(z / weather["z0hi"])
+                            np.log(z / surface["z0mi"])
+                            * np.log(z / surface["z0hi"])
                         )
                     )
 
@@ -491,8 +495,8 @@ def icestupa(df, fountain, weather, surface):
                 * df.loc[i, "v_a"]
                 * (df.loc[i, "T_a"] - df.loc[i - 1, "T_s"])
                 / (
-                    np.log(z / weather["z0mi"])
-                    * np.log(z / weather["z0hi"])
+                    np.log(z / surface["z0mi"])
+                    * np.log(z / surface["z0hi"])
                 )
             )
 
