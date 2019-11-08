@@ -20,7 +20,7 @@ folders = dict(
 fountain = dict(
     T_f=5,  # Fountain Water Temperature T_f
     d_f=0.005,  # Fountain hole diameter
-    h_f=3,  # Fountain steps h_f
+    h_f=10,  # Fountain steps h_f 1.35 for Schwarzsee
 )
 
 surface = dict(
@@ -33,3 +33,4 @@ surface = dict(
     z0mi=0.001,  # Ice Momentum roughness length
     z0hi=0.0001,  # Ice Scalar roughness length
 )
+

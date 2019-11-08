@@ -155,6 +155,7 @@ def icestupa(df, fountain, surface):
     df["SRf"] = 0
     ice_layer = 0
     T_droplet = 0
+    fw = 0 # Model suggestion
 
     theta_f = math.radians(theta_f)  # Angle of Spray
     theta_s = math.radians(theta_s)  # solar angle
@@ -600,6 +601,10 @@ def icestupa(df, fountain, surface):
             df.loc[i, "vapour"] = df.loc[i - 1, "vapour"] + df.loc[i, "gas"]
             df.loc[i, "iceV"] = df.loc[i, "ice"] / rho_i
 
+            '''Fountain suggested water use'''
+            if df.loc[i, "solid"] > 0:
+                fw = fw + df.loc[i, "solid"]
+
             logger.debug(
                 "Surface temp. %s, is Ice is %s at %s",
                 round(df.loc[i, "T_s"]),
@@ -609,6 +614,8 @@ def icestupa(df, fountain, surface):
 
     df = df[start:i]
 
+    print("Fountain sprayed", float(df["Discharge"].sum() * time_steps/60))
+    print("Fountain should", float(fw))
     print("Ice Mass Remaining", float(df["ice"].tail(1)))
     print("Meltwater", float(df["meltwater"].tail(1)))
     print("Evaporated/sublimated", float(df["vapour"].tail(1)))

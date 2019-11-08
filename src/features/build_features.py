@@ -1,15 +1,17 @@
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-from matplotlib.backends.backend_pdf import PdfPages
-import os
-from src.models.air_forecast import icestupa
-import time
 import logging
+import os
+import time
+from datetime import datetime
 from logging import StreamHandler
+from pandas.plotting import register_matplotlib_converters
+register_matplotlib_converters()
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib.backends.backend_pdf import PdfPages
 from src.data.config import site, option, folders, fountain, surface
+from src.models.air_forecast import icestupa
 
 # python -m src.features.build_features
 
@@ -48,9 +50,6 @@ df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 # end
 end_date = df_in["When"].iloc[-1]
 
-if site == "schwarzsee":
-    fountain["h_f"] = 1.35
-
 df = icestupa(df_in, fountain, surface)
 
 total = time.time() - start
@@ -62,6 +61,10 @@ filename2 = os.path.join(folders['output_folder'], site + "_model_gif.csv")
 cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
 df[cols].to_csv(filename2, sep=",")
 
+# Output for energy balance
+filename3 = os.path.join(folders['output_folder'], site + "_model_energy.csv")
+cols = ['When','SW','LW','Qs','Ql', 'SA', 'iceV']
+df[cols].to_csv(filename3, sep=",")
 
 # Plots
 filename3 = os.path.join(folders['output_folder'], site + "_" + option + "_results.pdf")
@@ -387,6 +390,88 @@ plt.clf()
 
 pp.close()
 
+#
+# ''' PPT FIG'''
+#
+# x = df.When
+# y1 = df.iceV
+#
+# fig = plt.figure()
+# ax1 = fig.add_subplot(111)
+# ax1.plot(x, y1, "k-", lw=1)
+# ax1.set_ylabel("Ice Volume[$m^3$]")
+# ax1.set_xlabel("Days")
+# ax1.set_ylim(0,1.2)
+#
+# #  format the ticks
+# ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+# ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+# ax1.xaxis.set_minor_locator(mdates.DayLocator())
+# ax1.grid()
+# fig.autofmt_xdate()
+#
+# plt.savefig(
+#     os.path.join(folders['output_folder'], site + "ppt1.jpg"), bbox_inches="tight", dpi=300
+# )
+#
+# plt.clf()
+#
+# x = df.When
+# y1 = df.iceV
+#
+# fig = plt.figure()
+# ax1 = fig.add_subplot(111)
+# ax1.plot(x, y1, "k-", lw=1)
+# ax1.set_ylabel("Ice Volume[$m^3$]")
+# ax1.set_xlabel("Days")
+# ax1.set_ylim(0,1.2)
+#
+# if site == "schwarzsee":
+#     # Include Validation line segment 1
+#     ax1.plot(
+#         [datetime(2019, 2, 14, 16), datetime(2019, 2, 14, 16)],
+#         [0.67115, 1.042],
+#         color="green",
+#         lw=1,
+#     )
+#     ax1.scatter(datetime(2019, 2, 14, 16), 0.856575, color="green", marker="o")
+#
+#     # Include Validation line segment 2
+#     ax1.plot(
+#         [datetime(2019, 3, 10, 18), datetime(2019, 3, 10, 18)],
+#         [0.037, 0.222],
+#         color="green",
+#         lw=1,
+#     )
+#     ax1.scatter(datetime(2019, 3, 10, 18), 0.1295, color="green", marker="o")
+#
+# #  format the ticks
+# ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+# ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+# ax1.xaxis.set_minor_locator(mdates.DayLocator())
+# ax1.grid()
+# fig.autofmt_xdate()
+#
+# plt.savefig(
+#     os.path.join(folders['output_folder'], site + "ppt1.jpg"), bbox_inches="tight", dpi=300
+# )
+#
+# plt.clf()
+#
+# df2= df[['When','SW','LW','Qs','Ql', 'SA']]
+#
+# x= df2.set_index('When').resample('D').mean().reset_index()
+# x.index = np.arange(1, len(x) + 1)
+# fig, ax = plt.subplots(1)
+# y= (x['SW'] + x['LW'] + x['Qs'] + x['Ql']) * x['SA']
+# plt.plot(x.index, y)
+# y.plot.bar(stacked=False, edgecolor = df3['Discharge'], linewidth=0.5)
+# plt.xlabel('Days')
+# plt.ylabel('Energy[$Wm^{-2}]$')
+# plt.ylim(-150, 150)
+# plt.savefig(os.path.join(folders['output_folder'], site + "_energybarfull.jpg"), bbox_inches  =  "tight", dpi=300)
+# plt.clf()
+#
 # # Plots
 # filename = os.path.join(folders['output_folder'], site + '_' + option + "_energybar.pdf")
 # pp  =  PdfPages(filename)

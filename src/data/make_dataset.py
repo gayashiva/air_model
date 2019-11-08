@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.backends.backend_pdf import PdfPages
-import scipy.integrate as spi
 import math
 from pathlib import Path
 import os
@@ -161,10 +160,15 @@ if site == 'plaffeien':
     )
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
-    # Model Time Window
-    start_date = datetime(2018, 11, 15)
-    end_date = datetime(2019, 7, 1)
-    fountain_off_date = datetime(2019, 3, 1)
+    # # Model Time Window
+    # start_date = datetime(2018, 11, 15)
+    # end_date = datetime(2019, 7, 1)
+    # fountain_off_date = datetime(2019, 3, 1)
+
+    # Schwarzsee settings
+    start_date = datetime(2019, 1, 29, 16)
+    end_date = datetime(2019, 3, 10, 18)
+    fountain_off_date = datetime(2019, 3, 10, 18)
 
     time_steps = 5 * 60  # s # Model time steps
     mask = (df_in["When"] >= start_date) & (df_in["When"] <= end_date)

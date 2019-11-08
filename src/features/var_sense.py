@@ -1,45 +1,40 @@
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-import matplotlib.pyplot as plt
-import matplotlib.colors
-import matplotlib.dates as mdates
-from matplotlib.backends.backend_pdf import PdfPages
+import logging
 import os
-from src.models.air_forecast import icestupa
 import time
+from datetime import datetime
+from logging import StreamHandler
+from pandas.plotting import register_matplotlib_converters
+register_matplotlib_converters()
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib.backends.backend_pdf import PdfPages
+from src.data.config import site, option, folders, fountain, surface
+from src.models.air_forecast import icestupa
+
 from SALib.sample import saltelli
 from SALib.analyze import sobol
-import logging
-from logging import StreamHandler
+import matplotlib.colors
 
-# python -m src.features.var_sense
-
-
-site = input("Input the Field Site Name: ") or "schwarzsee"
-
-dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-
-input_folder = os.path.join(dirname, "data/interim/")
-
-output_folder = os.path.join(dirname, "data/processed/")
-
-start = time.time()
+# python -m src.features.build_features
 
 # Create the Logger
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # Create the Handler for logging data to a file
-logger_handler = logging.FileHandler(os.path.join(os.path.join(dirname, "data/logs/"), site + '_site.log'), mode = 'w')
-logger_handler.setLevel(logging.CRITICAL)
+logger_handler = logging.FileHandler(
+    os.path.join(os.path.join(folders['dirname'], "data/logs/"), site + "_site.log"), mode="w"
+)
+logger_handler.setLevel(logging.DEBUG)
 
-#Create the Handler for logging data to console.
+# Create the Handler for logging data to console.
 console_handler = StreamHandler()
 console_handler.setLevel(logging.CRITICAL)
 
 # Create a Formatter for formatting the log messages
-logger_formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+logger_formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
 
 # Add the Formatter to the Handler
 logger_handler.setFormatter(logger_formatter)
@@ -50,17 +45,18 @@ logger.addHandler(logger_handler)
 logger.addHandler(console_handler)
 
 #  read files
-filename0 = os.path.join(input_folder, site + "_model_input.csv")
+filename0 = os.path.join(folders['input_folder'], site + "_" + option + "_input.csv")
 df_in = pd.read_csv(filename0, sep=",")
 df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
 # end
 end_date = df_in["When"].iloc[-1]
 
-problem = {"num_vars": 1, "names": ["dx"], "bounds": [[0.00005, 0.0005]]}
+
+problem = {"num_vars": 1, "names": ["h_f"], "bounds": [[1, 20 ]]}
 
 # Generate samples
-param_values = saltelli.sample(problem, 10)
+param_values = saltelli.sample(problem, 1)
 
 # Plots
 fig = plt.figure()
@@ -77,7 +73,9 @@ dfo = dfo.fillna(0)
 
 for i, X in enumerate(param_values):
     print(X)
-    df = icestupa(df_in, h_f=1.35, dx=X[0])
+    fountain['h_f'] = X[0]
+    df = icestupa(df_in, fountain, surface)
+    dfo.loc[i, "h_f"] = X[0]
     dfo.loc[i, "Ice"] = float(df["ice"].tail(1))
     dfo.loc[i, "Meltwater"] = float(df["meltwater"].tail(1))
     dfo.loc[i, "Vapour"] = float(df["vapour"].tail(1))
@@ -116,6 +114,6 @@ plt.clf()
 
 dfo = dfo.round(4)
 filename2 = os.path.join(
-    output_folder, site + "_simulations__" + str(problem["names"][0]) + ".csv"
+    folders['output_folder'], site + "_simulations__" + str(problem["names"][0]) + ".csv"
 )
 dfo.to_csv(filename2, sep=",")

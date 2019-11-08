@@ -1,10 +1,16 @@
+matplotlib
 # local package
 -e .
 
 # external requirements
 click
+pandas
 Sphinx
 coverage
 awscli
 flake8
+pillow
+matplotlib
 python-dotenv>=0.5.1
+scipy
+SALib
