@@ -53,7 +53,7 @@ df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 end_date = df_in["When"].iloc[-1]
 
 
-problem = {"num_vars": 1, "names": ["h_f"], "bounds": [[0, 3]]}
+problem = {"num_vars": 1, "names": ["discharge"], "bounds": [[1, 10]]}
 
 # Generate samples
 param_values = saltelli.sample(problem, 10)
@@ -73,9 +73,9 @@ dfo = dfo.fillna(0)
 
 for i, X in enumerate(param_values):
     print(X)
-    fountain['h_f'] = X[0]
+    fountain['discharge'] = X[0]
     df = icestupa(df_in, fountain, surface)
-    dfo.loc[i, "h_f"] = X[0]
+    dfo.loc[i, "discharge"] = X[0]
     dfo.loc[i, "Ice"] = float(df["ice"].tail(1))
     dfo.loc[i, "Meltwater"] = float(df["meltwater"].tail(1))
     dfo.loc[i, "Vapour"] = float(df["vapour"].tail(1))
@@ -99,7 +99,7 @@ ax1.grid()
 sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
 sm.set_array([])
 cbar = fig.colorbar(sm)
-cbar.set_label("Fountain Height[$m$]")
+cbar.set_label("Fountain Discharge[$LPM$]")
 
 # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
 fig.autofmt_xdate()

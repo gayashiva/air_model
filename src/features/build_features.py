@@ -4,7 +4,6 @@ import time
 from datetime import datetime
 from logging import StreamHandler
 from pandas.plotting import register_matplotlib_converters
-
 register_matplotlib_converters()
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -90,17 +89,17 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
-y1 = df.water
-y2 = df.vapour
+y1 = df.meltwater
+y2 = df.sprayed
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-")
-ax1.set_ylabel("Water wasted[$kg$]")
+ax1.set_ylabel("Water used[$l$]")
 ax1.set_xlabel("Days")
 
 ax2 = ax1.twinx()
 ax2.plot(x, y2, "b-", linewidth=0.5)
-ax2.set_ylabel("Vapour[$kg$]", color="b")
+ax2.set_ylabel("Water sprayed[$l$]", color="b")
 for tl in ax2.get_yticklabels():
     tl.set_color("b")
 
@@ -114,12 +113,19 @@ pp.savefig(bbox_inches="tight")
 plt.clf()
 
 y1 = df.SA
+y2 = df.SA_step
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-")
-ax1.set_ylabel("Active Surface Area [$m^2$]")
+ax1.set_ylabel("Surface Area[$m$]")
 ax1.set_xlabel("Days")
+
+ax2 = ax1.twinx()
+ax2.plot(x, y2, "b-", linewidth=0.5)
+ax2.set_ylabel("steps", color="b")
+for tl in ax2.get_yticklabels():
+    tl.set_color("b")
 
 #  format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())

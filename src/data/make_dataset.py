@@ -8,7 +8,7 @@ import math
 from pathlib import Path
 import os
 import logging
-from src.data.config import site, option, folders
+from src.data.config import site, option, folders, fountain, surface
 from pandas.plotting import register_matplotlib_converters
 
 register_matplotlib_converters()
@@ -294,7 +294,7 @@ if site == "plaffeien":
                 "Fountain",
             ] = 1
 
-        df_out.Discharge = 4 * df_out.Fountain  # Litres per minute
+        df_out.Discharge = fountain['discharge'] * df_out.Fountain  # Litres per minute
 
     if option == "energy":
         """ Use Energy Flux """
@@ -379,13 +379,13 @@ if site == "plaffeien":
                 df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
             )
 
-        df_out.Discharge[df_out.TotalE < 0] = 4  # litres per minute
+        df_out.Discharge[df_out.TotalE < 0] = fountain['discharge']  # litres per minute
 
     if option == "temperature":
         """ Use Temperature """
         mask = df_out["T_a"] < -1
         mask_index = df_out[mask].index
-        df_out.loc[mask_index, "Discharge"] = 4
+        df_out.loc[mask_index, "Discharge"] = fountain['discharge']
         mask = df_out["When"] >= fountain_off_date
         mask_index = df_out[mask].index
         df_out.loc[mask_index, "Discharge"] = 0
@@ -426,9 +426,9 @@ if site == "guttannen":
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
     # Model Time Window
-    start_date = datetime(2017, 11, 15)
-    end_date = datetime(2018, 4, 2)
-    fountain_off_date = datetime(2018, 4, 1)
+    start_date = datetime(2017, 12, 1)
+    end_date = datetime(2018, 3, 1)
+    fountain_off_date = datetime(2018, 2, 1)
 
     mask = (df_in["When"] >= start_date) & (df_in["When"] <= end_date)
     df_in = df_in.loc[mask]
@@ -511,7 +511,7 @@ if site == "guttannen":
                 "Fountain",
             ] = 1
 
-        df_out.Discharge = 4 * df_out.Fountain  # Litres per minute
+        df_out.Discharge = fountain['discharge'] * df_out.Fountain  # Litres per minute
 
     if option == "energy":
         """ Use Energy Flux """
@@ -596,13 +596,13 @@ if site == "guttannen":
                 df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
             )
 
-        df_out.Discharge[df_out.TotalE < 0] = 4  # litres per minute
+        df_out.Discharge[df_out.TotalE < 0] = fountain['discharge']  # litres per minute
 
     if option == "temperature":
         """ Use Temperature """
         mask = df_out["T_a"] < -1
         mask_index = df_out[mask].index
-        df_out.loc[mask_index, "Discharge"] = 13
+        df_out.loc[mask_index, "Discharge"] = fountain['discharge']
         mask = df_out["When"] >= fountain_off_date
         mask_index = df_out[mask].index
         df_out.loc[mask_index, "Discharge"] = 0

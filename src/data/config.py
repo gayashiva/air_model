@@ -17,13 +17,6 @@ folders = dict(
     interim_folder=os.path.join(dir, "data/interim/"),
 )
 
-fountain = dict(
-    T_f=5,  # Fountain Water Temperature T_f
-    d_f=0.005,  # Fountain hole diameter
-    h_f=3,  # Fountain steps h_f 1.35 for Schwarzsee
-    discharge=4,  # Fountain on discharge
-)
-
 surface = dict(
     ie=0.96,  # Ice Emissivity ie
     we=0.95,  # Water emissivity we
@@ -34,3 +27,28 @@ surface = dict(
     z0mi=0.001,  # Ice Momentum roughness length
     z0hi=0.0001,  # Ice Scalar roughness length
 )
+
+if site == 'schwarzsee':
+    fountain = dict(
+        T_f=5,  # Fountain Water Temperature T_f
+        d_f=0.005,  # Fountain hole diameter
+        h_f=1.35,  # Fountain steps h_f
+        discharge=4,  # Fountain on discharge
+    )
+
+if site == 'plaffeien':
+    fountain = dict(
+        T_f=5,  # Fountain Water Temperature T_f
+        d_f=0.005,  # Fountain hole diameter
+        h_f=1,  # Fountain steps h_f 1.35 for Schwarzsee
+        discharge=4,  # Fountain on discharge in LPM
+    )
+
+if site == 'guttannen':
+    fountain = dict(
+        T_f=5,  # Fountain Water Temperature T_f
+        d_f=0.005,  # Fountain hole diameter
+        h_f=1,  # Fountain steps h_f 1.35 for Schwarzsee
+        discharge=8,  # Fountain on discharge
+    )
+
