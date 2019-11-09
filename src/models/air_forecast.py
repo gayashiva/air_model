@@ -12,6 +12,7 @@ from src.data.config import fountain, surface
 
 np.seterr(all="raise")
 
+
 def albedo(df, surface):
 
     surface["t_d"] = surface["t_d"] * 24 * 60 / 5  # convert to 5 minute time steps
@@ -112,18 +113,20 @@ def icestupa(df, fountain, surface):
     rho_a = 1.29  # kg/m3 air density at mean sea level
     k = 0.4  # Van Karman constant
     bc = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
+    g = 9.8  # gravity
 
     """Miscellaneous"""
-    z=2         # m height of AWS
-    c=0.5  # Cloudiness c
-    theta_s=45  # Solar Angle
-    time_steps=5 * 60   # s Model time steps
+    z = 2  # m height of AWS
+    c = 0.5  # Cloudiness c
+    theta_s = 45  # Solar Angle
+    time_steps = 5 * 60  # s Model time steps
     dp = 70  # Density of Precipitation dp
-    p0=1013  # Standar air pressure hPa
-    theta_f=45  # Fountain aperture angle
-    ftl=0.5  # Fountain flight time loss ftl
-    s=0  # Shape s
-    dx=0.001  # Ice layer thickness dx
+    p0 = 1013  # Standar air pressure hPa
+    theta_f = 45  # Fountain aperture angle
+    ftl = 0.5  # Fountain flight time loss ftl
+    s = 0  # Shape s
+    dx = 0.001  # Ice layer thickness dx
+    fountain_step = 3  # Fountain height increase steps
 
     """Initialise"""
     df["T_s"] = 0  # Surface Temperature
@@ -145,6 +148,7 @@ def icestupa(df, fountain, surface):
     df["meltwater"] = 0
     df["SA"] = 0  # Surface Area
     df["h_ice"] = 0
+    df["r_ice"] = 0
     df["h_f"] = fountain["h_f"]
     y = fountain["h_f"]
     df["d_t"] = 0
@@ -155,7 +159,7 @@ def icestupa(df, fountain, surface):
     df["SRf"] = 0
     ice_layer = 0
     T_droplet = 0
-    fw = 0 # Model suggestion
+    fw = 0  # Model suggestion
 
     theta_f = math.radians(theta_f)  # Angle of Spray
     theta_s = math.radians(theta_s)  # solar angle
@@ -174,15 +178,21 @@ def icestupa(df, fountain, surface):
             df.loc[j, "v_f"], theta_f, fountain["h_f"]
         )
     R_f = df["r_f"].replace(0, np.NaN).mean()
+    R = df["r_f"].replace(0, np.NaN).mean()
     D_t = df["d_t"].replace(0, np.NaN).mean()
 
     """ Simulation """
     for i in range(1, df.shape[0]):
 
+        # Ice Melted
         if (df.loc[i - 1, "ice"] <= 0) & (df.Discharge[i:].sum() == 0):
             df.loc[i - 1, "solid"] = 0
             df.loc[i - 1, "ice"] = 0
             df.loc[i - 1, "iceV"] = 0
+            stop = i - 1
+            break
+        # Stop Condition
+        if (df.loc[i - 1, "h_ice"] > 9) & (df.loc[i - 1, "r_ice"] > 6):
             stop = i - 1
             break
 
@@ -196,8 +206,8 @@ def icestupa(df, fountain, surface):
 
             if df.Discharge[i:].sum() > 0:  # After Fountain on
 
-                """ Ice radius same as Fountain Spray Radius """
-                df.loc[i, "r_ice"] = R_f
+                """ Ice radius same as Initial Fountain Spray Radius """
+                df.loc[i, "r_ice"] = R
 
                 # Ice Height
                 df.loc[i, "h_ice"] = (
@@ -234,18 +244,26 @@ def icestupa(df, fountain, surface):
 
                 else:
 
-                    y = y + fountain["h_f"]
+                    y = y + fountain_step
                     df.loc[i:, "h_f"] = y  # Reset height
 
-                    for j in range(1, df.shape[0]):
-                        df.loc[j, "v_f"] = df.loc[j, "Discharge"] / (60 * 1000 * Area)
-                        df.loc[j, "r_f"], df.loc[j, "d_t"] = projectile_xy(
-                            df.loc[j, "v_f"], theta_f, df.loc[i, "h_f"]
-                        )
-                    R_f = df["r_f"].replace(0, np.NaN).mean()
-                    D_t = df["d_t"].replace(0, np.NaN).mean()
+                    # for j in range(1, df.shape[0]):
+                    #     if (df.loc[j, "Discharge"] / (60 * 1000 * Area))**2 > 2 * g * (df.loc[i, "h_f"] - fountain["h_f"]):  # Fountain Height not too high
+                    #         print(((df.loc[j, "Discharge"] / (60 * 1000 * Area)) ** 2 * 2 * g))
+                    #         df.loc[j, "v_f"] = math.pow(
+                    #             ((df.loc[j, "Discharge"] / (60 * 1000 * Area)) ** 2 - 2 * g * (df.loc[i, "h_f"] - fountain["h_f"])), 1 / 2)
+                    #     else:
+                    #         df.loc[j:, "v_f"] = 0
+                    #         print("Fountain too high", df.loc[i, "h_f"])
+                    #         exit()
+                    #
+                    #     df.loc[j, "r_f"], df.loc[j, "d_t"] = projectile_xy(
+                    #         df.loc[j, "v_f"], theta_f, df.loc[i, "h_f"]
+                    #     )
+                    # R_f = df["r_f"].replace(0, np.NaN).mean()
+                    # D_t = df["d_t"].replace(0, np.NaN).mean()
 
-                    df.loc[i, "r_ice"] = R_f
+                    df.loc[i, "r_ice"] = R
 
                     df.loc[i, "SA"] = (
                         math.pi
@@ -338,12 +356,7 @@ def icestupa(df, fountain, surface):
                 )
 
             # Fountain water output
-            df.loc[i, "liquid"] = (
-                df.loc[i, "Discharge"]
-                * (1 - ftl)
-                * time_steps
-                / (60)
-            )
+            df.loc[i, "liquid"] = df.loc[i, "Discharge"] * (1 - ftl) * time_steps / 60
 
             """ When fountain run """
             if df.loc[i, "liquid"] > 0:
@@ -393,10 +406,7 @@ def icestupa(df, fountain, surface):
                     * math.pow(k, 2)
                     * df.loc[i, "v_a"]
                     * (Ea - Ew)
-                    / (
-                        np.log(z / surface["z0mi"])
-                        * np.log(z / surface["z0hi"])
-                    )
+                    / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
                 )
 
                 df.loc[i, "gas"] -= (
@@ -427,10 +437,7 @@ def icestupa(df, fountain, surface):
                         * math.pow(k, 2)
                         * df.loc[i, "v_a"]
                         * (Ea - Eice)
-                        / (
-                            np.log(z / surface["z0mi"])
-                            * np.log(z / surface["z0hi"])
-                        )
+                        / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
                     )
 
                     df.loc[i, "gas"] -= (
@@ -495,19 +502,14 @@ def icestupa(df, fountain, surface):
                 * math.pow(k, 2)
                 * df.loc[i, "v_a"]
                 * (df.loc[i, "T_a"] - df.loc[i - 1, "T_s"])
-                / (
-                    np.log(z / surface["z0mi"])
-                    * np.log(z / surface["z0hi"])
-                )
+                / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
             )
 
             # Total Energy W/m2
             df.loc[i, "TotalE"] = df.loc[i, "SW"] + df.loc[i, "LW"] + df.loc[i, "Qs"]
 
             # Total Energy Joules
-            df.loc[i, "EJoules"] = (
-                df.loc[i, "TotalE"] * time_steps * df.loc[i, "SA"]
-            )
+            df.loc[i, "EJoules"] = df.loc[i, "TotalE"] * time_steps * df.loc[i, "SA"]
 
             if df.loc[i - 1, "ice"] > 0:
 
@@ -537,7 +539,7 @@ def icestupa(df, fountain, surface):
                         """ When fountain off and energy negative """
 
                         if df.loc[i - 1, "liquid"] < 0:
-                            logger.critical(
+                            logger.error(
                                 "Liquid is %s at %s",
                                 round(df.loc[i, "temp"]),
                                 df.loc[i, "When"],
@@ -601,7 +603,7 @@ def icestupa(df, fountain, surface):
             df.loc[i, "vapour"] = df.loc[i - 1, "vapour"] + df.loc[i, "gas"]
             df.loc[i, "iceV"] = df.loc[i, "ice"] / rho_i
 
-            '''Fountain suggested water use'''
+            """Fountain suggested water use"""
             if df.loc[i, "solid"] > 0:
                 fw = fw + df.loc[i, "solid"]
 
@@ -614,7 +616,7 @@ def icestupa(df, fountain, surface):
 
     df = df[start:i]
 
-    print("Fountain sprayed", float(df["Discharge"].sum() * time_steps/60))
+    print("Fountain sprayed", float(df["Discharge"].sum() * time_steps / 60))
     print("Fountain should", float(fw))
     print("Ice Mass Remaining", float(df["ice"].tail(1)))
     print("Meltwater", float(df["meltwater"].tail(1)))

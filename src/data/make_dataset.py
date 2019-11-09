@@ -9,6 +9,9 @@ from pathlib import Path
 import os
 import logging
 from src.data.config import site, option, folders
+from pandas.plotting import register_matplotlib_converters
+
+register_matplotlib_converters()
 
 # python -m src.data.make_dataset
 
@@ -17,128 +20,176 @@ from src.data.config import site, option, folders
 start_date = datetime(2019, 1, 29, 16)
 end_date = datetime(2019, 3, 10, 18)
 
-if site == 'schwarzsee':
+if site == "schwarzsee":
 
     # read files
-    df_in=(
-        pd.read_csv( folders['data_file'] , header=None, encoding='latin-1', skiprows=7, sep='\s+',
-        names=['Date','Time', 'Discharge', 'Wind Direction','Wind Speed','Maximum Wind Speed', 'Temperature', 'Humidity', 'Pressure', 'Pluviometer'])
+    df_in = pd.read_csv(
+        folders["data_file"],
+        header=None,
+        encoding="latin-1",
+        skiprows=7,
+        sep="\s+",
+        names=[
+            "Date",
+            "Time",
+            "Discharge",
+            "Wind Direction",
+            "Wind Speed",
+            "Maximum Wind Speed",
+            "Temperature",
+            "Humidity",
+            "Pressure",
+            "Pluviometer",
+        ],
     )
 
     # Drop
-    df_in=df_in.drop(['Pluviometer'],axis=1)
+    df_in = df_in.drop(["Pluviometer"], axis=1)
 
-    #Add Radiation data
-    df_in2=pd.read_csv( os.path.join(folders['dirname'], "data/raw/plaffeien_rad.txt") ,sep='\s+',skiprows=2)
-    df_in2['When']=pd.to_datetime(df_in2['time'], format='%Y%m%d%H%M')
-    df_in2['ods000z0']=pd.to_numeric(df_in2['ods000z0'],errors='coerce')
-    df_in2['gre000z0']=pd.to_numeric(df_in2['gre000z0'],errors='coerce')
-    df_in2['Rad'] = df_in2['gre000z0'] - df_in2['ods000z0']
-    df_in2['DRad'] = df_in2['ods000z0']
+    # Add Radiation data
+    df_in2 = pd.read_csv(
+        os.path.join(folders["dirname"], "data/raw/plaffeien_rad.txt"),
+        sep="\s+",
+        skiprows=2,
+    )
+    df_in2["When"] = pd.to_datetime(df_in2["time"], format="%Y%m%d%H%M")
+    df_in2["ods000z0"] = pd.to_numeric(df_in2["ods000z0"], errors="coerce")
+    df_in2["gre000z0"] = pd.to_numeric(df_in2["gre000z0"], errors="coerce")
+    df_in2["Rad"] = df_in2["gre000z0"] - df_in2["ods000z0"]
+    df_in2["DRad"] = df_in2["ods000z0"]
 
     # Add Precipitation data
-    df_in2['Prec']=pd.to_numeric(df_in2['rre150z0'],errors='coerce')
-    df_in2['Prec']=df_in2['Prec']/2 #5 minute sum
-    df_in2 = df_in2.set_index('When').resample('5T').ffill().reset_index()
+    df_in2["Prec"] = pd.to_numeric(df_in2["rre150z0"], errors="coerce")
+    df_in2["Prec"] = df_in2["Prec"] / 2  # 5 minute sum
+    df_in2 = df_in2.set_index("When").resample("5T").ffill().reset_index()
 
     # Datetime
-    df_in['When']=pd.to_datetime(df_in['Date'] + ' ' + df_in['Time'])
-    df_in['When']=pd.to_datetime(df_in['When'], format='%Y.%m.%d %H:%M:%S')
-
+    df_in["When"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
+    df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
     # Correct data errors
     i = 1
-    while( df_in.loc[i,'When'] != datetime(2019,2,6,16,15)) :
-        if str(df_in.loc[i,'When'].year) !='2019':
-            df_in.loc[i,'When']=df_in.loc[i-1,'When']+ pd.Timedelta(minutes=5)
+    while df_in.loc[i, "When"] != datetime(2019, 2, 6, 16, 15):
+        if str(df_in.loc[i, "When"].year) != "2019":
+            df_in.loc[i, "When"] = df_in.loc[i - 1, "When"] + pd.Timedelta(minutes=5)
         i = i + 1
 
-    while( df_in.loc[i,'When'] != datetime(2019,3,2,15)) :
-        if str(df_in.loc[i,'When'].year) !='2019':
-            df_in.loc[i,'When']=df_in.loc[i-1,'When']+ pd.Timedelta(minutes=5)
+    while df_in.loc[i, "When"] != datetime(2019, 3, 2, 15):
+        if str(df_in.loc[i, "When"].year) != "2019":
+            df_in.loc[i, "When"] = df_in.loc[i - 1, "When"] + pd.Timedelta(minutes=5)
         i = i + 1
 
-    while( df_in.loc[i,'When'] != datetime(2019,3,6,16,25)) :
-        if str(df_in.loc[i,'When'].year) !='2019':
-            df_in.loc[i,'When']=df_in.loc[i-1,'When']+ pd.Timedelta(minutes=5)
+    while df_in.loc[i, "When"] != datetime(2019, 3, 6, 16, 25):
+        if str(df_in.loc[i, "When"].year) != "2019":
+            df_in.loc[i, "When"] = df_in.loc[i - 1, "When"] + pd.Timedelta(minutes=5)
         i = i + 1
 
-    df_in=df_in.resample('5Min', on='When').first().drop('When', 1).reset_index()
+    df_in = df_in.resample("5Min", on="When").first().drop("When", 1).reset_index()
 
     # Fill missing data
     for i in range(1, df_in.shape[0]):
-        if np.isnan(df_in.loc[i,'Temperature']):
-            df_in.loc[i,'Temperature'] = df_in.loc[i-288, 'Temperature' ]
-            df_in.loc[i,'Humidity'] = df_in.loc[i-288, 'Humidity' ]
-            df_in.loc[i,'Wind Speed'] = df_in.loc[i-288, 'Wind Speed' ]
-            df_in.loc[i,'Maximum Wind Speed'] = df_in.loc[i-288, 'Maximum Wind Speed' ]
-            df_in.loc[i,'Wind Direction'] = df_in.loc[i-288, 'Wind Direction' ]
-            df_in.loc[i,'Pressure'] = df_in.loc[i-288, 'Pressure' ]
-            df_in.loc[i,'Discharge'] = df_in.loc[i-288, 'Discharge' ]
+        if np.isnan(df_in.loc[i, "Temperature"]):
+            df_in.loc[i, "Temperature"] = df_in.loc[i - 288, "Temperature"]
+            df_in.loc[i, "Humidity"] = df_in.loc[i - 288, "Humidity"]
+            df_in.loc[i, "Wind Speed"] = df_in.loc[i - 288, "Wind Speed"]
+            df_in.loc[i, "Maximum Wind Speed"] = df_in.loc[
+                i - 288, "Maximum Wind Speed"
+            ]
+            df_in.loc[i, "Wind Direction"] = df_in.loc[i - 288, "Wind Direction"]
+            df_in.loc[i, "Pressure"] = df_in.loc[i - 288, "Pressure"]
+            df_in.loc[i, "Discharge"] = df_in.loc[i - 288, "Discharge"]
 
+    mask = (df_in["When"] >= start_date) & (df_in["When"] <= end_date)
+    df_in = df_in.loc[mask]
+    df_in = df_in.reset_index()
 
-    mask=(df_in['When'] >= start_date) & (df_in['When'] <= end_date)
-    df_in=df_in.loc[mask]
-    df_in=df_in.reset_index()
+    mask = (df_in2["When"] >= start_date) & (df_in2["When"] <= end_date)
+    df_in2 = df_in2.loc[mask]
+    df_in2 = df_in2.reset_index()
 
-    mask=(df_in2['When'] >= start_date) & (df_in2['When'] <= end_date)
-    df_in2=df_in2.loc[mask]
-    df_in2=df_in2.reset_index()
+    days = pd.date_range(start=start_date, end=end_date, freq="5T")
+    days = pd.DataFrame({"When": days})
 
-    days= pd.date_range(start=start_date, end=end_date, freq='5T')
-    days = pd.DataFrame({'When': days})
+    df = pd.merge(
+        days,
+        df_in[
+            [
+                "When",
+                "Discharge",
+                "Wind Speed",
+                "Maximum Wind Speed",
+                "Wind Direction",
+                "Temperature",
+                "Humidity",
+                "Pressure",
+            ]
+        ],
+        on="When",
+    )
 
-    df=pd.merge(days,df_in[['When', 'Discharge','Wind Speed','Maximum Wind Speed','Wind Direction', 'Temperature', 'Humidity', 'Pressure']],on='When')
+    # Add Radiation DataFrame
+    df["Rad"] = df_in2["Rad"]
+    df["DRad"] = df_in2["DRad"]
+    df["Prec"] = df_in2["Prec"] / 1000
 
-    #Add Radiation DataFrame
-    df['Rad'] = df_in2['Rad']
-    df['DRad'] = df_in2['DRad']
-    df['Prec'] = df_in2['Prec']/1000
-
-    mask=(df['When'] >= start_date) & (df['When'] <= end_date)
+    mask = (df["When"] >= start_date) & (df["When"] <= end_date)
     df = df.loc[mask]
     df = df.reset_index()
 
-    for i in range(1,df.shape[0]):
-        if np.isnan(df.loc[i,'Rad']):
-            df.loc[i,'Rad']=df.loc[i-1,'Rad']
-        if np.isnan(df.loc[i,'DRad']):
-            df.loc[i,'DRad']=df.loc[i-1,'DRad']
-        if np.isnan(df.loc[i,'Prec']):
-            df.loc[i,'Prec']=df.loc[i-1,'Prec']
+    for i in range(1, df.shape[0]):
+        if np.isnan(df.loc[i, "Rad"]):
+            df.loc[i, "Rad"] = df.loc[i - 1, "Rad"]
+        if np.isnan(df.loc[i, "DRad"]):
+            df.loc[i, "DRad"] = df.loc[i - 1, "DRad"]
+        if np.isnan(df.loc[i, "Prec"]):
+            df.loc[i, "Prec"] = df.loc[i - 1, "Prec"]
 
+    df["Fountain"] = 0  # Fountain run time
 
-    df['Fountain']=0 # Fountain run time
+    df_nights = pd.read_csv(
+        os.path.join(folders["dirname"], "data/raw/schwarzsee_fountain_time.txt"),
+        sep="\s+",
+    )
 
-    df_nights=pd.read_csv( os.path.join(folders['dirname'],'data/raw/schwarzsee_fountain_time.txt') ,sep='\s+')
+    df_nights["Start"] = pd.to_datetime(df_nights["Date"] + " " + df_nights["start"])
+    df_nights["End"] = pd.to_datetime(df_nights["Date"] + " " + df_nights["end"])
+    df_nights["Start"] = pd.to_datetime(df_nights["Start"], format="%Y-%m-%d %H:%M:%S")
+    df_nights["End"] = pd.to_datetime(df_nights["End"], format="%Y-%m-%d %H:%M:%S")
 
-    df_nights['Start']=pd.to_datetime(df_nights['Date'] + ' ' + df_nights['start'])
-    df_nights['End']=pd.to_datetime(df_nights['Date'] + ' ' + df_nights['end'])
-    df_nights['Start']=pd.to_datetime(df_nights['Start'], format='%Y-%m-%d %H:%M:%S')
-    df_nights['End']=pd.to_datetime(df_nights['End'], format='%Y-%m-%d %H:%M:%S')
-
-    df_nights['Date']=pd.to_datetime(df_nights['Date'], format='%Y-%m-%d')
-    mask=(df_nights['Date'] >= start_date) & (df_nights['Date'] <= end_date)
-    df_nights=df_nights.loc[mask]
-    df_nights=df_nights.reset_index()
+    df_nights["Date"] = pd.to_datetime(df_nights["Date"], format="%Y-%m-%d")
+    mask = (df_nights["Date"] >= start_date) & (df_nights["Date"] <= end_date)
+    df_nights = df_nights.loc[mask]
+    df_nights = df_nights.reset_index()
 
     for i in range(0, df_nights.shape[0]):
-        df_nights.loc[i,'Start']=df_nights.loc[i,'Start']- pd.Timedelta(days=1)
-        df.loc[(df['When'] >= df_nights.loc[i,'Start']) & (df['When'] <= df_nights.loc[i,'End']),'Fountain']=1
-
+        df_nights.loc[i, "Start"] = df_nights.loc[i, "Start"] - pd.Timedelta(days=1)
+        df.loc[
+            (df["When"] >= df_nights.loc[i, "Start"])
+            & (df["When"] <= df_nights.loc[i, "End"]),
+            "Fountain",
+        ] = 1
 
     df.Discharge = df.Discharge * df.Fountain
 
     # v_a mean
-    v_a = df['Wind Speed'].replace(0, np.NaN).mean() # m/s Average Humidity
-    df['Wind Speed'] = df['Wind Speed'].replace(0, v_a)
+    v_a = df["Wind Speed"].replace(0, np.NaN).mean()  # m/s Average Humidity
+    df["Wind Speed"] = df["Wind Speed"].replace(0, v_a)
 
-    #CSV output
-    df.rename(columns={'Wind Speed': 'v_a','Temperature':'T_a','Humidity':'RH','Volume':'V', 'Pressure':'p_a'}, inplace=True)
-    df_out = df[['When','T_a', 'RH' , 'v_a','Discharge', 'Rad', 'DRad', 'Prec', 'p_a']]
-    df_out=df_out.round(5)
+    # CSV output
+    df.rename(
+        columns={
+            "Wind Speed": "v_a",
+            "Temperature": "T_a",
+            "Humidity": "RH",
+            "Volume": "V",
+            "Pressure": "p_a",
+        },
+        inplace=True,
+    )
+    df_out = df[["When", "T_a", "RH", "v_a", "Discharge", "Rad", "DRad", "Prec", "p_a"]]
+    df_out = df_out.round(5)
 
-if site == 'plaffeien':
+if site == "plaffeien":
 
     """
     Parameter
@@ -155,9 +206,7 @@ if site == 'plaffeien':
     """
 
     # read files
-    df_in = pd.read_csv(
-        folders['data_file'], encoding="latin-1", skiprows=2, sep=";"
-    )
+    df_in = pd.read_csv(folders["data_file"], encoding="latin-1", skiprows=2, sep=";")
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
     # # Model Time Window
@@ -180,12 +229,16 @@ if site == 'plaffeien':
     df_in["gre000z0"] = pd.to_numeric(df_in["gre000z0"], errors="coerce")
     df_in["Rad"] = df_in["gre000z0"] - df_in["ods000z0"]
     df_in["DRad"] = df_in["ods000z0"]
-    df_in["T_a"] = pd.to_numeric(df_in["tre200s0"], errors="coerce")  # Add Temperature data
+    df_in["T_a"] = pd.to_numeric(
+        df_in["tre200s0"], errors="coerce"
+    )  # Add Temperature data
     df_in["Prec"] = pd.to_numeric(
         df_in["rre150z0"], errors="coerce"
     )  # Add Precipitation data
     df_in["RH"] = pd.to_numeric(df_in["ure200s0"], errors="coerce")  # Add Humidity data
-    df_in["v_a"] = pd.to_numeric(df_in["fkl010z0"], errors="coerce")  # Add wind speed data
+    df_in["v_a"] = pd.to_numeric(
+        df_in["fkl010z0"], errors="coerce"
+    )  # Add wind speed data
     df_in["p_a"] = pd.to_numeric(df_in["prestas0"], errors="coerce")  # Air pressure
     df_in["vp_a"] = pd.to_numeric(
         df_in["pva200s0"], errors="coerce"
@@ -196,20 +249,7 @@ if site == 'plaffeien':
     # Fill nans
     df_in = df_in.fillna(method="ffill")
 
-    df_out = df_in[
-        [
-            "When",
-            "T_a",
-            "RH",
-            "v_a",
-            "Rad",
-            "DRad",
-            "Prec",
-            "p_a",
-            "vp_a",
-        ]
-    ]
-
+    df_out = df_in[["When", "T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a",]]
 
     # 5 minute sum
     cols = ["T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a"]
@@ -218,44 +258,55 @@ if site == 'plaffeien':
 
     df_out["Discharge"] = 0  # litres per minute
 
-    '''Fountain Discharge'''
+    """Fountain Discharge"""
 
-    if option == 'schwarzsee':
+    if option == "schwarzsee":
 
-        ''' Use Schwarzsee'''
+        """ Use Schwarzsee"""
 
-        df_out['Fountain'] = 0 # Fountain run time
-        df_out['Discharge'] = 0 # Fountain run time
+        df_out["Fountain"] = 0  # Fountain run time
+        df_out["Discharge"] = 0  # Fountain run time
 
-        df_nights = pd.read_csv( os.path.join(folders['dirname'],'data/raw/schwarzsee_fountain_time.txt') ,sep='\s+')
+        df_nights = pd.read_csv(
+            os.path.join(folders["dirname"], "data/raw/schwarzsee_fountain_time.txt"),
+            sep="\s+",
+        )
 
-        df_nights['Start'] = pd.to_datetime(df_nights['Date'] + ' ' + df_nights['start'])
-        df_nights['End'] = pd.to_datetime(df_nights['Date'] + ' ' + df_nights['end'])
-        df_nights['Start'] = pd.to_datetime(df_nights['Start'], format='%Y-%m-%d %H:%M:%S')
-        df_nights['End']=pd.to_datetime(df_nights['End'], format='%Y-%m-%d %H:%M:%S')
+        df_nights["Start"] = pd.to_datetime(
+            df_nights["Date"] + " " + df_nights["start"]
+        )
+        df_nights["End"] = pd.to_datetime(df_nights["Date"] + " " + df_nights["end"])
+        df_nights["Start"] = pd.to_datetime(
+            df_nights["Start"], format="%Y-%m-%d %H:%M:%S"
+        )
+        df_nights["End"] = pd.to_datetime(df_nights["End"], format="%Y-%m-%d %H:%M:%S")
 
-        df_nights['Date']=pd.to_datetime(df_nights['Date'], format='%Y-%m-%d')
-        mask=(df_nights['Date'] >= start_date) & (df_nights['Date'] <= end_date)
-        df_nights=df_nights.loc[mask]
-        df_nights=df_nights.reset_index()
+        df_nights["Date"] = pd.to_datetime(df_nights["Date"], format="%Y-%m-%d")
+        mask = (df_nights["Date"] >= start_date) & (df_nights["Date"] <= end_date)
+        df_nights = df_nights.loc[mask]
+        df_nights = df_nights.reset_index()
 
         for i in range(0, df_nights.shape[0]):
-            df_nights.loc[i,'Start']=df_nights.loc[i,'Start']- pd.Timedelta(days=1)
-            df_out.loc[(df_out['When'] >= df_nights.loc[i,'Start']) & (df_out['When'] <= df_nights.loc[i,'End']),'Fountain']=1
+            df_nights.loc[i, "Start"] = df_nights.loc[i, "Start"] - pd.Timedelta(days=1)
+            df_out.loc[
+                (df_out["When"] >= df_nights.loc[i, "Start"])
+                & (df_out["When"] <= df_nights.loc[i, "End"]),
+                "Fountain",
+            ] = 1
 
-        df_out.Discharge = 4 * df_out.Fountain # Litres per minute
+        df_out.Discharge = 4 * df_out.Fountain  # Litres per minute
 
-    if option == 'energy':
-        ''' Use Energy Flux '''
+    if option == "energy":
+        """ Use Energy Flux """
         """Settings"""
         z = 2  # m height of AWS
 
         """Material Properties"""
         a_w = 0.6
         we = 0.95
-        z0mi=0.001
-        z0ms=0.0015
-        z0hi=0.0001
+        z0mi = 0.001
+        z0ms = 0.0015
+        z0hi = 0.0001
         c = 0.5
         Lf = 334 * 1000  #  J/kg Fusion
         cw = 4.186 * 1000  # J/kg Specific heat water
@@ -279,7 +330,10 @@ if site == 'plaffeien':
                 Ea = (
                     6.11
                     * math.pow(
-                        10, 7.5 * df_out.loc[i - 1, "T_a"] / (df_out.loc[i - 1, "T_a"] + 237.3)
+                        10,
+                        7.5
+                        * df_out.loc[i - 1, "T_a"]
+                        / (df_out.loc[i - 1, "T_a"] + 237.3),
                     )
                     * df_out.loc[i, "RH"]
                     / 100
@@ -304,7 +358,9 @@ if site == 'plaffeien':
                     df_out.loc[i, "T_a"] + 273.15, 4
                 ) - we * bc * math.pow(0 + 273.15, 4)
             else:
-                df_out.loc[i, "LW"] = df_out.loc[i, "oli000z0"] - we * bc * math.pow(0 + 273.15, 4)
+                df_out.loc[i, "LW"] = df_out.loc[i, "oli000z0"] - we * bc * math.pow(
+                    0 + 273.15, 4
+                )
 
             # Sensible Heat Qs
             df_out.loc[i, "Qs"] = (
@@ -319,21 +375,37 @@ if site == 'plaffeien':
             )
 
             # Total Energy W/m2
-            df_out.loc[i, "TotalE"] = df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
+            df_out.loc[i, "TotalE"] = (
+                df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
+            )
 
-        df_out.Discharge[df_out.TotalE < 0] = 4 # litres per minute
+        df_out.Discharge[df_out.TotalE < 0] = 4  # litres per minute
 
-    if option == 'temperature':
-        ''' Use Temperature '''
-        df_out.Discharge[df_out.T_a < -1] = 4
-        df_out.Discharge[df_out.When >= fountain_off_date] = 0
+    if option == "temperature":
+        """ Use Temperature """
+        mask = df_out["T_a"] < -1
+        mask_index = df_out[mask].index
+        df_out.loc[mask_index, "Discharge"] = 4
+        mask = df_out["When"] >= fountain_off_date
+        mask_index = df_out[mask].index
+        df_out.loc[mask_index, "Discharge"] = 0
 
-
-    cols = ['When', "T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a", 'Discharge']
+    cols = [
+        "When",
+        "T_a",
+        "RH",
+        "v_a",
+        "Rad",
+        "DRad",
+        "Prec",
+        "p_a",
+        "vp_a",
+        "Discharge",
+    ]
     df_out = df_out[cols]
     df_out = df_out.round(5)
 
-if site == 'guttannen':
+if site == "guttannen":
 
     """
     Parameter
@@ -350,14 +422,12 @@ if site == 'guttannen':
     """
 
     # read files
-    df_in = pd.read_csv(
-        folders['data_file'], encoding="latin-1", skiprows=2, sep=";"
-    )
+    df_in = pd.read_csv(folders["data_file"], encoding="latin-1", skiprows=2, sep=";")
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
     # Model Time Window
     start_date = datetime(2017, 11, 15)
-    end_date = datetime(2018, 7, 1)
+    end_date = datetime(2018, 4, 2)
     fountain_off_date = datetime(2018, 4, 1)
 
     mask = (df_in["When"] >= start_date) & (df_in["When"] <= end_date)
@@ -371,12 +441,16 @@ if site == 'guttannen':
     df_in["gre000z0"] = pd.to_numeric(
         df_in["gre000z0"], errors="coerce"
     )  # Add Radiation data
-    df_in["T_a"] = pd.to_numeric(df_in["tre200s0"], errors="coerce")  # Add Temperature data
+    df_in["T_a"] = pd.to_numeric(
+        df_in["tre200s0"], errors="coerce"
+    )  # Add Temperature data
     df_in["Prec"] = pd.to_numeric(
         df_in["rre150z0"], errors="coerce"
     )  # Add Precipitation data
     df_in["RH"] = pd.to_numeric(df_in["ure200s0"], errors="coerce")  # Add Humidity data
-    df_in["v_a"] = pd.to_numeric(df_in["fkl010z0"], errors="coerce")  # Add wind speed data
+    df_in["v_a"] = pd.to_numeric(
+        df_in["fkl010z0"], errors="coerce"
+    )  # Add wind speed data
     df_in["p_a"] = pd.to_numeric(df_in["prestas0"], errors="coerce")  # Air pressure
     df_in["vp_a"] = pd.to_numeric(
         df_in["pva200s0"], errors="coerce"
@@ -391,18 +465,7 @@ if site == 'guttannen':
     df_in = df_in.fillna(method="ffill")
 
     df_out = df_in[
-        [
-            "When",
-            "T_a",
-            "RH",
-            "v_a",
-            "Rad",
-            "DRad",
-            "oli000z0",
-            "Prec",
-            "p_a",
-            "vp_a",
-        ]
+        ["When", "T_a", "RH", "v_a", "Rad", "DRad", "oli000z0", "Prec", "p_a", "vp_a",]
     ]
     df_out = df_out.round(5)
 
@@ -411,45 +474,56 @@ if site == 'guttannen':
     df_out[cols] = df_out[cols] / 2
     df_out = df_out.set_index("When").resample("5T").ffill().reset_index()
 
-    df_out['Discharge'] = 0 # Fountain run time
+    df_out["Discharge"] = 0  # Fountain run time
 
-    '''Fountain Discharge'''
+    """Fountain Discharge"""
 
-    if option == 'schwarzsee':
+    if option == "schwarzsee":
 
-        ''' Use Schwarzsee'''
+        """ Use Schwarzsee"""
 
-        df_out['Fountain'] = 0 # Fountain run time
+        df_out["Fountain"] = 0  # Fountain run time
 
-        df_nights = pd.read_csv( os.path.join(folders['dirname'],'data/raw/schwarzsee_fountain_time.txt') ,sep='\s+')
+        df_nights = pd.read_csv(
+            os.path.join(folders["dirname"], "data/raw/schwarzsee_fountain_time.txt"),
+            sep="\s+",
+        )
 
-        df_nights['Start'] = pd.to_datetime(df_nights['Date'] + ' ' + df_nights['start'])
-        df_nights['End'] = pd.to_datetime(df_nights['Date'] + ' ' + df_nights['end'])
-        df_nights['Start'] = pd.to_datetime(df_nights['Start'], format='%Y-%m-%d %H:%M:%S')
-        df_nights['End']=pd.to_datetime(df_nights['End'], format='%Y-%m-%d %H:%M:%S')
+        df_nights["Start"] = pd.to_datetime(
+            df_nights["Date"] + " " + df_nights["start"]
+        )
+        df_nights["End"] = pd.to_datetime(df_nights["Date"] + " " + df_nights["end"])
+        df_nights["Start"] = pd.to_datetime(
+            df_nights["Start"], format="%Y-%m-%d %H:%M:%S"
+        )
+        df_nights["End"] = pd.to_datetime(df_nights["End"], format="%Y-%m-%d %H:%M:%S")
 
-        df_nights['Date']=pd.to_datetime(df_nights['Date'], format='%Y-%m-%d')
-        mask=(df_nights['Date'] >= start_date) & (df_nights['Date'] <= end_date)
-        df_nights=df_nights.loc[mask]
-        df_nights=df_nights.reset_index()
+        df_nights["Date"] = pd.to_datetime(df_nights["Date"], format="%Y-%m-%d")
+        mask = (df_nights["Date"] >= start_date) & (df_nights["Date"] <= end_date)
+        df_nights = df_nights.loc[mask]
+        df_nights = df_nights.reset_index()
 
         for i in range(0, df_nights.shape[0]):
-            df_nights.loc[i,'Start']=df_nights.loc[i,'Start']- pd.Timedelta(days=1)
-            df_out.loc[(df_out['When'] >= df_nights.loc[i,'Start']) & (df_out['When'] <= df_nights.loc[i,'End']),'Fountain']=1
+            df_nights.loc[i, "Start"] = df_nights.loc[i, "Start"] - pd.Timedelta(days=1)
+            df_out.loc[
+                (df_out["When"] >= df_nights.loc[i, "Start"])
+                & (df_out["When"] <= df_nights.loc[i, "End"]),
+                "Fountain",
+            ] = 1
 
-        df_out.Discharge = 4 * df_out.Fountain # Litres per minute
+        df_out.Discharge = 4 * df_out.Fountain  # Litres per minute
 
-    if option == 'energy':
-        ''' Use Energy Flux '''
+    if option == "energy":
+        """ Use Energy Flux """
         """Settings"""
         z = 2  # m height of AWS
 
         """Material Properties"""
         a_w = 0.6
         we = 0.95
-        z0mi=0.001
-        z0ms=0.0015
-        z0hi=0.0001
+        z0mi = 0.001
+        z0ms = 0.0015
+        z0hi = 0.0001
         c = 0.5
         Lf = 334 * 1000  #  J/kg Fusion
         cw = 4.186 * 1000  # J/kg Specific heat water
@@ -473,7 +547,10 @@ if site == 'guttannen':
                 Ea = (
                     6.11
                     * math.pow(
-                        10, 7.5 * df_out.loc[i - 1, "T_a"] / (df_out.loc[i - 1, "T_a"] + 237.3)
+                        10,
+                        7.5
+                        * df_out.loc[i - 1, "T_a"]
+                        / (df_out.loc[i - 1, "T_a"] + 237.3),
                     )
                     * df_out.loc[i, "RH"]
                     / 100
@@ -498,7 +575,9 @@ if site == 'guttannen':
                     df_out.loc[i, "T_a"] + 273.15, 4
                 ) - we * bc * math.pow(0 + 273.15, 4)
             else:
-                df_out.loc[i, "LW"] = df_out.loc[i, "oli000z0"] - we * bc * math.pow(0 + 273.15, 4)
+                df_out.loc[i, "LW"] = df_out.loc[i, "oli000z0"] - we * bc * math.pow(
+                    0 + 273.15, 4
+                )
 
             # Sensible Heat Qs
             df_out.loc[i, "Qs"] = (
@@ -513,24 +592,40 @@ if site == 'guttannen':
             )
 
             # Total Energy W/m2
-            df_out.loc[i, "TotalE"] = df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
+            df_out.loc[i, "TotalE"] = (
+                df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
+            )
 
-        df_out.Discharge[df_out.TotalE < 0] = 4 # litres per minute
+        df_out.Discharge[df_out.TotalE < 0] = 4  # litres per minute
 
-    if option == 'temperature':
-        ''' Use Temperature '''
-        df_out.Discharge[df_out.T_a < -1] = 4
-        df_out.Discharge[df_out.When >= fountain_off_date] = 0
+    if option == "temperature":
+        """ Use Temperature """
+        mask = df_out["T_a"] < -1
+        mask_index = df_out[mask].index
+        df_out.loc[mask_index, "Discharge"] = 13
+        mask = df_out["When"] >= fountain_off_date
+        mask_index = df_out[mask].index
+        df_out.loc[mask_index, "Discharge"] = 0
 
-
-    cols = ['When', "T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a", 'Discharge']
+    cols = [
+        "When",
+        "T_a",
+        "RH",
+        "v_a",
+        "Rad",
+        "DRad",
+        "Prec",
+        "p_a",
+        "vp_a",
+        "Discharge",
+    ]
     df_out = df_out[cols]
     df_out = df_out.round(5)
 
-df_out.to_csv(folders['interim_folder'] + site + '_' + option +"_input.csv", sep=",")
+df_out.to_csv(folders["interim_folder"] + site + "_" + option + "_input.csv", sep=",")
 
 # Plots
-filename = folders['interim_folder'] + site + '_' + option +"_all_data" + ".pdf"
+filename = folders["interim_folder"] + site + "_" + option + "_all_data" + ".pdf"
 pp = PdfPages(filename)
 
 x = df_out["When"]
@@ -613,7 +708,7 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
-if site != 'schwarzsee' :
+if site != "schwarzsee":
     y1 = df_out["vp_a"]
 
     fig = plt.figure()
@@ -681,7 +776,7 @@ pp.close()
 
 
 # Plots
-filename = folders['interim_folder'] + site + '_' + option + "_data" + ".pdf"
+filename = folders["interim_folder"] + site + "_" + option + "_data" + ".pdf"
 pp = PdfPages(filename)
 
 fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
@@ -737,7 +832,9 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 
 plt.savefig(
-    os.path.join(folders['interim_folder'], site + "_data.jpg"), bbox_inches="tight", dpi=300
+    os.path.join(folders["interim_folder"], site + "_data.jpg"),
+    bbox_inches="tight",
+    dpi=300,
 )
 
 plt.clf()

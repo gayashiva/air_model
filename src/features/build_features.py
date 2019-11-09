@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 from logging import StreamHandler
 from pandas.plotting import register_matplotlib_converters
+
 register_matplotlib_converters()
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -23,7 +24,8 @@ logger.setLevel(logging.INFO)
 
 # Create the Handler for logging data to a file
 logger_handler = logging.FileHandler(
-    os.path.join(os.path.join(folders['dirname'], "data/logs/"), site + "_site.log"), mode="w"
+    os.path.join(os.path.join(folders["dirname"], "data/logs/"), site + "_site.log"),
+    mode="w",
 )
 logger_handler.setLevel(logging.DEBUG)
 
@@ -43,7 +45,7 @@ logger.addHandler(logger_handler)
 logger.addHandler(console_handler)
 
 #  read files
-filename0 = os.path.join(folders['input_folder'], site + "_" + option + "_input.csv")
+filename0 = os.path.join(folders["input_folder"], site + "_" + option + "_input.csv")
 df_in = pd.read_csv(filename0, sep=",")
 df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
@@ -57,17 +59,17 @@ total = time.time() - start
 print("Total time : ", total / 60)
 
 # Output for manim
-filename2 = os.path.join(folders['output_folder'], site + "_model_gif.csv")
+filename2 = os.path.join(folders["output_folder"], site + "_model_gif.csv")
 cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
 df[cols].to_csv(filename2, sep=",")
 
 # Output for energy balance
-filename3 = os.path.join(folders['output_folder'], site + "_model_energy.csv")
-cols = ['When','SW','LW','Qs','Ql', 'SA', 'iceV']
+filename3 = os.path.join(folders["output_folder"], site + "_model_energy.csv")
+cols = ["When", "SW", "LW", "Qs", "Ql", "SA", "iceV"]
 df[cols].to_csv(filename3, sep=",")
 
 # Plots
-filename3 = os.path.join(folders['output_folder'], site + "_" + option + "_results.pdf")
+filename3 = os.path.join(folders["output_folder"], site + "_" + option + "_results.pdf")
 pp = PdfPages(filename3)
 
 x = df.When
@@ -264,7 +266,7 @@ plt.clf()
 pp.close()
 
 # Plots
-filename = os.path.join(folders['output_folder'], site + "_" + option + "_plots.pdf")
+filename = os.path.join(folders["output_folder"], site + "_" + option + "_plots.pdf")
 pp = PdfPages(filename)
 
 x = df.When
@@ -305,7 +307,9 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 
 plt.savefig(
-    os.path.join(folders['output_folder'], site + "_result.jpg"), bbox_inches="tight", dpi=300
+    os.path.join(folders["output_folder"], site + "_result.jpg"),
+    bbox_inches="tight",
+    dpi=300,
 )
 
 plt.clf()

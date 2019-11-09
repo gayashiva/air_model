@@ -2,25 +2,26 @@ import os
 
 dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-site = input("Input the Field Site Name: ") or "schwarzsee"
+site = input("Input the Field Site Name: ") or "guttannen"
 
 option = (
     input("Fountain discharge option(energy, temperature, schwarzsee): ")
-    or "schwarzsee"
+    or "temperature"
 )
 
 folders = dict(
-    dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
-    input_folder = os.path.join(dir, "data/interim/"),
-    output_folder = os.path.join(dir, "data/processed/"),
-    data_file = os.path.join(dir, "data/raw/" + site + "_aws.txt"),
-    interim_folder = os.path.join(dir, "data/interim/"),
+    dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
+    input_folder=os.path.join(dir, "data/interim/"),
+    output_folder=os.path.join(dir, "data/processed/"),
+    data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
+    interim_folder=os.path.join(dir, "data/interim/"),
 )
 
 fountain = dict(
     T_f=5,  # Fountain Water Temperature T_f
     d_f=0.005,  # Fountain hole diameter
-    h_f=10,  # Fountain steps h_f 1.35 for Schwarzsee
+    h_f=3,  # Fountain steps h_f 1.35 for Schwarzsee
+    discharge=4,  # Fountain on discharge
 )
 
 surface = dict(
@@ -33,4 +34,3 @@ surface = dict(
     z0mi=0.001,  # Ice Momentum roughness length
     z0hi=0.0001,  # Ice Scalar roughness length
 )
-

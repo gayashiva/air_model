@@ -99,13 +99,13 @@ ax1.grid()
 sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
 sm.set_array([])
 cbar = fig.colorbar(sm)
-cbar.set_label("Ice layer thickness[$m$]")
+cbar.set_label("Fountain Height[$m$]")
 
 # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
 fig.autofmt_xdate()
 plt.savefig(
     os.path.join(
-        output_folder, site + "_simulations__" + str(problem["names"][0]) + ".jpg"
+        folders['output_folder'], site + "_simulations__" + str(problem["names"][0]) + ".jpg"
     ),
     bbox_inches="tight",
     dpi=300,
