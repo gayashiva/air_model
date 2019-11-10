@@ -513,7 +513,7 @@ if site == "guttannen":
 
         df_out.Discharge = fountain['discharge'] * df_out.Fountain  # Litres per minute
 
-    if option == "energy":
+    if option == "energy": # todo examine again
         """ Use Energy Flux """
         """Settings"""
         z = 2  # m height of AWS
@@ -602,7 +602,7 @@ if site == "guttannen":
         """ Use Temperature """
         mask = df_out["T_a"] < -1
         mask_index = df_out[mask].index
-        df_out.loc[mask_index, "Discharge"] = fountain['discharge']
+        df_out.loc[mask_index, "Discharge"] = fountain['discharge'] # todo reconfigure output to only fountain time on
         mask = df_out["When"] >= fountain_off_date
         mask_index = df_out[mask].index
         df_out.loc[mask_index, "Discharge"] = 0

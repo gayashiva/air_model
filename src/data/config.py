@@ -1,13 +1,15 @@
 import os
+import time
 
 dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-site = input("Input the Field Site Name: ") or "guttannen"
+# site = input("Input the Field Site Name: ") or "guttannen"
 
-option = (
-    input("Fountain discharge option(energy, temperature, schwarzsee): ")
-    or "temperature"
-)
+site = 'guttannen'
+option = "temperature"
+
+print("Site is", site)
+
 
 folders = dict(
     dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
@@ -40,7 +42,7 @@ if site == 'plaffeien':
     fountain = dict(
         T_f=5,  # Fountain Water Temperature T_f
         d_f=0.005,  # Fountain hole diameter
-        h_f=1,  # Fountain steps h_f 1.35 for Schwarzsee
+        h_f=1,  # Fountain steps h_f
         discharge=4,  # Fountain on discharge in LPM
     )
 
@@ -48,7 +50,7 @@ if site == 'guttannen':
     fountain = dict(
         T_f=5,  # Fountain Water Temperature T_f
         d_f=0.005,  # Fountain hole diameter
-        h_f=1,  # Fountain steps h_f 1.35 for Schwarzsee
-        discharge=1,  # Fountain on discharge
+        h_f=1,  # Fountain steps h_f
+        discharge=4,  # Fountain on discharge
     )
 

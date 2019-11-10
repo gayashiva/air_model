@@ -53,10 +53,10 @@ df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 end_date = df_in["When"].iloc[-1]
 
 
-problem = {"num_vars": 1, "names": ["discharge"], "bounds": [[1, 10]]}
+problem = {"num_vars": 1, "names": ["discharge"], "bounds": [[2, 8]]}
 
 # Generate samples
-param_values = saltelli.sample(problem, 10)
+param_values = saltelli.sample(problem, 3)
 
 # Plots
 fig = plt.figure()
@@ -72,6 +72,11 @@ dfo = pd.DataFrame(index=index, columns=columns)
 dfo = dfo.fillna(0)
 
 for i, X in enumerate(param_values):
+    #  read files
+    filename0 = os.path.join(folders['input_folder'], site + "_" + option + "_input.csv")
+    df_in = pd.read_csv(filename0, sep=",")
+    df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+
     print(X)
     fountain['discharge'] = X[0]
     df = icestupa(df_in, fountain, surface)
