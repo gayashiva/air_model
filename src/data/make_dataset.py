@@ -427,8 +427,8 @@ if site == "guttannen":
 
     # Model Time Window
     start_date = datetime(2017, 12, 1)
-    end_date = datetime(2018, 3, 1)
-    fountain_off_date = datetime(2018, 2, 1)
+    end_date = datetime(2018, 7, 1)
+    fountain_off_date = datetime(2018, 4, 1)
 
     mask = (df_in["When"] >= start_date) & (df_in["When"] <= end_date)
     df_in = df_in.loc[mask]

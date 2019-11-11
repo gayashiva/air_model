@@ -51,6 +51,6 @@ if site == 'guttannen':
         T_f=5,  # Fountain Water Temperature T_f
         d_f=0.005,  # Fountain hole diameter
         h_f=1,  # Fountain steps h_f
-        discharge=4,  # Fountain on discharge
+        discharge=6,  # Fountain on discharge
     )
 

@@ -261,7 +261,7 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
                     fountain_height = fountain_height + fountain['h_f']
                     df.loc[i:, 'h_f'] = fountain_height
 
-                    if (fountain['discharge'] / (60 * 1000 * Area)) ** 2 < 2 * g * (
+                    if (df.loc[j, "Discharge"]/ (60 * 1000 * Area)) ** 2 < 2 * g * (
                             fountain["h_f"]):  # Fountain Height too high
                         print("Discharge stopped at fountain height", fountain_height - fountain['h_f'])
                         print("Discharge was", fountain['discharge'])
