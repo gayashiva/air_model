@@ -164,7 +164,9 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
     T_droplet = 0
     water_to_ice = 0  # Model suggestion
     discharge_off = False
+    fountain_height_max = False
     h_r_i = 0
+    eff_discharge = fountain["discharge"]
 
     theta_f = math.radians(theta_f)  # Angle of Spray
     theta_s = math.radians(theta_s)  # solar angle
@@ -221,7 +223,7 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
                 """ Ice radius same as Initial Fountain Spray Radius during formation """
                 df.loc[i, "r_ice"] = R
 
-                if df.loc[i,'h_ice'] == 0:
+                if fountain_height_max == False:
                     # Ice Height
                     df.loc[i, "h_ice"] = (
                         3 * df.loc[i - 1, "iceV"] / (math.pi * df.loc[i, "r_ice"] ** 2)
@@ -261,10 +263,11 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
                     fountain_height = fountain_height + fountain['h_f']
                     df.loc[i:, 'h_f'] = fountain_height
 
-                    if (df.loc[j, "Discharge"]/ (60 * 1000 * Area)) ** 2 < 2 * g * (
+                    if (eff_discharge/ (60 * 1000 * Area)) ** 2 < 2 * g * (
                             fountain["h_f"]):  # Fountain Height too high
                         print("Discharge stopped at fountain height", fountain_height - fountain['h_f'])
-                        print("Discharge was", fountain['discharge'])
+                        print("Discharge was", eff_discharge)
+                        fountain_height_max= True
                         df.h_ice[i:] = fountain_height - fountain['h_f']
                         df.loc[i, "SA"] = df.loc[i-1, "SA"]
 
@@ -275,6 +278,7 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
                                 df.loc[j, "v_f"] = math.pow(
                                     ((df.loc[j, "Discharge"] / (60 * 1000 * Area)) ** 2 - 2 * g * (fountain["h_f"])), 1 / 2)
                                 df.loc[j, "Discharge"] = df.loc[j, "v_f"] * Area * 60 * 1000
+                                eff_discharge = df.loc[j, "Discharge"]
                             else:
                                 df.loc[j, "v_f"] = 0
 

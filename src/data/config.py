@@ -50,7 +50,6 @@ if site == 'guttannen':
     fountain = dict(
         T_f=5,  # Fountain Water Temperature T_f
         d_f=0.005,  # Fountain hole diameter
-        h_f=1,  # Fountain steps h_f
+        h_f=1,  # Fountain steps h_f # todo include initial fountain height
         discharge=6,  # Fountain on discharge
     )
-
