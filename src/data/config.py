@@ -5,7 +5,7 @@ dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 # site = input("Input the Field Site Name: ") or "guttannen"
 
-site = 'guttannen'
+site = "guttannen"
 option = "temperature"
 
 print("Site is", site)
@@ -30,7 +30,7 @@ surface = dict(
     z0hi=0.0001,  # Ice Scalar roughness length
 )
 
-if site == 'schwarzsee':
+if site == "schwarzsee":
     fountain = dict(
         T_f=5,  # Fountain Water Temperature T_f
         d_f=0.005,  # Fountain hole diameter
@@ -38,7 +38,7 @@ if site == 'schwarzsee':
         discharge=4,  # Fountain on discharge
     )
 
-if site == 'plaffeien':
+if site == "plaffeien":
     fountain = dict(
         T_f=5,  # Fountain Water Temperature T_f
         d_f=0.005,  # Fountain hole diameter
@@ -46,7 +46,7 @@ if site == 'plaffeien':
         discharge=4,  # Fountain on discharge in LPM
     )
 
-if site == 'guttannen':
+if site == "guttannen":
     fountain = dict(
         T_f=5,  # Fountain Water Temperature T_f
         d_f=0.005,  # Fountain hole diameter

@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 from logging import StreamHandler
 from pandas.plotting import register_matplotlib_converters
+
 register_matplotlib_converters()
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -245,7 +246,7 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
-y1 = df.solid/5
+y1 = df.solid / 5
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)

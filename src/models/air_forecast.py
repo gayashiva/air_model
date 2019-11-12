@@ -180,6 +180,9 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
     df["r"] = 0
 
     for j in range(1, df.shape[0]):
+        # todo change make dataset
+        if df.loc[j, "Discharge"] !=0:
+            df.loc[j, "Discharge"] = fountain["discharge"]
         df.loc[j, "v_f"] = df.loc[j, "Discharge"] / (60 * 1000 * Area)
         df.loc[j, "r_f"], df.loc[j, "d_t"] = projectile_xy(
             df.loc[j, "v_f"], theta_f, fountain["h_f"]
