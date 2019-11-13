@@ -426,7 +426,7 @@ if site == "guttannen":
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
     # Model Time Window
-    start_date = datetime(2017, 12, 1)
+    start_date = datetime(2017, 11, 15)
     end_date = datetime(2018, 7, 1)
     fountain_off_date = datetime(2018, 4, 1)
 
