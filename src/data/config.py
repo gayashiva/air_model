@@ -1,5 +1,6 @@
 import os
 import time
+from datetime import datetime
 
 dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -31,6 +32,11 @@ surface = dict(
 )
 
 if site == "schwarzsee":
+    dates = dict(
+        start_date=datetime(2019, 1, 29, 16),
+        end_date = datetime(2019, 3, 10, 18),
+        fountain_off_date = datetime(2019, 3, 10, 18),
+    )
     fountain = dict(
         T_f=5,  # Fountain Water Temperature T_f
         d_f=0.005,  # Fountain hole diameter
@@ -39,6 +45,11 @@ if site == "schwarzsee":
     )
 
 if site == "plaffeien":
+    dates = dict(
+        start_date=datetime(2018, 11, 15),
+        end_date = datetime(2019, 7, 1),
+        fountain_off_date = datetime(2019, 3, 1),
+    )
     fountain = dict(
         T_f=5,  # Fountain Water Temperature T_f
         d_f=0.005,  # Fountain hole diameter
@@ -47,9 +58,14 @@ if site == "plaffeien":
     )
 
 if site == "guttannen":
+    dates = dict(
+        start_date=datetime(2017, 12, 1),
+        end_date = datetime(2018, 7, 1),
+        fountain_off_date = datetime(2018, 4, 1),
+    )
     fountain = dict(
         T_f=5,  # Fountain Water Temperature T_f
         d_f=0.005,  # Fountain hole diameter
         h_f=5,  # Fountain steps h_f # todo include initial fountain height
-        discharge=6,  # Fountain on discharge
+        discharge=8,  # Fountain on discharge
     )

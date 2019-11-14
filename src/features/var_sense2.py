@@ -53,17 +53,27 @@ df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 end_date = df_in["When"].iloc[-1]
 
 
-problem = {"num_vars": 1, "names": ["discharge"], "bounds": [[4, 12]]}
+problem = {"num_vars": 1, "names": ["discharge"], "bounds": [[7, 10]]}
 
-# Generate samples
-param_values = saltelli.sample(problem, 3)
+# # Generate samples
+# param_values = saltelli.sample(problem, 1)
+
+# # Plots
+# fig = plt.figure()
+# cmap = plt.cm.rainbow
+# norm = matplotlib.colors.Normalize(
+#     vmin=problem["bounds"][0][0], vmax=problem["bounds"][0][1]
+# )
+
+param_values = [7, 8]
 
 # Plots
 fig = plt.figure()
 cmap = plt.cm.rainbow
 norm = matplotlib.colors.Normalize(
-    vmin=problem["bounds"][0][0], vmax=problem["bounds"][0][1]
+    vmin=param_values[0], vmax=param_values[-1]
 )
+
 
 # Output file Initialise
 columns = ["Ice", "IceV"]
@@ -77,40 +87,50 @@ for i, X in enumerate(param_values):
     df_in = pd.read_csv(filename0, sep=",")
     df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
-    print(X)
-    fountain['discharge'] = X[0]
+    print("Discharge", X)
+    fountain['discharge'] = X
     df = icestupa(df_in, fountain, surface)
-    dfo.loc[i, "discharge"] = X[0]
+    dfo.loc[i, "discharge"] = X
     dfo.loc[i, "Ice"] = float(df["ice"].tail(1))
     dfo.loc[i, "Meltwater"] = float(df["meltwater"].tail(1))
     dfo.loc[i, "Vapour"] = float(df["vapour"].tail(1))
     dfo.loc[i, "Ice Max"] = df["ice"].max()
     dfo.loc[i, "Runtime"] = df["When"].iloc[-1]
 
-    x = df["When"]
-    y1 = df["iceV"]
+    x = df.set_index('When').resample('D').mean().reset_index()
+    x.index = np.arange(1, len(x) + 1)
+    y1 = x['iceV']
+    y2 = x['SA']
+    y3 = (x['SW'] + x['LW'] )
 
-    ax1 = fig.add_subplot(111)
-    ax1.plot(x, y1, linewidth=0.5, color=cmap(norm(X[0])))
+    ax1 = fig.add_subplot(3, 1, 1)
+    ax1.plot(y1, linewidth=0.5, color=cmap(norm(X)))
     ax1.set_ylabel("Ice Volume[$m^3$]")
     ax1.set_xlabel("Days")
 
-# format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
 
+    ax2 = fig.add_subplot(3, 1, 2)
+    ax2.plot(y2, linewidth=0.5, color=cmap(norm(X)))
+    ax2.set_ylabel("SA[$m^{2}$]")
+    ax2.set_xlabel("Days")
+
+    ax3 = fig.add_subplot(3, 1, 3)
+    ax3.plot(y3, linewidth=0.5, color=cmap(norm(X)))
+    ax3.set_ylabel("Energy[$Wm^{-2}$]")
+    ax3.set_xlabel("Days")
+
+fig.subplots_adjust(right=0.8)
 sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
 sm.set_array([])
-cbar = fig.colorbar(sm)
+cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+cbar = fig.colorbar(sm, cax=cbar_ax)
 cbar.set_label("Fountain Discharge[$LPM$]")
 
 # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
 fig.autofmt_xdate()
 plt.savefig(
     os.path.join(
-        folders['output_folder'], site + "_simulations__" + str(problem["names"][0]) + ".jpg"
+        folders['output_folder'], site + "_simulations_" + str(problem["names"][0]) + ".jpg"
     ),
     bbox_inches="tight",
     dpi=300,
@@ -119,6 +139,6 @@ plt.clf()
 
 dfo = dfo.round(4)
 filename2 = os.path.join(
-    folders['output_folder'], site + "_simulations__" + str(problem["names"][0]) + ".csv"
+    folders['output_folder'], site + "_simulations_" + str(problem["names"][0]) + ".csv"
 )
 dfo.to_csv(filename2, sep=",")

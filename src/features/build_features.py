@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages
-from src.data.config import site, option, folders, fountain, surface
+from src.data.config import site, dates, option, folders, fountain, surface
 from src.models.air_forecast import icestupa
 
 # python -m src.features.build_features
@@ -229,6 +229,24 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
+y1 = df['SA']/df['iceV']
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(x, y1, linewidth=0.5)
+ax1.set_ylim(0,10)
+ax1.set_ylabel("SA/V ratio[$m^{-1}$]")
+ax1.set_xlabel("Days")
+
+#  format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
 y1 = df.T_s
 
 fig = plt.figure()
@@ -434,137 +452,3 @@ pp.savefig(bbox_inches="tight")
 plt.clf()
 
 pp.close()
-
-#
-# ''' PPT FIG'''
-#
-# x = df.When
-# y1 = df.iceV
-#
-# fig = plt.figure()
-# ax1 = fig.add_subplot(111)
-# ax1.plot(x, y1, "k-", lw=1)
-# ax1.set_ylabel("Ice Volume[$m^3$]")
-# ax1.set_xlabel("Days")
-# ax1.set_ylim(0,1.2)
-#
-# #  format the ticks
-# ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-# ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-# ax1.xaxis.set_minor_locator(mdates.DayLocator())
-# ax1.grid()
-# fig.autofmt_xdate()
-#
-# plt.savefig(
-#     os.path.join(folders['output_folder'], site + "ppt1.jpg"), bbox_inches="tight", dpi=300
-# )
-#
-# plt.clf()
-#
-# x = df.When
-# y1 = df.iceV
-#
-# fig = plt.figure()
-# ax1 = fig.add_subplot(111)
-# ax1.plot(x, y1, "k-", lw=1)
-# ax1.set_ylabel("Ice Volume[$m^3$]")
-# ax1.set_xlabel("Days")
-# ax1.set_ylim(0,1.2)
-#
-# if site == "schwarzsee":
-#     # Include Validation line segment 1
-#     ax1.plot(
-#         [datetime(2019, 2, 14, 16), datetime(2019, 2, 14, 16)],
-#         [0.67115, 1.042],
-#         color="green",
-#         lw=1,
-#     )
-#     ax1.scatter(datetime(2019, 2, 14, 16), 0.856575, color="green", marker="o")
-#
-#     # Include Validation line segment 2
-#     ax1.plot(
-#         [datetime(2019, 3, 10, 18), datetime(2019, 3, 10, 18)],
-#         [0.037, 0.222],
-#         color="green",
-#         lw=1,
-#     )
-#     ax1.scatter(datetime(2019, 3, 10, 18), 0.1295, color="green", marker="o")
-#
-# #  format the ticks
-# ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-# ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-# ax1.xaxis.set_minor_locator(mdates.DayLocator())
-# ax1.grid()
-# fig.autofmt_xdate()
-#
-# plt.savefig(
-#     os.path.join(folders['output_folder'], site + "ppt1.jpg"), bbox_inches="tight", dpi=300
-# )
-#
-# plt.clf()
-#
-# df2= df[['When','SW','LW','Qs','Ql', 'SA']]
-#
-# x= df2.set_index('When').resample('D').mean().reset_index()
-# x.index = np.arange(1, len(x) + 1)
-# fig, ax = plt.subplots(1)
-# y= (x['SW'] + x['LW'] + x['Qs'] + x['Ql']) * x['SA']
-# plt.plot(x.index, y)
-# y.plot.bar(stacked=False, edgecolor = df3['Discharge'], linewidth=0.5)
-# plt.xlabel('Days')
-# plt.ylabel('Energy[$Wm^{-2}]$')
-# plt.ylim(-150, 150)
-# plt.savefig(os.path.join(folders['output_folder'], site + "_energybarfull.jpg"), bbox_inches  =  "tight", dpi=300)
-# plt.clf()
-#
-# # Plots
-# filename = os.path.join(folders['output_folder'], site + '_' + option + "_energybar.pdf")
-# pp  =  PdfPages(filename)
-#
-# df2= df[['When','SW','LW','Qs','Ql' ]]
-#
-# x= df2.set_index('When').resample('D').mean().reset_index()
-# x.index = np.arange(1, len(x) + 1)
-#
-# fig, ax = plt.subplots(1)
-# y= x[['SW','LW']]
-# y.plot.bar(stacked=True, edgecolor = df3['Discharge'], linewidth=0.5)
-# plt.xlabel('Days')
-# plt.ylabel('Energy[$Wm^{-2}]$')
-# plt.ylim(-150, 150)
-# # plt.legend(loc=1, bbox_to_anchor=(0, 1))
-# pp.savefig(bbox_inches  =  "tight")
-# # plt.savefig(os.path.join(folders['output_folder'], site + "_energybar1.jpg"), bbox_inches  =  "tight", dpi=300)
-# plt.clf()
-#
-# fig, ax = plt.subplots(1)
-# y= x[['SW','LW','Qs']]
-# y.plot.bar(stacked=True, edgecolor = df3['Discharge'], linewidth=0.5)
-# plt.xlabel('Days')
-# plt.ylabel('Energy[$Wm^{-2}]$')
-# plt.ylim(-150, 150)
-# pp.savefig(bbox_inches  =  "tight")
-# # plt.savefig(os.path.join(folders['output_folder'], site + "_energybar2.jpg"), bbox_inches  =  "tight", dpi=300)
-# plt.clf()
-#
-# fig, ax = plt.subplots(1)
-# y= x[['SW','LW','Qs','Ql' ]]
-# y.plot.bar(stacked=True, edgecolor = df3['Discharge'], linewidth=0.5)
-# plt.xlabel('Days')
-# plt.ylabel('Energy[$Wm^{-2}]$')
-# plt.ylim(-150, 150)
-# pp.savefig( bbox_inches  =  "tight")
-# # plt.savefig(os.path.join(folders['output_folder'], site + "_energybar3.jpg"), bbox_inches  =  "tight", dpi=300)
-# plt.clf()
-#
-# fig, ax = plt.subplots(1)
-# y= x[['SW','LW','Qs','Ql' ]]
-# y.plot.bar(stacked=True, edgecolor = df3['Discharge'], linewidth=0.5)
-# plt.xlabel('Days')
-# plt.ylabel('Energy[$Wm^{-2}]$')
-# plt.ylim(-150, 150)
-# pp.savefig(bbox_inches  =  "tight")
-# plt.savefig(os.path.join(folders['output_folder'], site + "_energybar4.jpg"), bbox_inches  =  "tight", dpi=300)
-# plt.clf()
-#
-# pp.close()

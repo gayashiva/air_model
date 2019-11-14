@@ -8,7 +8,7 @@ import math
 from pathlib import Path
 import os
 import logging
-from src.data.config import site, option, folders, fountain, surface
+from src.data.config import site, dates, option, folders, fountain, surface
 from pandas.plotting import register_matplotlib_converters
 
 register_matplotlib_converters()
@@ -16,9 +16,9 @@ register_matplotlib_converters()
 # python -m src.data.make_dataset
 
 
-# settings
-start_date = datetime(2019, 1, 29, 16)
-end_date = datetime(2019, 3, 10, 18)
+# # settings
+# start_date = datetime(2019, 1, 29, 16)
+# end_date = datetime(2019, 3, 10, 18)
 
 if site == "schwarzsee":
 
@@ -99,15 +99,15 @@ if site == "schwarzsee":
             df_in.loc[i, "Pressure"] = df_in.loc[i - 288, "Pressure"]
             df_in.loc[i, "Discharge"] = df_in.loc[i - 288, "Discharge"]
 
-    mask = (df_in["When"] >= start_date) & (df_in["When"] <= end_date)
+    mask = (df_in["When"] >= dates['start_date']) & (df_in["When"] <= dates['end_date'])
     df_in = df_in.loc[mask]
     df_in = df_in.reset_index()
 
-    mask = (df_in2["When"] >= start_date) & (df_in2["When"] <= end_date)
+    mask = (df_in2["When"] >= dates['start_date']) & (df_in2["When"] <= dates['end_date'])
     df_in2 = df_in2.loc[mask]
     df_in2 = df_in2.reset_index()
 
-    days = pd.date_range(start=start_date, end=end_date, freq="5T")
+    days = pd.date_range(start=dates['start_date'], end=dates['end_date'], freq="5T")
     days = pd.DataFrame({"When": days})
 
     df = pd.merge(
@@ -132,7 +132,7 @@ if site == "schwarzsee":
     df["DRad"] = df_in2["DRad"]
     df["Prec"] = df_in2["Prec"] / 1000
 
-    mask = (df["When"] >= start_date) & (df["When"] <= end_date)
+    mask = (df["When"] >= dates['start_date']) & (df["When"] <= dates['end_date'])
     df = df.loc[mask]
     df = df.reset_index()
 
@@ -157,7 +157,7 @@ if site == "schwarzsee":
     df_nights["End"] = pd.to_datetime(df_nights["End"], format="%Y-%m-%d %H:%M:%S")
 
     df_nights["Date"] = pd.to_datetime(df_nights["Date"], format="%Y-%m-%d")
-    mask = (df_nights["Date"] >= start_date) & (df_nights["Date"] <= end_date)
+    mask = (df_nights["Date"] >= dates['start_date']) & (df_nights["Date"] <= dates['end_date'])
     df_nights = df_nights.loc[mask]
     df_nights = df_nights.reset_index()
 
@@ -210,17 +210,17 @@ if site == "plaffeien":
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
     # # Model Time Window
-    # start_date = datetime(2018, 11, 15)
-    # end_date = datetime(2019, 7, 1)
-    # fountain_off_date = datetime(2019, 3, 1)
+    # dates['start_date'] = datetime(2018, 11, 15)
+    # dates['end_date'] = datetime(2019, 7, 1)
+    # dates['fountain_off_date'] = datetime(2019, 3, 1)
 
     # Schwarzsee settings
-    start_date = datetime(2019, 1, 29, 16)
-    end_date = datetime(2019, 3, 10, 18)
-    fountain_off_date = datetime(2019, 3, 10, 18)
+    dates['start_date'] = datetime(2019, 1, 29, 16)
+    dates['end_date'] = datetime(2019, 3, 10, 18)
+    dates['fountain_off_date'] = datetime(2019, 3, 10, 18)
 
     time_steps = 5 * 60  # s # Model time steps
-    mask = (df_in["When"] >= start_date) & (df_in["When"] <= end_date)
+    mask = (df_in["When"] >= dates['start_date']) & (df_in["When"] <= dates['end_date'])
     df_in = df_in.loc[mask]
     df_in = df_in.reset_index()
 
@@ -282,7 +282,7 @@ if site == "plaffeien":
         df_nights["End"] = pd.to_datetime(df_nights["End"], format="%Y-%m-%d %H:%M:%S")
 
         df_nights["Date"] = pd.to_datetime(df_nights["Date"], format="%Y-%m-%d")
-        mask = (df_nights["Date"] >= start_date) & (df_nights["Date"] <= end_date)
+        mask = (df_nights["Date"] >= dates['start_date']) & (df_nights["Date"] <= dates['end_date'])
         df_nights = df_nights.loc[mask]
         df_nights = df_nights.reset_index()
 
@@ -386,7 +386,7 @@ if site == "plaffeien":
         mask = df_out["T_a"] < -1
         mask_index = df_out[mask].index
         df_out.loc[mask_index, "Discharge"] = fountain["discharge"]
-        mask = df_out["When"] >= fountain_off_date
+        mask = df_out["When"] >= dates['fountain_off_date']
         mask_index = df_out[mask].index
         df_out.loc[mask_index, "Discharge"] = 0
 
@@ -426,11 +426,11 @@ if site == "guttannen":
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
     # Model Time Window
-    start_date = datetime(2017, 11, 15)
-    end_date = datetime(2018, 7, 1)
-    fountain_off_date = datetime(2018, 4, 1)
+    dates['start_date'] = datetime(2017, 12, 1)
+    dates['end_date'] = datetime(2018, 2, 1)
+    dates['fountain_off_date'] = datetime(2018, 2, 1)
 
-    mask = (df_in["When"] >= start_date) & (df_in["When"] <= end_date)
+    mask = (df_in["When"] >= dates['start_date']) & (df_in["When"] <= dates['end_date'])
     df_in = df_in.loc[mask]
     df_in = df_in.reset_index()
 
@@ -499,7 +499,7 @@ if site == "guttannen":
         df_nights["End"] = pd.to_datetime(df_nights["End"], format="%Y-%m-%d %H:%M:%S")
 
         df_nights["Date"] = pd.to_datetime(df_nights["Date"], format="%Y-%m-%d")
-        mask = (df_nights["Date"] >= start_date) & (df_nights["Date"] <= end_date)
+        mask = (df_nights["Date"] >= dates['start_date']) & (df_nights["Date"] <= dates['end_date'])
         df_nights = df_nights.loc[mask]
         df_nights = df_nights.reset_index()
 
@@ -605,7 +605,7 @@ if site == "guttannen":
         df_out.loc[mask_index, "Discharge"] = fountain[
             "discharge"
         ]  # todo reconfigure output to only fountain time on
-        mask = df_out["When"] >= fountain_off_date
+        mask = df_out["When"] >= dates['fountain_off_date']
         mask_index = df_out[mask].index
         df_out.loc[mask_index, "Discharge"] = 0
 

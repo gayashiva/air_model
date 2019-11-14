@@ -111,7 +111,7 @@ cbar.set_label("Fountain Height[$m$]")
 fig.autofmt_xdate()
 plt.savefig(
     os.path.join(
-        folders['output_folder'], site + "_simulations__" + str(problem["names"][0]) + ".jpg"
+        folders['output_folder'], site + "_simulations_" + str(problem["names"][0]) + ".jpg"
     ),
     bbox_inches="tight",
     dpi=300,
