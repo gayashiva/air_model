@@ -214,10 +214,10 @@ if site == "plaffeien":
     # dates['end_date'] = datetime(2019, 7, 1)
     # dates['fountain_off_date'] = datetime(2019, 3, 1)
 
-    # Schwarzsee settings
-    dates['start_date'] = datetime(2019, 1, 29, 16)
-    dates['end_date'] = datetime(2019, 3, 10, 18)
-    dates['fountain_off_date'] = datetime(2019, 3, 10, 18)
+    # # Schwarzsee settings
+    # dates['start_date'] = datetime(2019, 1, 29, 16)
+    # dates['end_date'] = datetime(2019, 3, 10, 18)
+    # dates['fountain_off_date'] = datetime(2019, 3, 10, 18)
 
     time_steps = 5 * 60  # s # Model time steps
     mask = (df_in["When"] >= dates['start_date']) & (df_in["When"] <= dates['end_date'])
@@ -425,10 +425,10 @@ if site == "guttannen":
     df_in = pd.read_csv(folders["data_file"], encoding="latin-1", skiprows=2, sep=";")
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
-    # Model Time Window
-    dates['start_date'] = datetime(2017, 12, 1)
-    dates['end_date'] = datetime(2018, 2, 1)
-    dates['fountain_off_date'] = datetime(2018, 2, 1)
+    # # Model Time Window
+    # dates['start_date'] = datetime(2017, 12, 1)
+    # dates['end_date'] = datetime(2018, 2, 1)
+    # dates['fountain_off_date'] = datetime(2018, 2, 1)
 
     mask = (df_in["When"] >= dates['start_date']) & (df_in["When"] <= dates['end_date'])
     df_in = df_in.loc[mask]
@@ -637,12 +637,12 @@ y2 = df_out["Prec"]
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Temperature[C]")
+ax1.set_ylabel("Temperature (C)")
 ax1.set_xlabel("Days")
 
 ax2 = ax1.twinx()
 ax2.plot(x, y2, "b-", linewidth=0.5)
-ax2.set_ylabel("Prec[m]", color="b")
+ax2.set_ylabel("Prec (m)", color="b")
 for tl in ax2.get_yticklabels():
     tl.set_color("b")
 
@@ -662,7 +662,7 @@ y1 = df_out["v_a"]
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Wind Speed[$ms^{-1}$]")
+ax1.set_ylabel("Wind Speed ($m/s$)")
 ax1.set_xlabel("Days")
 
 # format the ticks
@@ -679,7 +679,7 @@ y1 = df_out["p_a"]
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Pressure[hPa]")
+ax1.set_ylabel("Pressure (hPa)")
 ax1.set_xlabel("Days")
 
 # format the ticks
@@ -697,7 +697,7 @@ y1 = df_out["RH"]
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Relative Humidity")
+ax1.set_ylabel("Relative Humidity (%)")
 ax1.set_xlabel("Days")
 
 # format the ticks
@@ -716,7 +716,7 @@ if site != "schwarzsee":
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     ax1.plot(x, y1, "k-", linewidth=0.5)
-    ax1.set_ylabel("Vapour Pressure air")
+    ax1.set_ylabel("Vapour Pressure air (hPa)")
     ax1.set_xlabel("Days")
 
     # format the ticks
@@ -736,7 +736,7 @@ y2 = df_out["DRad"]
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("SWR")
+ax1.set_ylabel("SWR ($W/m^{2}$)")
 ax1.set_xlabel("Days")
 
 ax2 = ax1.twinx()
@@ -761,7 +761,7 @@ y1 = df_out["Discharge"]
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Discharge[$l/min$]")
+ax1.set_ylabel("Discharge ($l/min$)")
 ax1.set_xlabel("Days")
 
 # format the ticks
@@ -790,7 +790,7 @@ x = df_out.When
 
 y1 = df_out.T_a
 ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("T[$C$]")
+ax1.set_ylabel("T ($C$)")
 ax1.grid()
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
 ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -798,35 +798,35 @@ ax1.xaxis.set_minor_locator(mdates.DayLocator())
 
 y2 = df_out.Discharge * 5
 ax2.plot(x, y2, "k-", linewidth=0.5)
-ax2.set_ylabel("Discharge[$l$]")
+ax2.set_ylabel("Discharge ($l$)")
 ax2.grid()
 
 y3 = df_out.Rad
 ax3.plot(x, y3, "k-", linewidth=0.5)
-ax3.set_ylabel("SWR[$Wm^{-2}$]")
+ax3.set_ylabel("SWR ($W/m^{2}$)")
 ax3.set_ylim([0, 600])
 ax3.grid()
 
 ax3t = ax3.twinx()
 ax3t.plot(x, df_out.DRad, "b-", linewidth=0.5)
-ax3t.set_ylabel("Diffused[$Wm^{-2}$]", color="b")
+ax3t.set_ylabel("Diffused ($W/m^{2}$)", color="b")
 ax3t.set_ylim([0, 600])
 for tl in ax3t.get_yticklabels():
     tl.set_color("b")
 
 y4 = df_out.Prec * 1000
 ax4.plot(x, y4, "k-", linewidth=0.5)
-ax4.set_ylabel("Ppt[$mm$]")
+ax4.set_ylabel("Ppt ($mm$)")
 ax4.grid()
 
 y5 = df_out.p_a
 ax5.plot(x, y5, "k-", linewidth=0.5)
-ax5.set_ylabel("Pressure[$hpa$]")
+ax5.set_ylabel("Pressure ($hPa$)")
 ax5.grid()
 
 y6 = df_out.v_a
 ax6.plot(x, y6, "k-", linewidth=0.5)
-ax6.set_ylabel("Wind[$ms^{-1}$]")
+ax6.set_ylabel("Wind ($m/s^{1}$)")
 ax6.grid()
 
 # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
@@ -846,7 +846,7 @@ ax1 = fig.add_subplot(111)
 
 y1 = df_out.T_a
 ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("T[$C$]")
+ax1.set_ylabel("T ($C$)")
 ax1.grid()
 
 # format the ticks
@@ -863,7 +863,7 @@ ax1 = fig.add_subplot(111)
 
 y2 = df_out.Discharge * 5
 ax1.plot(x, y2, "k-", linewidth=0.5)
-ax1.set_ylabel("Discharge[$kg$]")
+ax1.set_ylabel("Discharge ($l$)")
 ax1.grid()
 
 # format the ticks
@@ -880,7 +880,7 @@ ax1 = fig.add_subplot(111)
 
 y3 = df_out.Rad
 ax1.plot(x, y3, "k-", linewidth=0.5)
-ax1.set_ylabel("SWR[$Wm^{-2}$]")
+ax1.set_ylabel("SWR ($W/m^{2}$)")
 ax1.set_ylim([0, 600])
 ax1.grid()
 
@@ -898,7 +898,7 @@ ax1 = fig.add_subplot(111)
 
 y4 = df_out.Prec * 1000
 ax1.plot(x, y4, "k-", linewidth=0.5)
-ax1.set_ylabel("Ppt[$mm$]")
+ax1.set_ylabel("Ppt ($mm$)")
 ax1.grid()
 
 # format the ticks
@@ -915,7 +915,7 @@ ax1 = fig.add_subplot(111)
 
 y5 = df_out.p_a
 ax1.plot(x, y5, "k-", linewidth=0.5)
-ax1.set_ylabel("Pressure[$hpa$]")
+ax1.set_ylabel("Pressure ($hPa$)")
 ax1.grid()
 
 # format the ticks
@@ -932,7 +932,7 @@ ax1 = fig.add_subplot(111)
 
 y6 = df_out.v_a
 ax1.plot(x, y6, "k-", linewidth=0.5)
-ax1.set_ylabel("Wind[$ms^{-1}$]")
+ax1.set_ylabel("Wind ($m/s^{1}$)")
 ax1.grid()
 
 # format the ticks

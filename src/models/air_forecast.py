@@ -8,7 +8,7 @@ from matplotlib.colors import LightSource
 import math
 import sys
 import logging
-from src.data.config import fountain, surface
+from src.data.config import fountain, surface, option
 
 pd.options.mode.chained_assignment = None # Suppress Setting with warning
 
@@ -181,7 +181,7 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
 
     for j in range(1, df.shape[0]):
         # todo change make dataset
-        if df.loc[j, "Discharge"] !=0:
+        if (df.loc[j, "Discharge"] !=0) & (option != 'schwarzsee'):
             df.loc[j, "Discharge"] = fountain["discharge"]
         df.loc[j, "v_f"] = df.loc[j, "Discharge"] / (60 * 1000 * Area)
         df.loc[j, "r_f"], df.loc[j, "d_t"] = projectile_xy(
@@ -505,6 +505,10 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
             # Short Wave Radiation SW
             df.loc[i, "SW"] = (1 - df.loc[i, "a"]) * (
                 df.loc[i, "Rad"] * df.loc[i, "SRf"] + df.loc[i, "DRad"]
+            )
+            # Without shape effects
+            df.loc[i, "SW_shape"] = (1 - df.loc[i, "a"]) * (
+                    df.loc[i, "Rad"] + df.loc[i, "DRad"]
             )
 
             # Long Wave Radiation LW

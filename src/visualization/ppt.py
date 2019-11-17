@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 import matplotlib.dates as mdates
 from matplotlib.backends.backend_pdf import PdfPages
 import os
@@ -51,6 +52,76 @@ df3["Discharge"] = df3["Discharge"] == 0
 df3["Discharge"] = df3["Discharge"].astype(int)
 df3["Discharge"] = df3["Discharge"].astype(str)
 
+dff = pd.DataFrame([[df['SW'].sum(), df['LW'].sum(), df['Qs'].sum(), df['Ql'].sum()]], columns=['SW', 'LW', 'Qs', 'Ql'])
+
+# Plot the figure.
+ax = dff.plot(kind='bar', stacked=True, legend=None, width = 0.05)
+# ax.set_title( site + ' Icestupa Energy Balance')
+ax.set_ylabel('Energy ($W/m^{2}$)')
+plt.axis('off')
+
+plt.savefig(
+    os.path.join(folders['output_folder'], site + "ppt_ful.jpg"), bbox_inches="tight", dpi=300
+)
+
+positive_energy = 0
+negative_energy = 0
+for j in dff.columns:
+    x = dff[j].values[0]
+    if x > 0:
+        positive_energy = positive_energy + x
+    else:
+        negative_energy = negative_energy + x
+
+rects = ax.patches
+
+
+# For each bar: Place a label
+for rect in rects:
+    # Get X and Y placement of label from rect.
+    x_value = rect.get_width()/2
+    y_value = rect.get_y() + rect.get_height()
+    y_value_pos = rect.get_y() + rect.get_height()/2
+
+    # Number of points between bar and label. Change to your liking.
+    space = 5
+    # Vertical alignment for positive values
+    ha = 'left'
+    va = 'top'
+
+    # If value of bar is negative: Place label left of bar
+    if x_value < 0:
+        # Invert space to place label to the left
+        space *= -1
+        # Horizontally align label at right
+        va = 'bottom'
+
+    # Use X value as label and format number with one decimal place
+    if y_value > 0:
+        percent = y_value/positive_energy
+    else:
+        percent = y_value / positive_energy
+
+    label = "{:.2%}".format(percent)
+
+    # Create annotation
+    plt.annotate(
+        label,                      # Use `label` as label
+        (x_value, y_value_pos),         # Place label at end of the bar
+        xytext=(space, 0),          # Horizontally shift label by `space`
+        textcoords="offset points", # Interpret `xytext` as offset in points
+        va='center',                # Vertically center label
+        ha='left')                      # Horizontally align label differently for
+                                    # positive and negative values.
+
+f = mticker.ScalarFormatter(useOffset=False, useMathText=True)
+g = lambda x,pos : "${}$".format(f._formatSciNotation('%1.10e' % x))
+plt.gca().yaxis.set_major_formatter(mticker.FuncFormatter(g))
+
+plt.savefig(
+    os.path.join(folders['output_folder'], site + "ppt_full.jpg"), bbox_inches="tight", dpi=300
+)
+
 ''' PPT FIG'''
 
 x = df.When
@@ -59,7 +130,7 @@ y1 = df.iceV
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", lw=1)
-ax1.set_ylabel("Ice Volume[$m^3$]")
+ax1.set_ylabel("Ice Volume ($m^3$)")
 ax1.set_xlabel("Days")
 ax1.set_ylim(0,1.2)
 
@@ -82,7 +153,7 @@ y1 = df.iceV
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", lw=1)
-ax1.set_ylabel("Ice Volume[$m^3$]")
+ax1.set_ylabel("Ice Volume ($m^3$)")
 ax1.set_xlabel("Days")
 ax1.set_ylim(0,1.2)
 
@@ -129,7 +200,7 @@ y2 = (x['SW'] + x['LW'] + x['Qs'] + x['Ql']) * x['SA']
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot( y1, "k-", lw=1)
-ax1.set_ylabel("Ice Volume[$m^3$]")
+ax1.set_ylabel("Ice Volume ($m^3$)")
 ax1.set_xlabel("Days")
 ax1.set_ylim(0,1.2)
 
@@ -151,12 +222,12 @@ y2 = x['SA']
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot( y1, "r-")
-plt.ylabel('Energy[$Wm^{-2}]$')
+plt.ylabel('Energy ($W/m^{2}$)$')
 ax1.set_xlabel("Days")
 
 ax2 = ax1.twinx()
 ax2.plot( y2, "b-", linewidth=0.5)
-ax2.set_ylabel("Surface Area[$m^{-2}$]", color="b")
+ax2.set_ylabel("Surface Area ($m^{-2}$)", color="b")
 for tl in ax2.get_yticklabels():
     tl.set_color("b")
 
@@ -177,7 +248,7 @@ fig, ax = plt.subplots(1)
 y= x[['SW','LW']]
 y.plot.bar(stacked=True, edgecolor = df3['Discharge'], linewidth=0.5)
 plt.xlabel('Days')
-plt.ylabel('Energy[$Wm^{-2}]$')
+plt.ylabel('Energy ($W/m^{2}$)')
 plt.ylim(-150, 150)
 # plt.legend(loc=1, bbox_to_anchor=(0, 1))
 pp.savefig(bbox_inches  =  "tight")
@@ -185,30 +256,33 @@ pp.savefig(bbox_inches  =  "tight")
 plt.clf()
 
 fig, ax = plt.subplots(1)
-y= x[['SW','LW','Qs']]
+y= x[['SW','LW']]
 y.plot.bar(stacked=True, edgecolor = df3['Discharge'], linewidth=0.5)
 plt.xlabel('Days')
-plt.ylabel('Energy[$Wm^{-2}]$')
+plt.ylabel('Energy ($W/m^{2}$)')
 plt.ylim(-150, 150)
+plt.legend(loc = 'upper right')
 pp.savefig(bbox_inches  =  "tight")
-# plt.savefig(os.path.join(folders['output_folder'], site + "_energybar2.jpg"), bbox_inches  =  "tight", dpi=300)
+plt.savefig(os.path.join(folders['output_folder'], site + "_energybar2.jpg"), bbox_inches  =  "tight", dpi=300)
 plt.clf()
 
 fig, ax = plt.subplots(1)
-y= x[['SW','LW','Qs','Ql' ]]
+y= x[['SW','LW','Qs' ]]
 y.plot.bar(stacked=True, edgecolor = df3['Discharge'], linewidth=0.5)
 plt.xlabel('Days')
-plt.ylabel('Energy[$Wm^{-2}]$')
+plt.ylabel('Energy ($W/m^{2}$)')
+plt.legend(loc = 'upper right')
 plt.ylim(-150, 150)
 pp.savefig( bbox_inches  =  "tight")
-# plt.savefig(os.path.join(folders['output_folder'], site + "_energybar3.jpg"), bbox_inches  =  "tight", dpi=300)
+plt.savefig(os.path.join(folders['output_folder'], site + "_energybar3.jpg"), bbox_inches  =  "tight", dpi=300)
 plt.clf()
 
 fig, ax = plt.subplots(1)
 y= x[['SW','LW','Qs','Ql' ]]
 y.plot.bar(stacked=True, edgecolor = df3['Discharge'], linewidth=0.5)
 plt.xlabel('Days')
-plt.ylabel('Energy[$Wm^{-2}]$')
+plt.ylabel('Energy ($W/m^{2}$)')
+plt.legend(loc = 'upper right')
 plt.ylim(-150, 150)
 pp.savefig(bbox_inches  =  "tight")
 plt.savefig(os.path.join(folders['output_folder'], site + "_energybar4.jpg"), bbox_inches  =  "tight", dpi=300)

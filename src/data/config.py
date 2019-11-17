@@ -6,19 +6,10 @@ dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 # site = input("Input the Field Site Name: ") or "guttannen"
 
-site = "guttannen"
+site = "schwarzsee"
 option = "temperature"
 
 print("Site is", site)
-
-
-folders = dict(
-    dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
-    input_folder=os.path.join(dir, "data/interim/"),
-    output_folder=os.path.join(dir, "data/processed/"),
-    data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
-    interim_folder=os.path.join(dir, "data/interim/"),
-)
 
 surface = dict(
     ie=0.96,  # Ice Emissivity ie
@@ -32,6 +23,14 @@ surface = dict(
 )
 
 if site == "schwarzsee":
+    folders = dict(
+        dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
+        input_folder=os.path.join(dir, "data/interim/"),
+        output_folder=os.path.join(dir, "data/processed/schwarzsee/"),
+        data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
+        interim_folder=os.path.join(dir, "data/interim/"),
+    )
+
     dates = dict(
         start_date=datetime(2019, 1, 29, 16),
         end_date = datetime(2019, 3, 10, 18),
@@ -45,6 +44,14 @@ if site == "schwarzsee":
     )
 
 if site == "plaffeien":
+    folders = dict(
+        dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
+        input_folder=os.path.join(dir, "data/interim/"),
+        output_folder=os.path.join(dir, "data/processed/plaffeien/"),
+        data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
+        interim_folder=os.path.join(dir, "data/interim/"),
+    )
+
     dates = dict(
         start_date=datetime(2018, 11, 15),
         end_date = datetime(2019, 7, 1),
@@ -58,6 +65,14 @@ if site == "plaffeien":
     )
 
 if site == "guttannen":
+    folders = dict(
+        dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
+        input_folder=os.path.join(dir, "data/interim/"),
+        output_folder=os.path.join(dir, "data/processed/guttannen/"),
+        data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
+        interim_folder=os.path.join(dir, "data/interim/"),
+    )
+
     dates = dict(
         start_date=datetime(2017, 12, 1),
         end_date = datetime(2018, 7, 1),

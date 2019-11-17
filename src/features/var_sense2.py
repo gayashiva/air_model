@@ -53,27 +53,20 @@ df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 end_date = df_in["When"].iloc[-1]
 
 
-problem = {"num_vars": 1, "names": ["discharge"], "bounds": [[7, 10]]}
+problem = {"num_vars": 1, "names": ["discharge"], "bounds": [[8, 10]]}
 
 # # Generate samples
-# param_values = saltelli.sample(problem, 1)
+# param_values = saltelli.sample(problem, 3, calc_second_order=False)
 
-# # Plots
-# fig = plt.figure()
-# cmap = plt.cm.rainbow
-# norm = matplotlib.colors.Normalize(
-#     vmin=problem["bounds"][0][0], vmax=problem["bounds"][0][1]
-# )
+param_values = [[8], [9], [10]]
 
-param_values = [7, 8]
 
 # Plots
 fig = plt.figure()
 cmap = plt.cm.rainbow
 norm = matplotlib.colors.Normalize(
-    vmin=param_values[0], vmax=param_values[-1]
+    vmin=problem["bounds"][0][0], vmax=problem["bounds"][0][1]
 )
-
 
 # Output file Initialise
 columns = ["Ice", "IceV"]
@@ -87,10 +80,10 @@ for i, X in enumerate(param_values):
     df_in = pd.read_csv(filename0, sep=",")
     df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
-    print("Discharge", X)
-    fountain['discharge'] = X
+    print("Discharge", X[0])
+    fountain['discharge'] = X[0]
     df = icestupa(df_in, fountain, surface)
-    dfo.loc[i, "discharge"] = X
+    dfo.loc[i, "discharge"] = X[0]
     dfo.loc[i, "Ice"] = float(df["ice"].tail(1))
     dfo.loc[i, "Meltwater"] = float(df["meltwater"].tail(1))
     dfo.loc[i, "Vapour"] = float(df["vapour"].tail(1))
@@ -100,23 +93,23 @@ for i, X in enumerate(param_values):
     x = df.set_index('When').resample('D').mean().reset_index()
     x.index = np.arange(1, len(x) + 1)
     y1 = x['iceV']
-    y2 = x['SA']
-    y3 = (x['SW'] + x['LW'] )
+    y2 = x['SW'] + x['LW'] + x['Qs'] + x['Ql']
+    y3 = x['SA']/x['iceV']
 
     ax1 = fig.add_subplot(3, 1, 1)
-    ax1.plot(y1, linewidth=0.5, color=cmap(norm(X)))
-    ax1.set_ylabel("Ice Volume[$m^3$]")
+    ax1.plot(y1, linewidth=0.5, color=cmap(norm(X[0])))
+    ax1.set_ylabel("Ice ($m^3$)")
     ax1.set_xlabel("Days")
 
-
     ax2 = fig.add_subplot(3, 1, 2)
-    ax2.plot(y2, linewidth=0.5, color=cmap(norm(X)))
-    ax2.set_ylabel("SA[$m^{2}$]")
+    ax2.plot(y2, linewidth=0.5, color=cmap(norm(X[0])))
+    ax2.set_ylabel("Energy ($m^{2}$)")
     ax2.set_xlabel("Days")
 
     ax3 = fig.add_subplot(3, 1, 3)
-    ax3.plot(y3, linewidth=0.5, color=cmap(norm(X)))
-    ax3.set_ylabel("Energy[$Wm^{-2}$]")
+    ax3.plot(y3, linewidth=0.5, color=cmap(norm(X[0])))
+    ax3.set_ylim(0, 45)
+    ax3.set_ylabel("SA/V ratio ($W/m^{2}$)")
     ax3.set_xlabel("Days")
 
 fig.subplots_adjust(right=0.8)
@@ -124,7 +117,7 @@ sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
 sm.set_array([])
 cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
 cbar = fig.colorbar(sm, cax=cbar_ax)
-cbar.set_label("Fountain Discharge[$LPM$]")
+cbar.set_label("Fountain Discharge ($LPM$)")
 
 # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
 fig.autofmt_xdate()
