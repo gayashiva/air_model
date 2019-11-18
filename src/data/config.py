@@ -6,7 +6,7 @@ dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 # site = input("Input the Field Site Name: ") or "guttannen"
 
-site = "schwarzsee"
+site = "guttannen"
 option = "temperature"
 
 print("Site is", site)
@@ -40,7 +40,7 @@ if site == "schwarzsee":
         T_f=5,  # Fountain Water Temperature T_f
         d_f=0.005,  # Fountain hole diameter
         h_f=1.35,  # Fountain steps h_f
-        discharge=4,  # Fountain on discharge
+        discharge=10,  # Fountain on discharge
     )
 
 if site == "plaffeien":

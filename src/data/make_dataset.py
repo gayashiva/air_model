@@ -186,7 +186,10 @@ if site == "schwarzsee":
         },
         inplace=True,
     )
-    df_out = df[["When", "T_a", "RH", "v_a", "Discharge", "Rad", "DRad", "Prec", "p_a"]]
+    if option == 'schwarszee':
+        df_out = df[["When", "T_a", "RH", "v_a", "Discharge", "Rad", "DRad", "Prec", "p_a"]]
+    else :
+        df_out = df[["When", "T_a", "RH", "v_a", "Fountain", "Rad", "DRad", "Prec", "p_a"]]
     df_out = df_out.round(5)
 
 if site == "plaffeien":
@@ -208,16 +211,6 @@ if site == "plaffeien":
     # read files
     df_in = pd.read_csv(folders["data_file"], encoding="latin-1", skiprows=2, sep=";")
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
-
-    # # Model Time Window
-    # dates['start_date'] = datetime(2018, 11, 15)
-    # dates['end_date'] = datetime(2019, 7, 1)
-    # dates['fountain_off_date'] = datetime(2019, 3, 1)
-
-    # # Schwarzsee settings
-    # dates['start_date'] = datetime(2019, 1, 29, 16)
-    # dates['end_date'] = datetime(2019, 3, 10, 18)
-    # dates['fountain_off_date'] = datetime(2019, 3, 10, 18)
 
     time_steps = 5 * 60  # s # Model time steps
     mask = (df_in["When"] >= dates['start_date']) & (df_in["When"] <= dates['end_date'])
@@ -385,10 +378,10 @@ if site == "plaffeien":
         """ Use Temperature """
         mask = df_out["T_a"] < -1
         mask_index = df_out[mask].index
-        df_out.loc[mask_index, "Discharge"] = fountain["discharge"]
+        df_out.loc[mask_index, "Fountain"] = 1
         mask = df_out["When"] >= dates['fountain_off_date']
         mask_index = df_out[mask].index
-        df_out.loc[mask_index, "Discharge"] = 0
+        df_out.loc[mask_index, "Fountain"] = 0
 
     cols = [
         "When",
@@ -400,7 +393,7 @@ if site == "plaffeien":
         "Prec",
         "p_a",
         "vp_a",
-        "Discharge",
+        "Fountain",
     ]
     df_out = df_out[cols]
     df_out = df_out.round(5)
@@ -424,11 +417,6 @@ if site == "guttannen":
     # read files
     df_in = pd.read_csv(folders["data_file"], encoding="latin-1", skiprows=2, sep=";")
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
-
-    # # Model Time Window
-    # dates['start_date'] = datetime(2017, 12, 1)
-    # dates['end_date'] = datetime(2018, 2, 1)
-    # dates['fountain_off_date'] = datetime(2018, 2, 1)
 
     mask = (df_in["When"] >= dates['start_date']) & (df_in["When"] <= dates['end_date'])
     df_in = df_in.loc[mask]
@@ -474,15 +462,13 @@ if site == "guttannen":
     df_out[cols] = df_out[cols] / 2
     df_out = df_out.set_index("When").resample("5T").ffill().reset_index()
 
-    df_out["Discharge"] = 0  # Fountain run time
+    df_out["Fountain"] = 0  # Fountain run time
 
     """Fountain Discharge"""
 
     if option == "schwarzsee":
 
         """ Use Schwarzsee"""
-
-        df_out["Fountain"] = 0  # Fountain run time
 
         df_nights = pd.read_csv(
             os.path.join(folders["dirname"], "data/raw/schwarzsee_fountain_time.txt"),
@@ -510,8 +496,6 @@ if site == "guttannen":
                 & (df_out["When"] <= df_nights.loc[i, "End"]),
                 "Fountain",
             ] = 1
-
-        df_out.Discharge = fountain["discharge"] * df_out.Fountain  # Litres per minute
 
     if option == "energy":  # todo examine again
         """ Use Energy Flux """
@@ -602,12 +586,10 @@ if site == "guttannen":
         """ Use Temperature """
         mask = df_out["T_a"] < -1
         mask_index = df_out[mask].index
-        df_out.loc[mask_index, "Discharge"] = fountain[
-            "discharge"
-        ]  # todo reconfigure output to only fountain time on
+        df_out.loc[mask_index, "Fountain"] = 1
         mask = df_out["When"] >= dates['fountain_off_date']
         mask_index = df_out[mask].index
-        df_out.loc[mask_index, "Discharge"] = 0
+        df_out.loc[mask_index, "Fountain"] = 0
 
     cols = [
         "When",
@@ -619,7 +601,7 @@ if site == "guttannen":
         "Prec",
         "p_a",
         "vp_a",
-        "Discharge",
+        "Fountain",
     ]
     df_out = df_out[cols]
     df_out = df_out.round(5)
@@ -756,12 +738,15 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
-y1 = df_out["Discharge"]
+if option != 'schwarszee':
+    y1 = df_out["Fountain"]
+else:
+    y1 = df_out["Fountain"]
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Discharge ($l/min$)")
+ax1.set_ylabel("Fountain on/off")
 ax1.set_xlabel("Days")
 
 # format the ticks
@@ -796,7 +781,10 @@ ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
 ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
 ax1.xaxis.set_minor_locator(mdates.DayLocator())
 
-y2 = df_out.Discharge * 5
+if option == 'schwarzsee':
+    y2 = df_out.Discharge * 5
+else:
+    y2 = df_out.Fountain
 ax2.plot(x, y2, "k-", linewidth=0.5)
 ax2.set_ylabel("Discharge ($l$)")
 ax2.grid()
@@ -861,9 +849,12 @@ plt.clf()
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 
-y2 = df_out.Discharge * 5
+if option == 'schwarzsee':
+    y2 = df_out.Discharge * 5
+else:
+    y2 = df_out.Fountain
 ax1.plot(x, y2, "k-", linewidth=0.5)
-ax1.set_ylabel("Discharge ($l$)")
+ax1.set_ylabel("Fountain on/off ")
 ax1.grid()
 
 # format the ticks

@@ -53,12 +53,12 @@ df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 end_date = df_in["When"].iloc[-1]
 
 
-problem = {"num_vars": 1, "names": ["discharge"], "bounds": [[8, 10]]}
+problem = {"num_vars": 1, "names": ["discharge"], "bounds": [[7, 8]]}
 
 # # Generate samples
 # param_values = saltelli.sample(problem, 3, calc_second_order=False)
 
-param_values = [[8], [9], [10]]
+param_values = [[7], [8]]
 
 
 # Plots
@@ -94,30 +94,45 @@ for i, X in enumerate(param_values):
     x.index = np.arange(1, len(x) + 1)
     y1 = x['iceV']
     y2 = x['SW'] + x['LW'] + x['Qs'] + x['Ql']
-    y3 = x['SA']/x['iceV']
+    y3 = x['SA']/ x['iceV']
+    y4 = x['h_ice']
 
-    ax1 = fig.add_subplot(3, 1, 1)
+    ax1 = fig.add_subplot(2, 2, 1)
     ax1.plot(y1, linewidth=0.5, color=cmap(norm(X[0])))
     ax1.set_ylabel("Ice ($m^3$)")
     ax1.set_xlabel("Days")
 
-    ax2 = fig.add_subplot(3, 1, 2)
+
+    ax2 = fig.add_subplot(2, 2, 2)
     ax2.plot(y2, linewidth=0.5, color=cmap(norm(X[0])))
-    ax2.set_ylabel("Energy ($m^{2}$)")
+    ax2.set_ylabel("Energy ($W/m^{2}$)")
     ax2.set_xlabel("Days")
 
-    ax3 = fig.add_subplot(3, 1, 3)
+
+    ax3 = fig.add_subplot(2, 2, 3)
     ax3.plot(y3, linewidth=0.5, color=cmap(norm(X[0])))
-    ax3.set_ylim(0, 45)
-    ax3.set_ylabel("SA/V ratio ($W/m^{2}$)")
+    ax3.set_ylim(0, 100)
+    ax3.set_ylabel("SA/V ($m^{-1}$)")
     ax3.set_xlabel("Days")
 
+
+    ax4 = fig.add_subplot(2, 2, 4)
+    ax4.plot(y4, linewidth=0.5, color=cmap(norm(X[0])))
+    ax4.set_ylabel("Height ($m$)")
+    ax4.set_xlabel("Days")
+
+
+ax1.grid()
+ax2.grid()
+ax3.grid()
+ax4.grid()
+plt.tight_layout()
 fig.subplots_adjust(right=0.8)
 sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
 sm.set_array([])
 cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
 cbar = fig.colorbar(sm, cax=cbar_ax)
-cbar.set_label("Fountain Discharge ($LPM$)")
+cbar.set_label("Fountain Discharge ($l/min$)")
 
 # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
 fig.autofmt_xdate()

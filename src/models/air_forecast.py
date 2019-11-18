@@ -29,7 +29,9 @@ def albedo(df, surface):
     for i in range(1, df.shape[0]):
 
         # Wind Sensor Snow covered and fountain off
-        if (df.loc[i, "v_a"] == 0) & (df.loc[i, "Discharge"] == 0):
+        if option == 'schwarzsee':
+            df.loc[i, "Fountain"] = df.loc[i, "Discharge"] #todo correct later
+        if (df.loc[i, "v_a"] == 0) & (df.loc[i, "Fountain"] == 0):
             if df.loc[i, "Prec"] > 0 & (
                 df.loc[i, "T_a"] < Ts
             ):  # Assumes snow ppt because of wind sensor
@@ -43,14 +45,14 @@ def albedo(df, surface):
             s = s + 1
 
         # No snow and fountain off
-        if (df.loc[i, "v_a"] != 0) & (df.loc[i, "Discharge"] == 0):
+        if (df.loc[i, "v_a"] != 0) & (df.loc[i, "Fountain"] == 0):
             df.loc[i, "a"] = surface["a_w"] + (
                 surface["a_i"] - surface["a_w"]
             ) * math.exp(-w / tw)
             w = w + 1
 
         # Fountain on
-        if df.loc[i, "Discharge"] > 0:
+        if df.loc[i, "Fountain"] > 0:
             df.loc[i, "a"] = surface["a_w"]
             w = 0
             s = 0
@@ -181,8 +183,8 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
 
     for j in range(1, df.shape[0]):
         # todo change make dataset
-        if (df.loc[j, "Discharge"] !=0) & (option != 'schwarzsee'):
-            df.loc[j, "Discharge"] = fountain["discharge"]
+        if (option != 'schwarzsee'):
+            df.loc[j, "Discharge"] = fountain["discharge"] * df.loc[j, "Fountain"]
         df.loc[j, "v_f"] = df.loc[j, "Discharge"] / (60 * 1000 * Area)
         df.loc[j, "r_f"], df.loc[j, "d_t"] = projectile_xy(
             df.loc[j, "v_f"], theta_f, fountain["h_f"]

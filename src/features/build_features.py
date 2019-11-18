@@ -143,7 +143,7 @@ fig = plt.figure()
 y = x3[["SW", "LW", "Qs", "Ql"]]
 y.plot.bar(stacked=True, edgecolor=df3["Discharge"], linewidth=0.5)
 plt.xlabel("Days")
-plt.ylabel("Energy ($W/m^{2}$)$")
+plt.ylabel("Energy ($W/m^{2}$)")
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
@@ -269,7 +269,7 @@ y1 = df.solid / 5
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-")
-ax1.set_ylabel("Ice Production rate ($LPM$)")
+ax1.set_ylabel("Ice Production rate ($l/min$)")
 ax1.set_xlabel("Days")
 
 #  format the ticks
@@ -286,7 +286,7 @@ y1 = df.Discharge
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-")
-ax1.set_ylabel("Discharge ($LPM$)")
+ax1.set_ylabel("Discharge ($l/min$)")
 ax1.set_xlabel("Days")
 
 #  format the ticks
