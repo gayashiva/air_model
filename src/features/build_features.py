@@ -68,6 +68,11 @@ filename3 = os.path.join(folders["output_folder"], site + "_model_energy.csv")
 cols = ["When", "SW", "LW", "Qs", "Ql", "SA", "iceV"]
 df[cols].to_csv(filename3, sep=",")
 
+# Full Output
+filename4 = os.path.join(folders["output_folder"], site + "_model_results.csv")
+df.to_csv(filename4, sep=",")
+
+
 # Plots
 filename3 = os.path.join(folders["output_folder"], site + "_" + option + "_results.pdf")
 pp = PdfPages(filename3)
