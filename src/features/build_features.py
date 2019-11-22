@@ -55,6 +55,13 @@ end_date = df_in["When"].iloc[-1]
 df = icestupa(df_in, fountain, surface)
 
 total = time.time() - start
+param_values = [4,6,8,10,12]
+X = 4
+dfd = df.set_index("When").resample("D").mean().reset_index()
+filename1 = os.path.join(
+    folders['output_folder'], site + "_simulations_" + str(X) + '_' + str(param_values) + ".csv"
+)
+dfd.to_csv(filename1, sep =',')
 
 print("Total time : ", total / 60)
 

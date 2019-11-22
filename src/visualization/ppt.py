@@ -1,7 +1,9 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
+import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.ticker import AutoMinorLocator
 import matplotlib.ticker as mticker
 import matplotlib.dates as mdates
 from matplotlib.backends.backend_pdf import PdfPages
@@ -13,6 +15,8 @@ from logging import StreamHandler
 from src.data.config import site, option, folders, fountain, surface
 
 # python -m src.visualization.ppt
+
+plt.rcParams["figure.figsize"] = (10,7)
 
 #  read files
 filename0 = os.path.join(folders['output_folder'], site +"_model_results.csv")
@@ -32,6 +36,8 @@ dfd["Discharge"] = dfd["Discharge"] == 0
 dfd["Discharge"] = dfd["Discharge"].astype(int)
 dfd["Discharge"] = dfd["Discharge"].astype(str)
 
+dfd = dfd.rename({'SW': 'Shortwave', 'LW': 'Longwave', 'Qs': 'Sensible', 'Ql': 'Latent'}, axis=1)
+
 
 x = dfd.When
 y1 = dfd.iceV
@@ -40,28 +46,43 @@ fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", lw=1, color ='#0C70DE')
 ax1.set_ylabel("Ice Volume ($m^3$)")
-ax1.set_xlabel("Days")
+# ax1.set_xlabel("Days")
 ax1.set_ylim(0,1.2)
-
+#  format the ticks
+ax1.xaxis.set_major_locator(plt.MaxNLocator(7))
+ax1.xaxis.set_minor_locator(AutoMinorLocator())
+ax1.yaxis.set_minor_locator(AutoMinorLocator())
+# ax1.grid(axis="x", color="black", alpha=.3, linewidth=2, linestyle=":", which="major")
+ax1.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
 plt.xticks(rotation=45)
-ax1.yaxis.grid(which="major")
-plt.show()
+
+
 plt.savefig(
     os.path.join(folders['output_folder'], site + "iceV.jpg"), bbox_inches="tight", dpi=300
 )
-
+ax1.set_ylim(0,0.6)
+ax1.bar(x, y1, color ='#D9E9FA', edgecolor = 'black')
+plt.savefig(
+    os.path.join(folders['output_folder'], site + "iceVbar.jpg"), bbox_inches="tight", dpi=300
+)
 plt.clf()
 
 x = dfd.When
 y1 = dfd.iceV
 
-fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", lw=1, color ='#0C70DE')
 ax1.set_ylabel("Ice Volume ($m^3$)")
-ax1.set_xlabel("Days")
+# ax1.set_xlabel("Days")
 ax1.set_ylim(0,1.2)
-ax1.yaxis.grid(which="major")
+
+#  format the ticks
+ax1.xaxis.set_major_locator(plt.MaxNLocator(7))
+ax1.xaxis.set_minor_locator(AutoMinorLocator())
+ax1.yaxis.set_minor_locator(AutoMinorLocator())
+# ax1.grid(axis="x", color="black", alpha=.3, linewidth=2, linestyle=":", which="major")
+ax1.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
+plt.xticks(rotation=45)
 
 if site == "schwarzsee":
     # Include Validation line segment 1
@@ -82,64 +103,275 @@ if site == "schwarzsee":
     )
     ax1.scatter('Mar 10', 0.1295, color="green", marker="o")
 
-plt.xticks(rotation=45)
 
 plt.savefig(
     os.path.join(folders['output_folder'], site + "iceV2.jpg"), bbox_inches="tight", dpi=300
 )
 
+
 plt.clf()
 
+matplotlib.rc('xtick', labelsize=5)
+
 dfds = df.set_index("When").resample("D").sum().reset_index()
+dfd['meltwater'] = dfd['meltwater'] * -1 / 1000
 dfds['melted'] = dfds['melted'] * -1 / 1000
 dfds['solid'] = dfds['solid'] / 1000
 dfds["When"] = pd.to_datetime(dfds["When"], format="%Y.%m.%d %H:%M:%S")
-
+# dfds = dfds.rename({'solid': 'ice', 'melted': 'meltwater'}, axis=1)  # new method
 dfds['When'] = dfds['When'].dt.strftime("%b %d")
+dfd = dfd.set_index("When")
 dfds = dfds.set_index("When")
-dfds = dfds[['solid','melted']]
-dfds = dfds.rename({'solid': 'ice', 'melted': 'meltwater'}, axis=1)  # new method
 
-# fig = plt.figure()
+dfds1 = dfd[[ 'iceV','meltwater']]
+dfds1 = dfds1.rename({'iceV': 'Ice frozen', 'meltwater': 'Meltwater Discharged'}, axis=1)  # new method
 
-dfds.plot( kind = 'bar', stacked=True, edgecolor = 'black', linewidth=0.5, color = ['#D9E9FA', '#0C70DE'])
+
+fig, ax = plt.subplots()
+dfds2 = dfds[[ 'solid','melted']]
+dfds2 = dfds2.rename({'solid': 'Daily Ice frozen', 'melted': 'Daily Meltwater discharged'}, axis=1)
+dfds2.plot( kind = 'bar', stacked=True, edgecolor = 'black', linewidth=0.5, color = ['#D9E9FA', '#0C70DE'], ax=ax, alpha =0.5)
+ax.plot( dfd['iceV'], lw=1, color ='#0C70DE')
 plt.xlabel('Days')
-plt.ylabel('Water ($m^{3}$)')
+plt.ylabel('Volume ($m^{3}$)')
 plt.xticks(rotation=45)
 plt.legend(loc = 'upper right')
-filename = os.path.join(folders['output_folder'], site + '_' + option + "_daynight.jpg")
+plt.xticks(rotation=45)
+
+#  format the ticks
+ax.yaxis.set_minor_locator(AutoMinorLocator())
+ax.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
+
+filename = os.path.join(folders['output_folder'], site + '_' + option + "_daynight1.jpg")
 plt.savefig(filename, bbox_inches  =  "tight", dpi=300)
 
+plt.clf()
+
+fig, ax = plt.subplots()
+dfds2.plot( kind = 'bar', stacked=True, edgecolor = 'black', linewidth=0.5, color = ['#D9E9FA', '#0C70DE'], ax=ax)
+plt.xlabel('Days')
+plt.ylabel('Volume ($m^{3}$)')
+plt.xticks(rotation=45)
+plt.legend(loc = 'upper right')
+plt.xticks(rotation=45)
+
+#  format the ticks
+ax.yaxis.set_minor_locator(AutoMinorLocator())
+ax.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
+
+filename = os.path.join(folders['output_folder'], site + '_' + option + "_daynight2.jpg")
+plt.savefig(filename, bbox_inches  =  "tight", dpi=300)
+
+plt.clf()
+
 # Energy Plots
-y= dfd[['SW','LW']]
+y= dfd[['Shortwave','Longwave']]
 y.plot.bar(stacked=True, edgecolor = dfd['Discharge'], linewidth=0.5)
 plt.xlabel('Days')
 plt.ylabel('Energy ($W/m^{2}$)')
 plt.ylim(-150, 150)
 plt.legend(loc = 'upper right')
+
+plt.xticks(rotation=45)
 plt.savefig(os.path.join(folders['output_folder'], site + "_energybar1.jpg"), bbox_inches  =  "tight", dpi=300)
 plt.clf()
 
-y= dfd[['SW','LW','Qs' ]]
+y= dfd[['Shortwave','Longwave','Sensible' ]]
 y.plot.bar(stacked=True, edgecolor = dfd['Discharge'], linewidth=0.5)
-plt.xlabel('Days')
+# plt.xlabel('Days')
 plt.ylabel('Energy ($W/m^{2}$)')
 plt.legend(loc = 'upper right')
 plt.ylim(-150, 150)
+#  format the ticks
+ax1.xaxis.set_major_locator(plt.MaxNLocator(7))
+ax1.xaxis.set_minor_locator(AutoMinorLocator())
+ax1.yaxis.set_minor_locator(AutoMinorLocator())
+plt.xticks(rotation=45)
 plt.savefig(os.path.join(folders['output_folder'], site + "_energybar2.jpg"), bbox_inches  =  "tight", dpi=300)
 plt.clf()
 
-y= dfd[['SW','LW','Qs','Ql' ]]
+y= dfd[['Shortwave','Longwave','Sensible','Latent' ]]
 y.plot.bar(stacked=True, edgecolor = dfd['Discharge'], linewidth=0.5)
 plt.xlabel('Days')
 plt.ylabel('Energy ($W/m^{2}$)')
 plt.legend(loc = 'upper right')
 plt.ylim(-150, 150)
+
+plt.xticks(rotation=45)
 plt.savefig(os.path.join(folders['output_folder'], site + "_energybar3.jpg"), bbox_inches  =  "tight", dpi=300)
 plt.clf()
 
+fig = plt.figure()
+y12 = dfd['iceV']
+y32 = dfd['Shortwave'] + dfd['Longwave'] + dfd['Sensible'] + dfd['Latent']
+
+y1 = dfds2
+y2= dfd[['Shortwave','Longwave','Sensible','Latent' ]]
+y3 = dfd['SA']
+
+ax1 = fig.add_subplot(3, 1, 1)
+y1.plot( kind = 'bar', stacked=True, edgecolor = 'black', linewidth=0.5, color = ['#D9E9FA', '#0C70DE'], ax=ax1)
+ax1.set_ylabel("Volume ($m^3$)")
+ax1.set_ylim(0, 1.0)
+x_axis = ax1.axes.get_xaxis()
+x_axis.set_visible(False)
+
+
+ax2 = fig.add_subplot(3, 1, 2)
+y2.plot.bar(stacked=True, edgecolor = dfd['Discharge'], linewidth=0.5, ax=ax2)
+ax2.set_ylabel("Energy ($W/m^{2}$)")
+ax2.set_ylim(-150, 150)
+x_axis = ax2.axes.get_xaxis()
+x_axis.set_visible(False)
+
+ax3 = fig.add_subplot(3, 1, 3)
+y3.plot.bar( y ='SA', edgecolor = dfd['Discharge'], linewidth=0.5, ax=ax3)
+# ax3.set_ylim(0, 100)
+ax3.set_ylabel("Surface Area ($m^2$)")
+ax3.set_xlabel("Days")
+
+ax1.grid()
+ax2.grid()
+ax3.grid(axis = 'y')
+
+plt.xticks(rotation=45)
+filename = os.path.join(folders['output_folder'], site + '_' + option + "_energySA2.jpg")
+plt.savefig(filename, bbox_inches  =  "tight", dpi=300)
+
+plt.clf()
+
+
+y12 = dfd['iceV']
+y32 = dfd['Shortwave'] + dfd['Longwave'] + dfd['Sensible'] + dfd['Latent']
+
+y1 = dfds2
+y2= dfd[['Shortwave','Longwave','Sensible','Latent' ]]
+y3 = dfd['SA']
+
+fig = plt.figure()
+ax1 = fig.add_subplot(3, 1, 1)
+ax1.plot(y12, linewidth=1, color ='black')
+y1.plot( kind = 'bar', stacked=True, edgecolor = 'black', linewidth=0.5, color = ['#D9E9FA', '#0C70DE'], ax=ax1, alpha =0.5)
+ax1.set_ylabel("Volume ($m^3$)")
+ax1.set_ylim(0, 1.0)
+x_axis = ax1.axes.get_xaxis()
+x_axis.set_visible(False)
+
+
+ax2 = fig.add_subplot(3, 1, 2)
+y2.plot.bar(stacked=True, edgecolor = dfd['Discharge'], linewidth=0.5, ax=ax2, alpha =0.5)
+ax2.plot(y32, linewidth=1, color ='black')
+ax2.set_ylabel("Energy ($W/m^{2}$)")
+ax2.set_ylim(-150, 150)
+x_axis = ax2.axes.get_xaxis()
+x_axis.set_visible(False)
+
+ax3 = fig.add_subplot(3, 1, 3)
+ax3.plot(y3, linewidth=1, color ='black')
+y3.plot.bar( y ='SA', edgecolor = dfd['Discharge'], linewidth=0.5, ax=ax3, alpha =0.5)
+# ax3.set_ylim(0, 100)
+ax3.set_ylabel("Surface Area ($m^2$)")
+ax3.set_xlabel("Days")
+
+ax1.grid()
+ax2.grid()
+ax3.grid(axis = 'y')
+
+plt.xticks(rotation=45)
+filename = os.path.join(folders['output_folder'], site + '_' + option + "_energySA1.jpg")
+plt.savefig(filename, bbox_inches  =  "tight", dpi=300)
+plt.clf()
+
+
+fig = plt.figure()
+ax1 = fig.add_subplot(3, 1, 1)
+ax1.plot(y12, linewidth=1, color ='black')
+# y1.plot( kind = 'bar', stacked=True, edgecolor = 'black', linewidth=0.5, color = ['#D9E9FA', '#0C70DE'], ax=ax1, alpha =0.5)
+ax1.set_ylabel("Volume ($m^3$)")
+ax1.set_ylim(0, 1.0)
+x_axis = ax1.axes.get_xaxis()
+x_axis.set_visible(False)
+ax1.grid(linestyle='--')
+
+
+ax2 = fig.add_subplot(3, 1, 2)
+# y2.plot.bar(stacked=True, edgecolor = dfd['Discharge'], linewidth=0.5, ax=ax2, alpha =0.5)
+ax2.plot(y32, linewidth=1, color ='black')
+ax2.set_ylabel("Energy ($W/m^{2}$)")
+# ax2.axhline(0, color='black', alpha = 0.5)
+ax2.set_ylim(-150, 150)
+x_axis = ax2.axes.get_xaxis()
+x_axis.set_visible(False)
+ax2.grid( linestyle='--')
+
+ax3 = fig.add_subplot(3, 1, 3)
+ax3.plot(y3, linewidth=1, color ='black')
+# y3.plot.bar( y ='SA', edgecolor = dfd['Discharge'], linewidth=0.5, ax=ax3, alpha =0.5)
+# ax3.set_ylim(0, 100)
+ax3.set_ylabel("Surface Area ($m^2$)")
+ax3.set_xlabel("Days")
+ax3.grid(axis='y', linestyle='--')
+
+ax1.grid()
+ax2.grid()
+ax3.grid(axis = 'y')
+
+plt.xticks(rotation=45)
+filename = os.path.join(folders['output_folder'], site + '_' + option + "_energySA0.jpg")
+plt.savefig(filename, bbox_inches  =  "tight", dpi=300)
+plt.clf()
+
+filename = os.path.join(folders['output_folder'], "schwarzsee_simulations_4_[4, 6, 8, 10, 12].csv")
+dfd = pd.read_csv(filename, sep=",")
+dfd["When"] = pd.to_datetime(dfd["When"], format="%Y.%m.%d")
+dfd['When'] = dfd['When'].dt.strftime("%b %d")
+dfd = dfd.set_index("When")
+dfd = dfd.rename({'SW': 'Shortwave', 'LW': 'Longwave', 'Qs': 'Sensible', 'Ql': 'Latent'}, axis=1)
+
+
+y12 = dfd['iceV']
+y32 = dfd['Shortwave'] + dfd['Longwave'] + dfd['Sensible'] + dfd['Latent']
+
+y1 = dfds2
+y2= dfd[['Shortwave','Longwave','Sensible','Latent' ]]
+y3 = dfd['SA']
+
+fig = plt.figure()
+ax1 = fig.add_subplot(3, 1, 1)
+ax1.plot(y12, linewidth=1, color ='black')
+y1.plot( kind = 'bar', stacked=True, edgecolor = 'black', linewidth=0.5, color = ['#D9E9FA', '#0C70DE'], ax=ax1, alpha =0.5)
+ax1.set_ylabel("Volume ($m^3$)")
+ax1.set_ylim(0, 1.0)
+x_axis = ax1.axes.get_xaxis()
+x_axis.set_visible(False)
+
+
+ax2 = fig.add_subplot(3, 1, 2)
+y2.plot.bar(stacked=True, linewidth=0.5, ax=ax2, alpha =0.5)
+ax2.plot(y32, linewidth=1, color ='black')
+ax2.set_ylabel("Energy ($W/m^{2}$)")
+ax2.set_ylim(-150, 150)
+x_axis = ax2.axes.get_xaxis()
+x_axis.set_visible(False)
+
+ax3 = fig.add_subplot(3, 1, 3)
+ax3.plot(y3, linewidth=1, color ='black')
+y3.plot.bar( y ='SA', linewidth=0.5, ax=ax3, alpha =0.5)
+# ax3.set_ylim(0, 100)
+ax3.set_ylabel("Surface Area ($m^2$)")
+ax3.set_xlabel("Days")
+
+ax1.grid()
+ax2.grid()
+ax3.grid(axis = 'y')
+
+plt.xticks(rotation=45)
+filename = os.path.join(folders['output_folder'], site + '_' + option + "_optimizedtime.jpg")
+plt.savefig(filename, bbox_inches  =  "tight", dpi=300)
+plt.clf()
+
 # y1 = dfd['iceV']
-# y2 = (dfd['SW'] + dfd['LW'] + dfd['Qs'] + dfd['Ql']) * dfd['SA']
+# y2 = (dfd['SW'] + dfd['LW'] + dfd['Sensible'] + dfd['Latent']) * dfd['SA']
 #
 # fig = plt.figure()
 # ax1 = fig.add_subplot(111)

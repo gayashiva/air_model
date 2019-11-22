@@ -48,13 +48,15 @@ logger.addHandler(console_handler)
 # # Generate samples
 # param_values = saltelli.sample(problem, 3, calc_second_order=False)
 
-param_values = [9,10,11,12]
+param_values = [4,6,8,10,12]
 
 filename = os.path.join(
     folders['output_folder'], site + "_simulations_" + str(param_values) + ".csv"
 )
 
 # Plots
+plt.rcParams["figure.figsize"] = (10,7)
+matplotlib.rc('xtick', labelsize=5)
 fig = plt.figure()
 cmap = plt.cm.rainbow
 norm = matplotlib.colors.Normalize(
@@ -74,42 +76,55 @@ for i, X in enumerate(param_values):
     )
 
     #  read files
-    x = pd.read_csv(filename, sep=",")
-    x["When"] = pd.to_datetime(x["When"], format="%Y.%m.%d")
-    y1 = x['iceV']
-    y2 = x['SW'] + x['LW'] + x['Qs'] + x['Ql']
-    y3 = x['SA']/ x['iceV']
-    y4 = x['h_ice']
+    dfd = pd.read_csv(filename, sep=",")
+    dfd["When"] = pd.to_datetime(dfd["When"], format="%Y.%m.%d")
+    dfd['When'] = dfd['When'].dt.strftime("%b %d")
+    dfd = dfd.set_index("When")
 
-    ax1 = fig.add_subplot(2, 2, 1)
-    ax1.plot(y1, linewidth=0.5, color=cmap(norm(X)))
-    ax1.set_ylabel("Ice ($m^3$)")
-    ax1.set_xlabel("Days")
+    y1 = dfd['iceV']
+    y2 = dfd['SW'] + dfd['LW'] + dfd['Qs'] + dfd['Ql']
+    y3 = dfd['SA']
+
+    y1 = dfd['SA']/dfd['iceV']
+    y2 = dfd['r_ice']
+    y3 = dfd['h_ice']
+
+    ax1 = fig.add_subplot(3, 1, 1)
+    if (X==10) or (X==12):
+        ax1.plot(y1, linewidth=1, color=cmap(norm(X)))
+    else:
+        ax1.plot(y1, linewidth=0.5, color=cmap(norm(X)))
+    # ax1.set_ylabel("Ice ($m^3$)")
+    ax1.set_ylabel("Surface Area/Volume Ratio")
+    ax1.set_ylim(0,200)
+    x_axis = ax1.axes.get_xaxis()
+    x_axis.set_visible(False)
 
 
-    ax2 = fig.add_subplot(2, 2, 2)
-    ax2.plot(y2, linewidth=0.5, color=cmap(norm(X)))
-    ax2.set_ylabel("Energy ($W/m^{2}$)")
-    ax2.set_xlabel("Days")
+    ax2 = fig.add_subplot(3, 1, 2)
+    if (X==10) or (X==12):
+        ax2.plot(y2, linewidth=1, color=cmap(norm(X)))
+    else:
+        ax2.plot(y2, linewidth=0.5, color=cmap(norm(X)))
+    # ax2.set_ylabel("Energy ($W/m^{2}$)")
+    ax2.set_ylabel("Ice Radius ($m$)")
+    x_axis = ax2.axes.get_xaxis()
+    x_axis.set_visible(False)
 
 
-    ax3 = fig.add_subplot(2, 2, 3)
-    ax3.plot(y3, linewidth=0.5, color=cmap(norm(X)))
-    ax3.set_ylim(0, 100)
-    ax3.set_ylabel("SA/V ($m^{-1}$)")
+    ax3 = fig.add_subplot(3, 1, 3)
+    if (X==10) or (X==12):
+        ax3.plot(y3, linewidth=1, color=cmap(norm(X)))
+    else:
+        ax3.plot(y3, linewidth=0.5, color=cmap(norm(X)))
+    # ax3.set_ylim(0, 200)
+    ax3.set_ylabel("Ice Height ($m$)")
     ax3.set_xlabel("Days")
-
-
-    ax4 = fig.add_subplot(2, 2, 4)
-    ax4.plot(y4, linewidth=0.5, color=cmap(norm(X)))
-    ax4.set_ylabel("Height ($m$)")
-    ax4.set_xlabel("Days")
-
 
 ax1.grid()
 ax2.grid()
-ax3.grid()
-ax4.grid()
+ax3.grid(axis = 'y')
+plt.xticks(rotation=45)
 plt.tight_layout()
 fig.subplots_adjust(right=0.8)
 sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
