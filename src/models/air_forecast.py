@@ -167,6 +167,7 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
     water_to_ice = 0  # Model suggestion
     discharge_off = False
     fountain_height_max = False
+
     h_r_i = 0
     eff_discharge = fountain["discharge"]
 
@@ -204,12 +205,8 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
             stop = i - 1
             break
 
-        # Stop Condition
-        if (df.loc[i - 1, "h_ice"] > 9) & (df.loc[i - 1, "r_ice"] > 6):
-            stop = i - 1
-            break
-
-        # Stop Condition
+        # Stop Conditions
+        # todo review stop conditions
         if (discharge_off):
             df.Discharge[i:] = 0
             # stop = i - 1

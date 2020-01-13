@@ -259,6 +259,24 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
+y1 = df['h_ice']/df['r_ice']
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(x, y1, linewidth=0.5)
+ax1.set_ylim(0,0.1)
+ax1.set_ylabel("h/r ratio")
+ax1.set_xlabel("Days")
+
+#  format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
 y1 = df.T_s
 
 fig = plt.figure()
