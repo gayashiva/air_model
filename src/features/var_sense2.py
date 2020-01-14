@@ -48,11 +48,7 @@ logger.addHandler(console_handler)
 # # Generate samples
 # param_values = saltelli.sample(problem, 3, calc_second_order=False)
 
-param_values = [4,6,8,10,12]
-
-filename = os.path.join(
-    folders['output_folder'], site + "_simulations_" + str(param_values) + ".csv"
-)
+param_values = [6,8,10]
 
 # Plots
 plt.rcParams["figure.figsize"] = (10,7)

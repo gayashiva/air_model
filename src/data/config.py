@@ -33,14 +33,14 @@ if site == "schwarzsee":
 
     dates = dict(
         start_date=datetime(2019, 1, 29, 16),
-        end_date = datetime(2019, 3, 10, 18),
+        end_date = datetime(2019, 3, 20, 18),
         fountain_off_date = datetime(2019, 3, 10, 18),
     )
     fountain = dict(
         T_f=5,  # Fountain Water Temperature T_f
         d_f=0.005,  # Fountain hole diameter
         h_f=1.35,  # Fountain steps h_f
-        discharge=7,  # Fountain on discharge
+        discharge=9.5,  # Fountain on discharge
     )
 
 if site == "plaffeien":

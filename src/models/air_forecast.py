@@ -1,12 +1,6 @@
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-from matplotlib.backends.backend_pdf import PdfPages
-from matplotlib.colors import LightSource
 import math
-import sys
 import logging
 from src.data.config import fountain, surface, option
 
@@ -632,7 +626,7 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
             df.loc[i, "water"] = df.loc[i - 1, "water"] + df.loc[i, "liquid"]
             df.loc[i, "iceV"] = df.loc[i, "ice"] / rho_i
 
-            """Fountain suggested water use"""
+            """Fountain suggested water use""" #todo Too simplified
             if df.loc[i, "solid"] > 0:
                 water_to_ice = water_to_ice + df.loc[i, "solid"]
 
@@ -651,7 +645,7 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
     print("Evaporated/sublimated", float(df["vapour"].tail(1)))
     print("Model ended", df.loc[i - 1, "When"])
     print("Model runtime", df.loc[i - 1, "When"] - df.loc[start, "When"])
-    print("Fountain should", float(water_to_ice))
+    # print("Fountain should", float(water_to_ice))
     print("Ice Volume Max", float(df["iceV"].max()))
     print("Ppt", prec)
 
