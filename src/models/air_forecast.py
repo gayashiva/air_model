@@ -161,6 +161,7 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
     water_to_ice = 0  # Model suggestion
     discharge_off = False
     fountain_height_max = False
+    # df["Prec"] = 0 # todo remove this later
 
     h_r_i = 0
     eff_discharge = fountain["discharge"]
@@ -397,16 +398,43 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
                         break
                     df.loc[i - 1, "ice"] = ice_layer
 
-                if df.loc[i - 1, "T_s"] < 0:
+                # Evaporation or condensation
+                df.loc[i, "Ql"] = (
+                        0.623
+                        * Le
+                        * rho_a
+                        / p0
+                        * math.pow(k, 2)
+                        * df.loc[i, "v_a"]
+                        * (Ea - Ew)
+                        / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
+                )
 
-                    # Initial freeze up due to ice layer
+                df.loc[i, "gas"] -= (
+                                            df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
+                                    ) / Le
+
+                # Removing water quantity generated from previous time step
+                df.loc[i, "liquid"] += (
+                                               df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
+                                       ) / Le
+
+                df.loc[i, "e_s"] = surface["we"]
+
+                # Initial freeze up due to cold ice layer
+                if df.loc[i - 1, "T_s"] < 0: # todo Check and delete
+
                     df.loc[i, "solid"] += (ice_layer * ci * (-df.loc[i - 1, "T_s"])) / (
                         Lf
                     )
 
-                    df.loc[i, "liquid"] -= (
-                        ice_layer * ci * (-df.loc[i - 1, "T_s"])
-                    ) / (Lf)
+                    if df.loc[i, "solid"] > df.loc[i, "liquid"] :
+                        df.loc[i, "solid"] = df.loc[i, "liquid"]
+                        df.loc[i, "liquid"] = 0
+                    else:
+                        df.loc[i, "liquid"] -= (
+                            ice_layer * ci * (-df.loc[i - 1, "T_s"])
+                        ) / (Lf)
 
                     logger.error(
                         "Ice layer made %s thick ice at %s",
@@ -414,29 +442,6 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
                         df.loc[i, "When"],
                     )
                     df.loc[i, "temp"] = -df.loc[i - 1, "T_s"]
-
-                # Evaporation or condensation
-                df.loc[i, "Ql"] = (
-                    0.623
-                    * Le
-                    * rho_a
-                    / p0
-                    * math.pow(k, 2)
-                    * df.loc[i, "v_a"]
-                    * (Ea - Ew)
-                    / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
-                )
-
-                df.loc[i, "gas"] -= (
-                    df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
-                ) / Le
-
-                # Removing water quantity generated from previous time step
-                df.loc[i, "liquid"] += (
-                    df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
-                ) / Le
-
-                df.loc[i, "e_s"] = surface["we"]
 
             else:
                 """ When fountain off """

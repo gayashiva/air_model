@@ -40,7 +40,7 @@ if site == "schwarzsee":
         T_f=5,  # Fountain Water Temperature T_f
         d_f=0.005,  # Fountain hole diameter
         h_f=1.35,  # Fountain steps h_f
-        discharge=9.5,  # Fountain on discharge
+        discharge=20,  # Fountain on discharge
     )
 
 if site == "plaffeien":
