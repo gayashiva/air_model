@@ -24,7 +24,7 @@ def albedo(df, surface):
 
         # Wind Sensor Snow covered and fountain off
         if option == 'schwarzsee':
-            df.loc[i, "Fountain"] = df.loc[i, "Discharge"] #todo correct later
+            df.loc[i, "Fountain"] = df.loc[i, "Discharge"]  # todo correct later
         if (df.loc[i, "v_a"] == 0) & (df.loc[i, "Fountain"] == 0):
             if df.loc[i, "Prec"] > 0 & (
                 df.loc[i, "T_a"] < Ts
@@ -121,7 +121,7 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
     dp = 70  # Density of Precipitation dp
     p0 = 1013  # Standard air pressure hPa
     theta_f = 45  # Fountain aperture angle
-    ftl = 0.5  # Fountain flight time loss ftl
+    ftl = 0  # Fountain flight time loss ftl
     dx = 0.001  # Ice layer thickness dx
 
     """Initialise"""
@@ -161,7 +161,6 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
     water_to_ice = 0  # Model suggestion
     discharge_off = False
     fountain_height_max = False
-    # df["Prec"] = 0 # todo remove this later
 
     h_r_i = 0
     eff_discharge = fountain["discharge"]
@@ -271,7 +270,7 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
                     else:
                         for j in range(i, df.shape[0]):
 
-                            if (df.loc[j, "Discharge"] != 0):  # Fountain on
+                            if df.loc[j, "Discharge"] != 0:  # Fountain on
                                 df.loc[j, "v_f"] = math.pow(
                                     ((df.loc[j, "Discharge"] / (60 * 1000 * Area)) ** 2 - 2 * g * (fountain["h_f"])), 1 / 2)
                                 df.loc[j, "Discharge"] = df.loc[j, "v_f"] * Area * 60 * 1000
@@ -422,19 +421,19 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
                 df.loc[i, "e_s"] = surface["we"]
 
                 # Initial freeze up due to cold ice layer
-                if df.loc[i - 1, "T_s"] < 0: # todo Check and delete
+                if df.loc[i - 1, "T_s"] < 0:  # todo Check and delete
 
                     df.loc[i, "solid"] += (ice_layer * ci * (-df.loc[i - 1, "T_s"])) / (
                         Lf
                     )
 
-                    if df.loc[i, "solid"] > df.loc[i, "liquid"] :
+                    if df.loc[i, "solid"] > df.loc[i, "liquid"]:
                         df.loc[i, "solid"] = df.loc[i, "liquid"]
                         df.loc[i, "liquid"] = 0
                     else:
                         df.loc[i, "liquid"] -= (
                             ice_layer * ci * (-df.loc[i - 1, "T_s"])
-                        ) / (Lf)
+                        ) / Lf
 
                     logger.error(
                         "Ice layer made %s thick ice at %s",
@@ -631,7 +630,7 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
             df.loc[i, "water"] = df.loc[i - 1, "water"] + df.loc[i, "liquid"]
             df.loc[i, "iceV"] = df.loc[i, "ice"] / rho_i
 
-            """Fountain suggested water use""" #todo Too simplified
+            """Fountain suggested water use"""  # todo Too simplified
             if df.loc[i, "solid"] > 0:
                 water_to_ice = water_to_ice + df.loc[i, "solid"]
 

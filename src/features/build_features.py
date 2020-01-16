@@ -55,25 +55,18 @@ end_date = df_in["When"].iloc[-1]
 df = icestupa(df_in, fountain, surface)
 
 total = time.time() - start
-param_values = [4,6,8,10,12]
-X = 4
-dfd = df.set_index("When").resample("D").mean().reset_index()
-filename1 = os.path.join(
-    folders['output_folder'], site + "_simulations_" + str(X) + '_' + str(param_values) + ".csv"
-)
-dfd.to_csv(filename1, sep =',')
 
 print("Total time : ", total / 60)
 
-# Output for manim
-filename2 = os.path.join(folders["output_folder"], site + "_model_gif.csv")
-cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
-df[cols].to_csv(filename2, sep=",")
+# # Output for manim
+# filename2 = os.path.join(folders["output_folder"], site + "_model_gif.csv")
+# cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
+# df[cols].to_csv(filename2, sep=",")
 
-# Output for energy balance
-filename3 = os.path.join(folders["output_folder"], site + "_model_energy.csv")
-cols = ["When", "SW", "LW", "Qs", "Ql", "SA", "iceV"]
-df[cols].to_csv(filename3, sep=",")
+# # Output for energy balance
+# # filename3 = os.path.join(folders["output_folder"], site + "_model_energy.csv")
+# # cols = ["When", "SW", "LW", "Qs", "Ql", "SA", "iceV"]
+# # df[cols].to_csv(filename3, sep=",")
 
 # Full Output
 filename4 = os.path.join(folders["output_folder"], site + "_model_results.csv")
