@@ -8,7 +8,7 @@ import math
 from pathlib import Path
 import os
 import logging
-from src.data.config import site, dates, option, folders, fountain, surface
+from src.data.config import site, dates, option, folders, fountain
 from pandas.plotting import register_matplotlib_converters
 
 register_matplotlib_converters()
@@ -190,6 +190,15 @@ if site == "schwarzsee":
         df_out = df[["When", "T_a", "RH", "v_a", "Discharge", "Rad", "DRad", "Prec", "p_a"]]
     else :
         df_out = df[["When", "T_a", "RH", "v_a", "Fountain", "Rad", "DRad", "Prec", "p_a"]]
+
+    if option == "temperature":
+        """ Use Temperature """
+        mask = df_out["T_a"] < fountain['t_c']
+        mask_index = df_out[mask].index
+        df_out.loc[mask_index, "Fountain"] = 1
+        mask = df_out["When"] >= dates['fountain_off_date']
+        mask_index = df_out[mask].index
+        df_out.loc[mask_index, "Fountain"] = 0
     df_out = df_out.round(5)
 
 if site == "plaffeien":
@@ -376,7 +385,7 @@ if site == "plaffeien":
 
     if option == "temperature":
         """ Use Temperature """
-        mask = df_out["T_a"] < -1
+        mask = df_out["T_a"] < fountain['t_c']
         mask_index = df_out[mask].index
         df_out.loc[mask_index, "Fountain"] = 1
         mask = df_out["When"] >= dates['fountain_off_date']
@@ -584,7 +593,7 @@ if site == "guttannen":
 
     if option == "temperature":
         """ Use Temperature """
-        mask = df_out["T_a"] < -1
+        mask = df_out["T_a"] < fountain['t_c']
         mask_index = df_out[mask].index
         df_out.loc[mask_index, "Fountain"] = 1
         mask = df_out["When"] >= dates['fountain_off_date']
@@ -606,11 +615,16 @@ if site == "guttannen":
     df_out = df_out[cols]
     df_out = df_out.round(5)
 
-df_out.to_csv(folders["interim_folder"] + site + "_" + option + "_input.csv", sep=",")
+if option == 'temperature':
+    filename = folders["interim_folder"] + site + "_" + option + "_" + str(fountain['t_c'])
+else:
+    filename = folders["interim_folder"] + site + "_" + option
+
+df_out.to_csv(filename + "_input.csv")
+
 
 # Plots
-filename = folders["interim_folder"] + site + "_" + option + "_all_data" + ".pdf"
-pp = PdfPages(filename)
+pp = PdfPages(filename +  "_all_data" + ".pdf")
 
 x = df_out["When"]
 y1 = df_out["T_a"]
@@ -763,8 +777,7 @@ pp.close()
 
 
 # Plots
-filename = folders["interim_folder"] + site + "_" + option + "_data" + ".pdf"
-pp = PdfPages(filename)
+pp = PdfPages(filename + "_data" + ".pdf")
 
 fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
     nrows=6, ncols=1, sharex="col", sharey="row", figsize=(15, 10)

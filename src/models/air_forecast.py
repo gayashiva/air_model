@@ -356,7 +356,7 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
             else:
                 Ea = df.loc[i, "vp_a"]
 
-            Ew = 6.112 * np.exp(17.62 * fountain["T_f"] / (fountain["T_f"] + 243.12))
+            Ew = 6.112 * np.exp(17.62 * surface["T_f"] / (surface["T_f"] + 243.12))
             Eice = 6.112 * np.exp(
                 22.46 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
             )

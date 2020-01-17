@@ -116,4 +116,24 @@ ax1.grid()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
+# x = dfx.r
+y1 = dfx.MaxV
+y2 = dfx['Max Growthrate']/ 5
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(x, y1, "ko", markersize=3)
+ax1.set_ylabel("Max Ice Volume ($m^3$)")
+ax1.set_xlabel("Discharge ($l/min$)")
+
+ax2 = ax1.twinx()
+ax2.plot(x, y2, "bo", markersize=3)
+ax2.set_ylabel("Max Growth Rate ($l/min$)", color="b")
+for tl in ax2.get_yticklabels():
+    tl.set_color("b")
+
+ax1.grid()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
 pp.close()

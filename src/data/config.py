@@ -6,12 +6,13 @@ dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 # site = input("Input the Field Site Name: ") or "guttannen"
 
-site = "guttannen"
+site = "schwarzsee"
 option = "temperature"
 
 print("Site is", site)
 
 surface = dict(
+    T_f=5,  # Fountain Water Temperature T_f
     ie=0.96,  # Ice Emissivity ie
     we=0.95,  # Water emissivity we
     a_i=0.6,  # Albedo of Ice a_i
@@ -25,10 +26,10 @@ surface = dict(
 if site == "schwarzsee":
     folders = dict(
         dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
-        input_folder=os.path.join(dir, "data/interim/"),
+        input_folder=os.path.join(dir, "data/interim/schwarzsee/"),
         output_folder=os.path.join(dir, "data/processed/schwarzsee/"),
         data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
-        interim_folder=os.path.join(dir, "data/interim/"),
+        interim_folder=os.path.join(dir, "data/interim/schwarzsee/"),
     )
 
     dates = dict(
@@ -37,19 +38,19 @@ if site == "schwarzsee":
         fountain_off_date = datetime(2019, 3, 10, 18),
     )
     fountain = dict(
-        T_f=5,  # Fountain Water Temperature T_f
-        d_f=0.005,  # Fountain hole diameter
+        d_f=0.005,  # Fountain aperture diameter
         h_f=1.35,  # Fountain steps h_f
-        discharge=20,  # Fountain on discharge
+        discharge=3.58,  # Fountain on discharge
+        t_c = 4, # Fountain runtime temperature
     )
 
 if site == "plaffeien":
     folders = dict(
         dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
-        input_folder=os.path.join(dir, "data/interim/"),
+        input_folder=os.path.join(dir, "data/interim/plaffeien/"),
         output_folder=os.path.join(dir, "data/processed/plaffeien/"),
         data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
-        interim_folder=os.path.join(dir, "data/interim/"),
+        interim_folder=os.path.join(dir, "data/interim/plaffeien/"),
     )
 
     dates = dict(
@@ -58,19 +59,19 @@ if site == "plaffeien":
         fountain_off_date = datetime(2019, 3, 1),
     )
     fountain = dict(
-        T_f=5,  # Fountain Water Temperature T_f
         d_f=0.005,  # Fountain hole diameter
         h_f=1,  # Fountain steps h_f
         discharge=4,  # Fountain on discharge in LPM
+        t_c=-1,  # Fountain runtime temperature
     )
 
 if site == "guttannen":
     folders = dict(
         dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
-        input_folder=os.path.join(dir, "data/interim/"),
+        input_folder=os.path.join(dir, "data/interim/guttannen/"),
         output_folder=os.path.join(dir, "data/processed/guttannen/"),
         data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
-        interim_folder=os.path.join(dir, "data/interim/"),
+        interim_folder=os.path.join(dir, "data/interim/guttannen/"),
     )
 
     dates = dict(
@@ -79,8 +80,8 @@ if site == "guttannen":
         fountain_off_date = datetime(2018, 2, 1),
     )
     fountain = dict(
-        T_f=5,  # Fountain Water Temperature T_f
         d_f=0.005,  # Fountain hole diameter
         h_f=5,  # Fountain steps h_f # todo include initial fountain height
         discharge=6,  # Fountain on discharge
+        t_c=-1,  # Fountain runtime temperature
     )
