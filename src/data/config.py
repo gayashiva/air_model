@@ -29,7 +29,6 @@ if site == "schwarzsee":
         input_folder=os.path.join(dir, "data/interim/schwarzsee/"),
         output_folder=os.path.join(dir, "data/processed/schwarzsee/"),
         data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
-        interim_folder=os.path.join(dir, "data/interim/schwarzsee/"),
     )
 
     dates = dict(
@@ -40,8 +39,8 @@ if site == "schwarzsee":
     fountain = dict(
         d_f=0.005,  # Fountain aperture diameter
         h_f=1.35,  # Fountain steps h_f
-        discharge=3.58,  # Fountain on discharge
-        t_c = 4, # Fountain runtime temperature
+        discharge=12,  # Fountain on discharge
+        t_c = -6, # Fountain runtime temperature
     )
 
 if site == "plaffeien":
@@ -50,7 +49,6 @@ if site == "plaffeien":
         input_folder=os.path.join(dir, "data/interim/plaffeien/"),
         output_folder=os.path.join(dir, "data/processed/plaffeien/"),
         data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
-        interim_folder=os.path.join(dir, "data/interim/plaffeien/"),
     )
 
     dates = dict(
@@ -71,7 +69,6 @@ if site == "guttannen":
         input_folder=os.path.join(dir, "data/interim/guttannen/"),
         output_folder=os.path.join(dir, "data/processed/guttannen/"),
         data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
-        interim_folder=os.path.join(dir, "data/interim/guttannen/"),
     )
 
     dates = dict(

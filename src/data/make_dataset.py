@@ -186,19 +186,27 @@ if site == "schwarzsee":
         },
         inplace=True,
     )
-    if option == 'schwarszee':
-        df_out = df[["When", "T_a", "RH", "v_a", "Discharge", "Rad", "DRad", "Prec", "p_a"]]
+    if option == 'schwarzsee':
+        df["Fountain"] = 0
+        mask = df["Discharge"] > 0.1
+        mask_index = df[mask].index
+        df.loc[mask_index, "Fountain"] = 1
+
+
+        df_out = df[["When", "T_a", "RH", "v_a", "Discharge", "Fountain", "Rad", "DRad", "Prec", "p_a"]]
+
     else :
         df_out = df[["When", "T_a", "RH", "v_a", "Fountain", "Rad", "DRad", "Prec", "p_a"]]
+        if option == "temperature":
+            """ Use Temperature """
+            mask = df_out["T_a"] < fountain['t_c']
+            mask_index = df_out[mask].index
+            df_out.loc[mask_index, "Fountain"] = 1
+            mask = df_out["When"] >= dates['fountain_off_date']
+            mask_index = df_out[mask].index
+            df_out.loc[mask_index, "Fountain"] = 0
 
-    if option == "temperature":
-        """ Use Temperature """
-        mask = df_out["T_a"] < fountain['t_c']
-        mask_index = df_out[mask].index
-        df_out.loc[mask_index, "Fountain"] = 1
-        mask = df_out["When"] >= dates['fountain_off_date']
-        mask_index = df_out[mask].index
-        df_out.loc[mask_index, "Fountain"] = 0
+
     df_out = df_out.round(5)
 
 if site == "plaffeien":
@@ -616,9 +624,9 @@ if site == "guttannen":
     df_out = df_out.round(5)
 
 if option == 'temperature':
-    filename = folders["interim_folder"] + site + "_" + option + "_" + str(fountain['t_c'])
+    filename = folders["input_folder"] + site + "_" + option + "_" + str(fountain['t_c'])
 else:
-    filename = folders["interim_folder"] + site + "_" + option
+    filename = folders["input_folder"] + site + "_" + option
 
 df_out.to_csv(filename + "_input.csv")
 
@@ -752,10 +760,6 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
-if option != 'schwarszee':
-    y1 = df_out["Fountain"]
-else:
-    y1 = df_out["Fountain"]
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
@@ -795,7 +799,7 @@ ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
 ax1.xaxis.set_minor_locator(mdates.DayLocator())
 
 if option == 'schwarzsee':
-    y2 = df_out.Discharge * 5
+    y2 = df_out.Fountain * 5
 else:
     y2 = df_out.Fountain
 ax2.plot(x, y2, "k-", linewidth=0.5)
@@ -835,7 +839,7 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 
 plt.savefig(
-    os.path.join(folders["interim_folder"], site + "_data.jpg"),
+    os.path.join(folders["input_folder"], site + "_data.jpg"),
     bbox_inches="tight",
     dpi=300,
 )
@@ -862,10 +866,6 @@ plt.clf()
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 
-if option == 'schwarzsee':
-    y2 = df_out.Discharge * 5
-else:
-    y2 = df_out.Fountain
 ax1.plot(x, y2, "k-", linewidth=0.5)
 ax1.set_ylabel("Fountain on/off ")
 ax1.grid()
