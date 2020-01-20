@@ -7,7 +7,7 @@ dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 # site = input("Input the Field Site Name: ") or "guttannen"
 
 site = "schwarzsee"
-option = "temperature"
+option = "schwarzsee"
 
 print("Site is", site)
 
@@ -33,14 +33,14 @@ if site == "schwarzsee":
 
     dates = dict(
         start_date=datetime(2019, 1, 29, 16),
-        end_date = datetime(2019, 3, 20, 18),
-        fountain_off_date = datetime(2019, 3, 10, 18),
+        end_date=datetime(2019, 3, 20, 18),
+        fountain_off_date=datetime(2019, 3, 10, 18),
     )
     fountain = dict(
         d_f=0.005,  # Fountain aperture diameter
         h_f=1.35,  # Fountain steps h_f
         discharge=12,  # Fountain on discharge
-        t_c = -6, # Fountain runtime temperature
+        t_c=-6,  # Fountain runtime temperature
     )
 
 if site == "plaffeien":
@@ -53,8 +53,8 @@ if site == "plaffeien":
 
     dates = dict(
         start_date=datetime(2019, 11, 15),
-        end_date = datetime(2019, 7, 1),
-        fountain_off_date = datetime(2019, 3, 1),
+        end_date=datetime(2019, 7, 1),
+        fountain_off_date=datetime(2019, 3, 1),
     )
     fountain = dict(
         d_f=0.005,  # Fountain hole diameter
@@ -73,12 +73,12 @@ if site == "guttannen":
 
     dates = dict(
         start_date=datetime(2018, 1, 9),
-        end_date = datetime(2018, 3, 1),
-        fountain_off_date = datetime(2018, 2, 1),
+        end_date=datetime(2018, 3, 1),
+        fountain_off_date=datetime(2018, 2, 1),
     )
     fountain = dict(
         d_f=0.005,  # Fountain hole diameter
-        h_f=5,  # Fountain steps h_f # todo include initial fountain height
+        h_f=5,  # Fountain steps h_f
         discharge=6,  # Fountain on discharge
         t_c=-1,  # Fountain runtime temperature
     )

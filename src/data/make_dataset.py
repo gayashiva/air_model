@@ -99,15 +99,17 @@ if site == "schwarzsee":
             df_in.loc[i, "Pressure"] = df_in.loc[i - 288, "Pressure"]
             df_in.loc[i, "Discharge"] = df_in.loc[i - 288, "Discharge"]
 
-    mask = (df_in["When"] >= dates['start_date']) & (df_in["When"] <= dates['end_date'])
+    mask = (df_in["When"] >= dates["start_date"]) & (df_in["When"] <= dates["end_date"])
     df_in = df_in.loc[mask]
     df_in = df_in.reset_index()
 
-    mask = (df_in2["When"] >= dates['start_date']) & (df_in2["When"] <= dates['end_date'])
+    mask = (df_in2["When"] >= dates["start_date"]) & (
+        df_in2["When"] <= dates["end_date"]
+    )
     df_in2 = df_in2.loc[mask]
     df_in2 = df_in2.reset_index()
 
-    days = pd.date_range(start=dates['start_date'], end=dates['end_date'], freq="5T")
+    days = pd.date_range(start=dates["start_date"], end=dates["end_date"], freq="5T")
     days = pd.DataFrame({"When": days})
 
     df = pd.merge(
@@ -132,7 +134,7 @@ if site == "schwarzsee":
     df["DRad"] = df_in2["DRad"]
     df["Prec"] = df_in2["Prec"] / 1000
 
-    mask = (df["When"] >= dates['start_date']) & (df["When"] <= dates['end_date'])
+    mask = (df["When"] >= dates["start_date"]) & (df["When"] <= dates["end_date"])
     df = df.loc[mask]
     df = df.reset_index()
 
@@ -157,7 +159,9 @@ if site == "schwarzsee":
     df_nights["End"] = pd.to_datetime(df_nights["End"], format="%Y-%m-%d %H:%M:%S")
 
     df_nights["Date"] = pd.to_datetime(df_nights["Date"], format="%Y-%m-%d")
-    mask = (df_nights["Date"] >= dates['start_date']) & (df_nights["Date"] <= dates['end_date'])
+    mask = (df_nights["Date"] >= dates["start_date"]) & (
+        df_nights["Date"] <= dates["end_date"]
+    )
     df_nights = df_nights.loc[mask]
     df_nights = df_nights.reset_index()
 
@@ -186,26 +190,39 @@ if site == "schwarzsee":
         },
         inplace=True,
     )
-    if option == 'schwarzsee':
+    if option == "schwarzsee":
         df["Fountain"] = 0
         mask = df["Discharge"] > 0.1
         mask_index = df[mask].index
         df.loc[mask_index, "Fountain"] = 1
 
+        df_out = df[
+            [
+                "When",
+                "T_a",
+                "RH",
+                "v_a",
+                "Discharge",
+                "Fountain",
+                "Rad",
+                "DRad",
+                "Prec",
+                "p_a",
+            ]
+        ]
 
-        df_out = df[["When", "T_a", "RH", "v_a", "Discharge", "Fountain", "Rad", "DRad", "Prec", "p_a"]]
-
-    else :
-        df_out = df[["When", "T_a", "RH", "v_a", "Fountain", "Rad", "DRad", "Prec", "p_a"]]
+    else:
+        df_out = df[
+            ["When", "T_a", "RH", "v_a", "Fountain", "Rad", "DRad", "Prec", "p_a"]
+        ]
         if option == "temperature":
             """ Use Temperature """
-            mask = df_out["T_a"] < fountain['t_c']
+            mask = df_out["T_a"] < fountain["t_c"]
             mask_index = df_out[mask].index
             df_out.loc[mask_index, "Fountain"] = 1
-            mask = df_out["When"] >= dates['fountain_off_date']
+            mask = df_out["When"] >= dates["fountain_off_date"]
             mask_index = df_out[mask].index
             df_out.loc[mask_index, "Fountain"] = 0
-
 
     df_out = df_out.round(5)
 
@@ -230,7 +247,7 @@ if site == "plaffeien":
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
     time_steps = 5 * 60  # s # Model time steps
-    mask = (df_in["When"] >= dates['start_date']) & (df_in["When"] <= dates['end_date'])
+    mask = (df_in["When"] >= dates["start_date"]) & (df_in["When"] <= dates["end_date"])
     df_in = df_in.loc[mask]
     df_in = df_in.reset_index()
 
@@ -292,7 +309,9 @@ if site == "plaffeien":
         df_nights["End"] = pd.to_datetime(df_nights["End"], format="%Y-%m-%d %H:%M:%S")
 
         df_nights["Date"] = pd.to_datetime(df_nights["Date"], format="%Y-%m-%d")
-        mask = (df_nights["Date"] >= dates['start_date']) & (df_nights["Date"] <= dates['end_date'])
+        mask = (df_nights["Date"] >= dates["start_date"]) & (
+            df_nights["Date"] <= dates["end_date"]
+        )
         df_nights = df_nights.loc[mask]
         df_nights = df_nights.reset_index()
 
@@ -393,10 +412,10 @@ if site == "plaffeien":
 
     if option == "temperature":
         """ Use Temperature """
-        mask = df_out["T_a"] < fountain['t_c']
+        mask = df_out["T_a"] < fountain["t_c"]
         mask_index = df_out[mask].index
         df_out.loc[mask_index, "Fountain"] = 1
-        mask = df_out["When"] >= dates['fountain_off_date']
+        mask = df_out["When"] >= dates["fountain_off_date"]
         mask_index = df_out[mask].index
         df_out.loc[mask_index, "Fountain"] = 0
 
@@ -435,7 +454,7 @@ if site == "guttannen":
     df_in = pd.read_csv(folders["data_file"], encoding="latin-1", skiprows=2, sep=";")
     df_in["When"] = pd.to_datetime(df_in["time"], format="%Y%m%d%H%M")  # Datetime
 
-    mask = (df_in["When"] >= dates['start_date']) & (df_in["When"] <= dates['end_date'])
+    mask = (df_in["When"] >= dates["start_date"]) & (df_in["When"] <= dates["end_date"])
     df_in = df_in.loc[mask]
     df_in = df_in.reset_index()
 
@@ -502,7 +521,9 @@ if site == "guttannen":
         df_nights["End"] = pd.to_datetime(df_nights["End"], format="%Y-%m-%d %H:%M:%S")
 
         df_nights["Date"] = pd.to_datetime(df_nights["Date"], format="%Y-%m-%d")
-        mask = (df_nights["Date"] >= dates['start_date']) & (df_nights["Date"] <= dates['end_date'])
+        mask = (df_nights["Date"] >= dates["start_date"]) & (
+            df_nights["Date"] <= dates["end_date"]
+        )
         df_nights = df_nights.loc[mask]
         df_nights = df_nights.reset_index()
 
@@ -601,10 +622,10 @@ if site == "guttannen":
 
     if option == "temperature":
         """ Use Temperature """
-        mask = df_out["T_a"] < fountain['t_c']
+        mask = df_out["T_a"] < fountain["t_c"]
         mask_index = df_out[mask].index
         df_out.loc[mask_index, "Fountain"] = 1
-        mask = df_out["When"] >= dates['fountain_off_date']
+        mask = df_out["When"] >= dates["fountain_off_date"]
         mask_index = df_out[mask].index
         df_out.loc[mask_index, "Fountain"] = 0
 
@@ -623,8 +644,10 @@ if site == "guttannen":
     df_out = df_out[cols]
     df_out = df_out.round(5)
 
-if option == 'temperature':
-    filename = folders["input_folder"] + site + "_" + option + "_" + str(fountain['t_c'])
+if option == "temperature":
+    filename = (
+        folders["input_folder"] + site + "_" + option + "_" + str(fountain["t_c"])
+    )
 else:
     filename = folders["input_folder"] + site + "_" + option
 
@@ -632,7 +655,7 @@ df_out.to_csv(filename + "_input.csv")
 
 
 # Plots
-pp = PdfPages(filename +  "_all_data" + ".pdf")
+pp = PdfPages(filename + "_all_data" + ".pdf")
 
 x = df_out["When"]
 y1 = df_out["T_a"]
@@ -790,21 +813,22 @@ fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
 # fig.suptitle("Field Data", fontsize=14)
 x = df_out.When
 
-y1 = df_out.T_a
-ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("T ($C$)")
-ax1.grid()
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-
-if option == 'schwarzsee':
-    y2 = df_out.Fountain * 5
+if option == "schwarzsee":
+    y1 = df_out.Discharge * 5
 else:
-    y2 = df_out.Fountain
+    y1 = df_out.Fountain
+ax1.plot(x, y1, "k-", linewidth=0.5)
+ax1.set_ylabel("Discharge ($l$)")
+ax1.grid()
+
+y2 = df_out.T_a
 ax2.plot(x, y2, "k-", linewidth=0.5)
-ax2.set_ylabel("Discharge ($l$)")
+ax2.set_ylabel("T ($C$)")
 ax2.grid()
+ax2.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax2.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax2.xaxis.set_minor_locator(mdates.DayLocator())
+
 
 y3 = df_out.Rad
 ax3.plot(x, y3, "k-", linewidth=0.5)

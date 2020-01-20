@@ -4,7 +4,7 @@ import math
 import logging
 from src.data.config import fountain, surface, option
 
-pd.options.mode.chained_assignment = None # Suppress Setting with warning
+pd.options.mode.chained_assignment = None  # Suppress Setting with warning
 
 np.seterr(all="raise")
 
@@ -22,8 +22,8 @@ def albedo(df, surface):
 
     for i in range(1, df.shape[0]):
 
-        # Wind Sensor Snow covered and fountain off
-        if option == 'schwarzsee':
+        # Wind Sensor Snow covered and fountain off #todo correct for other sites, use snow height parameter
+        if option == "schwarzsee":
             df.loc[i, "Fountain"] = df.loc[i, "Discharge"]  # todo correct later
         if (df.loc[i, "v_a"] == 0) & (df.loc[i, "Fountain"] == 0):
             if df.loc[i, "Prec"] > 0 & (
@@ -91,7 +91,7 @@ def projectile_xy(v, theta_f, hs=0.0, g=9.8):
     return max(data_xy)[0], t
 
 
-def icestupa(df, fountain, surface): # todo create predict and forecast branches
+def icestupa(df, fountain, surface):  # todo create predict and forecast branches
 
     logger = logging.getLogger(__name__)
     logger.debug("This is a debug message")
@@ -125,48 +125,50 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
     dx = 0.001  # Ice layer thickness dx
 
     """Initialise"""
-    # columns = ['T_s', 'temp', 'ice', 'iceV', 'solid', 'liquid', 'vapour', 'melted', 'gas', 'water', 'sprayed','TotalE', 'SW', 'LW', 'Qs', 'Ql', 'meltwater', 'SA', 'SA_step', 'h_ice', 'r_ice']
+    fountain_height = fountain["h_f"]
+    df["h_f"] = fountain_height
+    df["e_s"] = surface["ie"]  # Surface Emissivity
     df["T_s"] = 0  # Surface Temperature
     df["temp"] = 0  # Temperature Change
-    df["e_s"] = surface["ie"]  # Surface Emissivity
-    df["ice"] = 0
-    df["iceV"] = 0
-    df["solid"] = 0
-    df["liquid"] = 0
-    df["vapour"] = 0
-    df["melted"] = 0
-    df["gas"] = 0
-    df["water"] = 0
-    df["sprayed"] = 0
-    df["TotalE"] = 0
-    df["SW"] = 0
-    df["LW"] = 0
-    df["Qs"] = 0
-    df["Ql"] = 0
-    df["meltwater"] = 0
-    df["SA"] = 0  # Surface Area
-    df["SA_step"] = 0  # Surface Area
-    df["h_ice"] = 0
-    df["r_ice"] = 0
-    fountain_height = fountain["h_f"]
-    df['h_f'] = fountain_height
-    df["d_t"] = 0
     prec = 0  # Precipitation
     start = 0  # model start step
-    stop = 0  # model end step
     state = 0
     df["SRf"] = 0
     ice_layer = 0
-    T_droplet = 0
     water_to_ice = 0  # Model suggestion
     discharge_off = False
     fountain_height_max = False
-
     h_r_i = 0
     eff_discharge = fountain["discharge"]
-
     theta_f = math.radians(theta_f)  # Angle of Spray
     theta_s = math.radians(theta_s)  # solar angle
+
+    l = [
+        "T_s",
+        "temp",
+        "ice",
+        "iceV",
+        "solid",
+        "liquid",
+        "vapour",
+        "melted",
+        "gas",
+        "water",
+        "sprayed",
+        "TotalE",
+        "SW",
+        "LW",
+        "Qs",
+        "Ql",
+        "meltwater",
+        "SA",
+        "SA_step",
+        "h_ice",
+        "r_ice",
+        "d_t",
+    ]
+    for col in l:
+        df[col] = 0
 
     """ Estimating Albedo """
     df["a"] = albedo(df, surface)
@@ -178,7 +180,7 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
 
     for j in range(1, df.shape[0]):
         # todo change make dataset
-        if (option != 'schwarzsee'):
+        if option != "schwarzsee":
             df.loc[j, "Discharge"] = fountain["discharge"] * df.loc[j, "Fountain"]
         df.loc[j, "v_f"] = df.loc[j, "Discharge"] / (60 * 1000 * Area)
         df.loc[j, "r_f"], df.loc[j, "d_t"] = projectile_xy(
@@ -199,13 +201,6 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
             stop = i - 1
             break
 
-        # Stop Conditions
-        # todo review stop conditions
-        if (discharge_off):
-            df.Discharge[i:] = 0
-            # stop = i - 1
-            # break
-
         if (df.loc[i, "Discharge"]) > 0:
             state = 1
             # Set Model start time
@@ -224,9 +219,12 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
                     df.loc[i, "h_ice"] = (
                         3 * df.loc[i - 1, "iceV"] / (math.pi * df.loc[i, "r_ice"] ** 2)
                     )
-                else: # fountain Height max
+                else:  # fountain Height max
                     # Change Ice Radius
-                    df.loc[i, "r_ice"] = math.pow((3 * df.loc[i - 1, "iceV"]/(math.pi * df.loc[i, 'h_ice'])), 1/2)
+                    df.loc[i, "r_ice"] = math.pow(
+                        (3 * df.loc[i - 1, "iceV"] / (math.pi * df.loc[i, "h_ice"])),
+                        1 / 2,
+                    )
 
                 df.loc[i, "h_r"] = (
                     df.loc[i, "h_ice"] / df.loc[i, "r_ice"]
@@ -243,51 +241,63 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
                 )  # Estimating Solar Area fraction if theta_s 45
 
                 df.loc[i, "SA"] = (
-                        math.pi
-                        * df.loc[i, "r_ice"]
-                        * math.pow(
-                    (
+                    math.pi
+                    * df.loc[i, "r_ice"]
+                    * math.pow(
+                        (
                             math.pow(df.loc[i, "r_ice"], 2)
                             + math.pow((df.loc[i, "h_ice"]), 2)
-                    ),
-                    1 / 2,
-                )
+                        ),
+                        1 / 2,
+                    )
                 )  # Area of Conical Ice Surface
 
                 if fountain_height < df.loc[i, "h_ice"]:  # Fountain height Check
 
-                    fountain_height = fountain_height + fountain['h_f']
-                    df.loc[i:, 'h_f'] = fountain_height
+                    fountain_height = fountain_height + fountain["h_f"]
+                    df.loc[i:, "h_f"] = fountain_height
 
-                    if (eff_discharge/ (60 * 1000 * Area)) ** 2 < 2 * g * (
-                            fountain["h_f"]):  # Fountain Height too high
-                        print("Discharge stopped at fountain height", fountain_height - fountain['h_f'])
+                    if (eff_discharge / (60 * 1000 * Area)) ** 2 < 2 * g * (
+                        fountain["h_f"]
+                    ):  # Fountain Height too high
+                        print(
+                            "Discharge stopped at fountain height",
+                            fountain_height - fountain["h_f"],
+                        )
                         print("Discharge was", eff_discharge)
-                        fountain_height_max= True
-                        df.h_ice[i:] = fountain_height - fountain['h_f']
-                        df.loc[i, "SA"] = df.loc[i-1, "SA"]
+                        fountain_height_max = True
+                        df.h_ice[i:] = fountain_height - fountain["h_f"]
+                        df.loc[i, "SA"] = df.loc[i - 1, "SA"]
 
                     else:
                         for j in range(i, df.shape[0]):
 
                             if df.loc[j, "Discharge"] != 0:  # Fountain on
                                 df.loc[j, "v_f"] = math.pow(
-                                    ((df.loc[j, "Discharge"] / (60 * 1000 * Area)) ** 2 - 2 * g * (fountain["h_f"])), 1 / 2)
-                                df.loc[j, "Discharge"] = df.loc[j, "v_f"] * Area * 60 * 1000
+                                    (
+                                        (df.loc[j, "Discharge"] / (60 * 1000 * Area))
+                                        ** 2
+                                        - 2 * g * (fountain["h_f"])
+                                    ),
+                                    1 / 2,
+                                )
+                                df.loc[j, "Discharge"] = (
+                                    df.loc[j, "v_f"] * Area * 60 * 1000
+                                )
                                 eff_discharge = df.loc[j, "Discharge"]
                             else:
                                 df.loc[j, "v_f"] = 0
 
                         df.loc[i, "SA"] = (
-                                math.pi
-                                * df.loc[i, "r_ice"]
-                                * math.pow(
-                            (
+                            math.pi
+                            * df.loc[i, "r_ice"]
+                            * math.pow(
+                                (
                                     math.pow(df.loc[i, "r_ice"], 2)
                                     + math.pow((df.loc[i, "h_ice"]), 2)
-                            ),
-                            1 / 2,
-                        )
+                                ),
+                                1 / 2,
+                            )
                         )  # Area of Conical Ice Surface
 
             else:
@@ -399,24 +409,24 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
 
                 # Evaporation or condensation
                 df.loc[i, "Ql"] = (
-                        0.623
-                        * Le
-                        * rho_a
-                        / p0
-                        * math.pow(k, 2)
-                        * df.loc[i, "v_a"]
-                        * (Ea - Ew)
-                        / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
+                    0.623
+                    * Le
+                    * rho_a
+                    / p0
+                    * math.pow(k, 2)
+                    * df.loc[i, "v_a"]
+                    * (Ea - Ew)
+                    / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
                 )
 
                 df.loc[i, "gas"] -= (
-                                            df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
-                                    ) / Le
+                    df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
+                ) / Le
 
                 # Removing water quantity generated from previous time step
                 df.loc[i, "liquid"] += (
-                                               df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
-                                       ) / Le
+                    df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
+                ) / Le
 
                 df.loc[i, "e_s"] = surface["we"]
 
@@ -505,7 +515,7 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
             )
             # Without shape effects
             df.loc[i, "SW_shape"] = (1 - df.loc[i, "a"]) * (
-                    df.loc[i, "Rad"] + df.loc[i, "DRad"]
+                df.loc[i, "Rad"] + df.loc[i, "DRad"]
             )
 
             # Long Wave Radiation LW
@@ -626,7 +636,9 @@ def icestupa(df, fountain, surface): # todo create predict and forecast branches
             df.loc[i, "meltwater"] = df.loc[i - 1, "meltwater"] + df.loc[i, "melted"]
             df.loc[i, "ice"] = df.loc[i - 1, "ice"] + df.loc[i, "solid"]
             df.loc[i, "vapour"] = df.loc[i - 1, "vapour"] + df.loc[i, "gas"]
-            df.loc[i, "sprayed"] = df.loc[i - 1, "sprayed"] + df.loc[i, "Discharge"] * time_steps / 60
+            df.loc[i, "sprayed"] = (
+                df.loc[i - 1, "sprayed"] + df.loc[i, "Discharge"] * time_steps / 60
+            )
             df.loc[i, "water"] = df.loc[i - 1, "water"] + df.loc[i, "liquid"]
             df.loc[i, "iceV"] = df.loc[i, "ice"] / rho_i
 

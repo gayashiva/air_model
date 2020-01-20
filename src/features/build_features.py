@@ -45,8 +45,10 @@ logger.addHandler(logger_handler)
 logger.addHandler(console_handler)
 
 #  read files
-if option == 'temperature':
-    filename = folders["input_folder"] + site + "_" + option + "_" + str(fountain['t_c'])
+if option == "temperature":
+    filename = (
+        folders["input_folder"] + site + "_" + option + "_" + str(fountain["t_c"])
+    )
 else:
     filename = folders["input_folder"] + site + "_" + option
 
@@ -74,8 +76,10 @@ df[cols].to_csv(filename2, sep=",")
 # df[cols].to_csv(filename3, sep=",")
 
 # Full Output
-if option == 'temperature':
-    filename2 = folders["output_folder"] + site + "_" + option + "_" + str(fountain['t_c'])
+if option == "temperature":
+    filename2 = (
+        folders["output_folder"] + site + "_" + option + "_" + str(fountain["t_c"])
+    )
 else:
     filename2 = folders["output_folder"] + site + "_" + option
 filename4 = os.path.join(filename2 + "_model_results.csv")
@@ -83,7 +87,7 @@ df.to_csv(filename4, sep=",")
 
 
 # Plots
-pp = PdfPages(filename2 +  "_results.pdf")
+pp = PdfPages(filename2 + "_results.pdf")
 
 x = df.When
 y1 = df.iceV
@@ -242,12 +246,12 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
-y1 = df['SA']/df['iceV']
+y1 = df["SA"] / df["iceV"]
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, linewidth=0.5)
-ax1.set_ylim(0,50)
+ax1.set_ylim(0, 50)
 ax1.set_ylabel("SA/V ratio ($m^{-1}$)")
 ax1.set_xlabel("Days")
 
@@ -260,12 +264,12 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
-y1 = df['h_ice']/df['r_ice']
+y1 = df["h_ice"] / df["r_ice"]
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, linewidth=0.5)
-ax1.set_ylim(0,0.1)
+ax1.set_ylim(0, 0.1)
 ax1.set_ylabel("h/r ratio")
 ax1.set_xlabel("Days")
 
@@ -332,7 +336,7 @@ plt.clf()
 pp.close()
 
 # Plots
-if option == 'schwarzsee':
+if option == "schwarzsee":
     filename = os.path.join(filename2 + "_paper.pdf")
     pp = PdfPages(filename)
 
@@ -379,7 +383,6 @@ if option == 'schwarzsee':
 
     plt.clf()
 
-
     fig, (ax1, ax2, ax3) = plt.subplots(nrows=3, ncols=1, sharex=True, figsize=(10, 5))
 
     # fig.suptitle("Mass and Energy balance", fontsize=14)
@@ -408,7 +411,6 @@ if option == 'schwarzsee':
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
-
 
     fig, (ax1, ax2, ax3) = plt.subplots(
         nrows=3, ncols=1, sharex=True, sharey=True, figsize=(10, 5)
