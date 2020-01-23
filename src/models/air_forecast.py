@@ -116,7 +116,6 @@ def icestupa(df, fountain, surface):  # todo create predict and forecast branche
     """Miscellaneous"""
     z = 2  # m height of AWS
     c = 0.5  # Cloudiness c
-    theta_s = 45  # Solar Angle
     time_steps = 5 * 60  # s Model time steps
     dp = 70  # Density of Precipitation dp
     p0 = 1013  # Standard air pressure hPa
@@ -128,12 +127,9 @@ def icestupa(df, fountain, surface):  # todo create predict and forecast branche
     fountain_height = fountain["h_f"]
     df["h_f"] = fountain_height
     df["e_s"] = surface["ie"]  # Surface Emissivity
-    df["T_s"] = 0  # Surface Temperature
-    df["temp"] = 0  # Temperature Change
     prec = 0  # Precipitation
     start = 0  # model start step
     state = 0
-    df["SRf"] = 0
     ice_layer = 0
     water_to_ice = 0  # Model suggestion
     discharge_off = False
@@ -141,11 +137,10 @@ def icestupa(df, fountain, surface):  # todo create predict and forecast branche
     h_r_i = 0
     eff_discharge = fountain["discharge"]
     theta_f = math.radians(theta_f)  # Angle of Spray
-    theta_s = math.radians(theta_s)  # solar angle
 
     l = [
-        "T_s",
-        "temp",
+        "T_s",  # Surface Temperature
+        "temp", # Temperature Change
         "ice",
         "iceV",
         "solid",
@@ -165,6 +160,7 @@ def icestupa(df, fountain, surface):  # todo create predict and forecast branche
         "SA_step",
         "h_ice",
         "r_ice",
+        "SRf",
         "d_t",
     ]
     for col in l:
