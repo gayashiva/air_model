@@ -197,6 +197,14 @@ def icestupa(df, fountain, surface):  # todo create predict and forecast branche
             stop = i - 1
             break
 
+        # If ice melted in between fountain run
+        if (df.loc[i - 1, "ice"] <= 0) & (start != 0):
+            df.loc[i - 1, "solid"] = 0
+            df.loc[i - 1, "ice"] = 0
+            df.loc[i - 1, "iceV"] = 0
+            state = 0
+
+        # Initiate ice formation
         if (df.loc[i, "Discharge"]) > 0:
             state = 1
             # Set Model start time
@@ -205,7 +213,7 @@ def icestupa(df, fountain, surface):  # todo create predict and forecast branche
 
         if state == 1:
 
-            if df.Discharge[i:].sum() > 0:  # After Fountain on
+            if df.Discharge[i] > 0:  # After Fountain on
 
                 """ Ice radius same as Initial Fountain Spray Radius during formation """
                 df.loc[i, "r_ice"] = R

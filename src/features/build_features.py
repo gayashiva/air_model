@@ -1,11 +1,13 @@
 import logging
 import os
+import os.path
 import time
 from datetime import datetime
 from logging import StreamHandler
 from pandas.plotting import register_matplotlib_converters
 
 register_matplotlib_converters()
+import matplotlib
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,6 +17,8 @@ from src.data.config import site, dates, option, folders, fountain, surface
 from src.models.air_forecast import icestupa
 
 # python -m src.features.build_features
+plt.rcParams["figure.figsize"] = (10,7)
+# matplotlib.rc('xtick', labelsize=5)
 
 start = time.time()
 
@@ -46,24 +50,34 @@ logger.addHandler(console_handler)
 
 #  read files
 if option == "temperature":
-    filename = (
-        folders["input_folder"] + site + "_" + option + "_" + str(fountain["t_c"])
+    filename0 = (
+            folders["input_folder"] + site + "_" + option + "_" + str(fountain["t_c"])
+    )
+    filename1 = (
+        folders["output_folder"] + site + "_" + option + "_" + str(fountain["t_c"])
     )
 else:
-    filename = folders["input_folder"] + site + "_" + option
+    filename0 = folders["input_folder"] + site + "_" + option
+    filename1 = folders["output_folder"] + site + "_" + option
 
-filename0 = os.path.join(filename + "_input.csv")
-df_in = pd.read_csv(filename0, sep=",")
-df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+filename1 = os.path.join(filename1 + "_model_results.csv")
 
-# end
-end_date = df_in["When"].iloc[-1]
+print(filename1)
+if os.path.isfile(filename1):
+    print("Simulation Exists")
+    df = pd.read_csv(filename1, sep=",")
+    df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
 
-df = icestupa(df_in, fountain, surface)
+else:
+    filename0 = os.path.join(filename0 + "_input.csv")
+    df_in = pd.read_csv(filename0, sep=",")
+    df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
-total = time.time() - start
+    df = icestupa(df_in, fountain, surface)
 
-print("Total time : ", total / 60)
+    total = time.time() - start
+
+    print("Total time : ", total / 60)
 
 # Output for manim
 filename2 = os.path.join(folders["output_folder"], site + "_model_gif.csv")
@@ -147,20 +161,23 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
-df3 = df_in.set_index("When").resample("D").mean().reset_index()
-df3["Discharge"] = df3["Discharge"] == 0
-df3["Discharge"] = df3["Discharge"].astype(int)
-df3["Discharge"] = df3["Discharge"].astype(str)
+dfd = df.set_index("When").resample("D").mean().reset_index()
+dfd['When'] = dfd['When'].dt.strftime("%b %d")
+dfd["Discharge"] = dfd["Discharge"] == 0
+dfd["Discharge"] = dfd["Discharge"].astype(int)
+dfd["Discharge"] = dfd["Discharge"].astype(str)
+dfd = dfd.set_index("When")
 
-df2 = df[["When", "SW", "LW", "Qs", "Ql"]]
-x3 = df2.set_index("When").resample("D").mean().reset_index()
-x3.index = np.arange(1, len(x3) + 1)
+dfd = dfd.rename({'SW': 'Shortwave', 'LW': 'Longwave', 'Qs': 'Sensible', 'Ql': 'Latent'}, axis=1)
 
 fig = plt.figure()
-y = x3[["SW", "LW", "Qs", "Ql"]]
-y.plot.bar(stacked=True, edgecolor=df3["Discharge"], linewidth=0.5)
-plt.xlabel("Days")
-plt.ylabel("Energy ($W/m^{2}$)")
+y= dfd[['Shortwave','Longwave','Sensible','Latent' ]]
+y.plot.bar(stacked=True, edgecolor = dfd['Discharge'], linewidth=0.5)
+plt.xlabel('Days')
+plt.ylabel('Energy ($W/m^{2}$)')
+plt.legend(loc = 'upper left')
+plt.ylim(-150, 150)
+plt.xticks(rotation=45, fontsize=5)
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
@@ -442,21 +459,13 @@ if option == "schwarzsee":
     pp.savefig(bbox_inches="tight")
     plt.clf()
 
-    df3 = df_in.set_index("When").resample("D").mean().reset_index()
-    df3["Discharge"] = df3["Discharge"] == 0
-    df3["Discharge"] = df3["Discharge"].astype(int)
-    df3["Discharge"] = df3["Discharge"].astype(str)
-
-    df2 = df[["When", "SW", "LW", "Qs", "Ql"]]
-    x3 = df2.set_index("When").resample("D").mean().reset_index()
-    x3.index = np.arange(1, len(x3) + 1)
-
-    fig = plt.figure()
-    y = x3[["SW", "LW", "Qs", "Ql"]]
-    y.plot.bar(stacked=True, edgecolor=df3["Discharge"], linewidth=0.5)
-    plt.xlabel("Days")
-    plt.ylabel("Energy ($W/m^{2}$)")
-    plt.ylim(-200, 200)
+    y = dfd[['Shortwave', 'Longwave', 'Sensible', 'Latent']]
+    y.plot.bar(stacked=True, edgecolor=dfd['Discharge'], linewidth=0.5)
+    plt.xlabel('Days')
+    plt.ylabel('Energy ($W/m^{2}$)')
+    plt.legend(loc='upper left')
+    plt.ylim(-150, 150)
+    plt.xticks(rotation=45)
     pp.savefig(bbox_inches="tight")
     plt.clf()
 

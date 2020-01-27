@@ -1,8 +1,4 @@
-import logging
 import os
-import time
-from datetime import datetime
-from logging import StreamHandler
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 import matplotlib.dates as mdates
@@ -10,38 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages
-from src.data.config import site, option, folders, fountain, surface
-from src.models.air_forecast import icestupa
+from src.data.config import site, folders
 
-from SALib.sample import saltelli
-from SALib.analyze import sobol
-import matplotlib.colors
-
-# Create the Logger
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-# Create the Handler for logging data to a file
-logger_handler = logging.FileHandler(
-    os.path.join(os.path.join(folders["dirname"], "data/logs/"), site + "_site.log"),
-    mode="w",
-)
-logger_handler.setLevel(logging.DEBUG)
-
-# Create the Handler for logging data to console.
-console_handler = StreamHandler()
-console_handler.setLevel(logging.CRITICAL)
-
-# Create a Formatter for formatting the log messages
-logger_formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
-
-# Add the Formatter to the Handler
-logger_handler.setFormatter(logger_formatter)
-console_handler.setFormatter(logger_formatter)
-
-# Add the Handler to the Logger
-logger.addHandler(logger_handler)
-logger.addHandler(console_handler)
 
 filename2 = os.path.join(
     folders['output_folder'], site + "_simulations_crittemp.csv"

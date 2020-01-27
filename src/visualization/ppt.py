@@ -17,86 +17,95 @@ from src.data.config import site, option, folders, fountain, surface
 # python -m src.visualization.ppt
 
 plt.rcParams["figure.figsize"] = (10,7)
+matplotlib.rc('xtick', labelsize=5)
 
-if (fountain['discharge'] == 12) and (fountain['t_c'] == -6):
-    # Full Output
-    if option == 'temperature':
-        filename2 = folders["output_folder"] + site + "_" + option + "_" + str(fountain['t_c'])
-    else:
-        filename2 = folders["output_folder"] + site + "_" + option
-    filename4 = os.path.join(filename2 + "_model_results.csv")
-    df = pd.read_csv(filename4, sep=",")
-    df = df[['When', 'iceV']]
-    df = df.rename(columns={"iceV": "iceV_model"})
-
-    site = 'schwarzsee'
-    option = 'schwarzsee'
-
-    if option == 'temperature':
-        filename2 = folders["output_folder"] + site + "_" + option + "_" + str(fountain['t_c'])
-    else:
-        filename2 = folders["output_folder"] + site + "_" + option
-    filename4 = os.path.join(filename2 + "_model_results.csv")
-    dfx = pd.read_csv(filename4, sep=",")
-    dfx = dfx[['When', 'iceV']]
-
-    df.set_index(pd.to_datetime(df['When']), inplace=True)
-    dfx.set_index(pd.to_datetime(dfx['When']), inplace=True)
-
-    print(df.head())
-
-    merge = pd.merge(df, dfx, how='inner', left_index=True, right_index=True)
-
-    print(merge.head())
-    filename = os.path.join(filename2 + "_suggestion.pdf")
-    pp = PdfPages(filename)
-    x = df.index
-    y1 = df.iceV_model
-    # y2 = merge.iceV
-
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-    ax1.plot(x, y1, "k-")
-    ax1.set_ylabel("Model Ice Volume ($m^3$)")
-    ax1.set_xlabel("Days")
-    # print(ax1.get_ylim())
-    # ax2 = ax1.twinx()
-    # ax2.plot(x, y2, "b-")
-    # ax2.set_ylabel("Site Ice Volume ($m^3$)", color="b")
-    # # ax2.set_ylim(ax1.get_ylim())
-    # for tl in ax2.get_yticklabels():
-    #     tl.set_color("b")
-
-    # Include Validation line segment 1
-    ax1.plot(
-        [datetime(2019, 2, 14, 16), datetime(2019, 2, 14, 16)],
-        [0.67115, 1.042],
-        color="green",
-        lw=1,
-    )
-    ax1.scatter(datetime(2019, 2, 14, 16), 0.856575, color="green", marker="o")
-
-    # Include Validation line segment 2
-    ax1.plot(
-        [datetime(2019, 3, 10, 18), datetime(2019, 3, 10, 18)],
-        [0.037, 0.222],
-        color="green",
-        lw=1,
-    )
-    ax1.scatter(datetime(2019, 3, 10, 18), 0.1295, color="green", marker="o")
-
-    #  format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
-    pp.close()
+# if (fountain['discharge'] == 12) and (fountain['t_c'] == -6):
+#     # Full Output
+#     if option == 'temperature':
+#         filename2 = folders["output_folder"] + site + "_" + option + "_" + str(fountain['t_c'])
+#     else:
+#         filename2 = folders["output_folder"] + site + "_" + option
+#     filename4 = os.path.join(filename2 + "_model_results.csv")
+#     df = pd.read_csv(filename4, sep=",")
+#     df = df[['When', 'iceV']]
+#     df = df.rename(columns={"iceV": "iceV_model"})
+#
+#     site = 'schwarzsee'
+#     option = 'schwarzsee'
+#
+#     if option == 'temperature':
+#         filename2 = folders["output_folder"] + site + "_" + option + "_" + str(fountain['t_c'])
+#     else:
+#         filename2 = folders["output_folder"] + site + "_" + option
+#     filename4 = os.path.join(filename2 + "_model_results.csv")
+#     dfx = pd.read_csv(filename4, sep=",")
+#     dfx = dfx[['When', 'iceV']]
+#
+#     df.set_index(pd.to_datetime(df['When']), inplace=True)
+#     dfx.set_index(pd.to_datetime(dfx['When']), inplace=True)
+#
+#     print(df.head())
+#
+#     merge = pd.merge(df, dfx, how='inner', left_index=True, right_index=True)
+#
+#     print(merge.head())
+#     filename = os.path.join(filename2 + "_suggestion.pdf")
+#     pp = PdfPages(filename)
+#     x = df.index
+#     y1 = df.iceV_model
+#     # y2 = merge.iceV
+#
+#     fig = plt.figure()
+#     ax1 = fig.add_subplot(111)
+#     ax1.plot(x, y1, "k-")
+#     ax1.set_ylabel("Model Ice Volume ($m^3$)")
+#     ax1.set_xlabel("Days")
+#     # print(ax1.get_ylim())
+#     # ax2 = ax1.twinx()
+#     # ax2.plot(x, y2, "b-")
+#     # ax2.set_ylabel("Site Ice Volume ($m^3$)", color="b")
+#     # # ax2.set_ylim(ax1.get_ylim())
+#     # for tl in ax2.get_yticklabels():
+#     #     tl.set_color("b")
+#
+#     # Include Validation line segment 1
+#     ax1.plot(
+#         [datetime(2019, 2, 14, 16), datetime(2019, 2, 14, 16)],
+#         [0.67115, 1.042],
+#         color="green",
+#         lw=1,
+#     )
+#     ax1.scatter(datetime(2019, 2, 14, 16), 0.856575, color="green", marker="o")
+#
+#     # Include Validation line segment 2
+#     ax1.plot(
+#         [datetime(2019, 3, 10, 18), datetime(2019, 3, 10, 18)],
+#         [0.037, 0.222],
+#         color="green",
+#         lw=1,
+#     )
+#     ax1.scatter(datetime(2019, 3, 10, 18), 0.1295, color="green", marker="o")
+#
+#     #  format the ticks
+#     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+#     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+#     ax1.xaxis.set_minor_locator(mdates.DayLocator())
+#     ax1.grid()
+#     fig.autofmt_xdate()
+#     pp.savefig(bbox_inches="tight")
+#     plt.clf()
+#     pp.close()
 
 # #  read files
-# filename0 = os.path.join(folders['output_folder'], site +"_model_results.csv")
+# if option == "temperature":
+#     filename2 = (
+#         folders["output_folder"] + site + "_" + option + "_" + str(fountain["t_c"])
+#     )
+# else:
+#     filename2 = folders["output_folder"] + site + "_" + option
+#
+#
+# filename0 = os.path.join(filename2 + "_model_results.csv")
 # df = pd.read_csv(filename0, sep=",")
 # df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
 #
@@ -188,7 +197,7 @@ if (fountain['discharge'] == 12) and (fountain['t_c'] == -6):
 #
 # plt.clf()
 #
-# matplotlib.rc('xtick', labelsize=5)
+#
 #
 # dfds = df.set_index("When").resample("D").sum().reset_index()
 # dfd['meltwater'] = dfd['meltwater'] * -1 / 1000
@@ -213,7 +222,6 @@ if (fountain['discharge'] == 12) and (fountain['t_c'] == -6):
 # plt.ylabel('Volume ($m^{3}$)')
 # plt.xticks(rotation=45)
 # plt.legend(loc = 'upper right')
-# plt.xticks(rotation=45)
 #
 # #  format the ticks
 # ax.yaxis.set_minor_locator(AutoMinorLocator())
@@ -240,44 +248,41 @@ if (fountain['discharge'] == 12) and (fountain['t_c'] == -6):
 # plt.savefig(filename, bbox_inches  =  "tight", dpi=300)
 #
 # plt.clf()
-#
-# # Energy Plots
-# y= dfd[['Shortwave','Longwave']]
-# y.plot.bar(stacked=True, edgecolor = dfd['Discharge'], linewidth=0.5)
+
+# Energy Plots
+y= dfd[['Shortwave','Longwave']]
+y.plot.bar(stacked=True, edgecolor = dfd['Discharge'], linewidth=0.5)
+plt.xlabel('Days')
+plt.ylabel('Energy ($W/m^{2}$)')
+plt.ylim(-150, 150)
+plt.legend(loc = 'upper right')
+
+plt.xticks(rotation=45)
+plt.savefig(os.path.join(folders['output_folder'], site + "_energybar1.jpg"), bbox_inches  =  "tight", dpi=300)
+plt.clf()
+
+y= dfd[['Shortwave','Longwave','Sensible' ]]
+y.plot.bar(stacked=True, edgecolor = dfd['Discharge'], linewidth=0.5)
 # plt.xlabel('Days')
-# plt.ylabel('Energy ($W/m^{2}$)')
-# plt.ylim(-150, 150)
-# plt.legend(loc = 'upper right')
-#
-# plt.xticks(rotation=45)
-# plt.savefig(os.path.join(folders['output_folder'], site + "_energybar1.jpg"), bbox_inches  =  "tight", dpi=300)
-# plt.clf()
-#
-# y= dfd[['Shortwave','Longwave','Sensible' ]]
-# y.plot.bar(stacked=True, edgecolor = dfd['Discharge'], linewidth=0.5)
-# # plt.xlabel('Days')
-# plt.ylabel('Energy ($W/m^{2}$)')
-# plt.legend(loc = 'upper right')
-# plt.ylim(-150, 150)
-# #  format the ticks
-# ax1.xaxis.set_major_locator(plt.MaxNLocator(7))
-# ax1.xaxis.set_minor_locator(AutoMinorLocator())
-# ax1.yaxis.set_minor_locator(AutoMinorLocator())
-# plt.xticks(rotation=45)
-# plt.savefig(os.path.join(folders['output_folder'], site + "_energybar2.jpg"), bbox_inches  =  "tight", dpi=300)
-# plt.clf()
-#
-# y= dfd[['Shortwave','Longwave','Sensible','Latent' ]]
-# y.plot.bar(stacked=True, edgecolor = dfd['Discharge'], linewidth=0.5)
-# plt.xlabel('Days')
-# plt.ylabel('Energy ($W/m^{2}$)')
-# plt.legend(loc = 'upper right')
-# plt.ylim(-150, 150)
-#
-# plt.xticks(rotation=45)
-# plt.savefig(os.path.join(folders['output_folder'], site + "_energybar3.jpg"), bbox_inches  =  "tight", dpi=300)
-# plt.clf()
-#
+plt.ylabel('Energy ($W/m^{2}$)')
+plt.legend(loc = 'upper right')
+plt.ylim(-150, 150)
+
+plt.xticks(rotation=45)
+plt.savefig(os.path.join(folders['output_folder'], site + "_energybar2.jpg"), bbox_inches  =  "tight", dpi=300)
+plt.clf()
+
+y= dfd[['Shortwave','Longwave','Sensible','Latent' ]]
+y.plot.bar(stacked=True, edgecolor = dfd['Discharge'], linewidth=0.5)
+plt.xlabel('Days')
+plt.ylabel('Energy ($W/m^{2}$)')
+plt.legend(loc = 'upper right')
+plt.ylim(-150, 150)
+
+plt.xticks(rotation=45)
+plt.savefig(os.path.join(folders['output_folder'], site + "_energybar3.jpg"), bbox_inches  =  "tight", dpi=300)
+plt.clf()
+
 # fig = plt.figure()
 # y12 = dfd['iceV']
 # y32 = dfd['Shortwave'] + dfd['Longwave'] + dfd['Sensible'] + dfd['Latent']
@@ -397,6 +402,7 @@ if (fountain['discharge'] == 12) and (fountain['t_c'] == -6):
 # filename = os.path.join(folders['output_folder'], site + '_' + option + "_energySA0.jpg")
 # plt.savefig(filename, bbox_inches  =  "tight", dpi=300)
 # plt.clf()
+
 #
 # filename = os.path.join(folders['output_folder'], "schwarzsee_simulations_4_[4, 6, 8, 10, 12].csv")
 # dfd = pd.read_csv(filename, sep=",")
@@ -446,7 +452,7 @@ if (fountain['discharge'] == 12) and (fountain['t_c'] == -6):
 # filename = os.path.join(folders['output_folder'], site + '_' + option + "_optimizedtime.jpg")
 # plt.savefig(filename, bbox_inches  =  "tight", dpi=300)
 # plt.clf()
-
+#
 # y1 = dfd['iceV']
 # y2 = (dfd['SW'] + dfd['LW'] + dfd['Sensible'] + dfd['Latent']) * dfd['SA']
 #
@@ -490,10 +496,10 @@ if (fountain['discharge'] == 12) and (fountain['t_c'] == -6):
 # plt.show()
 # plt.savefig(os.path.join(folders['output_folder'], site + "_energybarppt2.jpg"), bbox_inches  =  "tight", dpi=300)
 # plt.clf()
-
-
-
-
+#
+#
+#
+#
 # dff = pd.DataFrame([[df['SW'].sum(), df['LW'].sum(), df['Qs'].sum(), df['Ql'].sum()]], columns=['SW', 'LW', 'Qs', 'Ql'])
 #
 # # Plot the figure.
@@ -505,7 +511,7 @@ if (fountain['discharge'] == 12) and (fountain['t_c'] == -6):
 # plt.savefig(
 #     os.path.join(folders['output_folder'], site + "ppt_ful.jpg"), bbox_inches="tight", dpi=300
 # )
-
+#
 # positive_energy = 0
 # negative_energy = 0
 # for j in dff.columns:
