@@ -207,13 +207,12 @@ def icestupa(df, fountain, surface):  # todo create predict and forecast branche
         if (df.loc[i, "Discharge"] > 0) & (start == 0):
             state = 1
             start = i - 1   # Set Model start time
+            df.loc[i - 1, "r_ice"] = R
 
         if state == 1:
 
-            if df.Discharge[i] > 0:  # After Fountain on
-
-                """ Ice radius same as Initial Fountain Spray Radius during formation """
-                df.loc[i, "r_ice"] = R
+            if (df.Discharge[i] > 0) & (df.loc[i - 1, "r_ice"] >= R):
+                df.loc[i, "r_ice"] = R  # Ice radius same as Initial Fountain Spray Radius
 
                 if fountain_height_max == False:
                     # Ice Height
@@ -230,6 +229,7 @@ def icestupa(df, fountain, surface):  # todo create predict and forecast branche
                 df.loc[i, "h_r"] = (
                     df.loc[i, "h_ice"] / df.loc[i, "r_ice"]
                 )  # Height to radius ratio
+                h_r_i = 0
 
                 df.loc[i, "SRf"] = (
                     0.5
