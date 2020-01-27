@@ -175,7 +175,6 @@ def icestupa(df, fountain, surface):  # todo create predict and forecast branche
     df["r"] = 0
 
     for j in range(1, df.shape[0]):
-        # todo change make dataset
         if option != "schwarzsee":
             df.loc[j, "Discharge"] = fountain["discharge"] * df.loc[j, "Fountain"]
         df.loc[j, "v_f"] = df.loc[j, "Discharge"] / (60 * 1000 * Area)
@@ -205,11 +204,9 @@ def icestupa(df, fountain, surface):  # todo create predict and forecast branche
             state = 0
 
         # Initiate ice formation
-        if (df.loc[i, "Discharge"]) > 0:
+        if (df.loc[i, "Discharge"] > 0) & (start == 0):
             state = 1
-            # Set Model start time
-            if start == 0:
-                start = i - 1
+            start = i - 1   # Set Model start time
 
         if state == 1:
 
