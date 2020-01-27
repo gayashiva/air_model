@@ -175,7 +175,6 @@ def icestupa(df, fountain, surface):  # todo create predict and forecast branche
     df["r"] = 0
 
     for j in range(1, df.shape[0]):
-        # todo change make dataset
         if option != "schwarzsee":
             df.loc[j, "Discharge"] = fountain["discharge"] * df.loc[j, "Fountain"]
         df.loc[j, "v_f"] = df.loc[j, "Discharge"] / (60 * 1000 * Area)
@@ -205,104 +204,105 @@ def icestupa(df, fountain, surface):  # todo create predict and forecast branche
             state = 0
 
         # Initiate ice formation
-        if (df.loc[i, "Discharge"]) > 0:
+        if (df.loc[i, "Discharge"] > 0) & (start == 0):
             state = 1
-            # Set Model start time
-            if start == 0:
-                start = i - 1
+            start = i - 1 # Set model start time
+            df.loc[i, "r_ice"] = R  # Initialise Ice radius same as Fountain Spray Radius
+
 
         if state == 1:
 
-            if df.Discharge[i] > 0:  # After Fountain on
+            """ Determine Surface Area """
+            if df.loc[i, "r_ice"] == R:  # After Fountain on
 
-                """ Ice radius same as Initial Fountain Spray Radius during formation """
-                df.loc[i, "r_ice"] = R
+                if df.Discharge[i] > 0:
+                    df.loc[i+1, "r_ice"] = R
 
-                if fountain_height_max == False:
                     # Ice Height
                     df.loc[i, "h_ice"] = (
                         3 * df.loc[i - 1, "iceV"] / (math.pi * df.loc[i, "r_ice"] ** 2)
                     )
-                else:  # fountain Height max
-                    # Change Ice Radius
-                    df.loc[i, "r_ice"] = math.pow(
-                        (3 * df.loc[i - 1, "iceV"] / (math.pi * df.loc[i, "h_ice"])),
-                        1 / 2,
+
+                    logger.critical(
+                        "h r is %s,%s  thick at %s",
+                        df.loc[i, "h_ice"],
+                        df.loc[i, "r_ice"],
+                        df.loc[i, "When"],
                     )
+                    df.loc[i, "h_r"] = (
+                        df.loc[i, "h_ice"] / df.loc[i, "r_ice"]
+                    )  # Height to radius ratio
+                    h_r_i = 0
 
-                df.loc[i, "h_r"] = (
-                    df.loc[i, "h_ice"] / df.loc[i, "r_ice"]
-                )  # Height to radius ratio
-
-                df.loc[i, "SRf"] = (
-                    0.5
-                    * (df.loc[i, "h_r"] + math.pi)
-                    / (
-                        math.pi
-                        * math.pow((1 + math.pow(df.loc[i, "h_r"], 2)), 1 / 2)
-                        * math.pow(2, 1 / 2)
-                    )
-                )  # Estimating Solar Area fraction if theta_s 45
-
-                df.loc[i, "SA"] = (
-                    math.pi
-                    * df.loc[i, "r_ice"]
-                    * math.pow(
-                        (
-                            math.pow(df.loc[i, "r_ice"], 2)
-                            + math.pow((df.loc[i, "h_ice"]), 2)
-                        ),
-                        1 / 2,
-                    )
-                )  # Area of Conical Ice Surface
-
-                if fountain_height < df.loc[i, "h_ice"]:  # Fountain height Check
-
-                    fountain_height = fountain_height + fountain["h_f"]
-                    df.loc[i:, "h_f"] = fountain_height
-
-                    if (eff_discharge / (60 * 1000 * Area)) ** 2 < 2 * g * (
-                        fountain["h_f"]
-                    ):  # Fountain Height too high
-                        print(
-                            "Discharge stopped at fountain height",
-                            fountain_height - fountain["h_f"],
+                    df.loc[i, "SRf"] = (
+                        0.5
+                        * (df.loc[i, "h_r"] + math.pi)
+                        / (
+                            math.pi
+                            * math.pow((1 + math.pow(df.loc[i, "h_r"], 2)), 1 / 2)
+                            * math.pow(2, 1 / 2)
                         )
-                        print("Discharge was", eff_discharge)
-                        fountain_height_max = True
-                        df.h_ice[i:] = fountain_height - fountain["h_f"]
-                        df.loc[i, "SA"] = df.loc[i - 1, "SA"]
+                    )  # Estimating Solar Area fraction if theta_s 45
 
-                    else:
-                        for j in range(i, df.shape[0]):
+                    df.loc[i, "SA"] = (
+                        math.pi
+                        * df.loc[i, "r_ice"]
+                        * math.pow(
+                            (
+                                math.pow(df.loc[i, "r_ice"], 2)
+                                + math.pow((df.loc[i, "h_ice"]), 2)
+                            ),
+                            1 / 2,
+                        )
+                    )  # Area of Conical Ice Surface
 
-                            if df.loc[j, "Discharge"] != 0:  # Fountain on
-                                df.loc[j, "v_f"] = math.pow(
+                    if fountain_height < df.loc[i, "h_ice"]:  # Fountain height Check
+
+                        fountain_height = fountain_height + fountain["h_f"]
+                        df.loc[i:, "h_f"] = fountain_height
+
+                        if (eff_discharge / (60 * 1000 * Area)) ** 2 < 2 * g * (
+                            fountain["h_f"]
+                        ):  # Fountain Height too high
+                            print(
+                                "Discharge stopped at fountain height",
+                                fountain_height - fountain["h_f"],
+                            )
+                            print("Discharge was", eff_discharge)
+                            fountain_height_max = True
+                            df.h_ice[i:] = fountain_height - fountain["h_f"]
+                            df.loc[i, "SA"] = df.loc[i - 1, "SA"]
+
+                        else:
+                            for j in range(i, df.shape[0]):
+
+                                if df.loc[j, "Discharge"] != 0:  # Fountain on
+                                    df.loc[j, "v_f"] = math.pow(
+                                        (
+                                            (df.loc[j, "Discharge"] / (60 * 1000 * Area))
+                                            ** 2
+                                            - 2 * g * (fountain["h_f"])
+                                        ),
+                                        1 / 2,
+                                    )
+                                    df.loc[j, "Discharge"] = (
+                                        df.loc[j, "v_f"] * Area * 60 * 1000
+                                    )
+                                    eff_discharge = df.loc[j, "Discharge"]
+                                else:
+                                    df.loc[j, "v_f"] = 0
+
+                            df.loc[i, "SA"] = (
+                                math.pi
+                                * df.loc[i, "r_ice"]
+                                * math.pow(
                                     (
-                                        (df.loc[j, "Discharge"] / (60 * 1000 * Area))
-                                        ** 2
-                                        - 2 * g * (fountain["h_f"])
+                                        math.pow(df.loc[i, "r_ice"], 2)
+                                        + math.pow((df.loc[i, "h_ice"]), 2)
                                     ),
                                     1 / 2,
                                 )
-                                df.loc[j, "Discharge"] = (
-                                    df.loc[j, "v_f"] * Area * 60 * 1000
-                                )
-                                eff_discharge = df.loc[j, "Discharge"]
-                            else:
-                                df.loc[j, "v_f"] = 0
-
-                        df.loc[i, "SA"] = (
-                            math.pi
-                            * df.loc[i, "r_ice"]
-                            * math.pow(
-                                (
-                                    math.pow(df.loc[i, "r_ice"], 2)
-                                    + math.pow((df.loc[i, "h_ice"]), 2)
-                                ),
-                                1 / 2,
-                            )
-                        )  # Area of Conical Ice Surface
+                            )  # Area of Conical Ice Surface
 
             else:
                 """ Keeping h_r constant to determine SA """
@@ -316,6 +316,12 @@ def icestupa(df, fountain, surface):  # todo create predict and forecast branche
                         df.loc[i - 1, "h_ice"] / df.loc[i - 1, "r_ice"]
                     )  # Height to radius ratio
 
+                logger.critical(
+                    "h r is %s,%s  thick at %s",
+                    df.loc[i, "h_ice"],
+                    df.loc[i, "r_ice"],
+                    df.loc[i, "When"],
+                )
                 # Ice Radius
                 df.loc[i, "r_ice"] = math.pow(
                     df.loc[i - 1, "iceV"] / math.pi * (3 / df.loc[i, "h_r"]), 1 / 3
@@ -346,10 +352,10 @@ def icestupa(df, fountain, surface):  # todo create predict and forecast branche
                     )
                 )  # Area of Conical Ice Surface
 
+            logger.info("Surface Area is %s thick at %s", df.loc[i, "SA"], df.loc[i, "When"])
             # Update Ice Layer
-            if (ice_layer != 0) & (df.loc[i - 1, "SA"] != df.loc[i, "SA"]):
-                ice_layer = dx * df.loc[i, "SA"] * rho_i
-                logger.info("Ice layer is %s thick at %s", ice_layer, df.loc[i, "When"])
+            ice_layer = dx * df.loc[i, "SA"] * rho_i
+            logger.info("Ice layer is %s thick at %s", ice_layer, df.loc[i, "When"])
 
             # Precipitation to ice quantity
             prec = prec + dp * df.loc[i, "Prec"] * math.pi * math.pow(R_f, 2)
