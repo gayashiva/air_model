@@ -129,7 +129,6 @@ def icestupa(df, fountain, surface):
     start = 0  # model start step
     state = 0
     ice_layer = 0
-    water_to_ice = 0  # Model suggestion
     discharge_off = False
     fountain_height_max = False
     h_r_i = 0
@@ -641,10 +640,6 @@ def icestupa(df, fountain, surface):
             df.loc[i, "water"] = df.loc[i - 1, "water"] + df.loc[i, "liquid"]
             df.loc[i, "iceV"] = df.loc[i, "ice"] / rho_i
 
-            """Fountain suggested water use"""  # todo Too simplified
-            if df.loc[i, "solid"] > 0:
-                water_to_ice = water_to_ice + df.loc[i, "solid"]
-
             logger.debug(
                 "Surface temp. %s, is Ice is %s at %s",
                 round(df.loc[i, "T_s"]),
@@ -660,7 +655,7 @@ def icestupa(df, fountain, surface):
     print("Evaporated/sublimated", float(df["vapour"].tail(1)))
     print("Model ended", df.loc[i - 1, "When"])
     print("Model runtime", df.loc[i - 1, "When"] - df.loc[start, "When"])
-    # print("Fountain should", float(water_to_ice))
+    print("Fountain efficiency", float((df["meltwater"].tail(1) + df["ice"].tail(1))/df["sprayed"].tail(1)) * 100)
     print("Ice Volume Max", float(df["iceV"].max()))
     print("Ppt", prec)
 
