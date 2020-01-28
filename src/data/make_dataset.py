@@ -16,10 +16,6 @@ register_matplotlib_converters()
 # python -m src.data.make_dataset
 
 
-# # settings
-# start_date = datetime(2019, 1, 29, 16)
-# end_date = datetime(2019, 3, 10, 18)
-
 if site == "schwarzsee":
 
     # read files

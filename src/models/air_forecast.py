@@ -18,17 +18,15 @@ def albedo(df, surface):
     w = 0
     j = 0  # Account for decay rate after rain
     rf = 2  # Rain decay factor
-    Ts = -1  # Solid Ppt
+    Ts = 1  # Solid Ppt
 
     for i in range(1, df.shape[0]):
 
-        # Wind Sensor Snow covered and fountain off #todo correct for other sites, use snow height parameter
-        if option == "schwarzsee":
-            df.loc[i, "Fountain"] = df.loc[i, "Discharge"]  # todo correct later
-        if (df.loc[i, "v_a"] == 0) & (df.loc[i, "Fountain"] == 0):
+        # Snow ppt and fountain off
+        if df.loc[i, "Fountain"] == 0:
             if df.loc[i, "Prec"] > 0 & (
                 df.loc[i, "T_a"] < Ts
-            ):  # Assumes snow ppt because of wind sensor
+            ):
                 s = 0
                 w = 0
                 j = 0
@@ -39,7 +37,7 @@ def albedo(df, surface):
             s = s + 1
 
         # No snow and fountain off
-        if (df.loc[i, "v_a"] != 0) & (df.loc[i, "Fountain"] == 0):
+        if df.loc[i, "Fountain"] == 0:
             df.loc[i, "a"] = surface["a_w"] + (
                 surface["a_i"] - surface["a_w"]
             ) * math.exp(-w / tw)
@@ -91,7 +89,7 @@ def projectile_xy(v, theta_f, hs=0.0, g=9.8):
     return max(data_xy)[0], t
 
 
-def icestupa(df, fountain, surface):  # todo create predict and forecast branches
+def icestupa(df, fountain, surface):
 
     logger = logging.getLogger(__name__)
     logger.debug("This is a debug message")
@@ -432,7 +430,7 @@ def icestupa(df, fountain, surface):  # todo create predict and forecast branche
                 df.loc[i, "e_s"] = surface["we"]
 
                 # Initial freeze up due to cold ice layer
-                if df.loc[i - 1, "T_s"] < 0:  # todo Check and delete
+                if df.loc[i - 1, "T_s"] < 0:
 
                     df.loc[i, "solid"] += (ice_layer * ci * (-df.loc[i - 1, "T_s"])) / (
                         Lf
