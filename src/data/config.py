@@ -6,8 +6,8 @@ dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 # site = input("Input the Field Site Name: ") or "guttannen"
 
-site = "schwarzsee"
-option = "schwarzsee"
+site = "plaffeien"
+option = "energy"
 
 print("Site is", site)
 
@@ -52,7 +52,7 @@ if site == "plaffeien":
     )
 
     dates = dict(
-        start_date=datetime(2019, 11, 15),
+        start_date=datetime(2018, 11, 15),
         end_date=datetime(2019, 7, 1),
         fountain_off_date=datetime(2019, 3, 1),
     )

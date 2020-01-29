@@ -8,7 +8,8 @@ import math
 from pathlib import Path
 import os
 import logging
-from src.data.config import site, dates, option, folders, fountain
+from src.data.config import site, dates, option, folders, fountain, surface
+from src.models.air_forecast import projectile_xy
 from pandas.plotting import register_matplotlib_converters
 
 register_matplotlib_converters()
@@ -322,89 +323,101 @@ if site == "plaffeien":
         df_out.Discharge = fountain["discharge"] * df_out.Fountain  # Litres per minute
 
     if option == "energy":
-        """ Use Energy Flux """
-        """Settings"""
-        z = 2  # m height of AWS
 
-        """Material Properties"""
-        a_w = 0.6
-        we = 0.95
-        z0mi = 0.001
-        z0ms = 0.0015
-        z0hi = 0.0001
-        c = 0.5
-        Lf = 334 * 1000  #  J/kg Fusion
+        """Constants"""
+        Ls = 2848 * 1000  # J/kg Sublimation
+        Le = 2514 * 1000  # J/kg Evaporation
+        Lf = 334 * 1000  # J/kg Fusion
         cw = 4.186 * 1000  # J/kg Specific heat water
+        ci = 2.108 * 1000  # J/kgC Specific heat ice
         rho_w = 1000  # Density of water
+        rho_i = 916  # Density of Ice rho_i
         rho_a = 1.29  # kg/m3 air density at mean sea level
-        p0 = 1013  # hPa
         k = 0.4  # Van Karman constant
         bc = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
+        g = 9.8  # gravity
 
-        """Initialise"""
-        df_out["TotalE"] = 0
-        df_out["SW"] = 0
-        df_out["LW"] = 0
-        df_out["Qs"] = 0
+        """Miscellaneous"""
+        z = 2  # m height of AWS
+        c = 0.5  # Cloudiness c
+        time_steps = 5 * 60  # s Model time steps
+        dp = 70  # Density of Precipitation dp
+        p0 = 1013  # Standard air pressure hPa
+        theta_f = 45  # Fountain aperture angle
+        ftl = 0  # Fountain flight time loss ftl
+        dx = 0.001  # Ice layer thickness dx
 
-        """ Simulation """
+        Area = math.pi * math.pow(fountain["d_f"], 2) / 4
+        v_f = fountain["discharge"] / (60 * 1000 * Area)
+        r_f, d_t = projectile_xy(
+        v_f, theta_f, fountain["h_f"]
+            )
+
+        SA = math.pi * r_f * r_f
+
+        ice_layer = dx * SA * rho_i
+
+        T_s = 0
+
+        c= 0.5
+
+        e_s = surface["ie"]
+
         for i in range(1, df_out.shape[0]):
-
             # Vapor Pressure empirical relations
             if "vp_a" not in list(df_out.columns):
                 Ea = (
-                    6.11
-                    * math.pow(
-                        10,
-                        7.5
-                        * df_out.loc[i - 1, "T_a"]
-                        / (df_out.loc[i - 1, "T_a"] + 237.3),
-                    )
-                    * df_out.loc[i, "RH"]
-                    / 100
+                        6.11
+                        * math.pow(
+                    10, 7.5 * df_out.loc[i - 1, "T_a"] / (df_out.loc[i - 1, "T_a"] + 237.3)
+                )
+                        * df_out.loc[i, "RH"]
+                        / 100
                 )
             else:
                 Ea = df_out.loc[i, "vp_a"]
 
             df_out.loc[i, "e_a"] = (
-                1.24
-                * math.pow(abs(Ea / (df_out.loc[i, "T_a"] + 273.15)), 1 / 7)
-                * (1 + 0.22 * math.pow(c, 2))
+                    1.24
+                    * math.pow(abs(Ea / (df_out.loc[i, "T_a"] + 273.15)), 1 / 7)
+                    * (1 + 0.22 * math.pow(c, 2))
             )
 
             # Short Wave Radiation SW
-            df_out.loc[i, "SW"] = (1 - a_w) * (
-                df_out.loc[i, "Rad"] + df_out.loc[i, "DRad"]
+            df_out.loc[i, "SW"] = (1 - surface['a_i']) * (
+                    df_out.loc[i, "Rad"] + df_out.loc[i, "DRad"]
             )
 
             # Long Wave Radiation LW
             if "oli000z0" not in list(df_out.columns):
+
                 df_out.loc[i, "LW"] = df_out.loc[i, "e_a"] * bc * math.pow(
                     df_out.loc[i, "T_a"] + 273.15, 4
-                ) - we * bc * math.pow(0 + 273.15, 4)
+                ) - e_s * bc * math.pow(T_s + 273.15, 4)
             else:
-                df_out.loc[i, "LW"] = df_out.loc[i, "oli000z0"] - we * bc * math.pow(
-                    0 + 273.15, 4
-                )
+                df_out.loc[i, "LW"] = df_out.loc[i, "oli000z0"] - e_s * bc * math.pow(T_s + 273.15, 4)
 
             # Sensible Heat Qs
             df_out.loc[i, "Qs"] = (
-                cw
-                * rho_a
-                * df_out.loc[i, "p_a"]
-                / p0
-                * math.pow(k, 2)
-                * df_out.loc[i, "v_a"]
-                * (df_out.loc[i, "T_a"])
-                / (np.log(z / z0mi) * np.log(z / z0hi))
+                    ci
+                    * rho_a
+                    * df_out.loc[i, "p_a"]
+                    / p0
+                    * math.pow(k, 2)
+                    * df_out.loc[i, "v_a"]
+                    * (df_out.loc[i, "T_a"] - T_s)
+                    / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
             )
 
             # Total Energy W/m2
-            df_out.loc[i, "TotalE"] = (
-                df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
-            )
+            df_out.loc[i, "TotalE"] = df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
 
-        df_out.Discharge[df_out.TotalE < 0] = fountain["discharge"]  # litres per minute
+        mask = df_out["TotalE"] < 0
+        mask_index = df_out[mask].index
+        df_out.loc[mask_index, "Fountain"] = 1
+        mask = df_out["When"] >= dates["fountain_off_date"]
+        mask_index = df_out[mask].index
+        df_out.loc[mask_index, "Fountain"] = 0
 
     if option == "temperature":
         """ Use Temperature """
@@ -426,6 +439,7 @@ if site == "plaffeien":
         "p_a",
         "vp_a",
         "Fountain",
+        "TotalE",
     ]
     df_out = df_out[cols]
     df_out = df_out.round(5)
@@ -532,89 +546,85 @@ if site == "guttannen":
             ] = 1
 
     if option == "energy":  # todo examine again
-        """ Use Energy Flux """
-        """Settings"""
-        z = 2  # m height of AWS
 
-        """Material Properties"""
-        a_w = 0.6
-        we = 0.95
-        z0mi = 0.001
-        z0ms = 0.0015
-        z0hi = 0.0001
-        c = 0.5
-        Lf = 334 * 1000  #  J/kg Fusion
+        """Constants"""
+        Ls = 2848 * 1000  # J/kg Sublimation
+        Le = 2514 * 1000  # J/kg Evaporation
+        Lf = 334 * 1000  # J/kg Fusion
         cw = 4.186 * 1000  # J/kg Specific heat water
+        ci = 2.108 * 1000  # J/kgC Specific heat ice
         rho_w = 1000  # Density of water
+        rho_i = 916  # Density of Ice rho_i
         rho_a = 1.29  # kg/m3 air density at mean sea level
-        p0 = 1013  # hPa
         k = 0.4  # Van Karman constant
         bc = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
+        g = 9.8  # gravity
 
-        """Initialise"""
-        df_out["TotalE"] = 0
-        df_out["SW"] = 0
-        df_out["LW"] = 0
-        df_out["Qs"] = 0
+        """Miscellaneous"""
+        z = 2  # m height of AWS
+        c = 0.5  # Cloudiness c
+        time_steps = 5 * 60  # s Model time steps
+        dp = 70  # Density of Precipitation dp
+        p0 = 1013  # Standard air pressure hPa
+        theta_f = 45  # Fountain aperture angle
+        ftl = 0  # Fountain flight time loss ftl
+        dx = 0.001  # Ice layer thickness dx
 
-        """ Simulation """
-        for i in range(1, df_out.shape[0]):
-
-            # Vapor Pressure empirical relations
-            if "vp_a" not in list(df_out.columns):
-                Ea = (
-                    6.11
-                    * math.pow(
-                        10,
-                        7.5
-                        * df_out.loc[i - 1, "T_a"]
-                        / (df_out.loc[i - 1, "T_a"] + 237.3),
-                    )
-                    * df_out.loc[i, "RH"]
-                    / 100
-                )
-            else:
-                Ea = df_out.loc[i, "vp_a"]
-
-            df_out.loc[i, "e_a"] = (
-                1.24
-                * math.pow(abs(Ea / (df_out.loc[i, "T_a"] + 273.15)), 1 / 7)
-                * (1 + 0.22 * math.pow(c, 2))
+        Area = math.pi * math.pow(fountain["d_f"], 2) / 4
+        v_f = fountain["discharge"] / (60 * 1000 * Area)
+        r_f, d_t = projectile_xy(
+        v_f, theta_f, fountain["h_f"]
             )
 
+        SA = math.pi * r_f * r_f
+
+        ice_layer = dx * SA * rho_i
+
+        T_s = 0
+
+        e_s = surface["ie"]
+
+        for i in range(1, df_out.shape[0]):
+
             # Short Wave Radiation SW
-            df_out.loc[i, "SW"] = (1 - a_w) * (
-                df_out.loc[i, "Rad"] + df_out.loc[i, "DRad"]
+            df_out.loc[i, "SW"] = (1 - surface['a_i']) * (
+                    df_out.loc[i, "Rad"] + df_out.loc[i, "DRad"]
             )
 
             # Long Wave Radiation LW
             if "oli000z0" not in list(df_out.columns):
+
                 df_out.loc[i, "LW"] = df_out.loc[i, "e_a"] * bc * math.pow(
                     df_out.loc[i, "T_a"] + 273.15, 4
-                ) - we * bc * math.pow(0 + 273.15, 4)
+                ) - e_s * bc * math.pow(T_s + 273.15, 4)
             else:
-                df_out.loc[i, "LW"] = df_out.loc[i, "oli000z0"] - we * bc * math.pow(
-                    0 + 273.15, 4
-                )
+                df_out.loc[i, "LW"] = df_out.loc[i, "oli000z0"] - e_s * bc * math.pow(T_s + 273.15, 4)
 
             # Sensible Heat Qs
             df_out.loc[i, "Qs"] = (
-                cw
-                * rho_a
-                * df_out.loc[i, "p_a"]
-                / p0
-                * math.pow(k, 2)
-                * df_out.loc[i, "v_a"]
-                * (df_out.loc[i, "T_a"])
-                / (np.log(z / z0mi) * np.log(z / z0hi))
+                    ci
+                    * rho_a
+                    * df_out.loc[i, "p_a"]
+                    / p0
+                    * math.pow(k, 2)
+                    * df_out.loc[i, "v_a"]
+                    * (df_out.loc[i, "T_a"] - T_s)
+                    / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
             )
 
             # Total Energy W/m2
-            df_out.loc[i, "TotalE"] = (
-                df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
-            )
+            df_out.loc[i, "TotalE"] = df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
 
-        df_out.Discharge[df_out.TotalE < 0] = fountain["discharge"]  # litres per minute
+        x = df_out["When"]
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x, df_out.TotalE, "k-", linewidth=0.5)
+        mask = df_out["TotalE"] < 0
+        mask_index = df_out[mask].index
+        df_out.loc[mask_index, "Fountain"] = 1
+        mask = df_out["When"] >= dates["fountain_off_date"]
+        mask_index = df_out[mask].index
+        df_out.loc[mask_index, "Fountain"] = 0
 
     if option == "temperature":
         """ Use Temperature """
@@ -636,6 +646,7 @@ if site == "guttannen":
         "p_a",
         "vp_a",
         "Fountain",
+        "TotalE"
     ]
     df_out = df_out[cols]
     df_out = df_out.round(5)
@@ -782,7 +793,7 @@ plt.clf()
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(x, y1, "k-", linewidth=0.5)
+ax1.plot(x, df_out.Fountain, "k-", linewidth=0.5)
 ax1.set_ylabel("Fountain on/off")
 ax1.set_xlabel("Days")
 
@@ -886,6 +897,7 @@ plt.clf()
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 
+y2 = df_out.TotalE
 ax1.plot(x, y2, "k-", linewidth=0.5)
 ax1.set_ylabel("Fountain on/off ")
 ax1.grid()

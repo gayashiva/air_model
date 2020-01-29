@@ -167,7 +167,7 @@ def icestupa(df, fountain, surface):
     df["a"] = albedo(df, surface)
 
     """ Estimating Fountain Spray radius """
-    Area = 3.14 * math.pow(fountain["d_f"], 2) / 4
+    Area = math.pi * math.pow(fountain["d_f"], 2) / 4
     df["v"] = 0
     df["r"] = 0
 
@@ -455,7 +455,7 @@ def icestupa(df, fountain, surface):
 
                 if df.loc[i - 1, "ice"] > 0:
 
-                    # Initialise with zero value
+                    # Ice surface
                     df.loc[i, "e_s"] = surface["ie"]
 
                     # Sublimation, Evaporation or condensation
@@ -510,10 +510,6 @@ def icestupa(df, fountain, surface):
             # Short Wave Radiation SW
             df.loc[i, "SW"] = (1 - df.loc[i, "a"]) * (
                 df.loc[i, "Rad"] * df.loc[i, "SRf"] + df.loc[i, "DRad"]
-            )
-            # Without shape effects
-            df.loc[i, "SW_shape"] = (1 - df.loc[i, "a"]) * (
-                df.loc[i, "Rad"] + df.loc[i, "DRad"]
             )
 
             # Long Wave Radiation LW
