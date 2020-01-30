@@ -49,48 +49,6 @@ def albedo(df, surface):
             s = 0
             j = 0
 
-
-        # # Snow ppt and fountain off
-        # if df.loc[i, "Fountain"] == 0:
-        #     if df.loc[i, "Prec"] > 0 & (
-        #         df.loc[i, "T_a"] < Ts
-        #     ):
-        #         s = 0
-        #         w = 0
-        #         j = 0
-        #         tw = surface["t_d"]  # Decay rate reset after snowfall
-        #         df.loc[i, "a"] = surface["a_i"] + (
-        #             surface["a_s"] - surface["a_i"]
-        #         ) * math.exp(-s / ti)
-        #         s = s + 1
-        #
-        #     else: # No snow and fountain off
-        #         df.loc[i, "a"] = surface["a_w"] + (
-        #                 surface["a_i"] - surface["a_w"]
-        #         ) * math.exp(-w / tw)
-        #         w = w + 1
-        #
-        # # Fountain on
-        # else:
-        #     df.loc[i, "a"] = surface["a_w"]
-        #     w = 0
-        #     s = 0
-        #     j = 0
-        #     tw = surface["t_d"]  # Decay rate reset after fountain
-        #
-        # # Liquid Ppt
-        # if (df.loc[i, "Prec"] > 0) & (df.loc[i, "T_a"] > Ts):
-        #     if j == 0:
-        #         tw = tw / rf  # Decay rate speeds up after rain
-        #         j = 1
-        #     df.loc[i, "a"] = surface["a_w"]
-        #
-        # print(
-        #     "Albedo is %s thick at %s",
-        #     df.loc[i, "a"],
-        #     df.loc[i, "When"],
-        # )
-
     return df["a"]
 
 
