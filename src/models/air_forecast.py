@@ -11,43 +11,46 @@ np.seterr(all="raise")
 
 def albedo(df, surface):
 
-    surface["t_d"] = surface["t_d"] * 24 * 60 / 5  # convert to 5 minute time steps
-    ti = surface["t_d"]
+    surface["t_md"] = surface["t_md"] * 24 * 60 / 5  # convert to 5 minute time steps
+    surface["t_mw"] = surface["t_mw"] * 24 * 60 / 5  # convert to 5 minute time steps
     s = 0  # Initialised
-    j = 0  # Account for decay rate after rain
     f = 0
-    rf = 2  # Rain decay factor
     Ts = 1  # Solid Ppt
 
     for i in range(1, df.shape[0]):
+
+        if df.loc[i, "T_s"] > -2 : # Wet ice
+            ti = surface["t_mw"]
+            a_min = surface["a_mw"]
+        else:
+            ti = surface["t_md"]
+            a_min = surface["a_md"]
 
         # Precipitation
         if (df.loc[i, "Fountain"] == 0) & (df.loc[i, "Prec"] > 0):
             if df.loc[i, "T_a"] < Ts : # Snow
                 s = 0
-                j = 0
                 f = 0
-            else:
-                if j == 0:
-                    ti = ti / rf  # Decay rate speeds up after rain
-                    j = 1
-
-        if f == 0 : # Just snowed
-            df.loc[i, "a"] = surface["a_min"] + (
-                    surface["a_s"] - surface["a_min"]
-            ) * math.exp(-s / ti)
-            s = s + 1
-        else: # Just sprayed
-            df.loc[i, "a"] = surface["a_min"] + (
-                    surface["a_i"] - surface["a_min"]
-            ) * math.exp(-s / ti)
-            s = s + 1
+            else: # Rainfall
+                ti = surface["t_mw"]
+                a_min = surface["a_mw"]
 
         if df.loc[i, "Fountain"] > 0:
-            df.loc[i, "a"] = surface["a_min"]
             f = 1
             s = 0
-            j = 0
+            ti = surface["t_mw"]
+            a_min = surface["a_mw"]
+
+        if f == 0 : # last snowed
+            df.loc[i, "a"] = a_min + (
+                    surface["a_s"] - a_min
+            ) * math.exp(-s / ti)
+            s = s + 1
+        else: # last sprayed
+            df.loc[i, "a"] = a_min + (
+                    surface["a_i"] - a_min
+            ) * math.exp(-s / ti)
+            s = s + 1
 
     return df["a"]
 

@@ -17,8 +17,10 @@ surface = dict(
     we=0.95,  # Water emissivity we
     a_i=0.6,  # Albedo of Ice a_i
     a_s=0.75,  # Albedo of Snow a_s
-    a_min=0.48,  # Albedo of Ice Minimum a_min
-    t_d=21.9,  # Albedo decay rate t_d
+    a_md=0.48,  # Albedo of dry ice min
+    a_mw=0.41,  # Albedo of wet ice min
+    t_md=5,  # Albedo dry decay rate t_d
+    t_mw=10,  # Albedo dry decay rate t_d
     z0mi=0.001,  # Ice Momentum roughness length
     z0hi=0.0001,  # Ice Scalar roughness length
 )
