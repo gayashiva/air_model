@@ -13,50 +13,83 @@ def albedo(df, surface):
 
     surface["t_d"] = surface["t_d"] * 24 * 60 / 5  # convert to 5 minute time steps
     ti = surface["t_d"]
-    tw = surface["t_d"]
     s = 0  # Initialised
-    w = 0
     j = 0  # Account for decay rate after rain
+    f = 0
     rf = 2  # Rain decay factor
     Ts = 1  # Solid Ppt
 
     for i in range(1, df.shape[0]):
 
-        # Snow ppt and fountain off
-        if df.loc[i, "Fountain"] == 0:
-            if df.loc[i, "Prec"] > 0 & (
-                df.loc[i, "T_a"] < Ts
-            ):
+        # Precipitation
+        if (df.loc[i, "Fountain"] == 0) & (df.loc[i, "Prec"] > 0):
+            if df.loc[i, "T_a"] < Ts : # Snow
                 s = 0
-                w = 0
                 j = 0
-                tw = surface["t_d"]  # Decay rate reset after snowfall
-            df.loc[i, "a"] = surface["a_i"] + (
-                surface["a_s"] - surface["a_i"]
+                f = 0
+            else:
+                if j == 0:
+                    ti = ti / rf  # Decay rate speeds up after rain
+                    j = 1
+
+        if f == 0 : # Just snowed
+            df.loc[i, "a"] = surface["a_w"] + (
+                    surface["a_s"] - surface["a_w"]
+            ) * math.exp(-s / ti)
+            s = s + 1
+        else: # Just sprayed
+            df.loc[i, "a"] = surface["a_w"] + (
+                    surface["a_i"] - surface["a_w"]
             ) * math.exp(-s / ti)
             s = s + 1
 
-        # No snow and fountain off
-        if df.loc[i, "Fountain"] == 0:
-            df.loc[i, "a"] = surface["a_w"] + (
-                surface["a_i"] - surface["a_w"]
-            ) * math.exp(-w / tw)
-            w = w + 1
-
-        # Fountain on
         if df.loc[i, "Fountain"] > 0:
             df.loc[i, "a"] = surface["a_w"]
-            w = 0
+            f = 1
             s = 0
             j = 0
-            tw = surface["t_d"]  # Decay rate reset after fountain
 
-        # Liquid Ppt
-        if (df.loc[i, "Prec"] > 0) & (df.loc[i, "T_a"] > Ts):
-            if j == 0:
-                tw = tw / rf  # Decay rate speeds up after rain
-                j = 1
-            df.loc[i, "a"] = surface["a_w"]
+
+        # # Snow ppt and fountain off
+        # if df.loc[i, "Fountain"] == 0:
+        #     if df.loc[i, "Prec"] > 0 & (
+        #         df.loc[i, "T_a"] < Ts
+        #     ):
+        #         s = 0
+        #         w = 0
+        #         j = 0
+        #         tw = surface["t_d"]  # Decay rate reset after snowfall
+        #         df.loc[i, "a"] = surface["a_i"] + (
+        #             surface["a_s"] - surface["a_i"]
+        #         ) * math.exp(-s / ti)
+        #         s = s + 1
+        #
+        #     else: # No snow and fountain off
+        #         df.loc[i, "a"] = surface["a_w"] + (
+        #                 surface["a_i"] - surface["a_w"]
+        #         ) * math.exp(-w / tw)
+        #         w = w + 1
+        #
+        # # Fountain on
+        # else:
+        #     df.loc[i, "a"] = surface["a_w"]
+        #     w = 0
+        #     s = 0
+        #     j = 0
+        #     tw = surface["t_d"]  # Decay rate reset after fountain
+        #
+        # # Liquid Ppt
+        # if (df.loc[i, "Prec"] > 0) & (df.loc[i, "T_a"] > Ts):
+        #     if j == 0:
+        #         tw = tw / rf  # Decay rate speeds up after rain
+        #         j = 1
+        #     df.loc[i, "a"] = surface["a_w"]
+        #
+        # print(
+        #     "Albedo is %s thick at %s",
+        #     df.loc[i, "a"],
+        #     df.loc[i, "When"],
+        # )
 
     return df["a"]
 
@@ -159,6 +192,9 @@ def icestupa(df, fountain, surface):
         "r_ice",
         "SRf",
         "d_t",
+        "Ea",
+        "Eice",
+        "Ew",
     ]
     for col in l:
         df[col] = 0
@@ -353,7 +389,7 @@ def icestupa(df, fountain, surface):
 
             # Vapor Pressure empirical relations
             if "vp_a" not in list(df.columns):
-                Ea = (
+                df.loc[i,'Ea'] = (
                     6.11
                     * math.pow(
                         10, 7.5 * df.loc[i - 1, "T_a"] / (df.loc[i - 1, "T_a"] + 237.3)
@@ -362,22 +398,22 @@ def icestupa(df, fountain, surface):
                     / 100
                 )
             else:
-                Ea = df.loc[i, "vp_a"]
+                df.loc[i,'Ea'] = df.loc[i, "vp_a"]
 
-            Ew = 6.112 * np.exp(17.62 * surface["T_f"] / (surface["T_f"] + 243.12))
-            Eice = 6.112 * np.exp(
+            df.loc[i,'Ew'] = 6.112 * np.exp(17.62 * surface["T_f"] / (surface["T_f"] + 243.12))
+            df.loc[i,'Eice'] = 6.112 * np.exp(
                 22.46 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
             )
 
             # atmospheric emissivity
             if df.loc[i, "Prec"] > 0:  # c = 1
                 df.loc[i, "e_a"] = (
-                    1.24 * math.pow(abs(Ea / (df.loc[i, "T_a"] + 273.15)), 1 / 7) * 1.22
+                    1.24 * math.pow(abs(df.loc[i,'Ea'] / (df.loc[i, "T_a"] + 273.15)), 1 / 7) * 1.22
                 )
             else:
                 df.loc[i, "e_a"] = (
                     1.24
-                    * math.pow(abs(Ea / (df.loc[i, "T_a"] + 273.15)), 1 / 7)
+                    * math.pow(abs(df.loc[i,'Ea'] / (df.loc[i, "T_a"] + 273.15)), 1 / 7)
                     * (1 + 0.22 * math.pow(c, 2))
                 )
 
@@ -413,7 +449,7 @@ def icestupa(df, fountain, surface):
                     / p0
                     * math.pow(k, 2)
                     * df.loc[i, "v_a"]
-                    * (Ea - Ew)
+                    * (df.loc[i,'Ea'] - df.loc[i,'Ew'])
                     / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
                 )
 
@@ -466,7 +502,7 @@ def icestupa(df, fountain, surface):
                         / p0
                         * math.pow(k, 2)
                         * df.loc[i, "v_a"]
-                        * (Ea - Eice)
+                        * (df.loc[i,'Ea'] - df.loc[i,'Eice'])
                         / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
                     )
 

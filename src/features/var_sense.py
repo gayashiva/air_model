@@ -56,7 +56,7 @@ end_date = df_in["When"].iloc[-1]
 problem = {"num_vars": 1, "names": ["h_f"], "bounds": [[2, 8]]}
 
 # Generate samples
-param_values = saltelli.sample(problem, 3) # todo do SAlib analysis on discharge and height
+param_values = saltelli.sample(problem, 3)
 
 # Plots
 fig = plt.figure()

@@ -439,7 +439,6 @@ if site == "plaffeien":
         "p_a",
         "vp_a",
         "Fountain",
-        "TotalE",
     ]
     df_out = df_out[cols]
     df_out = df_out.round(5)
@@ -545,7 +544,7 @@ if site == "guttannen":
                 "Fountain",
             ] = 1
 
-    if option == "energy":  # todo examine again
+    if option == "energy":
 
         """Constants"""
         Ls = 2848 * 1000  # J/kg Sublimation
@@ -646,7 +645,6 @@ if site == "guttannen":
         "p_a",
         "vp_a",
         "Fountain",
-        "TotalE"
     ]
     df_out = df_out[cols]
     df_out = df_out.round(5)
@@ -897,7 +895,7 @@ plt.clf()
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 
-y2 = df_out.TotalE
+y2 = df_out.Fountain
 ax1.plot(x, y2, "k-", linewidth=0.5)
 ax1.set_ylabel("Fountain on/off ")
 ax1.grid()
