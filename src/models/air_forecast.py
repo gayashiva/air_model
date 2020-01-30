@@ -33,18 +33,18 @@ def albedo(df, surface):
                     j = 1
 
         if f == 0 : # Just snowed
-            df.loc[i, "a"] = surface["a_w"] + (
-                    surface["a_s"] - surface["a_w"]
+            df.loc[i, "a"] = surface["a_min"] + (
+                    surface["a_s"] - surface["a_min"]
             ) * math.exp(-s / ti)
             s = s + 1
         else: # Just sprayed
-            df.loc[i, "a"] = surface["a_w"] + (
-                    surface["a_i"] - surface["a_w"]
+            df.loc[i, "a"] = surface["a_min"] + (
+                    surface["a_i"] - surface["a_min"]
             ) * math.exp(-s / ti)
             s = s + 1
 
         if df.loc[i, "Fountain"] > 0:
-            df.loc[i, "a"] = surface["a_w"]
+            df.loc[i, "a"] = surface["a_min"]
             f = 1
             s = 0
             j = 0
