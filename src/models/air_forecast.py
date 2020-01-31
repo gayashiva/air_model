@@ -11,8 +11,8 @@ np.seterr(all="raise")
 
 def albedo(df, surface):
 
-    surface["t_md"] = surface["t_md"] * 24 * 60 / 5  # convert to 5 minute time steps
-    surface["t_mw"] = surface["t_mw"] * 24 * 60 / 5  # convert to 5 minute time steps
+    surface["t_d"] = surface["t_d"] * 24 * 60 / 5  # convert to 5 minute time steps
+    surface["t_w"] = surface["t_w"] * 24 * 60 / 5  # convert to 5 minute time steps
     s = 0  # Initialised
     f = 0
     Ts = 1  # Solid Ppt
@@ -20,10 +20,10 @@ def albedo(df, surface):
     for i in range(1, df.shape[0]):
 
         if df.loc[i, "T_s"] > -2 : # Wet ice
-            ti = surface["t_mw"]
+            ti = surface["t_w"]
             a_min = surface["a_mw"]
         else:
-            ti = surface["t_md"]
+            ti = surface["t_d"]
             a_min = surface["a_md"]
 
         # Precipitation
@@ -32,13 +32,13 @@ def albedo(df, surface):
                 s = 0
                 f = 0
             else: # Rainfall
-                ti = surface["t_mw"]
+                ti = surface["t_w"]
                 a_min = surface["a_mw"]
 
         if df.loc[i, "Fountain"] > 0:
             f = 1
             s = 0
-            ti = surface["t_mw"]
+            ti = surface["t_w"]
             a_min = surface["a_mw"]
 
         if f == 0 : # last snowed
@@ -62,12 +62,13 @@ def projectile_xy(v, theta_f, hs=0.0, g=9.8):
     x axis is distance (or range) in meters
     y axis is height in meters
     v is muzzle velocity of the projectile (meter/second)
-    theta_f is the firing angle with repsect to ground (radians)
+    theta_f is the firing angle with repsect to ground (degrees)
     hs is starting height with respect to ground (meters)
     g is the gravitational pull (meters/second_square)
     """
     data_xy = []
     t = 0.0
+    theta_f = math.radians(theta_f)
     while True:
         # now calculate the height y
         y = hs + (t * v * math.sin(theta_f)) - (g * t * t) / 2
@@ -80,7 +81,7 @@ def projectile_xy(v, theta_f, hs=0.0, g=9.8):
         data_xy.append((x, y))
         # use the time in increments of 0.1 seconds
         t += 0.01
-    return max(data_xy)[0], t
+    return x, t
 
 
 def icestupa(df, fountain, surface):
@@ -127,7 +128,6 @@ def icestupa(df, fountain, surface):
     fountain_height_max = False
     h_r_i = 0
     eff_discharge = fountain["discharge"]
-    theta_f = math.radians(theta_f)  # Angle of Spray
 
     l = [
         "T_s",  # Surface Temperature
@@ -175,7 +175,7 @@ def icestupa(df, fountain, surface):
         df.loc[j, "r_f"], df.loc[j, "d_t"] = projectile_xy(
             df.loc[j, "v_f"], theta_f, fountain["h_f"]
         )
-    R_f = df["r_f"].replace(0, np.NaN).mean()
+    R_f = df["r_f"].replace(0, np.NaN).mean() # todo implement variable spray radius for variable discharge
     R = df["r_f"].replace(0, np.NaN).mean()
     D_t = df["d_t"].replace(0, np.NaN).mean()
 

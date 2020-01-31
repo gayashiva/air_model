@@ -8,13 +8,14 @@ from pandas.plotting import register_matplotlib_converters
 
 register_matplotlib_converters()
 import matplotlib
+import math
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages
 from src.data.config import site, dates, option, folders, fountain, surface
-from src.models.air_forecast import icestupa
+from src.models.air_forecast import icestupa, projectile_xy
 
 # python -m src.features.build_features
 plt.rcParams["figure.figsize"] = (10,7)
@@ -109,34 +110,6 @@ else:
 filename4 = os.path.join(filename2 + "_model_results.csv")
 df.to_csv(filename4, sep=",")
 
-# x = df.When
-# y0 = df.T_a
-# # y1 = df.Ea - df.Ew
-# y2 = df.T_a - df.T_s
-# y3 = df.Qs
-# fig = plt.figure()
-# ax1 = fig.add_subplot(311)
-# ax1.plot(x, y0, "k-")
-# ax1.axhline(y=0)
-# ax1.set_ylabel("Air Temperature ($m^3$)")
-# ax1.set_xlabel("Days")
-# # ax1 = fig.add_subplot(412)
-# # ax1.plot(x, y1, "k-")
-# # ax1.set_ylabel("Ice Volume ($m^3$)")
-# # ax1.set_xlabel("Days")
-# ax1 = fig.add_subplot(312)
-# ax1.plot(x, y2, "k-")
-# ax1.axhline(y=0)
-# ax1.set_ylabel("Air-ice temp. diff. ($m^3$)")
-# ax1.set_xlabel("Days")
-# ax1 = fig.add_subplot(313)
-# ax1.plot(x, y3, "k-")
-# ax1.axhline(y=0)
-# ax1.set_ylabel("Sensible heat ($m^3$)")
-# ax1.set_xlabel("Days")
-# plt.show()
-
-
 
 # Plots
 pp = PdfPages(filename2 + "_results.pdf")
@@ -215,7 +188,7 @@ plt.xlabel('Days')
 plt.ylabel('Energy ($W/m^{2}$)')
 plt.legend(loc = 'upper left')
 plt.ylim(-150, 150)
-plt.xticks(rotation=45, fontsize=5)
+plt.xticks(rotation=45)
 pp.savefig(bbox_inches="tight")
 plt.clf()
 

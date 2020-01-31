@@ -7,7 +7,7 @@ dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 # site = input("Input the Field Site Name: ") or "guttannen"
 
 site = "schwarzsee"
-option = "schwarzsee"
+option = "temperature"
 
 print("Site is", site)
 
@@ -19,8 +19,8 @@ surface = dict(
     a_s=0.75,  # Albedo of Snow a_s
     a_md=0.48,  # Albedo of dry ice min
     a_mw=0.41,  # Albedo of wet ice min
-    t_md=5,  # Albedo dry decay rate t_d
-    t_mw=10,  # Albedo dry decay rate t_d
+    t_d=5,  # Albedo dry decay rate t_d
+    t_w=10,  # Albedo dry decay rate t_d
     z0mi=0.001,  # Ice Momentum roughness length
     z0hi=0.0001,  # Ice Scalar roughness length
 )
@@ -30,6 +30,7 @@ if site == "schwarzsee":
         dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
         input_folder=os.path.join(dir, "data/interim/schwarzsee/"),
         output_folder=os.path.join(dir, "data/processed/schwarzsee/"),
+        simulations_folder=os.path.join(dir, "data/processed/schwarzsee/simulations/"),
         data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
     )
 
@@ -41,8 +42,8 @@ if site == "schwarzsee":
     fountain = dict(
         d_f=0.005,  # Fountain aperture diameter
         h_f=1.35,  # Fountain steps h_f
-        discharge=12,  # Fountain on discharge
-        t_c=-6,  # Fountain runtime temperature
+        discharge=3.58,  # Fountain on discharge
+        t_c=-5,  # Fountain runtime temperature
     )
 
 if site == "plaffeien":
@@ -50,6 +51,7 @@ if site == "plaffeien":
         dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
         input_folder=os.path.join(dir, "data/interim/plaffeien/"),
         output_folder=os.path.join(dir, "data/processed/plaffeien/"),
+        simulations_folder=os.path.join(dir, "data/processed/plaffeien/simulations/"),
         data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
     )
 
