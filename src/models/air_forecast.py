@@ -140,9 +140,9 @@ def icestupa(df, fountain, surface):
         "r_ice",
         "SRf",
         "t_droplet",
-        "Ea",
-        "Eice",
-        "Ew",
+        "vpa",
+        "vp_ice",
+        "vp_w",
     ]
     for col in l:
         df[col] = 0
@@ -260,16 +260,17 @@ def icestupa(df, fountain, surface):
                 logger.info("Ice layer is %s thick at %s", ice_layer, df.loc[i, "When"])
 
             # Precipitation to ice quantity
-            prec = prec + surface["snow_fall_density"] * df.loc[i, "Prec"] * math.pi * math.pow(
-                df.loc[i, "r_ice"], 2
-            )
-            df.loc[i - 1, "ice"] = df.loc[i - 1, "ice"] + surface["snow_fall_density"] * df.loc[
-                i, "Prec"
-            ] * math.pi * math.pow(df.loc[i, "r_ice"], 2)
+            if df.loc[i, "T_a"] < surface["rain_temp"]:
+                prec = prec + surface["snow_fall_density"] * df.loc[i, "Prec"] * math.pi * math.pow(
+                    df.loc[i, "r_ice"], 2
+                )
+                df.loc[i - 1, "ice"] = df.loc[i - 1, "ice"] + surface["snow_fall_density"] * df.loc[
+                    i, "Prec"
+                ] * math.pi * math.pow(df.loc[i, "r_ice"], 2)
 
             # Vapor Pressure empirical relations
             if "vp_a" not in list(df.columns):
-                df.loc[i, "Ea"] = (
+                df.loc[i, "vpa"] = (
                     6.11
                     * math.pow(
                         10, 7.5 * df.loc[i - 1, "T_a"] / (df.loc[i - 1, "T_a"] + 237.3)
@@ -278,12 +279,12 @@ def icestupa(df, fountain, surface):
                     / 100
                 )
             else:
-                df.loc[i, "Ea"] = df.loc[i, "vp_a"]
+                df.loc[i, "vpa"] = df.loc[i, "vp_a"]
 
-            df.loc[i, "Ew"] = 6.112 * np.exp(
+            df.loc[i, "vp_w"] = 6.112 * np.exp(
                 17.62 * surface["T_f"] / (surface["T_f"] + 243.12)
             )
-            df.loc[i, "Eice"] = 6.112 * np.exp(
+            df.loc[i, "vp_ice"] = 6.112 * np.exp(
                 22.46 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
             )
 
@@ -292,7 +293,7 @@ def icestupa(df, fountain, surface):
                 df.loc[i, "e_a"] = (
                     1.24
                     * math.pow(
-                        abs(df.loc[i, "Ea"] / (df.loc[i, "T_a"] + 273.15)), 1 / 7
+                        abs(df.loc[i, "vpa"] / (df.loc[i, "T_a"] + 273.15)), 1 / 7
                     )
                     * 1.22
                 )
@@ -300,7 +301,7 @@ def icestupa(df, fountain, surface):
                 df.loc[i, "e_a"] = (
                     1.24
                     * math.pow(
-                        abs(df.loc[i, "Ea"] / (df.loc[i, "T_a"] + 273.15)), 1 / 7
+                        abs(df.loc[i, "vpa"] / (df.loc[i, "T_a"] + 273.15)), 1 / 7
                     )
                     * (1 + 0.22 * math.pow(c, 2))
                 )
@@ -319,7 +320,7 @@ def icestupa(df, fountain, surface):
                     / p0
                     * math.pow(k, 2)
                     * df.loc[i, "v_a"]
-                    * (df.loc[i, "Ea"] - df.loc[i, "Ew"])
+                    * (df.loc[i, "vpa"] - df.loc[i, "vp_w"])
                     / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
                 )
 
@@ -372,7 +373,7 @@ def icestupa(df, fountain, surface):
                         / p0
                         * math.pow(k, 2)
                         * df.loc[i, "v_a"]
-                        * (df.loc[i, "Ea"] - df.loc[i, "Eice"])
+                        * (df.loc[i, "vpa"] - df.loc[i, "vp_ice"])
                         / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
                     )
 
