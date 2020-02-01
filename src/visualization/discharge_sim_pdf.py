@@ -10,21 +10,21 @@ from src.data.config import site, folders
 
 
 filename2 = os.path.join(
-    folders['simulations_folder'], site + "_simulations_discharge.csv"
+    folders['simulations_folder'], site + "_simulations_crittemp.csv"
 )
 dfx = pd.read_csv(filename2, sep=",")
 
 
 
 # Plots
-filename3 = os.path.join(folders["simulations_folder"], site + "_discharge_analysis.pdf")
+filename3 = os.path.join(folders["simulations_folder"], site + "_temp_analysis.pdf")
 pp = PdfPages(filename3)
-x = dfx['Discharge']
+x = dfx['Critical Temp']
 y1 = dfx['r']
 y2 = dfx['Max SA']
 y3 = dfx.MaxV
 y4 = (dfx['Meltwater']+ dfx['Endice'])/dfx['Water used'] *100
-y5 = dfx['Max Growthrate']/5
+y5 = dfx['Avg Growthrate']
 y6 = dfx['Meltwater']
 
 
