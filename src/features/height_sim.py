@@ -52,7 +52,7 @@ for i, X in enumerate(param_values):
     fountain['h_f'] = X
 
     if option == 'temperature':
-        filename = folders["input_folder"] + site + "_" + option + "_" + str(fountain['t_c'])
+        filename = folders["input_folder"] + site + "_" + option + "_" + str(fountain['crit_temp'])
     else:
         filename = folders["input_folder"] + site + "_" + option
     #  read files

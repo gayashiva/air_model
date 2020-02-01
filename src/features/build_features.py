@@ -103,7 +103,7 @@ df[cols].to_csv(filename2, sep=",")
 # Full Output
 if option == "temperature":
     filename2 = (
-        folders["output_folder"] + site + "_" + option + "_" + str(fountain["t_c"])
+        folders["output_folder"] + site + "_" + option + "_" + str(fountain["crit_temp"])
     )
 else:
     filename2 = folders["output_folder"] + site + "_" + option

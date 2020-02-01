@@ -52,7 +52,7 @@ logger.addHandler(console_handler)
 #     fountain['discharge'] = X
 #
 #     if option == 'temperature':
-#         filename = folders["input_folder"] + site + "_" + option + "_" + str(fountain['t_c'])
+#         filename = folders["input_folder"] + site + "_" + option + "_" + str(fountain['crit_temp'])
 #     else:
 #         filename = folders["input_folder"] + site + "_" + option
 #
@@ -82,10 +82,10 @@ dfx = pd.DataFrame({'MaxV': []})
 for i, X in enumerate(param_values):
 
     print(X)
-    fountain['t_c'] = X
+    fountain['crit_temp'] = X
 
     if option == 'temperature':
-        filename = folders["input_folder"] + site + "_" + option + "_" + str(fountain['t_c'])
+        filename = folders["input_folder"] + site + "_" + option + "_" + str(fountain['crit_temp'])
     else:
         filename = folders["input_folder"] + site + "_" + option
     #  read files

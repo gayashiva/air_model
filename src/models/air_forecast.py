@@ -121,7 +121,7 @@ def icestupa(df, fountain, surface):
 
     l = [
         "T_s",  # Surface Temperature
-        "temp",  # Temperature Change
+        "delta_T_s",  # Temperature Change
         "ice",
         "iceV",
         "solid",
@@ -138,11 +138,10 @@ def icestupa(df, fountain, surface):
         "Ql",
         "meltwater",
         "SA",
-        "SA_step",
         "h_ice",
         "r_ice",
         "SRf",
-        "d_t",
+        "t_droplet",
         "Ea",
         "Eice",
         "Ew",
@@ -162,13 +161,13 @@ def icestupa(df, fountain, surface):
         if option != "schwarzsee":
             df.loc[j, "Discharge"] = fountain["discharge"] * df.loc[j, "Fountain"]
         df.loc[j, "v_f"] = df.loc[j, "Discharge"] / (60 * 1000 * Area)
-        df.loc[j, "r_f"], df.loc[j, "d_t"] = projectile_xy(
+        df.loc[j, "r_f"], df.loc[j, "t_droplet"] = projectile_xy(
             df.loc[j, "v_f"], theta_f, fountain["h_f"]
         )
     R_f = (
         df["r_f"].replace(0, np.NaN).mean()
     )  # todo implement variable spray radius for variable discharge
-    D_t = df["d_t"].replace(0, np.NaN).mean()
+    D_t = df["t_droplet"].replace(0, np.NaN).mean()
 
     """ Simulation """
     for i in range(1, df.shape[0]):
@@ -357,7 +356,7 @@ def icestupa(df, fountain, surface):
                         df.loc[i, "solid"],
                         df.loc[i, "When"],
                     )
-                    df.loc[i, "temp"] = -df.loc[i - 1, "T_s"]
+                    df.loc[i, "delta_T_s"] = -df.loc[i - 1, "T_s"]
 
             else:
                 """ When fountain off """
@@ -389,26 +388,26 @@ def icestupa(df, fountain, surface):
                     ) / Ls
 
                     # Ice Temperature
-                    df.loc[i, "temp"] += (
+                    df.loc[i, "delta_T_s"] += (
                         df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
                     ) / (ice_layer * ci)
 
                     """Hot Ice"""
-                    if df.loc[i - 1, "T_s"] + df.loc[i, "temp"] > 0:
+                    if df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"] > 0:
 
                         # Melting Ice by Temperature
                         df.loc[i, "solid"] -= (
                             (ice_layer * ci)
-                            * (-(df.loc[i - 1, "T_s"] + df.loc[i, "temp"]))
+                            * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
                             / (-Lf)
                         )
                         df.loc[i, "melted"] += (
                             (ice_layer * ci)
-                            * (-(df.loc[i - 1, "T_s"] + df.loc[i, "temp"]))
+                            * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
                             / (-Lf)
                         )
 
-                        df.loc[i, "temp"] = -df.loc[i - 1, "T_s"]
+                        df.loc[i, "delta_T_s"] = -df.loc[i - 1, "T_s"]
 
             logger.info(
                 "Ice made after sublimation is %s thick at %s",
@@ -491,13 +490,13 @@ def icestupa(df, fountain, surface):
                         if df.loc[i - 1, "liquid"] < 0:
                             logger.error(
                                 "Liquid is %s at %s",
-                                round(df.loc[i, "temp"]),
+                                round(df.loc[i, "delta_T_s"]),
                                 df.loc[i, "When"],
                             )
                             df.loc[i - 1, "liquid"] = 0
 
                         # Cooling Ice
-                        df.loc[i, "temp"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
+                        df.loc[i, "delta_T_s"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
 
                     logger.info(
                         "Ice made after energy neg is %s thick at %s",
@@ -511,26 +510,26 @@ def icestupa(df, fountain, surface):
                     if df.loc[i - 1, "ice"] > 0:
 
                         # Heating Ice
-                        df.loc[i, "temp"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
+                        df.loc[i, "delta_T_s"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
 
                         """Hot Ice"""
-                        if (df.loc[i - 1, "T_s"] + df.loc[i, "temp"]) > 0:
+                        if (df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]) > 0:
 
                             # Melting Ice by Temperature
                             df.loc[i, "solid"] -= (
                                 (ice_layer * ci)
-                                * (-(df.loc[i - 1, "T_s"] + df.loc[i, "temp"]))
+                                * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
                                 / (-Lf)
                             )
 
                             df.loc[i, "melted"] += (
                                 (ice_layer * ci)
-                                * (-(df.loc[i - 1, "T_s"] + df.loc[i, "temp"]))
+                                * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
                                 / (-Lf)
                             )
 
                             df.loc[i - 1, "T_s"] = 0
-                            df.loc[i, "temp"] = 0
+                            df.loc[i, "delta_T_s"] = 0
 
                         logger.info(
                             "Ice melted is %s thick at %s",
@@ -538,15 +537,15 @@ def icestupa(df, fountain, surface):
                             df.loc[i, "When"],
                         )
 
-            if df.loc[i, "temp"] < -50:
+            if df.loc[i, "delta_T_s"] < -50:
                 logger.error(
                     "Temperature change is %s at %s",
-                    round(df.loc[i, "temp"]),
+                    round(df.loc[i, "delta_T_s"]),
                     df.loc[i, "When"],
                 )
 
             """ Quantities of all phases """
-            df.loc[i, "T_s"] = df.loc[i - 1, "T_s"] + df.loc[i, "temp"]
+            df.loc[i, "T_s"] = df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]
             df.loc[i, "meltwater"] = df.loc[i - 1, "meltwater"] + df.loc[i, "melted"]
             df.loc[i, "ice"] = df.loc[i - 1, "ice"] + df.loc[i, "solid"]
             df.loc[i, "vapour"] = df.loc[i - 1, "vapour"] + df.loc[i, "gas"]

@@ -214,7 +214,7 @@ if site == "schwarzsee":
         ]
         if option == "temperature":
             """ Use Temperature """
-            mask = df_out["T_a"] < fountain["t_c"]
+            mask = df_out["T_a"] < fountain["crit_temp"]
             mask_index = df_out[mask].index
             df_out.loc[mask_index, "Fountain"] = 1
             mask = df_out["When"] >= dates["fountain_off_date"]
@@ -421,7 +421,7 @@ if site == "plaffeien":
 
     if option == "temperature":
         """ Use Temperature """
-        mask = df_out["T_a"] < fountain["t_c"]
+        mask = df_out["T_a"] < fountain["crit_temp"]
         mask_index = df_out[mask].index
         df_out.loc[mask_index, "Fountain"] = 1
         mask = df_out["When"] >= dates["fountain_off_date"]
@@ -627,7 +627,7 @@ if site == "guttannen":
 
     if option == "temperature":
         """ Use Temperature """
-        mask = df_out["T_a"] < fountain["t_c"]
+        mask = df_out["T_a"] < fountain["crit_temp"]
         mask_index = df_out[mask].index
         df_out.loc[mask_index, "Fountain"] = 1
         mask = df_out["When"] >= dates["fountain_off_date"]
@@ -651,7 +651,7 @@ if site == "guttannen":
 
 if option == "temperature":
     filename = (
-        folders["input_folder"] + site + "_" + option + "_" + str(fountain["t_c"])
+        folders["input_folder"] + site + "_" + option + "_" + str(fountain["crit_temp"])
     )
 else:
     filename = folders["input_folder"] + site + "_" + option

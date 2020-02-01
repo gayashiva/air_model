@@ -43,7 +43,7 @@ if site == "schwarzsee":
         d_f=0.005,  # Fountain aperture diameter
         h_f=1.35,  # Fountain steps h_f
         discharge=3.58,  # Fountain on discharge
-        t_c=-5,  # Fountain runtime temperature
+        crit_temp=-5,  # Fountain runtime temperature
     )
 
 if site == "plaffeien":
@@ -64,7 +64,7 @@ if site == "plaffeien":
         d_f=0.005,  # Fountain hole diameter
         h_f=1,  # Fountain steps h_f
         discharge=4,  # Fountain on discharge in LPM
-        t_c=-1,  # Fountain runtime temperature
+        crit_temp=-1,  # Fountain runtime temperature
     )
 
 if site == "guttannen":
@@ -84,5 +84,5 @@ if site == "guttannen":
         d_f=0.005,  # Fountain hole diameter
         h_f=5,  # Fountain steps h_f
         discharge=6,  # Fountain on discharge
-        t_c=-1,  # Fountain runtime temperature
+        crit_temp=-1,  # Fountain runtime temperature
     )
