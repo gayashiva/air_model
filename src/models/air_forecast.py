@@ -6,9 +6,6 @@ from src.data.config import fountain, surface, option
 
 pd.options.mode.chained_assignment = None  # Suppress Setting with warning
 
-np.seterr(all="raise")
-
-
 def albedo(df, surface):
 
     surface["t_d"] = surface["t_d"] * 24 * 60 / 5  # convert to 5 minute time steps
@@ -124,10 +121,7 @@ def icestupa(df, fountain, surface):
     start = 0  # model start step
     state = 0
     ice_layer = 0
-    discharge_off = False
-    fountain_height_max = False
     h_r_i = 0
-    eff_discharge = fountain["discharge"]
 
     l = [
         "T_s",  # Surface Temperature
@@ -176,7 +170,6 @@ def icestupa(df, fountain, surface):
             df.loc[j, "v_f"], theta_f, fountain["h_f"]
         )
     R_f = df["r_f"].replace(0, np.NaN).mean() # todo implement variable spray radius for variable discharge
-    R = df["r_f"].replace(0, np.NaN).mean()
     D_t = df["d_t"].replace(0, np.NaN).mean()
 
     """ Simulation """
@@ -201,24 +194,17 @@ def icestupa(df, fountain, surface):
         if (df.loc[i, "Discharge"] > 0) & (start == 0):
             state = 1
             start = i - 1   # Set Model start time
-            df.loc[i - 1, "r_ice"] = R
+            df.loc[i - 1, "r_ice"] = R_f
 
         if state == 1:
 
-            if (df.Discharge[i] > 0) & (df.loc[i - 1, "r_ice"] >= R):
-                df.loc[i, "r_ice"] = R  # Ice radius same as Initial Fountain Spray Radius
+            if (df.Discharge[i] > 0) & (df.loc[i - 1, "r_ice"] >= R_f):
+                df.loc[i, "r_ice"] = R_f  # Ice radius same as Initial Fountain Spray Radius
 
-                if fountain_height_max == False:
-                    # Ice Height
-                    df.loc[i, "h_ice"] = (
-                        3 * df.loc[i - 1, "iceV"] / (math.pi * df.loc[i, "r_ice"] ** 2)
-                    )
-                else:  # fountain Height max
-                    # Change Ice Radius
-                    df.loc[i, "r_ice"] = math.pow(
-                        (3 * df.loc[i - 1, "iceV"] / (math.pi * df.loc[i, "h_ice"])),
-                        1 / 2,
-                    )
+                # Ice Height
+                df.loc[i, "h_ice"] = (
+                    3 * df.loc[i - 1, "iceV"] / (math.pi * df.loc[i, "r_ice"] ** 2)
+                )
 
                 df.loc[i, "h_r"] = (
                     df.loc[i, "h_ice"] / df.loc[i, "r_ice"]
@@ -246,54 +232,6 @@ def icestupa(df, fountain, surface):
                         1 / 2,
                     )
                 )  # Area of Conical Ice Surface
-
-                if fountain_height < df.loc[i, "h_ice"]:  # Fountain height Check
-
-                    fountain_height = fountain_height + fountain["h_f"]
-                    df.loc[i:, "h_f"] = fountain_height
-
-                    if (eff_discharge / (60 * 1000 * Area)) ** 2 < 2 * g * (
-                        fountain["h_f"]
-                    ):  # Fountain Height too high
-                        print(
-                            "Discharge stopped at fountain height",
-                            fountain_height - fountain["h_f"],
-                        )
-                        print("Discharge was", eff_discharge)
-                        fountain_height_max = True
-                        df.h_ice[i:] = fountain_height - fountain["h_f"]
-                        df.loc[i, "SA"] = df.loc[i - 1, "SA"]
-
-                    else:
-                        for j in range(i, df.shape[0]):
-
-                            if df.loc[j, "Discharge"] != 0:  # Fountain on
-                                df.loc[j, "v_f"] = math.pow(
-                                    (
-                                        (df.loc[j, "Discharge"] / (60 * 1000 * Area))
-                                        ** 2
-                                        - 2 * g * (fountain["h_f"])
-                                    ),
-                                    1 / 2,
-                                )
-                                df.loc[j, "Discharge"] = (
-                                    df.loc[j, "v_f"] * Area * 60 * 1000
-                                )
-                                eff_discharge = df.loc[j, "Discharge"]
-                            else:
-                                df.loc[j, "v_f"] = 0
-
-                        df.loc[i, "SA"] = (
-                            math.pi
-                            * df.loc[i, "r_ice"]
-                            * math.pow(
-                                (
-                                    math.pow(df.loc[i, "r_ice"], 2)
-                                    + math.pow((df.loc[i, "h_ice"]), 2)
-                                ),
-                                1 / 2,
-                            )
-                        )  # Area of Conical Ice Surface
 
             else:
                 """ Keeping h_r constant to determine SA """
@@ -343,10 +281,10 @@ def icestupa(df, fountain, surface):
                 logger.info("Ice layer is %s thick at %s", ice_layer, df.loc[i, "When"])
 
             # Precipitation to ice quantity
-            prec = prec + dp * df.loc[i, "Prec"] * math.pi * math.pow(R_f, 2)
+            prec = prec + dp * df.loc[i, "Prec"] * math.pi * math.pow(df.loc[i, "r_ice"], 2)
             df.loc[i - 1, "ice"] = df.loc[i - 1, "ice"] + dp * df.loc[
                 i, "Prec"
-            ] * math.pi * math.pow(R_f, 2)
+            ] * math.pi * math.pow( df.loc[i, "r_ice"], 2)
 
             # Vapor Pressure empirical relations
             if "vp_a" not in list(df.columns):
