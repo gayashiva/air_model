@@ -6,6 +6,7 @@ from src.data.config import fountain, surface, option
 
 pd.options.mode.chained_assignment = None  # Suppress Setting with warning
 
+
 def albedo(df, surface):
 
     surface["t_d"] = surface["t_d"] * 24 * 60 / 5  # convert to 5 minute time steps
@@ -16,7 +17,7 @@ def albedo(df, surface):
 
     for i in range(1, df.shape[0]):
 
-        if df.loc[i, "T_s"] > -2 : # Wet ice
+        if df.loc[i, "T_s"] > -2:  # Wet ice
             ti = surface["t_w"]
             a_min = surface["a_mw"]
         else:
@@ -25,10 +26,10 @@ def albedo(df, surface):
 
         # Precipitation
         if (df.loc[i, "Fountain"] == 0) & (df.loc[i, "Prec"] > 0):
-            if df.loc[i, "T_a"] < Ts : # Snow
+            if df.loc[i, "T_a"] < Ts:  # Snow
                 s = 0
                 f = 0
-            else: # Rainfall
+            else:  # Rainfall
                 ti = surface["t_w"]
                 a_min = surface["a_mw"]
 
@@ -38,15 +39,11 @@ def albedo(df, surface):
             ti = surface["t_w"]
             a_min = surface["a_mw"]
 
-        if f == 0 : # last snowed
-            df.loc[i, "a"] = a_min + (
-                    surface["a_s"] - a_min
-            ) * math.exp(-s / ti)
+        if f == 0:  # last snowed
+            df.loc[i, "a"] = a_min + (surface["a_s"] - a_min) * math.exp(-s / ti)
             s = s + 1
-        else: # last sprayed
-            df.loc[i, "a"] = a_min + (
-                    surface["a_i"] - a_min
-            ) * math.exp(-s / ti)
+        else:  # last sprayed
+            df.loc[i, "a"] = a_min + (surface["a_i"] - a_min) * math.exp(-s / ti)
             s = s + 1
 
     return df["a"]
@@ -121,11 +118,10 @@ def icestupa(df, fountain, surface):
     start = 0  # model start step
     state = 0
     ice_layer = 0
-    h_r_i = 0
 
     l = [
         "T_s",  # Surface Temperature
-        "temp", # Temperature Change
+        "temp",  # Temperature Change
         "ice",
         "iceV",
         "solid",
@@ -169,7 +165,9 @@ def icestupa(df, fountain, surface):
         df.loc[j, "r_f"], df.loc[j, "d_t"] = projectile_xy(
             df.loc[j, "v_f"], theta_f, fountain["h_f"]
         )
-    R_f = df["r_f"].replace(0, np.NaN).mean() # todo implement variable spray radius for variable discharge
+    R_f = (
+        df["r_f"].replace(0, np.NaN).mean()
+    )  # todo implement variable spray radius for variable discharge
     D_t = df["d_t"].replace(0, np.NaN).mean()
 
     """ Simulation """
@@ -177,49 +175,42 @@ def icestupa(df, fountain, surface):
 
         # Ice Melted
         if (df.loc[i - 1, "ice"] <= 0) & (df.Discharge[i:].sum() == 0):
-            df.loc[i - 1, "solid"] = 0
-            df.loc[i - 1, "ice"] = 0
-            df.loc[i - 1, "iceV"] = 0
-            stop = i - 1
-            break
+            if df.Discharge[i:].sum() == 0:  # If ice melted after fountain run
+                df.loc[i - 1, "solid"] = 0
+                df.loc[i - 1, "ice"] = 0
+                df.loc[i - 1, "iceV"] = 0
+                stop = i - 1
+                break
 
-        # If ice melted in between fountain run
-        if (df.loc[i - 1, "ice"] <= 0) & (start != 0):
-            df.loc[i - 1, "solid"] = 0
-            df.loc[i - 1, "ice"] = 0
-            df.loc[i - 1, "iceV"] = 0
-            state = 0
+            if start != 0:  # If ice melted in between fountain run
+                df.loc[i - 1, "solid"] = 0
+                df.loc[i - 1, "ice"] = 0
+                df.loc[i - 1, "iceV"] = 0
+                state = 0
 
         # Initiate ice formation
         if (df.loc[i, "Discharge"] > 0) & (start == 0):
             state = 1
-            start = i - 1   # Set Model start time
+            start = i - 1  # Set Model start time
             df.loc[i - 1, "r_ice"] = R_f
+            df.loc[i - 1, "h_ice"] = 0
 
         if state == 1:
 
+            """ Keeping r_ice = R_f to determine SA """
             if (df.Discharge[i] > 0) & (df.loc[i - 1, "r_ice"] >= R_f):
-                df.loc[i, "r_ice"] = R_f  # Ice radius same as Initial Fountain Spray Radius
+                # Ice Radius
+                df.loc[
+                    i, "r_ice"
+                ] = R_f  # Ice radius same as Initial Fountain Spray Radius
 
                 # Ice Height
                 df.loc[i, "h_ice"] = (
                     3 * df.loc[i - 1, "iceV"] / (math.pi * df.loc[i, "r_ice"] ** 2)
                 )
 
-                df.loc[i, "h_r"] = (
-                    df.loc[i, "h_ice"] / df.loc[i, "r_ice"]
-                )  # Height to radius ratio
-                h_r_i = 0
-
-                df.loc[i, "SRf"] = (
-                    0.5
-                    * (df.loc[i, "h_r"] + math.pi)
-                    / (
-                        math.pi
-                        * math.pow((1 + math.pow(df.loc[i, "h_r"], 2)), 1 / 2)
-                        * math.pow(2, 1 / 2)
-                    )
-                )  # Estimating Solar Area fraction if theta_s 45
+                # Height by Radius ratio
+                df.loc[i, "h_r"] = df.loc[i - 1, "h_ice"] / df.loc[i - 1, "r_ice"]
 
                 df.loc[i, "SA"] = (
                     math.pi
@@ -235,33 +226,16 @@ def icestupa(df, fountain, surface):
 
             else:
                 """ Keeping h_r constant to determine SA """
-                if h_r_i == 0:
-                    h_r_i = 1
-                    df.loc[i, "h_r"] = (
-                        df.loc[i - 1, "h_ice"] / df.loc[i - 1, "r_ice"]
-                    )  # Height to radius ratio
-                else:
-                    df.loc[i, "h_r"] = (
-                        df.loc[i - 1, "h_ice"] / df.loc[i - 1, "r_ice"]
-                    )  # Height to radius ratio
+                # Height to radius ratio
+                df.loc[i, "h_r"] = df.loc[i - 1, "h_ice"] / df.loc[i - 1, "r_ice"]
 
                 # Ice Radius
                 df.loc[i, "r_ice"] = math.pow(
                     df.loc[i - 1, "iceV"] / math.pi * (3 / df.loc[i, "h_r"]), 1 / 3
-                )  # Assumption height h_r and conical
-
-                df.loc[i, "h_ice"] = df.loc[i, "h_r"] * df.loc[i, "r_ice"]
-
-                # Estimating Solar Area fraction if theta_s 45
-                df.loc[i, "SRf"] = (
-                    0.5
-                    * (df.loc[i, "h_r"] + math.pi)
-                    / (
-                        math.pi
-                        * math.pow((1 + math.pow(df.loc[i, "h_r"], 2)), 1 / 2)
-                        * math.pow(2, 1 / 2)
-                    )
                 )
+
+                # Ice Height
+                df.loc[i, "h_ice"] = df.loc[i, "h_r"] * df.loc[i, "r_ice"]
 
                 df.loc[i, "SA"] = (
                     math.pi
@@ -275,20 +249,30 @@ def icestupa(df, fountain, surface):
                     )
                 )  # Area of Conical Ice Surface
 
-            # Update Ice Layer
-            if (ice_layer != 0) & (df.loc[i - 1, "SA"] != df.loc[i, "SA"]):
+            # Initialize AIR ice layer and update
+            if ice_layer == 0:
+
+                ice_layer = dx * df.loc[i, "SA"] * rho_i
+                logger.warning(
+                    "Ice layer initialised %s thick at %s", ice_layer, df.loc[i, "When"]
+                )
+                df.loc[i - 1, "ice"] = ice_layer
+
+            else:
                 ice_layer = dx * df.loc[i, "SA"] * rho_i
                 logger.info("Ice layer is %s thick at %s", ice_layer, df.loc[i, "When"])
 
             # Precipitation to ice quantity
-            prec = prec + dp * df.loc[i, "Prec"] * math.pi * math.pow(df.loc[i, "r_ice"], 2)
+            prec = prec + dp * df.loc[i, "Prec"] * math.pi * math.pow(
+                df.loc[i, "r_ice"], 2
+            )
             df.loc[i - 1, "ice"] = df.loc[i - 1, "ice"] + dp * df.loc[
                 i, "Prec"
-            ] * math.pi * math.pow( df.loc[i, "r_ice"], 2)
+            ] * math.pi * math.pow(df.loc[i, "r_ice"], 2)
 
             # Vapor Pressure empirical relations
             if "vp_a" not in list(df.columns):
-                df.loc[i,'Ea'] = (
+                df.loc[i, "Ea"] = (
                     6.11
                     * math.pow(
                         10, 7.5 * df.loc[i - 1, "T_a"] / (df.loc[i - 1, "T_a"] + 237.3)
@@ -297,22 +281,30 @@ def icestupa(df, fountain, surface):
                     / 100
                 )
             else:
-                df.loc[i,'Ea'] = df.loc[i, "vp_a"]
+                df.loc[i, "Ea"] = df.loc[i, "vp_a"]
 
-            df.loc[i,'Ew'] = 6.112 * np.exp(17.62 * surface["T_f"] / (surface["T_f"] + 243.12))
-            df.loc[i,'Eice'] = 6.112 * np.exp(
+            df.loc[i, "Ew"] = 6.112 * np.exp(
+                17.62 * surface["T_f"] / (surface["T_f"] + 243.12)
+            )
+            df.loc[i, "Eice"] = 6.112 * np.exp(
                 22.46 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
             )
 
             # atmospheric emissivity
             if df.loc[i, "Prec"] > 0:  # c = 1
                 df.loc[i, "e_a"] = (
-                    1.24 * math.pow(abs(df.loc[i,'Ea'] / (df.loc[i, "T_a"] + 273.15)), 1 / 7) * 1.22
+                    1.24
+                    * math.pow(
+                        abs(df.loc[i, "Ea"] / (df.loc[i, "T_a"] + 273.15)), 1 / 7
+                    )
+                    * 1.22
                 )
             else:
                 df.loc[i, "e_a"] = (
                     1.24
-                    * math.pow(abs(df.loc[i,'Ea'] / (df.loc[i, "T_a"] + 273.15)), 1 / 7)
+                    * math.pow(
+                        abs(df.loc[i, "Ea"] / (df.loc[i, "T_a"] + 273.15)), 1 / 7
+                    )
                     * (1 + 0.22 * math.pow(c, 2))
                 )
 
@@ -322,24 +314,6 @@ def icestupa(df, fountain, surface):
             """ When fountain run """
             if df.loc[i, "liquid"] > 0:
 
-                # Initialize AIR ice layer
-                if ice_layer == 0:
-
-                    ice_layer = dx * df.loc[i, "SA"] * rho_i
-                    logger.warning(
-                        "Ice layer is %s thick at %s", ice_layer, df.loc[i, "When"]
-                    )
-
-                    if ice_layer == 0:
-                        logger.critical(
-                            "Ice layer is %s thick at %s",
-                            ice_layer,
-                            df.loc[i, "SA"],
-                            df.loc[i, "When"],
-                        )
-                        break
-                    df.loc[i - 1, "ice"] = ice_layer
-
                 # Evaporation or condensation
                 df.loc[i, "Ql"] = (
                     0.623
@@ -348,7 +322,7 @@ def icestupa(df, fountain, surface):
                     / p0
                     * math.pow(k, 2)
                     * df.loc[i, "v_a"]
-                    * (df.loc[i,'Ea'] - df.loc[i,'Ew'])
+                    * (df.loc[i, "Ea"] - df.loc[i, "Ew"])
                     / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
                 )
 
@@ -401,7 +375,7 @@ def icestupa(df, fountain, surface):
                         / p0
                         * math.pow(k, 2)
                         * df.loc[i, "v_a"]
-                        * (df.loc[i,'Ea'] - df.loc[i,'Eice'])
+                        * (df.loc[i, "Ea"] - df.loc[i, "Eice"])
                         / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
                     )
 
@@ -440,6 +414,17 @@ def icestupa(df, fountain, surface):
                 "Ice made after sublimation is %s thick at %s",
                 round(df.loc[i, "solid"]),
                 df.loc[i, "When"],
+            )
+
+            # Estimating Solar Area fraction if theta_s 45
+            df.loc[i, "SRf"] = (
+                0.5
+                * (df.loc[i, "h_r"] + math.pi)
+                / (
+                    math.pi
+                    * math.pow((1 + math.pow(df.loc[i, "h_r"], 2)), 1 / 2)
+                    * math.pow(2, 1 / 2)
+                )
             )
 
             # Short Wave Radiation SW
@@ -586,7 +571,11 @@ def icestupa(df, fountain, surface):
     print("Evaporated/sublimated", float(df["vapour"].tail(1)))
     print("Model ended", df.loc[i - 1, "When"])
     print("Model runtime", df.loc[i - 1, "When"] - df.loc[start, "When"])
-    print("Fountain efficiency", float((df["meltwater"].tail(1) + df["ice"].tail(1))/df["sprayed"].tail(1)) * 100)
+    print(
+        "Fountain efficiency",
+        float((df["meltwater"].tail(1) + df["ice"].tail(1)) / df["sprayed"].tail(1))
+        * 100,
+    )
     print("Ice Volume Max", float(df["iceV"].max()))
     print("Ppt", prec)
 
