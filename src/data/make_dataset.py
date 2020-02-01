@@ -347,7 +347,7 @@ if site == "plaffeien":
         ftl = 0  # Fountain flight time loss ftl
         dx = 0.001  # Ice layer thickness dx
 
-        Area = math.pi * math.pow(fountain["d_f"], 2) / 4
+        Area = math.pi * math.pow(fountain["aperture_f"], 2) / 4
         v_f = fountain["discharge"] / (60 * 1000 * Area)
         r_f, d_t = projectile_xy(
         v_f, theta_f, fountain["h_f"]
@@ -569,7 +569,7 @@ if site == "guttannen":
         ftl = 0  # Fountain flight time loss ftl
         dx = 0.001  # Ice layer thickness dx
 
-        Area = math.pi * math.pow(fountain["d_f"], 2) / 4
+        Area = math.pi * math.pow(fountain["aperture_f"], 2) / 4
         v_f = fountain["discharge"] / (60 * 1000 * Area)
         r_f, d_t = projectile_xy(
         v_f, theta_f, fountain["h_f"]

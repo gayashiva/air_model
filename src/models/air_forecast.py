@@ -9,8 +9,8 @@ pd.options.mode.chained_assignment = None  # Suppress Setting with warning
 
 def albedo(df, surface):
 
-    surface["t_d"] = surface["t_d"] * 24 * 60 / 5  # convert to 5 minute time steps
-    surface["t_w"] = surface["t_w"] * 24 * 60 / 5  # convert to 5 minute time steps
+    surface["decay_t_d"] = surface["decay_t_d"] * 24 * 60 / 5  # convert to 5 minute time steps
+    surface["decay_t_w"] = surface["decay_t_w"] * 24 * 60 / 5  # convert to 5 minute time steps
     s = 0  # Initialised
     f = 0
     Ts = 1  # Solid Ppt
@@ -18,10 +18,10 @@ def albedo(df, surface):
     for i in range(1, df.shape[0]):
 
         if df.loc[i, "T_s"] > -2:  # Wet ice
-            ti = surface["t_w"]
+            ti = surface["decay_t_w"]
             a_min = surface["a_mw"]
         else:
-            ti = surface["t_d"]
+            ti = surface["decay_t_d"]
             a_min = surface["a_md"]
 
         # Precipitation
@@ -30,13 +30,13 @@ def albedo(df, surface):
                 s = 0
                 f = 0
             else:  # Rainfall
-                ti = surface["t_w"]
+                ti = surface["decay_t_w"]
                 a_min = surface["a_mw"]
 
         if df.loc[i, "Fountain"] > 0:
             f = 1
             s = 0
-            ti = surface["t_w"]
+            ti = surface["decay_t_w"]
             a_min = surface["a_mw"]
 
         if f == 0:  # last snowed
@@ -153,7 +153,7 @@ def icestupa(df, fountain, surface):
     df["a"] = albedo(df, surface)
 
     """ Estimating Fountain Spray radius """
-    Area = math.pi * math.pow(fountain["d_f"], 2) / 4
+    Area = math.pi * math.pow(fountain["aperture_f"], 2) / 4
     df["v"] = 0
     df["r"] = 0
 

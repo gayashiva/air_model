@@ -19,8 +19,8 @@ surface = dict(
     a_s=0.75,  # Albedo of Snow a_s
     a_md=0.48,  # Albedo of dry ice min
     a_mw=0.41,  # Albedo of wet ice min
-    t_d=5,  # Albedo dry decay rate t_d
-    t_w=10,  # Albedo dry decay rate t_d
+    decay_t_d=5,  # Albedo dry decay rate t_d
+    decay_t_w=10,  # Albedo dry decay rate decay_t_d
     z0mi=0.001,  # Ice Momentum roughness length
     z0hi=0.0001,  # Ice Scalar roughness length
 )
@@ -40,7 +40,7 @@ if site == "schwarzsee":
         fountain_off_date=datetime(2019, 3, 10, 18),
     )
     fountain = dict(
-        d_f=0.005,  # Fountain aperture diameter
+        aperture_f=0.005,  # Fountain aperture diameter
         h_f=1.35,  # Fountain steps h_f
         discharge=3.58,  # Fountain on discharge
         crit_temp=-5,  # Fountain runtime temperature
@@ -61,7 +61,7 @@ if site == "plaffeien":
         fountain_off_date=datetime(2019, 3, 1),
     )
     fountain = dict(
-        d_f=0.005,  # Fountain hole diameter
+        aperture_f=0.005,  # Fountain hole diameter
         h_f=1,  # Fountain steps h_f
         discharge=4,  # Fountain on discharge in LPM
         crit_temp=-1,  # Fountain runtime temperature
@@ -81,7 +81,7 @@ if site == "guttannen":
         fountain_off_date=datetime(2018, 2, 1),
     )
     fountain = dict(
-        d_f=0.005,  # Fountain hole diameter
+        aperture_f=0.005,  # Fountain hole diameter
         h_f=5,  # Fountain steps h_f
         discharge=6,  # Fountain on discharge
         crit_temp=-1,  # Fountain runtime temperature
