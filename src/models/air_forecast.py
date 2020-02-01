@@ -11,9 +11,8 @@ def albedo(df, surface):
 
     surface["decay_t_d"] = surface["decay_t_d"] * 24 * 60 / 5  # convert to 5 minute time steps
     surface["decay_t_w"] = surface["decay_t_w"] * 24 * 60 / 5  # convert to 5 minute time steps
-    s = 0  # Initialised
+    s = 0
     f = 0
-    Ts = 1  # Solid Ppt
 
     for i in range(1, df.shape[0]):
 
@@ -26,7 +25,7 @@ def albedo(df, surface):
 
         # Precipitation
         if (df.loc[i, "Fountain"] == 0) & (df.loc[i, "Prec"] > 0):
-            if df.loc[i, "T_a"] < Ts:  # Snow
+            if df.loc[i, "T_a"] < surface["rain_temp"]:  # Snow
                 s = 0
                 f = 0
             else:  # Rainfall
@@ -104,7 +103,6 @@ def icestupa(df, fountain, surface):
     z = 2  # m height of AWS
     c = 0.5  # Cloudiness c
     time_steps = 5 * 60  # s Model time steps
-    dp = 70  # Density of Precipitation dp
     p0 = 1013  # Standard air pressure hPa
     theta_f = 45  # Fountain aperture angle
     ftl = 0  # Fountain flight time loss ftl
@@ -154,8 +152,6 @@ def icestupa(df, fountain, surface):
 
     """ Estimating Fountain Spray radius """
     Area = math.pi * math.pow(fountain["aperture_f"], 2) / 4
-    df["v"] = 0
-    df["r"] = 0
 
     for j in range(1, df.shape[0]):
         if option != "schwarzsee":
@@ -211,6 +207,7 @@ def icestupa(df, fountain, surface):
                 # Height by Radius ratio
                 df.loc[i, "h_r"] = df.loc[i - 1, "h_ice"] / df.loc[i - 1, "r_ice"]
 
+                # Area of Conical Ice Surface
                 df.loc[i, "SA"] = (
                     math.pi
                     * df.loc[i, "r_ice"]
@@ -221,7 +218,7 @@ def icestupa(df, fountain, surface):
                         ),
                         1 / 2,
                     )
-                )  # Area of Conical Ice Surface
+                )
 
             else:
                 """ Keeping h_r constant to determine SA """
@@ -236,6 +233,7 @@ def icestupa(df, fountain, surface):
                 # Ice Height
                 df.loc[i, "h_ice"] = df.loc[i, "h_r"] * df.loc[i, "r_ice"]
 
+                # Area of Conical Ice Surface
                 df.loc[i, "SA"] = (
                     math.pi
                     * df.loc[i, "r_ice"]
@@ -246,7 +244,7 @@ def icestupa(df, fountain, surface):
                         ),
                         1 / 2,
                     )
-                )  # Area of Conical Ice Surface
+                )
 
             # Initialize AIR ice layer and update
             if ice_layer == 0:
@@ -262,10 +260,10 @@ def icestupa(df, fountain, surface):
                 logger.info("Ice layer is %s thick at %s", ice_layer, df.loc[i, "When"])
 
             # Precipitation to ice quantity
-            prec = prec + dp * df.loc[i, "Prec"] * math.pi * math.pow(
+            prec = prec + surface["snow_fall_density"] * df.loc[i, "Prec"] * math.pi * math.pow(
                 df.loc[i, "r_ice"], 2
             )
-            df.loc[i - 1, "ice"] = df.loc[i - 1, "ice"] + dp * df.loc[
+            df.loc[i - 1, "ice"] = df.loc[i - 1, "ice"] + surface["snow_fall_density"] * df.loc[
                 i, "Prec"
             ] * math.pi * math.pow(df.loc[i, "r_ice"], 2)
 

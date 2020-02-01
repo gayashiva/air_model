@@ -21,8 +21,10 @@ surface = dict(
     a_mw=0.41,  # Albedo of wet ice min
     decay_t_d=5,  # Albedo dry decay rate t_d
     decay_t_w=10,  # Albedo dry decay rate decay_t_d
-    z0mi=0.001,  # Ice Momentum roughness length
-    z0hi=0.0001,  # Ice Scalar roughness length
+    z0mi=0.0017,  # Ice Momentum roughness length
+    z0hi=0.0017,  # Ice Scalar roughness length
+    snow_fall_density= 250, # Snowfall density
+    rain_temp=1, # Temperature condition for liquid precipitation
 )
 
 if site == "schwarzsee":
