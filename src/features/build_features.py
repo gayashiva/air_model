@@ -63,32 +63,32 @@ else:
 
 filename1 = os.path.join(filename1 + "_model_results.csv")
 
-# print(filename1)
-# if os.path.isfile(filename1):
-#     print("Simulation Exists")
-#     df = pd.read_csv(filename1, sep=",")
-#     df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
-#
-# else:
-#     filename0 = os.path.join(filename0 + "_input.csv")
-#     df_in = pd.read_csv(filename0, sep=",")
-#     df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
-#
-#     df = icestupa(df_in, fountain, surface)
-#
-#     total = time.time() - start
-#
-#     print("Total time : ", total / 60)
+print(filename1)
+if os.path.isfile(filename1):
+    print("Simulation Exists")
+    df = pd.read_csv(filename1, sep=",")
+    df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
 
-filename0 = os.path.join(filename0 + "_input.csv")
-df_in = pd.read_csv(filename0, sep=",")
-df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+else:
+    filename0 = os.path.join(filename0 + "_input.csv")
+    df_in = pd.read_csv(filename0, sep=",")
+    df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
-df = icestupa(df_in, fountain, surface)
+    df = icestupa(df_in, fountain, surface)
 
-total = time.time() - start
+    total = time.time() - start
 
-print("Total time : ", total / 60)
+    print("Total time : ", total / 60)
+
+# filename0 = os.path.join(filename0 + "_input.csv")
+# df_in = pd.read_csv(filename0, sep=",")
+# df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+#
+# df = icestupa(df_in, fountain, surface)
+#
+# total = time.time() - start
+#
+# print("Total time : ", total / 60)
 
 # # Output for manim
 # filename2 = os.path.join(folders["output_folder"], site + "_model_gif.csv")
@@ -345,7 +345,7 @@ pp.savefig(bbox_inches="tight")
 plt.clf()
 
 y1 = df.Discharge
-y2 = df.ppt
+y2 = df.ppt * 1000/5
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
@@ -355,7 +355,7 @@ ax1.set_xlabel("Days")
 
 ax2 = ax1.twinx()
 ax2.plot(x, y2, "b-", linewidth=0.5)
-ax2.set_ylabel("Precipitation", color="b")
+ax2.set_ylabel("Precipitation ($l/min$)", color="b")
 for tl in ax2.get_yticklabels():
     tl.set_color("b")
 
