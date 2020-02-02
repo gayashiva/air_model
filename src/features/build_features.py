@@ -90,10 +90,10 @@ total = time.time() - start
 
 print("Total time : ", total / 60)
 
-# Output for manim
-filename2 = os.path.join(folders["output_folder"], site + "_model_gif.csv")
-cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
-df[cols].to_csv(filename2, sep=",")
+# # Output for manim
+# filename2 = os.path.join(folders["output_folder"], site + "_model_gif.csv")
+# cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
+# df[cols].to_csv(filename2, sep=",")
 
 # Output for energy balance
 # filename3 = os.path.join(folders["output_folder"], site + "_model_energy.csv")
@@ -345,12 +345,19 @@ pp.savefig(bbox_inches="tight")
 plt.clf()
 
 y1 = df.Discharge
+y2 = df.ppt
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-")
 ax1.set_ylabel("Discharge ($l/min$)")
 ax1.set_xlabel("Days")
+
+ax2 = ax1.twinx()
+ax2.plot(x, y2, "b-", linewidth=0.5)
+ax2.set_ylabel("Precipitation", color="b")
+for tl in ax2.get_yticklabels():
+    tl.set_color("b")
 
 #  format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())

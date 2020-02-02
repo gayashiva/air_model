@@ -25,6 +25,8 @@ surface = dict(
     z0hi=0.0017,  # Ice Scalar roughness length
     snow_fall_density= 250, # Snowfall density
     rain_temp=1, # Temperature condition for liquid precipitation
+    h_aws = 3,  # m height of AWS
+    cld = 0.5,  # Average Cloudiness c
 )
 
 if site == "schwarzsee":

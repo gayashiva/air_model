@@ -104,8 +104,6 @@ def icestupa(df, fountain, surface):
     g = 9.8  # gravity
 
     """Miscellaneous"""
-    z = 2  # m height of AWS
-    c = 0.5  # Cloudiness c
     time_steps = 5 * 60  # s Model time steps
     p0 = 1013  # Standard air pressure hPa
     theta_f = 45  # Fountain aperture angle
@@ -113,10 +111,6 @@ def icestupa(df, fountain, surface):
     dx = 0.001  # Ice layer thickness dx
 
     """Initialise"""
-    fountain_height = fountain["h_f"]
-    df["h_f"] = fountain_height
-    df["e_s"] = surface["ie"]  # Surface Emissivity
-    prec = 0  # Precipitation
     start = 0  # model start step
     state = 0
     ice_layer = 0
@@ -147,6 +141,7 @@ def icestupa(df, fountain, surface):
         "vpa",
         "vp_ice",
         "vp_w",
+        "ppt",
     ]
     for col in l:
         df[col] = 0
@@ -279,12 +274,10 @@ def icestupa(df, fountain, surface):
 
             # Precipitation to ice quantity
             if df.loc[i, "T_a"] < surface["rain_temp"]:
-                prec = prec + surface["snow_fall_density"] * df.loc[
+                df.loc[i,"ppt"] = surface["snow_fall_density"] * df.loc[
                     i, "Prec"
                 ] * math.pi * math.pow(df.loc[i, "r_ice"], 2)
-                df.loc[i - 1, "ice"] = df.loc[i - 1, "ice"] + surface[
-                    "snow_fall_density"
-                ] * df.loc[i, "Prec"] * math.pi * math.pow(df.loc[i, "r_ice"], 2)
+                df.loc[i, "solid"] = df.loc[i, "solid"] + df.loc[i,"ppt"]
 
             # Vapor Pressure empirical relations
             if "vp_a" not in list(df.columns):
@@ -307,7 +300,7 @@ def icestupa(df, fountain, surface):
             )
 
             # atmospheric emissivity
-            if df.loc[i, "Prec"] > 0:  # c = 1
+            if df.loc[i, "Prec"] > 0:  # cloudiness = 1
                 df.loc[i, "e_a"] = (
                     1.24
                     * math.pow(
@@ -321,7 +314,7 @@ def icestupa(df, fountain, surface):
                     * math.pow(
                         abs(df.loc[i, "vpa"] / (df.loc[i, "T_a"] + 273.15)), 1 / 7
                     )
-                    * (1 + 0.22 * math.pow(c, 2))
+                    * (1 + 0.22 * math.pow(surface["cld"], 2))
                 )
 
             # Fountain water output
@@ -355,7 +348,7 @@ def icestupa(df, fountain, surface):
             # Ice surface assumed
             df.loc[i, "e_s"] = surface["ie"]
 
-            # Sublimation
+            # Sublimation only
             df.loc[i, "Ql"] = (
                 0.623
                 * Ls
@@ -364,7 +357,7 @@ def icestupa(df, fountain, surface):
                 * math.pow(k, 2)
                 * df.loc[i, "v_a"]
                 * (df.loc[i, "vpa"] - df.loc[i, "vp_ice"])
-                / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
+                / (np.log(surface["h_aws"] / surface["z0mi"]) * np.log(surface["h_aws"] / surface["z0hi"]))
             )
 
             df.loc[i, "gas"] -= (df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps) / Ls
@@ -438,7 +431,7 @@ def icestupa(df, fountain, surface):
                 * math.pow(k, 2)
                 * df.loc[i, "v_a"]
                 * (df.loc[i, "T_a"] - df.loc[i - 1, "T_s"])
-                / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
+                / (np.log(surface["h_aws"] / surface["z0mi"]) * np.log(surface["h_aws"] / surface["z0hi"]))
             )
 
             # Total Energy W/m2
@@ -520,13 +513,6 @@ def icestupa(df, fountain, surface):
                     df.loc[i, "When"],
                 )
 
-            if df.loc[i, "delta_T_s"] < -50:
-                logger.error(
-                    "Temperature change is %s at %s",
-                    round(df.loc[i, "delta_T_s"]),
-                    df.loc[i, "When"],
-                )
-
             """ Quantities of all phases """
             df.loc[i, "T_s"] = df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]
             df.loc[i, "meltwater"] = df.loc[i - 1, "meltwater"] + df.loc[i, "melted"]
@@ -545,12 +531,19 @@ def icestupa(df, fountain, surface):
                 df.loc[i, "When"],
             )
 
+            if df.loc[i, "delta_T_s"] < -50:
+                logger.error(
+                    "Temperature change is %s at %s",
+                    round(df.loc[i, "delta_T_s"]),
+                    df.loc[i, "When"],
+                )
+
     df = df[start:i]
 
     print("Fountain sprayed", float(df["sprayed"].tail(1)))
     print("Ice Mass Remaining", float(df["ice"].tail(1)))
     print("Meltwater", float(df["meltwater"].tail(1)))
-    print("Evaporated/sublimated", float(df["vapour"].tail(1)))
+    print("Sublimated", float(df["vapour"].tail(1)))
     print("Model ended", df.loc[i - 1, "When"])
     print("Model runtime", df.loc[i - 1, "When"] - df.loc[start, "When"])
     print(
@@ -559,6 +552,6 @@ def icestupa(df, fountain, surface):
         * 100,
     )
     print("Ice Volume Max", float(df["iceV"].max()))
-    print("Ppt", prec)
+    print("Ppt", df["ppt"].sum())
 
     return df
