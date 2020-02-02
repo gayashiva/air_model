@@ -9,44 +9,32 @@ pd.options.mode.chained_assignment = None  # Suppress Setting with warning
 
 def albedo(df, surface):
 
-    surface["decay_t_d"] = (
-        surface["decay_t_d"] * 24 * 60 / 5
-    )  # convert to 5 minute time steps
-    surface["decay_t_w"] = (
-        surface["decay_t_w"] * 24 * 60 / 5
+    surface["decay_t"] = (
+        surface["decay_t"] * 24 * 60 / 5
     )  # convert to 5 minute time steps
     s = 0
     f = 0
 
     for i in range(1, df.shape[0]):
 
-        if df.loc[i, "T_s"] > -2:  # Wet ice
-            ti = surface["decay_t_w"]
-            a_min = surface["a_mw"]
-        else:
-            ti = surface["decay_t_d"]
-            a_min = surface["a_md"]
+        ti = surface["decay_t"]
+        a_min = surface["a_i"]
 
         # Precipitation
         if (df.loc[i, "Fountain"] == 0) & (df.loc[i, "Prec"] > 0):
             if df.loc[i, "T_a"] < surface["rain_temp"]:  # Snow
                 s = 0
                 f = 0
-            else:  # Rainfall
-                ti = surface["decay_t_w"]
-                a_min = surface["a_mw"]
 
         if df.loc[i, "Fountain"] > 0:
             f = 1
             s = 0
-            ti = surface["decay_t_w"]
-            a_min = surface["a_mw"]
 
         if f == 0:  # last snowed
             df.loc[i, "a"] = a_min + (surface["a_s"] - a_min) * math.exp(-s / ti)
             s = s + 1
         else:  # last sprayed
-            df.loc[i, "a"] = a_min + (surface["a_i"] - a_min) * math.exp(-s / ti)
+            df.loc[i, "a"] = a_min
             s = s + 1
 
     return df["a"]
@@ -190,7 +178,7 @@ def icestupa(df, fountain, surface):
 
         if state == 1:
 
-            """ Keeping r_ice = R_f to determine SA """
+            """ Keeping r_ice constant to determine SA """
             if (df.Discharge[i] > 0) & (df.loc[i - 1, "r_ice"] >= R_f):
                 # Ice Radius
                 df.loc[i, "r_ice"] = df.loc[
@@ -220,16 +208,9 @@ def icestupa(df, fountain, surface):
 
             else:
 
-                if df.loc[i - 1, "r_ice"] > R_f:
-                    logger.warning(
-                        "Ice radius increased to %s thick at %s",
-                        df.loc[i - 1, "r_ice"],
-                        df.loc[i, "When"],
-                    )
-
                 """ Keeping h_r constant to determine SA """
                 # Height to radius ratio
-                df.loc[i, "h_r"] = df.loc[i - 1, "h_ice"] / df.loc[i - 1, "r_ice"]
+                df.loc[i, "h_r"] = df.loc[i-1, "h_r"]
 
                 # Ice Radius
                 df.loc[i, "r_ice"] = math.pow(
@@ -323,7 +304,7 @@ def icestupa(df, fountain, surface):
             """ When fountain run """
             if df.loc[i, "liquid"] > 0:
 
-                # Initial freeze up due to cold ice layer
+                # Conduction Freezing
                 if df.loc[i - 1, "T_s"] < 0:
 
                     df.loc[i, "solid"] += (ice_layer * ci * (-df.loc[i - 1, "T_s"])) / (

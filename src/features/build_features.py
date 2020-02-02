@@ -63,32 +63,32 @@ else:
 
 filename1 = os.path.join(filename1 + "_model_results.csv")
 
-print(filename1)
-if os.path.isfile(filename1):
-    print("Simulation Exists")
-    df = pd.read_csv(filename1, sep=",")
-    df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
-
-else:
-    filename0 = os.path.join(filename0 + "_input.csv")
-    df_in = pd.read_csv(filename0, sep=",")
-    df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
-
-    df = icestupa(df_in, fountain, surface)
-
-    total = time.time() - start
-
-    print("Total time : ", total / 60)
-
-# filename0 = os.path.join(filename0 + "_input.csv")
-# df_in = pd.read_csv(filename0, sep=",")
-# df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+# print(filename1)
+# if os.path.isfile(filename1):
+#     print("Simulation Exists")
+#     df = pd.read_csv(filename1, sep=",")
+#     df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
 #
-# df = icestupa(df_in, fountain, surface)
+# else:
+#     filename0 = os.path.join(filename0 + "_input.csv")
+#     df_in = pd.read_csv(filename0, sep=",")
+#     df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 #
-# total = time.time() - start
+#     df = icestupa(df_in, fountain, surface)
 #
-# print("Total time : ", total / 60)
+#     total = time.time() - start
+#
+#     print("Total time : ", total / 60)
+
+filename0 = os.path.join(filename0 + "_input.csv")
+df_in = pd.read_csv(filename0, sep=",")
+df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+
+df = icestupa(df_in, fountain, surface)
+
+total = time.time() - start
+
+print("Total time : ", total / 60)
 
 # # Output for manim
 # filename2 = os.path.join(folders["output_folder"], site + "_model_gif.csv")
