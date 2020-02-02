@@ -172,10 +172,6 @@ if site == "schwarzsee":
 
     df.Discharge = df.Discharge * df.Fountain
 
-    # v_a mean
-    v_a = df["Wind Speed"].replace(0, np.NaN).mean()  # m/s Average Humidity
-    df["Wind Speed"] = df["Wind Speed"].replace(0, v_a)
-
     # CSV output
     df.rename(
         columns={
