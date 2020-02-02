@@ -174,7 +174,6 @@ def icestupa(df, fountain, surface):
                 df.loc[i - 1, "solid"] = 0
                 df.loc[i - 1, "ice"] = 0
                 df.loc[i - 1, "iceV"] = 0
-                stop = i - 1
                 break
 
             if start != 0:  # If ice melted in between fountain run
@@ -360,53 +359,51 @@ def icestupa(df, fountain, surface):
             else:
                 """ When fountain off """
 
-                if df.loc[i - 1, "ice"] > 0:
+                # Ice surface
+                df.loc[i, "e_s"] = surface["ie"]
 
-                    # Ice surface
-                    df.loc[i, "e_s"] = surface["ie"]
+                # Sublimation, Evaporation or condensation
+                df.loc[i, "Ql"] = (
+                    0.623
+                    * Ls
+                    * rho_a
+                    / p0
+                    * math.pow(k, 2)
+                    * df.loc[i, "v_a"]
+                    * (df.loc[i, "vpa"] - df.loc[i, "vp_ice"])
+                    / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
+                )
 
-                    # Sublimation, Evaporation or condensation
-                    df.loc[i, "Ql"] = (
-                        0.623
-                        * Ls
-                        * rho_a
-                        / p0
-                        * math.pow(k, 2)
-                        * df.loc[i, "v_a"]
-                        * (df.loc[i, "vpa"] - df.loc[i, "vp_ice"])
-                        / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
+                df.loc[i, "gas"] -= (
+                    df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
+                ) / Ls
+
+                # Removing gas quantity generated from previous time step
+                df.loc[i - 1, "ice"] += (
+                    df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
+                ) / Ls
+
+                # Ice Temperature
+                df.loc[i, "delta_T_s"] += (
+                    df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
+                ) / (ice_layer * ci)
+
+                """Hot Ice"""
+                if df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"] > 0:
+
+                    # Melting Ice by Temperature
+                    df.loc[i, "solid"] -= (
+                        (ice_layer * ci)
+                        * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
+                        / (-Lf)
+                    )
+                    df.loc[i, "melted"] += (
+                        (ice_layer * ci)
+                        * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
+                        / (-Lf)
                     )
 
-                    df.loc[i, "gas"] -= (
-                        df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
-                    ) / Ls
-
-                    # Removing gas quantity generated from previous time step
-                    df.loc[i - 1, "ice"] += (
-                        df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
-                    ) / Ls
-
-                    # Ice Temperature
-                    df.loc[i, "delta_T_s"] += (
-                        df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
-                    ) / (ice_layer * ci)
-
-                    """Hot Ice"""
-                    if df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"] > 0:
-
-                        # Melting Ice by Temperature
-                        df.loc[i, "solid"] -= (
-                            (ice_layer * ci)
-                            * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
-                            / (-Lf)
-                        )
-                        df.loc[i, "melted"] += (
-                            (ice_layer * ci)
-                            * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
-                            / (-Lf)
-                        )
-
-                        df.loc[i, "delta_T_s"] = -df.loc[i - 1, "T_s"]
+                    df.loc[i, "delta_T_s"] = -df.loc[i - 1, "T_s"]
 
             logger.info(
                 "Ice made after sublimation is %s thick at %s",
@@ -459,82 +456,78 @@ def icestupa(df, fountain, surface):
             # Total Energy Joules
             df.loc[i, "EJoules"] = df.loc[i, "TotalE"] * time_steps * df.loc[i, "SA"]
 
-            if df.loc[i - 1, "ice"] > 0:
+            """ Energy negative"""
+            if df.loc[i, "EJoules"] < 0:
 
-                """ Energy negative"""
-                if df.loc[i, "EJoules"] < 0:
+                """ And fountain on """
+                if df.loc[i - 1, "liquid"] > 0:
+                    """Freezing water"""
 
-                    """ And fountain on """
-                    if df.loc[i - 1, "liquid"] > 0:
-                        """Freezing water"""
+                    df.loc[i, "liquid"] -= (df.loc[i, "EJoules"]) / (-Lf)
 
-                        df.loc[i, "liquid"] -= (df.loc[i, "EJoules"]) / (-Lf)
-
-                        if df.loc[i, "liquid"] < 0:
-                            df.loc[i, "liquid"] += (df.loc[i, "EJoules"]) / (-Lf)
-                            df.loc[i, "solid"] += df.loc[i, "liquid"]
-                            df.loc[i, "liquid"] = 0
-                        else:
-                            df.loc[i, "solid"] += (df.loc[i, "EJoules"]) / (-Lf)
-
-                        logger.warning(
-                            "Ice made after energy neg is %s thick at temp %s",
-                            round(df.loc[i, "solid"]),
-                            df.loc[i - 1, "T_s"],
-                        )
-
+                    if df.loc[i, "liquid"] < 0:
+                        df.loc[i, "liquid"] += (df.loc[i, "EJoules"]) / (-Lf)
+                        df.loc[i, "solid"] += df.loc[i, "liquid"]
+                        df.loc[i, "liquid"] = 0
                     else:
-                        """ When fountain off and energy negative """
+                        df.loc[i, "solid"] += (df.loc[i, "EJoules"]) / (-Lf)
 
-                        if df.loc[i - 1, "liquid"] < 0:
-                            logger.error(
-                                "Liquid is %s at %s",
-                                round(df.loc[i, "delta_T_s"]),
-                                df.loc[i, "When"],
-                            )
-                            df.loc[i - 1, "liquid"] = 0
-
-                        # Cooling Ice
-                        df.loc[i, "delta_T_s"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
-
-                    logger.info(
-                        "Ice made after energy neg is %s thick at %s",
+                    logger.warning(
+                        "Ice made after energy neg is %s thick at temp %s",
                         round(df.loc[i, "solid"]),
-                        df.loc[i, "When"],
+                        df.loc[i - 1, "T_s"],
                     )
 
                 else:
-                    """ Energy Positive """
+                    """ When fountain off and energy negative """
 
-                    if df.loc[i - 1, "ice"] > 0:
-
-                        # Heating Ice
-                        df.loc[i, "delta_T_s"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
-
-                        """Hot Ice"""
-                        if (df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]) > 0:
-
-                            # Melting Ice by Temperature
-                            df.loc[i, "solid"] -= (
-                                (ice_layer * ci)
-                                * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
-                                / (-Lf)
-                            )
-
-                            df.loc[i, "melted"] += (
-                                (ice_layer * ci)
-                                * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
-                                / (-Lf)
-                            )
-
-                            df.loc[i - 1, "T_s"] = 0
-                            df.loc[i, "delta_T_s"] = 0
-
-                        logger.info(
-                            "Ice melted is %s thick at %s",
-                            round(df.loc[i, "solid"]),
+                    if df.loc[i - 1, "liquid"] < 0:
+                        logger.error(
+                            "Liquid is %s at %s",
+                            round(df.loc[i, "delta_T_s"]),
                             df.loc[i, "When"],
                         )
+                        df.loc[i - 1, "liquid"] = 0
+
+                    # Cooling Ice
+                    df.loc[i, "delta_T_s"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
+
+                logger.info(
+                    "Ice made after energy neg is %s thick at %s",
+                    round(df.loc[i, "solid"]),
+                    df.loc[i, "When"],
+                )
+
+            else:
+                """ Energy Positive """
+
+                # Heating Ice
+                df.loc[i, "delta_T_s"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
+
+                """Hot Ice"""
+                if (df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]) > 0:
+
+                    # Melting Ice by Temperature
+                    df.loc[i, "solid"] -= (
+                        (ice_layer * ci)
+                        * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
+                        / (-Lf)
+                    )
+
+                    df.loc[i, "melted"] += (
+                        (ice_layer * ci)
+                        * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
+                        / (-Lf)
+                    )
+
+                    df.loc[i - 1, "T_s"] = 0
+                    df.loc[i, "delta_T_s"] = 0
+
+                logger.info(
+                    "Ice melted is %s thick at %s",
+                    round(df.loc[i, "solid"]),
+                    df.loc[i, "When"],
+                )
 
             if df.loc[i, "delta_T_s"] < -50:
                 logger.error(
