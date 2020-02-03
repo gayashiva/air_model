@@ -52,10 +52,10 @@ logger.addHandler(console_handler)
 #  read files
 if option == "temperature":
     filename0 = (
-            folders["input_folder"] + site + "_" + option + "_" + str(fountain["t_c"])
+            folders["input_folder"] + site + "_" + option + "_" + str(fountain["crit_temp"])
     )
     filename1 = (
-        folders["output_folder"] + site + "_" + option + "_" + str(fountain["t_c"])
+        folders["output_folder"] + site + "_" + option + "_" + str(fountain["crit_temp"])
     )
 else:
     filename0 = folders["input_folder"] + site + "_" + option

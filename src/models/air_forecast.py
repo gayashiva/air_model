@@ -128,7 +128,6 @@ def icestupa(df, fountain, surface):
         "t_droplet",
         "vpa",
         "vp_ice",
-        "vp_w",
         "ppt",
     ]
     for col in l:
@@ -156,7 +155,7 @@ def icestupa(df, fountain, surface):
     for i in range(1, df.shape[0]):
 
         # Ice Melted
-        if (df.loc[i - 1, "r_ice"] <= 0) & (df.Discharge[i:].sum() == 0):
+        if (df.loc[i - 1, "ice"] <= 0.05) & (df.Discharge[i:].sum() == 0):
             if df.Discharge[i:].sum() == 0:  # If ice melted after fountain run
                 df.loc[i - 1, "solid"] = 0
                 df.loc[i - 1, "ice"] = 0
@@ -234,7 +233,7 @@ def icestupa(df, fountain, surface):
                 )
 
             logger.info(
-                "Ice radius is %s and height is %s at %s",
+                "Ice radius is %s and ice is %s at %s",
                 df.loc[i, "r_ice"],
                 df.loc[i, "h_ice"],
                 df.loc[i, "When"],
@@ -273,9 +272,6 @@ def icestupa(df, fountain, surface):
             else:
                 df.loc[i, "vpa"] = df.loc[i, "vp_a"]
 
-            df.loc[i, "vp_w"] = 6.112 * np.exp(
-                17.62 * surface["T_f"] / (surface["T_f"] + 243.12)
-            )
             df.loc[i, "vp_ice"] = 6.112 * np.exp(
                 22.46 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
             )
@@ -505,25 +501,23 @@ def icestupa(df, fountain, surface):
             df.loc[i, "water"] = df.loc[i - 1, "water"] + df.loc[i, "liquid"]
             df.loc[i, "iceV"] = df.loc[i, "ice"] / rho_i
 
-            logger.debug(
-                "Surface temp. %s, is Ice is %s at %s",
-                round(df.loc[i, "T_s"]),
-                round(df.loc[i, "ice"]),
+            logger.info(
+                "Ice volume is %s and meltwater is %s at %s",
+                df.loc[i, "ice"],
+                df.loc[i, "meltwater"],
                 df.loc[i, "When"],
             )
 
-            if df.loc[i, "delta_T_s"] < -50:
-                logger.error(
-                    "Temperature change is %s at %s",
-                    round(df.loc[i, "delta_T_s"]),
-                    df.loc[i, "When"],
-                )
+
 
     df = df[start:i]
 
-    print("Fountain sprayed", float(df["sprayed"].tail(1)))
+
     print("Ice Mass Remaining", float(df["ice"].tail(1)))
     print("Meltwater", float(df["meltwater"].tail(1)))
+    print("Ice Volume Max", float(df["iceV"].max()))
+    print("Fountain sprayed", float(df["sprayed"].tail(1)))
+    print("Ppt", df["ppt"].sum())
     print("Sublimated", float(df["vapour"].tail(1)))
     print("Model ended", df.loc[i - 1, "When"])
     print("Model runtime", df.loc[i - 1, "When"] - df.loc[start, "When"])
@@ -532,7 +526,5 @@ def icestupa(df, fountain, surface):
         float((df["meltwater"].tail(1) + df["ice"].tail(1)) / df["sprayed"].tail(1))
         * 100,
     )
-    print("Ice Volume Max", float(df["iceV"].max()))
-    print("Ppt", df["ppt"].sum())
 
     return df

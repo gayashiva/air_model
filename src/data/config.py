@@ -12,13 +12,9 @@ option = "schwarzsee"
 print("Site is", site)
 
 surface = dict(
-    T_f=5,  # Fountain Water Temperature T_f
     ie=0.96,  # Ice Emissivity ie
-    a_i=0.34,  # Albedo of Ice a_i
-    a_s=0.9,  # Albedo of Fresh Snow a_s
-    # a_md=0.48,  # Albedo of dry ice min
-    # a_mw=0.41,  # Albedo of wet ice min
-    # decay_t_d=5,  # Albedo dry decay rate t_d
+    a_i=0.4,  # Albedo of Ice a_i
+    a_s=0.8,  # Albedo of Fresh Snow a_s
     decay_t=10,  # Albedo dry decay rate decay_t_d
     z0mi=0.0017,  # Ice Momentum roughness length
     z0hi=0.0017,  # Ice Scalar roughness length
@@ -45,7 +41,7 @@ if site == "schwarzsee":
     fountain = dict(
         aperture_f=0.005,  # Fountain aperture diameter
         h_f=1.35,  # Fountain steps h_f
-        discharge=3.58,  # Fountain on discharge
+        discharge=11.5,  # Fountain on discharge
         crit_temp=-5,  # Fountain runtime temperature
     )
 
