@@ -96,158 +96,158 @@ matplotlib.rc('xtick', labelsize=5)
 #     plt.clf()
 #     pp.close()
 
-# #  read files
-# if option == "temperature":
-#     filename2 = (
-#         folders["output_folder"] + site + "_" + option + "_" + str(fountain["t_c"])
-#     )
-# else:
-#     filename2 = folders["output_folder"] + site + "_" + option
-#
-#
-# filename0 = os.path.join(filename2 + "_model_results.csv")
-# df = pd.read_csv(filename0, sep=",")
-# df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
-#
-# # Day melt and Night freeze Plots
-#
-# for i in range(0, df.shape[0]):
-#     if df.loc[i,'solid'] < 0:
-#         df.loc[i,'solid'] = 0
-#
-#
-# dfd = df.set_index("When").resample("D").mean().reset_index()
-# dfd['When'] = dfd['When'].dt.strftime("%b %d")
-# dfd["Discharge"] = dfd["Discharge"] == 0
-# dfd["Discharge"] = dfd["Discharge"].astype(int)
-# dfd["Discharge"] = dfd["Discharge"].astype(str)
-#
-# dfd = dfd.rename({'SW': 'Shortwave', 'LW': 'Longwave', 'Qs': 'Sensible', 'Ql': 'Latent'}, axis=1)
-#
-#
-# x = dfd.When
-# y1 = dfd.iceV
-#
-# fig = plt.figure()
-# ax1 = fig.add_subplot(111)
-# ax1.plot(x, y1, "k-", lw=1, color ='#0C70DE')
-# ax1.set_ylabel("Ice Volume ($m^3$)")
-# # ax1.set_xlabel("Days")
-# ax1.set_ylim(0,1.2)
-# #  format the ticks
-# ax1.xaxis.set_major_locator(plt.MaxNLocator(7))
-# ax1.xaxis.set_minor_locator(AutoMinorLocator())
-# ax1.yaxis.set_minor_locator(AutoMinorLocator())
-# # ax1.grid(axis="x", color="black", alpha=.3, linewidth=2, linestyle=":", which="major")
-# ax1.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
-# plt.xticks(rotation=45)
-#
-#
-# plt.savefig(
-#     os.path.join(folders['output_folder'], site + "iceV.jpg"), bbox_inches="tight", dpi=300
-# )
-# ax1.set_ylim(0,0.6)
-# ax1.bar(x, y1, color ='#D9E9FA', edgecolor = 'black')
-# plt.savefig(
-#     os.path.join(folders['output_folder'], site + "iceVbar.jpg"), bbox_inches="tight", dpi=300
-# )
-# plt.clf()
-#
-# x = dfd.When
-# y1 = dfd.iceV
-#
-# ax1 = fig.add_subplot(111)
-# ax1.plot(x, y1, "k-", lw=1, color ='#0C70DE')
-# ax1.set_ylabel("Ice Volume ($m^3$)")
-# # ax1.set_xlabel("Days")
-# ax1.set_ylim(0,1.2)
-#
-# #  format the ticks
-# ax1.xaxis.set_major_locator(plt.MaxNLocator(7))
-# ax1.xaxis.set_minor_locator(AutoMinorLocator())
-# ax1.yaxis.set_minor_locator(AutoMinorLocator())
-# # ax1.grid(axis="x", color="black", alpha=.3, linewidth=2, linestyle=":", which="major")
-# ax1.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
-# plt.xticks(rotation=45)
-#
-# if site == "schwarzsee":
-#     # Include Validation line segment 1
-#     ax1.plot(
-#         ['Feb 14', 'Feb 14'],
-#         [0.67115, 1.042],
-#         color="green",
-#         lw=1,
-#     )
-#     ax1.scatter('Feb 14', 0.856575, color="green", marker="o")
-#
-#     # Include Validation line segment 2
-#     ax1.plot(
-#         ['Mar 10', 'Mar 10'],
-#         [0.037, 0.222],
-#         color="green",
-#         lw=1,
-#     )
-#     ax1.scatter('Mar 10', 0.1295, color="green", marker="o")
-#
-#
-# plt.savefig(
-#     os.path.join(folders['output_folder'], site + "iceV2.jpg"), bbox_inches="tight", dpi=300
-# )
-#
-#
-# plt.clf()
-#
-#
-#
-# dfds = df.set_index("When").resample("D").sum().reset_index()
-# dfd['meltwater'] = dfd['meltwater'] * -1 / 1000
-# dfds['melted'] = dfds['melted'] * -1 / 1000
-# dfds['solid'] = dfds['solid'] / 1000
-# dfds["When"] = pd.to_datetime(dfds["When"], format="%Y.%m.%d %H:%M:%S")
-# # dfds = dfds.rename({'solid': 'ice', 'melted': 'meltwater'}, axis=1)  # new method
-# dfds['When'] = dfds['When'].dt.strftime("%b %d")
-# dfd = dfd.set_index("When")
-# dfds = dfds.set_index("When")
-#
-# dfds1 = dfd[[ 'iceV','meltwater']]
-# dfds1 = dfds1.rename({'iceV': 'Ice frozen', 'meltwater': 'Meltwater Discharged'}, axis=1)  # new method
-#
-#
-# fig, ax = plt.subplots()
-# dfds2 = dfds[[ 'solid','melted']]
-# dfds2 = dfds2.rename({'solid': 'Daily Ice frozen', 'melted': 'Daily Meltwater discharged'}, axis=1)
-# dfds2.plot( kind = 'bar', stacked=True, edgecolor = 'black', linewidth=0.5, color = ['#D9E9FA', '#0C70DE'], ax=ax, alpha =0.5)
-# ax.plot( dfd['iceV'], lw=1, color ='#0C70DE')
-# plt.xlabel('Days')
-# plt.ylabel('Volume ($m^{3}$)')
-# plt.xticks(rotation=45)
-# plt.legend(loc = 'upper right')
-#
-# #  format the ticks
-# ax.yaxis.set_minor_locator(AutoMinorLocator())
-# ax.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
-#
-# filename = os.path.join(folders['output_folder'], site + '_' + option + "_daynight1.jpg")
-# plt.savefig(filename, bbox_inches  =  "tight", dpi=300)
-#
-# plt.clf()
-#
-# fig, ax = plt.subplots()
-# dfds2.plot( kind = 'bar', stacked=True, edgecolor = 'black', linewidth=0.5, color = ['#D9E9FA', '#0C70DE'], ax=ax)
-# plt.xlabel('Days')
-# plt.ylabel('Volume ($m^{3}$)')
-# plt.xticks(rotation=45)
-# plt.legend(loc = 'upper right')
-# plt.xticks(rotation=45)
-#
-# #  format the ticks
-# ax.yaxis.set_minor_locator(AutoMinorLocator())
-# ax.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
-#
-# filename = os.path.join(folders['output_folder'], site + '_' + option + "_daynight2.jpg")
-# plt.savefig(filename, bbox_inches  =  "tight", dpi=300)
-#
-# plt.clf()
+#  read files
+if option == "temperature":
+    filename2 = (
+        folders["output_folder"] + site + "_" + option + "_" + str(fountain["crit_temp"])
+    )
+else:
+    filename2 = folders["output_folder"] + site + "_" + option
+
+
+filename0 = os.path.join(filename2 + "_model_results.csv")
+df = pd.read_csv(filename0, sep=",")
+df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
+
+# Day melt and Night freeze Plots
+
+for i in range(0, df.shape[0]):
+    if df.loc[i,'solid'] < 0:
+        df.loc[i,'solid'] = 0
+
+
+dfd = df.set_index("When").resample("D").mean().reset_index()
+dfd['When'] = dfd['When'].dt.strftime("%b %d")
+dfd["Discharge"] = dfd["Discharge"] == 0
+dfd["Discharge"] = dfd["Discharge"].astype(int)
+dfd["Discharge"] = dfd["Discharge"].astype(str)
+
+dfd = dfd.rename({'SW': 'Shortwave', 'LW': 'Longwave', 'Qs': 'Sensible', 'Ql': 'Latent'}, axis=1)
+
+
+x = dfd.When
+y1 = dfd.iceV
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(x, y1, "k-", lw=1, color ='#0C70DE')
+ax1.set_ylabel("Ice Volume ($m^3$)")
+# ax1.set_xlabel("Days")
+ax1.set_ylim(0,1.2)
+#  format the ticks
+ax1.xaxis.set_major_locator(plt.MaxNLocator(7))
+ax1.xaxis.set_minor_locator(AutoMinorLocator())
+ax1.yaxis.set_minor_locator(AutoMinorLocator())
+# ax1.grid(axis="x", color="black", alpha=.3, linewidth=2, linestyle=":", which="major")
+ax1.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
+plt.xticks(rotation=45)
+
+
+plt.savefig(
+    os.path.join(folders['output_folder'], site + "iceV.jpg"), bbox_inches="tight", dpi=300
+)
+ax1.set_ylim(0,0.6)
+ax1.bar(x, y1, color ='#D9E9FA', edgecolor = 'black')
+plt.savefig(
+    os.path.join(folders['output_folder'], site + "iceVbar.jpg"), bbox_inches="tight", dpi=300
+)
+plt.clf()
+
+x = dfd.When
+y1 = dfd.iceV
+
+ax1 = fig.add_subplot(111)
+ax1.plot(x, y1, "k-", lw=1, color ='#0C70DE')
+ax1.set_ylabel("Ice Volume ($m^3$)")
+# ax1.set_xlabel("Days")
+ax1.set_ylim(0,1.2)
+
+#  format the ticks
+ax1.xaxis.set_major_locator(plt.MaxNLocator(7))
+ax1.xaxis.set_minor_locator(AutoMinorLocator())
+ax1.yaxis.set_minor_locator(AutoMinorLocator())
+# ax1.grid(axis="x", color="black", alpha=.3, linewidth=2, linestyle=":", which="major")
+ax1.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
+plt.xticks(rotation=45)
+
+if site == "schwarzsee":
+    # Include Validation line segment 1
+    ax1.plot(
+        ['Feb 14', 'Feb 14'],
+        [0.67115, 1.042],
+        color="green",
+        lw=1,
+    )
+    ax1.scatter('Feb 14', 0.856575, color="green", marker="o")
+
+    # Include Validation line segment 2
+    ax1.plot(
+        ['Mar 10', 'Mar 10'],
+        [0.037, 0.222],
+        color="green",
+        lw=1,
+    )
+    ax1.scatter('Mar 10', 0.1295, color="green", marker="o")
+
+
+plt.savefig(
+    os.path.join(folders['output_folder'], site + "iceV2.jpg"), bbox_inches="tight", dpi=300
+)
+
+
+plt.clf()
+
+
+
+dfds = df.set_index("When").resample("D").sum().reset_index()
+dfd['meltwater'] = dfd['meltwater'] * -1 / 1000
+dfds['melted'] = dfds['melted'] * -1 / 1000
+dfds['solid'] = dfds['solid'] / 1000
+dfds["When"] = pd.to_datetime(dfds["When"], format="%Y.%m.%d %H:%M:%S")
+# dfds = dfds.rename({'solid': 'ice', 'melted': 'meltwater'}, axis=1)  # new method
+dfds['When'] = dfds['When'].dt.strftime("%b %d")
+dfd = dfd.set_index("When")
+dfds = dfds.set_index("When")
+
+dfds1 = dfd[[ 'iceV','meltwater']]
+dfds1 = dfds1.rename({'iceV': 'Ice frozen', 'meltwater': 'Meltwater Discharged'}, axis=1)  # new method
+
+
+fig, ax = plt.subplots()
+dfds2 = dfds[[ 'solid','melted']]
+dfds2 = dfds2.rename({'solid': 'Daily Ice frozen', 'melted': 'Daily Meltwater discharged'}, axis=1)
+dfds2.plot( kind = 'bar', stacked=True, edgecolor = 'black', linewidth=0.5, color = ['#D9E9FA', '#0C70DE'], ax=ax, alpha =0.5)
+ax.plot( dfd['iceV'], lw=1, color ='#0C70DE')
+plt.xlabel('Days')
+plt.ylabel('Volume ($m^{3}$)')
+plt.xticks(rotation=45)
+plt.legend(loc = 'upper right')
+
+#  format the ticks
+ax.yaxis.set_minor_locator(AutoMinorLocator())
+ax.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
+
+filename = os.path.join(folders['output_folder'], site + '_' + option + "_daynight1.jpg")
+plt.savefig(filename, bbox_inches  =  "tight", dpi=300)
+
+plt.clf()
+
+fig, ax = plt.subplots()
+dfds2.plot( kind = 'bar', stacked=True, edgecolor = 'black', linewidth=0.5, color = ['#D9E9FA', '#0C70DE'], ax=ax)
+plt.xlabel('Days')
+plt.ylabel('Volume ($m^{3}$)')
+plt.xticks(rotation=45)
+plt.legend(loc = 'upper right')
+plt.xticks(rotation=45)
+
+#  format the ticks
+ax.yaxis.set_minor_locator(AutoMinorLocator())
+ax.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
+
+filename = os.path.join(folders['output_folder'], site + '_' + option + "_daynight2.jpg")
+plt.savefig(filename, bbox_inches  =  "tight", dpi=300)
+
+plt.clf()
 
 # Energy Plots
 y= dfd[['Shortwave','Longwave']]

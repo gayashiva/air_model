@@ -41,7 +41,7 @@ if site == "schwarzsee":
     fountain = dict(
         aperture_f=0.005,  # Fountain aperture diameter
         h_f=1.35,  # Fountain steps h_f
-        discharge=11.5,  # Fountain on discharge
+        discharge=3.58,  # Fountain on discharge
         crit_temp=-5,  # Fountain runtime temperature
     )
 

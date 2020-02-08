@@ -63,32 +63,32 @@ else:
 
 filename1 = os.path.join(filename1 + "_model_results.csv")
 
-# print(filename1)
-# if os.path.isfile(filename1):
-#     print("Simulation Exists")
-#     df = pd.read_csv(filename1, sep=",")
-#     df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
-#
-# else:
-#     filename0 = os.path.join(filename0 + "_input.csv")
-#     df_in = pd.read_csv(filename0, sep=",")
-#     df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
-#
-#     df = icestupa(df_in, fountain, surface)
-#
-#     total = time.time() - start
-#
-#     print("Total time : ", total / 60)
+print(filename1)
+if os.path.isfile(filename1):
+    print("Simulation Exists")
+    df = pd.read_csv(filename1, sep=",")
+    df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
 
-filename0 = os.path.join(filename0 + "_input.csv")
-df_in = pd.read_csv(filename0, sep=",")
-df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+else:
+    filename0 = os.path.join(filename0 + "_input.csv")
+    df_in = pd.read_csv(filename0, sep=",")
+    df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
-df = icestupa(df_in, fountain, surface)
+    df = icestupa(df_in, fountain, surface)
 
-total = time.time() - start
+    total = time.time() - start
 
-print("Total time : ", total / 60)
+    print("Total time : ", total / 60)
+
+# filename0 = os.path.join(filename0 + "_input.csv")
+# df_in = pd.read_csv(filename0, sep=",")
+# df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+#
+# df = icestupa(df_in, fountain, surface)
+#
+# total = time.time() - start
+#
+# print("Total time : ", total / 60)
 
 # # Output for manim
 # filename2 = os.path.join(folders["output_folder"], site + "_model_gif.csv")
@@ -120,7 +120,7 @@ y1 = df.iceV
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-")
-ax1.set_ylabel("Ice Volume ($m^3$)")
+ax1.set_ylabel("Ice Volume [$m^3$]")
 ax1.set_xlabel("Days")
 
 #  format the ticks
@@ -137,12 +137,12 @@ y2 = df.sprayed
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-")
-ax1.set_ylabel("Water used ($l$)")
+ax1.set_ylabel("Water used [$l$]")
 ax1.set_xlabel("Days")
 
 ax2 = ax1.twinx()
 ax2.plot(x, y2, "b-", linewidth=0.5)
-ax2.set_ylabel("Water sprayed ($l$)", color="b")
+ax2.set_ylabel("Water sprayed [$l$]", color="b")
 for tl in ax2.get_yticklabels():
     tl.set_color("b")
 
@@ -160,7 +160,7 @@ y1 = df.SA
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-")
-ax1.set_ylabel("Surface Area ($m^2$)")
+ax1.set_ylabel("Surface Area [$m^2$]")
 ax1.set_xlabel("Days")
 
 #  format the ticks
@@ -177,18 +177,29 @@ dfd['When'] = dfd['When'].dt.strftime("%b %d")
 dfd["Discharge"] = dfd["Discharge"] == 0
 dfd["Discharge"] = dfd["Discharge"].astype(int)
 dfd["Discharge"] = dfd["Discharge"].astype(str)
-dfd = dfd.set_index("When")
+
 
 dfd = dfd.rename({'SW': 'Shortwave', 'LW': 'Longwave', 'Qs': 'Sensible', 'Ql': 'Latent'}, axis=1)
 
-fig = plt.figure()
+dfd["label"] = ' '
+labels = ["Jan 29", "Feb 05", "Feb 12", "Feb 19", "Feb 26", "Mar 05", "Mar 12", "Mar 19"]
+for i in range(0,dfd.shape[0]):
+    for item in labels:
+        if dfd.When[i] == item:
+            dfd.loc[i, 'label'] = dfd.When[i]
+
+dfd = dfd.set_index("label")
+
+fig= plt.figure()
 y= dfd[['Shortwave','Longwave','Sensible','Latent' ]]
-y.plot.bar(stacked=True, edgecolor = dfd['Discharge'], linewidth=0.5)
+
+y.plot.bar( stacked=True, edgecolor = dfd['Discharge'], linewidth=0.5)
 plt.xlabel('Days')
-plt.ylabel('Energy ($W/m^{2}$)')
+plt.ylabel('Energy [$W\,m^{-2}$]')
 plt.legend(loc = 'upper left')
 plt.ylim(-150, 150)
 plt.xticks(rotation=45)
+
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
@@ -198,7 +209,7 @@ y2 = df.r_ice
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-")
-ax1.set_ylabel("Ice Cone Height ($m$)")
+ax1.set_ylabel("Ice Cone Height [$m$]")
 ax1.set_xlabel("Days")
 
 ax2 = ax1.twinx()
@@ -239,12 +250,12 @@ y2 = df.TotalE + df.Ql
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-")
-ax1.set_ylabel("Ice Volume ($m^3$)")
+ax1.set_ylabel("Ice Volume [$m^3$]")
 ax1.set_xlabel("Days")
 
 ax2 = ax1.twinx()
 ax2.plot(x, y2, "b-", linewidth=0.5)
-ax2.set_ylabel("Energy ($W/m^{2}$)", color="b")
+ax2.set_ylabel("Energy [$W\,m^{-2}$]", color="b")
 for tl in ax2.get_yticklabels():
     tl.set_color("b")
 
@@ -280,7 +291,7 @@ fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, linewidth=0.5)
 ax1.set_ylim(0, 50)
-ax1.set_ylabel("SA/V ratio ($m^{-1}$)")
+ax1.set_ylabel("SA/V ratio [$m^{-1}$]")
 ax1.set_xlabel("Days")
 
 #  format the ticks
@@ -331,8 +342,8 @@ y1 = df.solid / 5
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Ice Production rate ($l/min$)")
+ax1.plot(x, y1, "b-", linewidth=0.5)
+ax1.set_ylabel("Ice Production rate [$l\,min^{-1}$]")
 ax1.set_xlabel("Days")
 
 #  format the ticks
@@ -350,12 +361,12 @@ y2 = df.ppt * 1000/5
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-")
-ax1.set_ylabel("Discharge ($l/min$)")
+ax1.set_ylabel("Discharge [$l\,min^{-1}$]")
 ax1.set_xlabel("Days")
 
 ax2 = ax1.twinx()
 ax2.plot(x, y2, "b-", linewidth=0.5)
-ax2.set_ylabel("Precipitation ($l/min$)", color="b")
+ax2.set_ylabel("Precipitation [$l\,min^{-1}$]", color="b")
 for tl in ax2.get_yticklabels():
     tl.set_color("b")
 
@@ -381,7 +392,7 @@ if option == "schwarzsee":
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     ax1.plot(x, y1, "b-", lw=1)
-    ax1.set_ylabel("Ice Volume ($m^3$)")
+    ax1.set_ylabel("Ice Volume [$m^3$]")
     ax1.set_xlabel("Days")
 
     # Include Validation line segment 1
@@ -426,7 +437,7 @@ if option == "schwarzsee":
     y1 = df.ice
 
     ax1.plot(x, y1, "b-")
-    ax1.set_ylabel("Ice (kg)")
+    ax1.set_ylabel("Ice [kg]")
     ax1.grid()
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -434,12 +445,12 @@ if option == "schwarzsee":
 
     y2 = df.SA
     ax2.plot(x, y2, "b-")
-    ax2.set_ylabel("Surface Area ($m^2$)")
+    ax2.set_ylabel("Surface Area [$m^2$]")
     ax2.grid()
 
     y3 = df.TotalE + df.Ql
     ax3.plot(x, y3, "b-")
-    ax3.set_ylabel("E ($W/m^{2}$)")
+    ax3.set_ylabel("E [$W\,m^{-2}$]")
     ax3.grid()
 
     # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
@@ -457,7 +468,7 @@ if option == "schwarzsee":
     y1 = df.ice
 
     ax1.plot(x, y1, "b-")
-    ax1.set_ylabel("Ice (kg)")
+    ax1.set_ylabel("Ice [kg]")
     ax1.grid()
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -465,12 +476,12 @@ if option == "schwarzsee":
 
     y2 = df.meltwater
     ax2.plot(x, y2, "b-")
-    ax2.set_ylabel("Meltwater (kg)")
+    ax2.set_ylabel("Meltwater [kg]")
     ax2.grid()
 
     y3 = df.vapour
     ax3.plot(x, y3, "b-")
-    ax3.set_ylabel("Vapour (kg)")
+    ax3.set_ylabel("Vapour [kg]")
     ax3.grid()
     # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
     fig.autofmt_xdate()
@@ -480,11 +491,219 @@ if option == "schwarzsee":
     y = dfd[['Shortwave', 'Longwave', 'Sensible', 'Latent']]
     y.plot.bar(stacked=True, edgecolor=dfd['Discharge'], linewidth=0.5)
     plt.xlabel('Days')
-    plt.ylabel('Energy ($W/m^{2}$)')
+    plt.ylabel('Energy [$W\,m^{-2}$]')
     plt.legend(loc='upper left')
     plt.ylim(-150, 150)
     plt.xticks(rotation=45)
     pp.savefig(bbox_inches="tight")
     plt.clf()
 
+    fig, (ax1, ax2, ax3) = plt.subplots(
+        nrows=3, ncols=1, sharex=True, sharey=True, figsize=(10, 5)
+    )
+
+    # fig.suptitle("Daily ice and melt", fontsize=14)
+
+    x = df.When
+    y1 = df.ice
+
+    ax1.plot(x, y1, "b-")
+    ax1.set_ylabel("Ice [kg]")
+    ax1.grid()
+    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    ax1.xaxis.set_minor_locator(mdates.DayLocator())
+
+    y2 = df.meltwater
+    ax2.plot(x, y2, "b-")
+    ax2.set_ylabel("Meltwater [kg]")
+    ax2.grid()
+
+    y3 = df.vapour
+    ax3.plot(x, y3, "b-")
+    ax3.set_ylabel("Vapour [kg]")
+    ax3.grid()
+    # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
+    fig.autofmt_xdate()
+    pp.savefig(bbox_inches="tight")
+    plt.clf()
+
+    # Day melt and Night freeze Plots
+
+    for i in range(0, df.shape[0]):
+        if df.loc[i, 'solid'] < 0:
+            df.loc[i, 'solid'] = 0
+
+    dfd["Discharge"] = dfd["Discharge"] == 0
+    dfd["Discharge"] = dfd["Discharge"].astype(int)
+    dfd["Discharge"] = dfd["Discharge"].astype(str)
+
+    dfds = df.set_index("When").resample("D").sum().reset_index()
+    dfd['meltwater'] = dfd['meltwater'] * -1 / 1000
+    dfds['melted'] = dfds['melted'] * -1 / 1000
+    dfds['solid'] = dfds['solid'] / 1000
+    dfds["When"] = pd.to_datetime(dfds["When"], format="%Y.%m.%d %H:%M:%S")
+    dfds['When'] = dfds['When'].dt.strftime("%b %d")
+    dfd = dfd.set_index("When")
+    dfds = dfds.set_index("When")
+
+    dfds1 = dfd[['iceV', 'meltwater']]
+    dfds1 = dfds1.rename({'iceV': 'Ice frozen', 'meltwater': 'Meltwater Discharged'}, axis=1)  # new method
+    dfds2 = dfds[['solid', 'melted']]
+    dfds2 = dfds2.rename({'solid': 'Daily Ice frozen', 'melted': 'Daily Meltwater discharged'}, axis=1)
+
+    fig, (ax1, ax2, ax3) = plt.subplots(
+        nrows=3, ncols=1, sharex=True, figsize=(10, 5)
+    )
+
+    y1 = dfds2
+    y2 = dfd[['Shortwave', 'Longwave', 'Sensible', 'Latent']]
+    y3 = dfd['SA']
+
+
+    y1.plot(kind='bar', stacked=True, edgecolor='black', linewidth=0.5, color=['#D9E9FA', '#0C70DE'], ax=ax1)
+    ax1.set_ylabel('Volume ($m^{3}$)')
+    ax1.legend(loc='upper right')
+
+    ax1.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
+
+
+    y2.plot.bar(stacked=True, edgecolor=dfd['Discharge'], linewidth=0.5, ax=ax2)
+    ax2.set_ylabel('Energy [$W\,m^{-2}$]')
+    ax2.legend(loc='upper left')
+    # plt.ylim(-150, 150)
+
+    y3.plot.bar( edgecolor = dfd['Discharge'], linewidth=0.5, ax=ax3)
+    ax3.set_ylabel('Surface Area [$m^2$]')
+    plt.legend(loc='upper left')
+
+
+    plt.xlabel('Days')
+    plt.xticks(rotation=45)
+    fig.autofmt_xdate()
+    pp.savefig(bbox_inches="tight")
+    plt.clf()
     pp.close()
+
+
+
+
+
+# # Plots
+# if fountain["discharge"] == 11.5:
+#     filename = os.path.join(filename2 + "_suggestion.pdf")
+#     pp = PdfPages(filename)
+#
+#     x = df.When
+#     y1 = df.iceV
+#
+#     fig = plt.figure()
+#     ax1 = fig.add_subplot(111)
+#     ax1.plot(x, y1, "b-", lw=1)
+#     ax1.set_ylabel("Ice Volume [$m^3$]")
+#     ax1.set_xlabel("Days")
+#
+#     # Include Validation line segment 1
+#     ax1.plot(
+#         [datetime(2019, 2, 14, 16), datetime(2019, 2, 14, 16)],
+#         [0.67115, 1.042],
+#         color="green",
+#         lw=1,
+#     )
+#     ax1.scatter(datetime(2019, 2, 14, 16), 0.856575, color="green", marker="o")
+#
+#     # Include Validation line segment 2
+#     ax1.plot(
+#         [datetime(2019, 3, 10, 18), datetime(2019, 3, 10, 18)],
+#         [0.037, 0.222],
+#         color="green",
+#         lw=1,
+#     )
+#     ax1.scatter(datetime(2019, 3, 10, 18), 0.1295, color="green", marker="o")
+#
+#     #  format the ticks
+#     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+#     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+#     ax1.xaxis.set_minor_locator(mdates.DayLocator())
+#     ax1.grid()
+#     fig.autofmt_xdate()
+#     pp.savefig(bbox_inches="tight")
+#
+#     plt.savefig(
+#         os.path.join(folders["output_folder"], site + "_result.jpg"),
+#         bbox_inches="tight",
+#         dpi=300,
+#     )
+#
+#     plt.clf()
+#
+#     fig, (ax1, ax2, ax3) = plt.subplots(nrows=3, ncols=1, sharex=True, figsize=(10, 5))
+#
+#     # fig.suptitle("Mass and Energy balance", fontsize=14)
+#
+#     x = df.When
+#     y1 = df.ice
+#
+#     ax1.plot(x, y1, "b-")
+#     ax1.set_ylabel("Ice [kg]")
+#     ax1.grid()
+#     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+#     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+#     ax1.xaxis.set_minor_locator(mdates.DayLocator())
+#
+#     y2 = df.SA
+#     ax2.plot(x, y2, "b-")
+#     ax2.set_ylabel("Surface Area [$m^2$]")
+#     ax2.grid()
+#
+#     y3 = df.TotalE + df.Ql
+#     ax3.plot(x, y3, "b-")
+#     ax3.set_ylabel("E [$W\,m^{-2}$]")
+#     ax3.grid()
+#
+#     # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
+#     fig.autofmt_xdate()
+#     pp.savefig(bbox_inches="tight")
+#     plt.clf()
+#
+#     fig, (ax1, ax2, ax3) = plt.subplots(
+#         nrows=3, ncols=1, sharex=True, sharey=True, figsize=(10, 5)
+#     )
+#
+#     # fig.suptitle("Mass balance", fontsize=14)
+#
+#     x = df.When
+#     y1 = df.ice
+#
+#     ax1.plot(x, y1, "b-")
+#     ax1.set_ylabel("Ice [kg]")
+#     ax1.grid()
+#     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+#     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+#     ax1.xaxis.set_minor_locator(mdates.DayLocator())
+#
+#     y2 = df.meltwater
+#     ax2.plot(x, y2, "b-")
+#     ax2.set_ylabel("Meltwater [kg]")
+#     ax2.grid()
+#
+#     y3 = df.vapour
+#     ax3.plot(x, y3, "b-")
+#     ax3.set_ylabel("Vapour [kg]")
+#     ax3.grid()
+#     # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
+#     fig.autofmt_xdate()
+#     pp.savefig(bbox_inches="tight")
+#     plt.clf()
+#
+#     y = dfd[['Shortwave', 'Longwave', 'Sensible', 'Latent']]
+#     y.plot.bar(stacked=True, edgecolor=dfd['Discharge'], linewidth=0.5)
+#     plt.xlabel('Days')
+#     plt.ylabel('Energy [$W\,m^{-2}$]')
+#     plt.legend(loc='upper left')
+#     plt.ylim(-150, 150)
+#     plt.xticks(rotation=45)
+#     pp.savefig(bbox_inches="tight")
+#     plt.clf()
+#
+#     pp.close()
