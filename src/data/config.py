@@ -11,10 +11,12 @@ option = "schwarzsee"
 
 print("Site is", site)
 
+max = False
+
 surface = dict(
-    ie=0.96,  # Ice Emissivity ie
+    ie=0.9,  # Ice Emissivity ie
     a_i=0.4,  # Albedo of Ice a_i
-    a_s=0.8,  # Albedo of Fresh Snow a_s
+    a_s=0.85,  # Albedo of Fresh Snow a_s
     decay_t=10,  # Albedo dry decay rate decay_t_d
     z0mi=0.0017,  # Ice Momentum roughness length
     z0hi=0.0017,  # Ice Scalar roughness length
@@ -23,6 +25,35 @@ surface = dict(
     h_aws = 3,  # m height of AWS
     cld = 0.5,  # Average Cloudiness c
 )
+
+if max :
+    surface = dict(
+        ie=0.99,  # Ice Emissivity ie
+        a_i=0.44,  # Albedo of Ice a_i
+        a_s=0.93,  # Albedo of Fresh Snow a_s
+        decay_t=11,  # Albedo dry decay rate decay_t_d
+        cld=0.45,  # Average Cloudiness c
+        z0mi=0.0017,  # Ice Momentum roughness length
+        z0hi=0.0017,  # Ice Scalar roughness length
+        snow_fall_density=250,  # Snowfall density
+        rain_temp=1,  # Temperature condition for liquid precipitation
+        h_aws=3,  # m height of AWS
+
+    )
+
+else :
+    surface = dict(
+        ie=0.81,  # Ice Emissivity ie
+        a_i=0.36,  # Albedo of Ice a_i
+        a_s=0.77,  # Albedo of Fresh Snow a_s
+        decay_t=9,  # Albedo dry decay rate decay_t_d
+        cld=0.55,  # Average Cloudiness c
+        z0mi=0.0017,  # Ice Momentum roughness length
+        z0hi=0.0017,  # Ice Scalar roughness length
+        snow_fall_density=250,  # Snowfall density
+        rain_temp=1,  # Temperature condition for liquid precipitation
+        h_aws=3,  # m height of AWS
+    )
 
 if site == "schwarzsee":
     folders = dict(

@@ -63,32 +63,32 @@ else:
 
 filename1 = os.path.join(filename1 + "_model_results.csv")
 
-print(filename1)
-if os.path.isfile(filename1):
-    print("Simulation Exists")
-    df = pd.read_csv(filename1, sep=",")
-    df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
-
-else:
-    filename0 = os.path.join(filename0 + "_input.csv")
-    df_in = pd.read_csv(filename0, sep=",")
-    df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
-
-    df = icestupa(df_in, fountain, surface)
-
-    total = time.time() - start
-
-    print("Total time : ", total / 60)
-
-# filename0 = os.path.join(filename0 + "_input.csv")
-# df_in = pd.read_csv(filename0, sep=",")
-# df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+# print(filename1)
+# if os.path.isfile(filename1):
+#     print("Simulation Exists")
+#     df = pd.read_csv(filename1, sep=",")
+#     df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
 #
-# df = icestupa(df_in, fountain, surface)
+# else:
+#     filename0 = os.path.join(filename0 + "_input.csv")
+#     df_in = pd.read_csv(filename0, sep=",")
+#     df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 #
-# total = time.time() - start
+#     df = icestupa(df_in, fountain, surface)
 #
-# print("Total time : ", total / 60)
+#     total = time.time() - start
+#
+#     print("Total time : ", total / 60)
+
+filename0 = os.path.join(filename0 + "_input.csv")
+df_in = pd.read_csv(filename0, sep=",")
+df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+
+df = icestupa(df_in, fountain, surface)
+
+total = time.time() - start
+
+print("Total time : ", total / 60)
 
 # # Output for manim
 # filename2 = os.path.join(folders["output_folder"], site + "_model_gif.csv")
@@ -549,7 +549,6 @@ if option == "schwarzsee":
 
     # Day melt and Night freeze Plots
 
-    print(df.shape[0])
     for i in range(1, df.shape[0]):
         if df.loc[i, 'solid'] < 0:
             df.loc[i, 'solid'] = 0
@@ -564,42 +563,50 @@ if option == "schwarzsee":
     dfds['solid'] = dfds['solid'] / 1000
     dfds["When"] = pd.to_datetime(dfds["When"], format="%Y.%m.%d %H:%M:%S")
     dfds['When'] = dfds['When'].dt.strftime("%b %d")
-    dfd = dfd.set_index("When")
-    dfds = dfds.set_index("When")
 
-    dfds1 = dfd[['iceV', 'meltwater']]
-    dfds1 = dfds1.rename({'iceV': 'Ice frozen', 'meltwater': 'Meltwater Discharged'}, axis=1)  # new method
-    dfds2 = dfds[['solid', 'melted']]
+    dfds2 = dfds[['When','solid', 'melted']]
     dfds2 = dfds2.rename({'solid': 'Daily Ice frozen', 'melted': 'Daily Meltwater discharged'}, axis=1)
+
+    dfds2["label"] = ' '
+    labels = ["Jan 29", "Feb 05", "Feb 12", "Feb 19", "Feb 26", "Mar 05", "Mar 12", "Mar 19"]
+    for i in range(0, dfds2.shape[0]):
+        for item in labels:
+            if dfds2.When[i] == item:
+                dfds2.loc[i, 'label'] = dfds2.When[i]
+
+    dfds2 = dfds2.set_index("label")
+
 
     fig, (ax1, ax2, ax3) = plt.subplots(
         nrows=3, ncols=1, sharex=True, figsize=(10, 5)
     )
+    fig.subplots_adjust(hspace=0)
 
-    y1 = dfds2
+    y1 = dfds2[['Daily Ice frozen', 'Daily Meltwater discharged']]
     y2 = dfd[['Shortwave', 'Longwave', 'Sensible', 'Latent']]
     y3 = dfd['SA']
 
 
     y1.plot(kind='bar', stacked=True, edgecolor='black', linewidth=0.5, color=['#D9E9FA', '#0C70DE'], ax=ax1)
-    ax1.set_ylabel('Volume ($m^{3}$)')
-    ax1.legend(loc='upper right')
+    ax1.set_ylabel('Volume [$m^{3}$]')
+    ax1.legend(loc='upper right' , prop={'size': 6})
 
     ax1.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
 
 
     y2.plot.bar(stacked=True, edgecolor=dfd['Discharge'], linewidth=0.5, ax=ax2)
     ax2.set_ylabel('Energy [$W\,m^{-2}$]')
-    ax2.legend(loc='upper left')
-    # plt.ylim(-150, 150)
+    ax2.legend(loc='lower right', prop={'size': 6})
+    ax2.set_ylim(-199, 199)
+    ax2.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
 
     y3.plot.bar( edgecolor = dfd['Discharge'], linewidth=0.5, ax=ax3)
     ax3.set_ylabel('Surface Area [$m^2$]')
-    plt.legend(loc='upper left')
-
+    ax3.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
 
     plt.xlabel('Days')
     plt.xticks(rotation=45)
+    plt.legend(loc=2, prop={'size': 1})
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
