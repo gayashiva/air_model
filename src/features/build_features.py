@@ -355,6 +355,22 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
+y1 = df.theta_s
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(x, y1, "b-", linewidth=0.5)
+ax1.set_ylabel("Solar Elevation angle [$\degree$]")
+ax1.set_xlabel("Days")
+
+#  format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
 y1 = df.Discharge
 y2 = df.ppt * 1000/5
 
@@ -378,6 +394,7 @@ ax1.grid()
 fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
+plt.close('all')
 
 pp.close()
 
@@ -457,6 +474,7 @@ if option == "schwarzsee":
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
+    plt.close('all')
 
     fig, (ax1, ax2, ax3) = plt.subplots(
         nrows=3, ncols=1, sharex=True, sharey=True, figsize=(10, 5)
@@ -497,6 +515,7 @@ if option == "schwarzsee":
     plt.xticks(rotation=45)
     pp.savefig(bbox_inches="tight")
     plt.clf()
+    plt.close('all')
 
     fig, (ax1, ax2, ax3) = plt.subplots(
         nrows=3, ncols=1, sharex=True, sharey=True, figsize=(10, 5)
@@ -530,7 +549,8 @@ if option == "schwarzsee":
 
     # Day melt and Night freeze Plots
 
-    for i in range(0, df.shape[0]):
+    print(df.shape[0])
+    for i in range(1, df.shape[0]):
         if df.loc[i, 'solid'] < 0:
             df.loc[i, 'solid'] = 0
 

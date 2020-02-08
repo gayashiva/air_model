@@ -43,6 +43,9 @@ if site == "schwarzsee":
         h_f=1.35,  # Fountain steps h_f
         discharge=3.58,  # Fountain on discharge
         crit_temp=-5,  # Fountain runtime temperature
+        latitude = 46.693723,
+        longitude = 7.297543,
+        utc_offset = 1,
     )
 
 if site == "plaffeien":
