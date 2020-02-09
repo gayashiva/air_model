@@ -322,23 +322,6 @@ def icestupa(df, fountain, surface):
                 )
                 df.loc[i, "solid"] = df.loc[i, "solid"] + df.loc[i, "ppt"]
 
-            # Vapor Pressure empirical relations
-            if "vp_a" not in list(df.columns):
-                df.loc[i, "vpa"] = (
-                    6.11
-                    * math.pow(
-                        10, 7.5 * df.loc[i - 1, "T_a"] / (df.loc[i - 1, "T_a"] + 237.3)
-                    )
-                    * df.loc[i, "RH"]
-                    / 100
-                )
-            else:
-                df.loc[i, "vpa"] = df.loc[i, "vp_a"]
-
-            df.loc[i, "vp_ice"] = 6.112 * np.exp(
-                22.46 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
-            )
-
             # Fountain water output
             df.loc[i, "liquid"] = df.loc[i, "Discharge"] * (1 - ftl) * time_steps / 60
 
@@ -367,8 +350,24 @@ def icestupa(df, fountain, surface):
                     )
                     df.loc[i, "delta_T_s"] = -df.loc[i - 1, "T_s"]
 
-            # Ice surface assumed
-            df.loc[i, "e_s"] = surface["ie"]
+            """ Energy Balance starts """
+
+            # Vapor Pressure empirical relations
+            if "vp_a" not in list(df.columns):
+                df.loc[i, "vpa"] = (
+                        6.11
+                        * math.pow(
+                    10, 7.5 * df.loc[i - 1, "T_a"] / (df.loc[i - 1, "T_a"] + 237.3)
+                )
+                        * df.loc[i, "RH"]
+                        / 100
+                )
+            else:
+                df.loc[i, "vpa"] = df.loc[i, "vp_a"]
+
+            df.loc[i, "vp_ice"] = 6.112 * np.exp(
+                22.46 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
+            )
 
             # Sublimation only
             df.loc[i, "Ql"] = (
@@ -450,8 +449,7 @@ def icestupa(df, fountain, surface):
                 df.loc[i, "Rad"] * df.loc[i, "SRf"] + df.loc[i, "DRad"]
             )
 
-            # Cloudiness
-
+            # Cloudiness from diffuse fraction
             if df.loc[i, "Rad"] + df.loc[i, "DRad"] > 1:
                 df.loc[i, "cld"] = df.loc[i, "DRad"] / (
                     df.loc[i, "Rad"] + df.loc[i, "DRad"]
@@ -470,11 +468,9 @@ def icestupa(df, fountain, surface):
 
                 df.loc[i, "LW"] = df.loc[i, "e_a"] * bc * math.pow(
                     df.loc[i, "T_a"] + 273.15, 4
-                ) - df.loc[i, "e_s"] * bc * math.pow(df.loc[i - 1, "T_s"] + 273.15, 4)
+                ) - surface["ie"] * bc * math.pow(df.loc[i - 1, "T_s"] + 273.15, 4)
             else:
-                df.loc[i, "LW"] = df.loc[i, "oli000z0"] - df.loc[
-                    i, "e_s"
-                ] * bc * math.pow(df.loc[i - 1, "T_s"] + 273.15, 4)
+                df.loc[i, "LW"] = df.loc[i, "oli000z0"] - surface["ie"] * bc * math.pow(df.loc[i - 1, "T_s"] + 273.15, 4)
 
             # Sensible Heat Qs
             df.loc[i, "Qs"] = (
@@ -497,11 +493,11 @@ def icestupa(df, fountain, surface):
             # Total Energy Joules
             df.loc[i, "EJoules"] = df.loc[i, "TotalE"] * time_steps * df.loc[i, "SA"]
 
-            """ Energy negative"""
             if df.loc[i, "EJoules"] < 0:
 
                 """ And fountain on """
                 if df.loc[i - 1, "liquid"] > 0:
+
                     """Freezing water"""
 
                     df.loc[i, "liquid"] -= (df.loc[i, "EJoules"]) / (-Lf)
@@ -540,7 +536,6 @@ def icestupa(df, fountain, surface):
                 )
 
             else:
-                """ Energy Positive """
 
                 # Heating Ice
                 df.loc[i, "delta_T_s"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)

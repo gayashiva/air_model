@@ -8,6 +8,7 @@ from pandas.plotting import register_matplotlib_converters
 
 register_matplotlib_converters()
 import matplotlib
+from matplotlib.offsetbox import AnchoredText
 import math
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -17,9 +18,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from src.data.config import site, dates, option, folders, fountain, surface
 from src.models.air_forecast import icestupa, projectile_xy
 
-# python -m src.features.build_features
 plt.rcParams["figure.figsize"] = (10,7)
-# matplotlib.rc('xtick', labelsize=5)
 
 start = time.time()
 
@@ -575,13 +574,10 @@ if option == "schwarzsee":
 
     # Day melt and Night freeze Plots
 
-    for i in range(0, df.shape[0]):
+    # df = df.reset_index()
+    for i in df.index:
         if df.loc[i, 'solid'] < 0:
             df.loc[i, 'solid'] = 0
-
-    dfd["Discharge"] = dfd["Discharge"] == 0
-    dfd["Discharge"] = dfd["Discharge"].astype(int)
-    dfd["Discharge"] = dfd["Discharge"].astype(str)
 
     dfds = df.set_index("When").resample("D").sum().reset_index()
     dfd['meltwater'] = dfd['meltwater'] * -1 / 1000
@@ -618,21 +614,38 @@ if option == "schwarzsee":
     ax1.legend(loc='upper right' , prop={'size': 6})
 
     ax1.grid( axis="y",color="black", alpha=.3, linewidth=.5, which="major")
+    at = AnchoredText("(a)",
+                      prop=dict(size=6), frameon=True,
+                      loc='upper left',
+                      )
+    at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+    ax1.add_artist(at)
 
 
     y2.plot.bar(stacked=True, edgecolor=dfd['Discharge'], linewidth=0.5, ax=ax2)
     ax2.set_ylabel('Energy [$W\,m^{-2}$]')
     ax2.legend(loc='lower right', prop={'size': 6})
-    ax2.set_ylim(-199, 199)
+    ax2.set_ylim(-120, 120)
     ax2.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
+    at = AnchoredText("(b)",
+                      prop=dict(size=6), frameon=True,
+                      loc='upper left',
+                      )
+    at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+    ax2.add_artist(at)
 
-    y3.plot.bar( edgecolor = dfd['Discharge'], linewidth=0.5, ax=ax3)
-    ax3.set_ylabel('Surface Area [$m^2$]')
+    y3.plot.bar(edgecolor='#0C70DE',  color=['#D9E9FA'], linewidth=0.5, ax=ax3)
+    ax3.set_ylabel('Area [$m^2$]')
     ax3.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
+    at = AnchoredText("(c)",
+                      prop=dict(size=6), frameon=True,
+                      loc='upper left',
+                      )
+    at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+    ax3.add_artist(at)
 
     plt.xlabel('Days')
     plt.xticks(rotation=45)
-    plt.legend(loc=2, prop={'size': 1})
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()

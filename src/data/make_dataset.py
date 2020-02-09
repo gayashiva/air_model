@@ -9,7 +9,7 @@ from pathlib import Path
 import os
 import logging
 from src.data.config import site, dates, option, folders, fountain, surface
-from src.models.air_forecast import projectile_xy
+from src.models.air_forecast import projectile_xy, albedo
 from pandas.plotting import register_matplotlib_converters
 
 register_matplotlib_converters()
@@ -221,6 +221,113 @@ if site == "schwarzsee":
             mask_index = df_out[mask].index
             df_out.loc[mask_index, "Fountain"] = 0
 
+        if option == "energy":
+
+            """Constants"""
+            Ls = 2848 * 1000  # J/kg Sublimation
+            Le = 2514 * 1000  # J/kg Evaporation
+            Lf = 334 * 1000  # J/kg Fusion
+            cw = 4.186 * 1000  # J/kg Specific heat water
+            ci = 2.108 * 1000  # J/kgC Specific heat ice
+            rho_w = 1000  # Density of water
+            rho_i = 916  # Density of Ice rho_i
+            rho_a = 1.29  # kg/m3 air density at mean sea level
+            k = 0.4  # Van Karman constant
+            bc = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
+            g = 9.8  # gravity
+
+            """Miscellaneous"""
+            z = 3  # m height of AWS
+            time_steps = 5 * 60  # s Model time steps
+            p0 = 1013  # Standard air pressure hPa
+
+            """ Estimating Albedo """
+            df_out["a"] = albedo(df_out, surface)
+
+            df_out["T_s"] = 0
+
+            for i in range(1, df_out.shape[0]):
+
+                """ Energy Balance starts """
+
+                # Vapor Pressure empirical relations
+                if "vp_a" not in list(df_out.columns):
+                    df_out.loc[i, "vpa"] = (
+                            6.11
+                            * math.pow(
+                        10, 7.5 * df_out.loc[i - 1, "T_a"] / (df_out.loc[i - 1, "T_a"] + 237.3)
+                    )
+                            * df_out.loc[i, "RH"]
+                            / 100
+                    )
+                else:
+                    df_out.loc[i, "vpa"] = df_out.loc[i, "vp_a"]
+
+                df_out.loc[i, "vp_ice"] = 6.112 * np.exp(
+                    22.46 * (df_out.loc[i - 1, "T_s"]) / ((df_out.loc[i - 1, "T_s"]) + 243.12)
+                )
+
+                # Short Wave Radiation SW
+                df_out.loc[i, "SW"] = (1 - df_out.loc[i, "a"]) * (
+                        df_out.loc[i, "Rad"] + df_out.loc[i, "DRad"]
+                )
+
+                # Cloudiness from diffuse fraction
+                if df_out.loc[i, "Rad"] + df_out.loc[i, "DRad"] > 1:
+                    df_out.loc[i, "cld"] = df_out.loc[i, "DRad"] / (
+                            df_out.loc[i, "Rad"] + df_out.loc[i, "DRad"]
+                    )
+                else:
+                    df_out.loc[i, "cld"] = 0
+
+                # atmospheric emissivity
+                df_out.loc[i, "e_a"] = (
+                                               1.24
+                                               * math.pow(abs(df_out.loc[i, "vpa"] / (df_out.loc[i, "T_a"] + 273.15)),
+                                                          1 / 7)
+                                       ) * (1 + 0.22 * math.pow(df_out.loc[i, "cld"], 2))
+
+                # Long Wave Radiation LW
+                if "oli000z0" not in list(df_out.columns):
+
+                    df_out.loc[i, "LW"] = df_out.loc[i, "e_a"] * bc * math.pow(
+                        df_out.loc[i, "T_a"] + 273.15, 4
+                    ) - surface["ie"] * bc * math.pow(df_out.loc[i - 1, "T_s"] + 273.15, 4)
+                else:
+                    df_out.loc[i, "LW"] = df_out.loc[i, "oli000z0"] - surface["ie"] * bc * math.pow(
+                        df_out.loc[i - 1, "T_s"] + 273.15,
+                        4)
+
+                # Sensible Heat Qs
+                df_out.loc[i, "Qs"] = (
+                        ci
+                        * rho_a
+                        * df_out.loc[i, "p_a"]
+                        / p0
+                        * math.pow(k, 2)
+                        * df_out.loc[i, "v_a"]
+                        * (df_out.loc[i, "T_a"] - df_out.loc[i - 1, "T_s"])
+                        / (
+                                np.log(surface["h_aws"] / surface["z0mi"])
+                                * np.log(surface["h_aws"] / surface["z0hi"])
+                        )
+                )
+
+                # Total Energy W/m2
+                df_out.loc[i, "TotalE"] = df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
+
+            x = df_out["When"]
+            mask = df_out["TotalE"] < 0
+            mask_index = df_out[mask].index
+            df_out.loc[mask_index, "Fountain"] = 1
+            mask = df_out["When"] >= dates["fountain_off_date"]
+            mask_index = df_out[mask].index
+            df_out.loc[mask_index, "Fountain"] = 0
+
+            fig, ax1 = plt.subplots()
+            ax1.plot(x, df_out.Fountain, "k-", linewidth=0.5)
+            plt.show()
+
     df_out = df_out.round(5)
 
 if site == "plaffeien":
@@ -353,10 +460,6 @@ if site == "plaffeien":
         v_f, theta_f, fountain["h_f"]
             )
 
-        SA = math.pi * r_f * r_f
-
-        ice_layer = dx * SA * rho_i
-
         T_s = 0
 
         c= 0.5
@@ -364,53 +467,145 @@ if site == "plaffeien":
         e_s = surface["ie"]
 
         for i in range(1, df_out.shape[0]):
+            """ Energy Balance starts """
+
             # Vapor Pressure empirical relations
-            if "vp_a" not in list(df_out.columns):
-                Ea = (
+            if "vp_a" not in list(df.columns):
+                df.loc[i, "vpa"] = (
                         6.11
                         * math.pow(
-                    10, 7.5 * df_out.loc[i - 1, "T_a"] / (df_out.loc[i - 1, "T_a"] + 237.3)
+                    10, 7.5 * df.loc[i - 1, "T_a"] / (df.loc[i - 1, "T_a"] + 237.3)
                 )
-                        * df_out.loc[i, "RH"]
+                        * df.loc[i, "RH"]
                         / 100
                 )
             else:
-                Ea = df_out.loc[i, "vp_a"]
+                df.loc[i, "vpa"] = df.loc[i, "vp_a"]
 
-            df_out.loc[i, "e_a"] = (
-                    1.24
-                    * math.pow(abs(Ea / (df_out.loc[i, "T_a"] + 273.15)), 1 / 7)
-                    * (1 + 0.22 * math.pow(c, 2))
+            df.loc[i, "vp_ice"] = 6.112 * np.exp(
+                22.46 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
             )
 
-            # Short Wave Radiation SW
-            df_out.loc[i, "SW"] = (1 - surface['a_i']) * (
-                    df_out.loc[i, "Rad"] + df_out.loc[i, "DRad"]
-            )
-
-            # Long Wave Radiation LW
-            if "oli000z0" not in list(df_out.columns):
-
-                df_out.loc[i, "LW"] = df_out.loc[i, "e_a"] * bc * math.pow(
-                    df_out.loc[i, "T_a"] + 273.15, 4
-                ) - e_s * bc * math.pow(T_s + 273.15, 4)
-            else:
-                df_out.loc[i, "LW"] = df_out.loc[i, "oli000z0"] - e_s * bc * math.pow(T_s + 273.15, 4)
-
-            # Sensible Heat Qs
-            df_out.loc[i, "Qs"] = (
-                    ci
+            # Sublimation only
+            df.loc[i, "Ql"] = (
+                    0.623
+                    * Ls
                     * rho_a
-                    * df_out.loc[i, "p_a"]
                     / p0
                     * math.pow(k, 2)
-                    * df_out.loc[i, "v_a"]
-                    * (df_out.loc[i, "T_a"] - T_s)
-                    / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
+                    * df.loc[i, "v_a"]
+                    * (df.loc[i, "vpa"] - df.loc[i, "vp_ice"])
+                    / (
+                            np.log(surface["h_aws"] / surface["z0mi"])
+                            * np.log(surface["h_aws"] / surface["z0hi"])
+                    )
+            )
+
+            df.loc[i, "gas"] -= (df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps) / Ls
+
+            # Removing gas quantity generated from previous time step
+            df.loc[i, "solid"] += (
+                                          df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
+                                  ) / Ls
+
+            # Ice Temperature
+            df.loc[i, "delta_T_s"] += (
+                                              df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
+                                      ) / (ice_layer * ci)
+
+            """Hot Ice"""
+            if df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"] > 0:
+                # Melting Ice by Temperature
+                df.loc[i, "solid"] -= (
+                        (ice_layer * ci)
+                        * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
+                        / (-Lf)
+                )
+                df.loc[i, "melted"] += (
+                        (ice_layer * ci)
+                        * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
+                        / (-Lf)
+                )
+
+                df.loc[i, "delta_T_s"] = -df.loc[i - 1, "T_s"]
+
+            logger.info(
+                "Ice made after sublimation is %s thick at %s",
+                round(df.loc[i, "solid"]),
+                df.loc[i, "When"],
+            )
+
+            # Estimating Solar Area fraction
+            df.loc[i, "theta_s"] = getSEA(
+                df.loc[i, "When"],
+                fountain["latitude"],
+                fountain["longitude"],
+                fountain["utc_offset"],
+            )
+            df.loc[i, "SRf"] = (
+                                       0.5
+                                       * df.loc[i, "h_ice"]
+                                       * df.loc[i, "r_ice"]
+                                       * math.cos(math.radians(df.loc[i, "theta_s"]))
+                                       + math.pi
+                                       * math.pow(df.loc[i, "r_ice"], 2)
+                                       * 0.5
+                                       * math.sin(math.radians(df.loc[i, "theta_s"]))
+                               ) / (
+                                       math.pi
+                                       * math.pow(
+                                   (math.pow(df.loc[i, "h_ice"], 2) + math.pow(df.loc[i, "r_ice"], 2)),
+                                   1 / 2,
+                               )
+                                       * df.loc[i, "r_ice"]
+                               )
+
+            # Short Wave Radiation SW
+            df.loc[i, "SW"] = (1 - df.loc[i, "a"]) * (
+                    df.loc[i, "Rad"] * df.loc[i, "SRf"] + df.loc[i, "DRad"]
+            )
+
+            # Cloudiness from diffuse fraction
+            if df.loc[i, "Rad"] + df.loc[i, "DRad"] > 1:
+                df.loc[i, "cld"] = df.loc[i, "DRad"] / (
+                        df.loc[i, "Rad"] + df.loc[i, "DRad"]
+                )
+            else:
+                df.loc[i, "cld"] = 0
+
+            # atmospheric emissivity
+            df.loc[i, "e_a"] = (
+                                       1.24
+                                       * math.pow(abs(df.loc[i, "vpa"] / (df.loc[i, "T_a"] + 273.15)), 1 / 7)
+                               ) * (1 + 0.22 * math.pow(df.loc[i, "cld"], 2))
+
+            # Long Wave Radiation LW
+            if "oli000z0" not in list(df.columns):
+
+                df.loc[i, "LW"] = df.loc[i, "e_a"] * bc * math.pow(
+                    df.loc[i, "T_a"] + 273.15, 4
+                ) - surface["ie"] * bc * math.pow(df.loc[i - 1, "T_s"] + 273.15, 4)
+            else:
+                df.loc[i, "LW"] = df.loc[i, "oli000z0"] - surface["ie"] * bc * math.pow(df.loc[i - 1, "T_s"] + 273.15,
+                                                                                        4)
+
+            # Sensible Heat Qs
+            df.loc[i, "Qs"] = (
+                    ci
+                    * rho_a
+                    * df.loc[i, "p_a"]
+                    / p0
+                    * math.pow(k, 2)
+                    * df.loc[i, "v_a"]
+                    * (df.loc[i, "T_a"] - df.loc[i - 1, "T_s"])
+                    / (
+                            np.log(surface["h_aws"] / surface["z0mi"])
+                            * np.log(surface["h_aws"] / surface["z0hi"])
+                    )
             )
 
             # Total Energy W/m2
-            df_out.loc[i, "TotalE"] = df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
+            df.loc[i, "TotalE"] = df.loc[i, "SW"] + df.loc[i, "LW"] + df.loc[i, "Qs"]
 
         mask = df_out["TotalE"] < 0
         mask_index = df_out[mask].index
@@ -560,44 +755,63 @@ if site == "guttannen":
         g = 9.8  # gravity
 
         """Miscellaneous"""
-        z = 2  # m height of AWS
-        c = 0.5  # Cloudiness c
+        z = 3  # m height of AWS
         time_steps = 5 * 60  # s Model time steps
-        dp = 70  # Density of Precipitation dp
         p0 = 1013  # Standard air pressure hPa
-        theta_f = 45  # Fountain aperture angle
-        ftl = 0  # Fountain flight time loss ftl
-        dx = 0.001  # Ice layer thickness dx
 
-        Area = math.pi * math.pow(fountain["aperture_f"], 2) / 4
-        v_f = fountain["discharge"] / (60 * 1000 * Area)
-        r_f, d_t = projectile_xy(
-        v_f, theta_f, fountain["h_f"]
-            )
+        df_out["T_s"] = 0
 
-        SA = math.pi * r_f * r_f
 
-        ice_layer = dx * SA * rho_i
-
-        T_s = 0
-
-        e_s = surface["ie"]
 
         for i in range(1, df_out.shape[0]):
 
+            """ Energy Balance starts """
+
+            # Vapor Pressure empirical relations
+            if "vp_a" not in list(df_out.columns):
+                df_out.loc[i, "vpa"] = (
+                        6.11
+                        * math.pow(
+                    10, 7.5 * df_out.loc[i - 1, "T_a"] / (df_out.loc[i - 1, "T_a"] + 237.3)
+                )
+                        * df_out.loc[i, "RH"]
+                        / 100
+                )
+            else:
+                df_out.loc[i, "vpa"] = df_out.loc[i, "vp_a"]
+
+            df_out.loc[i, "vp_ice"] = 6.112 * np.exp(
+                22.46 * (df_out.loc[i - 1, "T_s"]) / ((df_out.loc[i - 1, "T_s"]) + 243.12)
+            )
+
             # Short Wave Radiation SW
-            df_out.loc[i, "SW"] = (1 - surface['a_i']) * (
+            df_out.loc[i, "SW"] = (1 - df_out.loc[i, "a"]) * (
                     df_out.loc[i, "Rad"] + df_out.loc[i, "DRad"]
             )
+
+            # Cloudiness from diffuse fraction
+            if df_out.loc[i, "Rad"] + df_out.loc[i, "DRad"] > 1:
+                df_out.loc[i, "cld"] = df_out.loc[i, "DRad"] / (
+                        df_out.loc[i, "Rad"] + df_out.loc[i, "DRad"]
+                )
+            else:
+                df_out.loc[i, "cld"] = 0
+
+            # atmospheric emissivity
+            df_out.loc[i, "e_a"] = (
+                                       1.24
+                                       * math.pow(abs(df_out.loc[i, "vpa"] / (df_out.loc[i, "T_a"] + 273.15)), 1 / 7)
+                               ) * (1 + 0.22 * math.pow(df_out.loc[i, "cld"], 2))
 
             # Long Wave Radiation LW
             if "oli000z0" not in list(df_out.columns):
 
                 df_out.loc[i, "LW"] = df_out.loc[i, "e_a"] * bc * math.pow(
                     df_out.loc[i, "T_a"] + 273.15, 4
-                ) - e_s * bc * math.pow(T_s + 273.15, 4)
+                ) - surface["ie"] * bc * math.pow(df_out.loc[i - 1, "T_s"] + 273.15, 4)
             else:
-                df_out.loc[i, "LW"] = df_out.loc[i, "oli000z0"] - e_s * bc * math.pow(T_s + 273.15, 4)
+                df_out.loc[i, "LW"] = df_out.loc[i, "oli000z0"] - surface["ie"] * bc * math.pow(df_out.loc[i - 1, "T_s"] + 273.15,
+                                                                                        4)
 
             # Sensible Heat Qs
             df_out.loc[i, "Qs"] = (
@@ -607,23 +821,29 @@ if site == "guttannen":
                     / p0
                     * math.pow(k, 2)
                     * df_out.loc[i, "v_a"]
-                    * (df_out.loc[i, "T_a"] - T_s)
-                    / (np.log(z / surface["z0mi"]) * np.log(z / surface["z0hi"]))
+                    * (df_out.loc[i, "T_a"] - df_out.loc[i - 1, "T_s"])
+                    / (
+                            np.log(surface["h_aws"] / surface["z0mi"])
+                            * np.log(surface["h_aws"] / surface["z0hi"])
+                    )
             )
 
             # Total Energy W/m2
             df_out.loc[i, "TotalE"] = df_out.loc[i, "SW"] + df_out.loc[i, "LW"] + df_out.loc[i, "Qs"]
 
         x = df_out["When"]
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.plot(x, df_out.TotalE, "k-", linewidth=0.5)
         mask = df_out["TotalE"] < 0
         mask_index = df_out[mask].index
         df_out.loc[mask_index, "Fountain"] = 1
         mask = df_out["When"] >= dates["fountain_off_date"]
         mask_index = df_out[mask].index
         df_out.loc[mask_index, "Fountain"] = 0
+
+        fig, ax1 = plt.subplots()
+        ax1.plot(x, df_out.Fountain, "k-", linewidth=0.5)
+        plt.show()
+
+        print("PPP")
 
     if option == "temperature":
         """ Use Temperature """
@@ -662,85 +882,6 @@ df_out.to_csv(filename + "_input.csv")
 # Plots
 pp = PdfPages(filename + "_all_data" + ".pdf")
 
-x = df_out["When"]
-y1 = df_out["T_a"]
-y2 = df_out["Prec"]
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Temperature [$\degree  C$]")
-ax1.set_xlabel("Days")
-
-ax2 = ax1.twinx()
-ax2.plot(x, y2, "b-", linewidth=0.5)
-ax2.set_ylabel("Prec (m)", color="b")
-for tl in ax2.get_yticklabels():
-    tl.set_color("b")
-
-# format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-
-# rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-y1 = df_out["v_a"]
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Wind Speed [$m\,s^{-1}$]")
-ax1.set_xlabel("Days")
-
-# format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-y1 = df_out["p_a"]
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Pressure [hPa]")
-ax1.set_xlabel("Days")
-
-# format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-y1 = df_out["RH"]
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Relative Humidity [%]")
-ax1.set_xlabel("Days")
-
-# format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
 
 if site != "schwarzsee":
     y1 = df_out["vp_a"]
@@ -762,6 +903,7 @@ if site != "schwarzsee":
     pp.savefig(bbox_inches="tight")
     plt.clf()
 
+x = df_out.When
 y1 = df_out["Rad"]
 y2 = df_out["DRad"]
 
@@ -774,6 +916,7 @@ ax1.set_xlabel("Days")
 ax2 = ax1.twinx()
 ax2.plot(x, y2, "b-", linewidth=0.5)
 ax2.set_ylabel("DR", color="b")
+ax2.set_ylim(ax1.get_ylim())
 for tl in ax2.get_yticklabels():
     tl.set_color("b")
 
@@ -866,15 +1009,15 @@ ax2.grid()
 
 y3 = df_out.Rad + df_out.DRad
 ax3.plot(x, y3, "k-", linewidth=0.5)
-ax3.set_ylabel("Global SWR [$W\,m^{-2}$]")
-# ax3.set_ylim([0, 600])
+ax3.set_ylabel("Global [$W\,m^{-2}$]")
 ax3.grid()
 
-# ax3t = ax3.twinx()
-# ax3t.plot(x, df_out.DRad, "b-", linewidth=0.5)
-# ax3t.set_ylabel("Diffuse Radiation [$W\,m^{-2}$]", color="b")
-# for tl in ax3t.get_yticklabels():
-#     tl.set_color("b")
+ax3t = ax3.twinx()
+ax3t.plot(x, df_out.DRad, "b-", linewidth=0.5)
+ax3t.set_ylim(ax3.get_ylim())
+ax3t.set_ylabel("Diffuse [$W\,m^{-2}$]", color="b")
+for tl in ax3t.get_yticklabels():
+    tl.set_color("b")
 
 y4 = df_out.RH
 ax4.plot(x, y4, "k-", linewidth=0.5)

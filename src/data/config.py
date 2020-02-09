@@ -24,7 +24,7 @@ surface = dict(
     rain_temp=1, # Temperature condition for liquid precipitation
     h_aws = 3,  # m height of AWS
 )
-
+#
 # if max :
 #     surface = dict(
 #         ie=0.99,  # Ice Emissivity ie
@@ -69,7 +69,7 @@ if site == "schwarzsee":
     fountain = dict(
         aperture_f=0.005,  # Fountain aperture diameter
         h_f=1.35,  # Fountain steps h_f
-        discharge=11.5,  # Fountain on discharge
+        discharge=12,  # Fountain on discharge
         crit_temp=-5,  # Fountain runtime temperature
         latitude = 46.693723,
         longitude = 7.297543,
