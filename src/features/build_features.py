@@ -63,32 +63,35 @@ else:
 
 filename1 = os.path.join(filename1 + "_model_results.csv")
 
-# print(filename1)
-# if os.path.isfile(filename1):
-#     print("Simulation Exists")
-#     df = pd.read_csv(filename1, sep=",")
-#     df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
-#
-# else:
-#     filename0 = os.path.join(filename0 + "_input.csv")
-#     df_in = pd.read_csv(filename0, sep=",")
-#     df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
-#
-#     df = icestupa(df_in, fountain, surface)
-#
-#     total = time.time() - start
-#
-#     print("Total time : ", total / 60)
+same = True
 
-filename0 = os.path.join(filename0 + "_input.csv")
-df_in = pd.read_csv(filename0, sep=",")
-df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+if same:
+    if os.path.isfile(filename1):
+        print("Simulation Exists")
+        df = pd.read_csv(filename1, sep=",")
+        df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
 
-df = icestupa(df_in, fountain, surface)
+    else:
+        filename0 = os.path.join(filename0 + "_input.csv")
+        df_in = pd.read_csv(filename0, sep=",")
+        df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
-total = time.time() - start
+        df = icestupa(df_in, fountain, surface)
 
-print("Total time : ", total / 60)
+        total = time.time() - start
+
+        print("Total time : ", total / 60)
+
+else:
+    filename0 = os.path.join(filename0 + "_input.csv")
+    df_in = pd.read_csv(filename0, sep=",")
+    df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+
+    df = icestupa(df_in, fountain, surface)
+
+    total = time.time() - start
+
+    print("Total time : ", total / 60)
 
 # # Output for manim
 # filename2 = os.path.join(folders["output_folder"], site + "_model_gif.csv")
@@ -358,9 +361,32 @@ plt.clf()
 y1 = df.theta_s
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(x, y1, "b-", linewidth=0.5)
+ax1.plot(x, y1, "k-", linewidth=0.5)
 ax1.set_ylabel("Solar Elevation angle [$\degree$]")
 ax1.set_xlabel("Days")
+
+#  format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
+y1 = df.cld
+y2 = df.e_a
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(x, y1, "k-", linewidth=0.5)
+ax1.set_ylabel("Cloudiness")
+ax1.set_xlabel("Days")
+
+ax2 = ax1.twinx()
+ax2.plot(x, y2, "b-", linewidth=0.5)
+ax2.set_ylabel("Atmospheric emissivity ", color="b")
+for tl in ax2.get_yticklabels():
+    tl.set_color("b")
 
 #  format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -549,7 +575,7 @@ if option == "schwarzsee":
 
     # Day melt and Night freeze Plots
 
-    for i in range(1, df.shape[0]):
+    for i in range(0, df.shape[0]):
         if df.loc[i, 'solid'] < 0:
             df.loc[i, 'solid'] = 0
 
@@ -591,7 +617,7 @@ if option == "schwarzsee":
     ax1.set_ylabel('Volume [$m^{3}$]')
     ax1.legend(loc='upper right' , prop={'size': 6})
 
-    ax1.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
+    ax1.grid( axis="y",color="black", alpha=.3, linewidth=.5, which="major")
 
 
     y2.plot.bar(stacked=True, edgecolor=dfd['Discharge'], linewidth=0.5, ax=ax2)

@@ -69,6 +69,7 @@ def projectile_xy(v, theta_f, hs=0.0, g=9.8):
         t += 0.01
     return x, t
 
+
 def getSEA(date, latitude, longitude, utc_offset):
     hour = date.hour
     minute = date.minute
@@ -80,18 +81,29 @@ def getSEA(date, latitude, longitude, utc_offset):
 
     g_radians = math.radians(g)
 
-    declination = 0.396372 - 22.91327 * math.cos(g_radians) + 4.02543 * math.sin(g_radians) - 0.387205 * math.cos(
-        2 * g_radians) + 0.051967 * math.sin(2 * g_radians) - 0.154527 * math.cos(3 * g_radians) + 0.084798 * math.sin(
-        3 * g_radians)
+    declination = (
+        0.396372
+        - 22.91327 * math.cos(g_radians)
+        + 4.02543 * math.sin(g_radians)
+        - 0.387205 * math.cos(2 * g_radians)
+        + 0.051967 * math.sin(2 * g_radians)
+        - 0.154527 * math.cos(3 * g_radians)
+        + 0.084798 * math.sin(3 * g_radians)
+    )
 
-    time_correction = 0.004297 + 0.107029 * math.cos(g_radians) - 1.837877 * math.sin(g_radians) - 0.837378 * math.cos(
-        2 * g_radians) - 2.340475 * math.sin(2 * g_radians)
+    time_correction = (
+        0.004297
+        + 0.107029 * math.cos(g_radians)
+        - 1.837877 * math.sin(g_radians)
+        - 0.837378 * math.cos(2 * g_radians)
+        - 2.340475 * math.sin(2 * g_radians)
+    )
 
     SHA = (hour_minute - 12) * 15 + longitude + time_correction
 
-    if (SHA > 180):
+    if SHA > 180:
         SHA_corrected = SHA - 360
-    elif (SHA < -180):
+    elif SHA < -180:
         SHA_corrected = SHA + 360
     else:
         SHA_corrected = SHA
@@ -101,14 +113,15 @@ def getSEA(date, latitude, longitude, utc_offset):
     SHA_radians = math.radians(SHA)
 
     SZA_radians = math.acos(
-        math.sin(lat_radians) * math.sin(d_radians) + math.cos(lat_radians) * math.cos(d_radians) * math.cos(
-            SHA_radians))
+        math.sin(lat_radians) * math.sin(d_radians)
+        + math.cos(lat_radians) * math.cos(d_radians) * math.cos(SHA_radians)
+    )
 
     SZA = math.degrees(SZA_radians)
 
     SEA = 90 - SZA
 
-    if SEA < 0: # Before Sunrise or after sunset
+    if SEA < 0:  # Before Sunrise or after sunset
         SEA = 0
 
     return SEA
@@ -175,6 +188,7 @@ def icestupa(df, fountain, surface):
         "vp_ice",
         "ppt",
         "theta_s",
+        "cld",
     ]
     for col in l:
         df[col] = 0
@@ -255,7 +269,7 @@ def icestupa(df, fountain, surface):
 
                 """ Keeping h_r constant to determine SA """
                 # Height to radius ratio
-                df.loc[i, "h_r"] = df.loc[i-1, "h_r"]
+                df.loc[i, "h_r"] = df.loc[i - 1, "h_r"]
 
                 # Ice Radius
                 df.loc[i, "r_ice"] = math.pow(
@@ -300,10 +314,13 @@ def icestupa(df, fountain, surface):
 
             # Precipitation to ice quantity
             if df.loc[i, "T_a"] < surface["rain_temp"]:
-                df.loc[i,"ppt"] = surface["snow_fall_density"] * df.loc[
-                    i, "Prec"
-                ] * math.pi * math.pow(df.loc[i, "r_ice"], 2)
-                df.loc[i, "solid"] = df.loc[i, "solid"] + df.loc[i,"ppt"]
+                df.loc[i, "ppt"] = (
+                    surface["snow_fall_density"]
+                    * df.loc[i, "Prec"]
+                    * math.pi
+                    * math.pow(df.loc[i, "r_ice"], 2)
+                )
+                df.loc[i, "solid"] = df.loc[i, "solid"] + df.loc[i, "ppt"]
 
             # Vapor Pressure empirical relations
             if "vp_a" not in list(df.columns):
@@ -321,24 +338,6 @@ def icestupa(df, fountain, surface):
             df.loc[i, "vp_ice"] = 6.112 * np.exp(
                 22.46 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
             )
-
-            # atmospheric emissivity
-            if df.loc[i, "Prec"] > 0:  # cloudiness = 1
-                df.loc[i, "e_a"] = (
-                    1.24
-                    * math.pow(
-                        abs(df.loc[i, "vpa"] / (df.loc[i, "T_a"] + 273.15)), 1 / 7
-                    )
-                    * 1.22
-                )
-            else:
-                df.loc[i, "e_a"] = (
-                    1.24
-                    * math.pow(
-                        abs(df.loc[i, "vpa"] / (df.loc[i, "T_a"] + 273.15)), 1 / 7
-                    )
-                    * (1 + 0.22 * math.pow(surface["cld"], 2))
-                )
 
             # Fountain water output
             df.loc[i, "liquid"] = df.loc[i, "Discharge"] * (1 - ftl) * time_steps / 60
@@ -380,7 +379,10 @@ def icestupa(df, fountain, surface):
                 * math.pow(k, 2)
                 * df.loc[i, "v_a"]
                 * (df.loc[i, "vpa"] - df.loc[i, "vp_ice"])
-                / (np.log(surface["h_aws"] / surface["z0mi"]) * np.log(surface["h_aws"] / surface["z0hi"]))
+                / (
+                    np.log(surface["h_aws"] / surface["z0mi"])
+                    * np.log(surface["h_aws"] / surface["z0hi"])
+                )
             )
 
             df.loc[i, "gas"] -= (df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps) / Ls
@@ -419,24 +421,49 @@ def icestupa(df, fountain, surface):
             )
 
             # Estimating Solar Area fraction
-            df.loc[i, "theta_s"] = getSEA(df.loc[i, "When"], fountain['latitude'], fountain['longitude'], fountain['utc_offset'])
-            df.loc[i, "SRf"] = ((
+            df.loc[i, "theta_s"] = getSEA(
+                df.loc[i, "When"],
+                fountain["latitude"],
+                fountain["longitude"],
+                fountain["utc_offset"],
+            )
+            df.loc[i, "SRf"] = (
                 0.5
-                * df.loc[i, "h_ice"] * df.loc[i, "r_ice"]
+                * df.loc[i, "h_ice"]
+                * df.loc[i, "r_ice"]
                 * math.cos(math.radians(df.loc[i, "theta_s"]))
-                + math.pi * math.pow(df.loc[i, "r_ice"],2) * 0.5
-                * math.sin(math.radians(df.loc[i, "theta_s"])))
-                / (
-                    math.pi
-                    * math.pow((math.pow(df.loc[i, "h_ice"], 2) + math.pow(df.loc[i, "r_ice"], 2)), 1 / 2)
-                    * df.loc[i, "r_ice"]
+                + math.pi
+                * math.pow(df.loc[i, "r_ice"], 2)
+                * 0.5
+                * math.sin(math.radians(df.loc[i, "theta_s"]))
+            ) / (
+                math.pi
+                * math.pow(
+                    (math.pow(df.loc[i, "h_ice"], 2) + math.pow(df.loc[i, "r_ice"], 2)),
+                    1 / 2,
                 )
+                * df.loc[i, "r_ice"]
             )
 
             # Short Wave Radiation SW
             df.loc[i, "SW"] = (1 - df.loc[i, "a"]) * (
                 df.loc[i, "Rad"] * df.loc[i, "SRf"] + df.loc[i, "DRad"]
             )
+
+            # Cloudiness
+
+            if df.loc[i, "Rad"] + df.loc[i, "DRad"] > 1:
+                df.loc[i, "cld"] = df.loc[i, "DRad"] / (
+                    df.loc[i, "Rad"] + df.loc[i, "DRad"]
+                )
+            else:
+                df.loc[i, "cld"] = 0
+
+            # atmospheric emissivity
+            df.loc[i, "e_a"] = (
+                1.24
+                * math.pow(abs(df.loc[i, "vpa"] / (df.loc[i, "T_a"] + 273.15)), 1 / 7)
+            ) * (1 + 0.22 * math.pow(df.loc[i, "cld"], 2))
 
             # Long Wave Radiation LW
             if "oli000z0" not in list(df.columns):
@@ -458,7 +485,10 @@ def icestupa(df, fountain, surface):
                 * math.pow(k, 2)
                 * df.loc[i, "v_a"]
                 * (df.loc[i, "T_a"] - df.loc[i - 1, "T_s"])
-                / (np.log(surface["h_aws"] / surface["z0mi"]) * np.log(surface["h_aws"] / surface["z0hi"]))
+                / (
+                    np.log(surface["h_aws"] / surface["z0mi"])
+                    * np.log(surface["h_aws"] / surface["z0hi"])
+                )
             )
 
             # Total Energy W/m2
@@ -558,10 +588,7 @@ def icestupa(df, fountain, surface):
                 df.loc[i, "When"],
             )
 
-
-
     df = df[start:i]
-
 
     print("Ice Mass Remaining", float(df["ice"].tail(1)))
     print("Meltwater", float(df["meltwater"].tail(1)))
