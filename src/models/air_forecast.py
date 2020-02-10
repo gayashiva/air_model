@@ -9,7 +9,7 @@ from src.data.config import fountain, surface, site, option, dates, folders
 pd.options.mode.chained_assignment = None  # Suppress Setting with warning
 
 
-def albedo(df):
+def albedo(df, surface):
 
     surface["decay_t"] = (
         surface["decay_t"] * 24 * 60 / 5
@@ -41,7 +41,6 @@ def albedo(df):
 
     return df["a"]
 
-
 def projectile_xy(v, theta_f, hs=0.0, g=9.8):
     """
     calculate a list of (x, y) projectile motion data points
@@ -69,7 +68,6 @@ def projectile_xy(v, theta_f, hs=0.0, g=9.8):
         # use the time in increments of 0.1 seconds
         t += 0.01
     return x, t
-
 
 def getSEA(date, latitude, longitude, utc_offset):
     hour = date.hour
@@ -127,7 +125,7 @@ def getSEA(date, latitude, longitude, utc_offset):
 
     return SEA
 
-def fountain_runtime(df):
+def fountain_runtime(df, fountain):
     df["Fountain"] = 0  # Fountain run time
 
     if option == 'temperature':
@@ -341,14 +339,14 @@ def icestupa(df, fountain, surface):
         df[col] = 0
 
     """ Estimating Fountain Runtime """
-    df["Fountain"] = fountain_runtime(df)
+    df["Fountain"] = fountain_runtime(df, fountain)
     if site == 'schwarzsee':
         df.Discharge = df.Discharge * df.Fountain
     else:
         df.Discharge = fountain["discharge"] * df.Fountain
 
     """ Estimating Albedo """
-    df["a"] = albedo(df)
+    df["a"] = albedo(df, surface)
 
 
     """ Estimating Fountain Spray radius """

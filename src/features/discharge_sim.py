@@ -77,7 +77,7 @@ logger.addHandler(console_handler)
 #
 # dfx.to_csv(filename2, sep=',')
 
-param_values = np.arange(-10, 5, 1).tolist()
+param_values = np.arange(-10, 5, 0.5).tolist()
 
 dfx = pd.DataFrame({'MaxV': []})
 for i, X in enumerate(param_values):
@@ -85,12 +85,8 @@ for i, X in enumerate(param_values):
     print(X)
     fountain['crit_temp'] = X
 
-    if option == 'temperature':
-        filename = folders["input_folder"] + site + "_" + option + "_" + str(fountain['crit_temp'])
-    else:
-        filename = folders["input_folder"] + site + "_" + option
     #  read files
-    filename0 = os.path.join(filename + "_input.csv")
+    filename0 = os.path.join(folders["input_folder"] + site + "_input.csv")
     df_in = pd.read_csv(filename0, sep=",")
     df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 

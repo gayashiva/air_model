@@ -50,19 +50,15 @@ logger.addHandler(console_handler)
 
 #  read files
 if option == "temperature":
-    filename0 = (
-            folders["input_folder"] + site + "_" + option + "_" + str(fountain["crit_temp"])
-    )
     filename1 = (
         folders["output_folder"] + site + "_" + option + "_" + str(fountain["crit_temp"])
     )
 else:
-    filename0 = folders["input_folder"] + site + "_" + option
     filename1 = folders["output_folder"] + site + "_" + option
 
 filename1 = os.path.join(filename1 + "_model_results.csv")
 
-same = True
+same = False
 
 if same:
     if os.path.isfile(filename1):
@@ -71,7 +67,7 @@ if same:
         df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
 
     else:
-        filename0 = os.path.join(filename0 + "_input.csv")
+        filename0 = os.path.join(folders["input_folder"] + site + "_input.csv")
         df_in = pd.read_csv(filename0, sep=",")
         df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
@@ -82,7 +78,7 @@ if same:
         print("Total time : ", total / 60)
 
 else:
-    filename0 = os.path.join(filename0 + "_input.csv")
+    filename0 = os.path.join(folders["input_folder"] + site + "_input.csv")
     df_in = pd.read_csv(filename0, sep=",")
     df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
@@ -668,7 +664,7 @@ if option == "schwarzsee":
 
 """Input Plots"""
 
-pp = PdfPages(filename0 + "_data" + ".pdf")
+pp = PdfPages(folders["input_folder"] + site + "_data" + ".pdf")
 
 fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
     nrows=6, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
