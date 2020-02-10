@@ -423,10 +423,83 @@ plt.close('all')
 
 pp.close()
 
-# Plots
+"""Paper Output"""
 if option == "schwarzsee":
     filename = os.path.join(filename2 + "_paper.pdf")
     pp = PdfPages(filename)
+
+    fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
+        nrows=6, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
+    )
+
+    # fig.suptitle("Field Data", fontsize=14)
+    # Remove horizontal space between axes
+    # fig.subplots_adjust(hspace=0)
+
+    x = df.When
+
+    if option == "schwarzsee":
+        y1 = df.Discharge
+    else:
+        y1 = df.Fountain
+    ax1.plot(x, y1, "k-", linewidth=0.5)
+    ax1.set_ylabel("Discharge [$l\, min^{-1}$]")
+    ax1.grid()
+
+    ax1t = ax1.twinx()
+    ax1t.plot(x, df.Prec * 1000, "b-", linewidth=0.5)
+    ax1t.set_ylabel("Precipitation [$mm$]", color="b")
+    for tl in ax1t.get_yticklabels():
+        tl.set_color("b")
+
+    y2 = df.T_a
+    ax2.plot(x, y2, "k-", linewidth=0.5)
+    ax2.set_ylabel("Temperature [$\degree C$]")
+    ax2.grid()
+
+    y3 = df.Rad + df.DRad
+    ax3.plot(x, y3, "k-", linewidth=0.5)
+    ax3.set_ylabel("Global [$W\,m^{-2}$]")
+    ax3.grid()
+
+    ax3t = ax3.twinx()
+    ax3t.plot(x, df.DRad, "b-", linewidth=0.5)
+    ax3t.set_ylim(ax3.get_ylim())
+    ax3t.set_ylabel("Diffuse [$W\,m^{-2}$]", color="b")
+    for tl in ax3t.get_yticklabels():
+        tl.set_color("b")
+
+    y4 = df.RH
+    ax4.plot(x, y4, "k-", linewidth=0.5)
+    ax4.set_ylabel("Humidity [$\%$]")
+    ax4.grid()
+
+    y5 = df.p_a
+    ax5.plot(x, y5, "k-", linewidth=0.5)
+    ax5.set_ylabel("Pressure [$hPa$]")
+    ax5.grid()
+
+    y6 = df.v_a
+    ax6.plot(x, y6, "k-", linewidth=0.5)
+    ax6.set_ylabel("Wind [$m\,s^{-1}$]")
+    ax6.grid()
+
+    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    ax1.xaxis.set_minor_locator(mdates.DayLocator())
+
+    # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
+    fig.autofmt_xdate()
+    pp.savefig(bbox_inches="tight")
+
+    plt.savefig(
+        os.path.join(folders["input_folder"], site + "_data.jpg"),
+        bbox_inches="tight",
+        dpi=300,
+    )
+
+    plt.clf()
+
 
     x = df.When
     y1 = df.iceV
@@ -469,107 +542,6 @@ if option == "schwarzsee":
         dpi=300,
     )
 
-    plt.clf()
-
-    fig, (ax1, ax2, ax3) = plt.subplots(nrows=3, ncols=1, sharex=True, figsize=(10, 5))
-
-    # fig.suptitle("Mass and Energy balance", fontsize=14)
-
-    x = df.When
-    y1 = df.ice
-
-    ax1.plot(x, y1, "b-")
-    ax1.set_ylabel("Ice [kg]")
-    ax1.grid()
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-
-    y2 = df.SA
-    ax2.plot(x, y2, "b-")
-    ax2.set_ylabel("Surface Area [$m^2$]")
-    ax2.grid()
-
-    y3 = df.TotalE + df.Ql
-    ax3.plot(x, y3, "b-")
-    ax3.set_ylabel("E [$W\,m^{-2}$]")
-    ax3.grid()
-
-    # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
-    plt.close('all')
-
-    fig, (ax1, ax2, ax3) = plt.subplots(
-        nrows=3, ncols=1, sharex=True, sharey=True, figsize=(10, 5)
-    )
-
-    # fig.suptitle("Mass balance", fontsize=14)
-
-    x = df.When
-    y1 = df.ice
-
-    ax1.plot(x, y1, "b-")
-    ax1.set_ylabel("Ice [kg]")
-    ax1.grid()
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-
-    y2 = df.meltwater
-    ax2.plot(x, y2, "b-")
-    ax2.set_ylabel("Meltwater [kg]")
-    ax2.grid()
-
-    y3 = df.vapour
-    ax3.plot(x, y3, "b-")
-    ax3.set_ylabel("Vapour [kg]")
-    ax3.grid()
-    # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
-
-    y = dfd[['Shortwave', 'Longwave', 'Sensible', 'Latent']]
-    y.plot.bar(stacked=True, edgecolor=dfd['Discharge'], linewidth=0.5)
-    plt.xlabel('Days')
-    plt.ylabel('Energy [$W\,m^{-2}$]')
-    plt.legend(loc='upper left')
-    plt.ylim(-150, 150)
-    plt.xticks(rotation=45)
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
-    plt.close('all')
-
-    fig, (ax1, ax2, ax3) = plt.subplots(
-        nrows=3, ncols=1, sharex=True, sharey=True, figsize=(10, 5)
-    )
-
-    # fig.suptitle("Daily ice and melt", fontsize=14)
-
-    x = df.When
-    y1 = df.ice
-
-    ax1.plot(x, y1, "b-")
-    ax1.set_ylabel("Ice [kg]")
-    ax1.grid()
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-
-    y2 = df.meltwater
-    ax2.plot(x, y2, "b-")
-    ax2.set_ylabel("Meltwater [kg]")
-    ax2.grid()
-
-    y3 = df.vapour
-    ax3.plot(x, y3, "b-")
-    ax3.set_ylabel("Vapour [kg]")
-    ax3.grid()
-    # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
     plt.clf()
 
     # Day melt and Night freeze Plots
@@ -649,9 +621,248 @@ if option == "schwarzsee":
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
+
+    y = dfd[['Shortwave', 'Longwave', 'Sensible', 'Latent']]
+    y.plot.bar(stacked=True, edgecolor=dfd['Discharge'], linewidth=0.5)
+    plt.xlabel('Days')
+    plt.ylabel('Energy [$W\,m^{-2}$]')
+    plt.legend(loc='upper left')
+    plt.ylim(-150, 150)
+    plt.xticks(rotation=45)
+    pp.savefig(bbox_inches="tight")
+    plt.clf()
+    plt.close('all')
+
+    fig, (ax1, ax2, ax3) = plt.subplots(
+        nrows=3, ncols=1, sharex=True, sharey=True, figsize=(10, 5)
+    )
+
+    # fig.suptitle("Daily ice and melt", fontsize=14)
+
+    x = df.When
+    y1 = df.ice
+
+    ax1.plot(x, y1, "b-")
+    ax1.set_ylabel("Ice [kg]")
+    ax1.grid()
+    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    ax1.xaxis.set_minor_locator(mdates.DayLocator())
+
+    y2 = df.meltwater
+    ax2.plot(x, y2, "b-")
+    ax2.set_ylabel("Meltwater [kg]")
+    ax2.grid()
+
+    y3 = df.vapour
+    ax3.plot(x, y3, "b-")
+    ax3.set_ylabel("Vapour [kg]")
+    ax3.grid()
+    # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
+    fig.autofmt_xdate()
+    pp.savefig(bbox_inches="tight")
+    plt.clf()
+
+
     pp.close()
 
+"""Input Plots"""
 
+pp = PdfPages(filename0 + "_data" + ".pdf")
+
+fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
+    nrows=6, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
+)
+
+# fig.suptitle("Field Data", fontsize=14)
+# Remove horizontal space between axes
+# fig.subplots_adjust(hspace=0)
+
+x = df.When
+
+if option == "schwarzsee":
+    y1 = df.Discharge
+else:
+    y1 = df.Fountain
+ax1.plot(x, y1, "k-", linewidth=0.5)
+ax1.set_ylabel("Discharge [$l\, min^{-1}$]")
+ax1.grid()
+
+ax1t = ax1.twinx()
+ax1t.plot(x, df.Prec * 1000, "b-", linewidth=0.5)
+ax1t.set_ylabel("Precipitation [$mm$]", color="b")
+for tl in ax1t.get_yticklabels():
+    tl.set_color("b")
+
+y2 = df.T_a
+ax2.plot(x, y2, "k-", linewidth=0.5)
+ax2.set_ylabel("Temperature [$\degree C$]")
+ax2.grid()
+
+
+y3 = df.Rad + df.DRad
+ax3.plot(x, y3, "k-", linewidth=0.5)
+ax3.set_ylabel("Global [$W\,m^{-2}$]")
+ax3.grid()
+
+ax3t = ax3.twinx()
+ax3t.plot(x, df.DRad, "b-", linewidth=0.5)
+ax3t.set_ylim(ax3.get_ylim())
+ax3t.set_ylabel("Diffuse [$W\,m^{-2}$]", color="b")
+for tl in ax3t.get_yticklabels():
+    tl.set_color("b")
+
+y4 = df.RH
+ax4.plot(x, y4, "k-", linewidth=0.5)
+ax4.set_ylabel("Humidity [$\%$]")
+ax4.grid()
+
+y5 = df.p_a
+ax5.plot(x, y5, "k-", linewidth=0.5)
+ax5.set_ylabel("Pressure [$hPa$]")
+ax5.grid()
+
+y6 = df.v_a
+ax6.plot(x, y6, "k-", linewidth=0.5)
+ax6.set_ylabel("Wind [$m\,s^{-1}$]")
+ax6.grid()
+
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+
+# rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+
+plt.savefig(
+    os.path.join(folders["input_folder"], site + "_data.jpg"),
+    bbox_inches="tight",
+    dpi=300,
+)
+
+plt.clf()
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+
+y1 = df.T_a
+ax1.plot(x, y1, "k-", linewidth=0.5)
+ax1.set_ylabel("Temperature [$\degree C$]")
+ax1.grid()
+
+# format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+
+y2 = df.Fountain
+ax1.plot(x, y2, "k-", linewidth=0.5)
+ax1.set_ylabel("Fountain on/off ")
+ax1.grid()
+
+# format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+
+y3 = df.Rad
+ax1.plot(x, y3, "k-", linewidth=0.5)
+ax1.set_ylabel("Direct SWR [$W\,m^{-2}$]")
+ax1.grid()
+
+# format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+
+y31 = df.DRad
+ax1.plot(x, y31, "k-", linewidth=0.5)
+ax1.set_ylabel("Direct SWR [$W\,m^{-2}$]")
+ax1.grid()
+
+# format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+
+y4 = df.Prec * 1000
+ax1.plot(x, y4, "k-", linewidth=0.5)
+ax1.set_ylabel("Ppt [$mm$]")
+ax1.grid()
+
+# format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+
+y5 = df.p_a
+ax1.plot(x, y5, "k-", linewidth=0.5)
+ax1.set_ylabel("Pressure [$hPa$]")
+ax1.grid()
+
+# format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+
+y6 = df.v_a
+ax1.plot(x, y6, "k-", linewidth=0.5)
+ax1.set_ylabel("Wind [$m\,s^{-1}$]")
+ax1.grid()
+
+# format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
+pp.close()
 
 
 

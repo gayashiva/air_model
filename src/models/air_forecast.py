@@ -1,14 +1,15 @@
 import pandas as pd
 import numpy as np
 import math
+import os
 import datetime
 import logging
-from src.data.config import fountain, surface, option
+from src.data.config import fountain, surface, site, option, dates, folders
 
 pd.options.mode.chained_assignment = None  # Suppress Setting with warning
 
 
-def albedo(df, surface):
+def albedo(df):
 
     surface["decay_t"] = (
         surface["decay_t"] * 24 * 60 / 5
@@ -126,6 +127,152 @@ def getSEA(date, latitude, longitude, utc_offset):
 
     return SEA
 
+def fountain_runtime(df):
+    df["Fountain"] = 0  # Fountain run time
+
+    if option == 'temperature':
+        mask = df["T_a"] < fountain["crit_temp"]
+        mask_index = df[mask].index
+        df.loc[mask_index, "Fountain"] = 1
+        mask = df["When"] >= dates["fountain_off_date"]
+        mask_index = df[mask].index
+        df.loc[mask_index, "Fountain"] = 0
+
+    if option == 'schwarzsee':
+        df["Fountain"] = 0  # Fountain run time
+
+        df_nights = pd.read_csv(
+            os.path.join(folders["dirname"], "data/raw/schwarzsee_fountain_time.txt"),
+            sep="\s+",
+        )
+
+        df_nights["Start"] = pd.to_datetime(
+            df_nights["Date"] + " " + df_nights["start"]
+        )
+        df_nights["End"] = pd.to_datetime(df_nights["Date"] + " " + df_nights["end"])
+        df_nights["Start"] = pd.to_datetime(
+            df_nights["Start"], format="%Y-%m-%d %H:%M:%S"
+        )
+        df_nights["End"] = pd.to_datetime(df_nights["End"], format="%Y-%m-%d %H:%M:%S")
+
+        df_nights["Date"] = pd.to_datetime(df_nights["Date"], format="%Y-%m-%d")
+        mask = (df_nights["Date"] >= dates["start_date"]) & (
+                df_nights["Date"] <= dates["end_date"]
+        )
+        df_nights = df_nights.loc[mask]
+        df_nights = df_nights.reset_index()
+
+        for i in range(0, df_nights.shape[0]):
+            df_nights.loc[i, "Start"] = df_nights.loc[i, "Start"] - pd.Timedelta(days=1)
+            df.loc[
+                (df["When"] >= df_nights.loc[i, "Start"])
+                & (df["When"] <= df_nights.loc[i, "End"]),
+                "Fountain",
+            ] = 1
+    if option == "energy":
+
+        """Constants"""
+        Ls = 2848 * 1000  # J/kg Sublimation
+        Le = 2514 * 1000  # J/kg Evaporation
+        Lf = 334 * 1000  # J/kg Fusion
+        cw = 4.186 * 1000  # J/kg Specific heat water
+        ci = 2.108 * 1000  # J/kgC Specific heat ice
+        rho_w = 1000  # Density of water
+        rho_i = 916  # Density of Ice rho_i
+        rho_a = 1.29  # kg/m3 air density at mean sea level
+        k = 0.4  # Van Karman constant
+        bc = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
+        g = 9.8  # gravity
+
+        """Miscellaneous"""
+        z = 3  # m height of AWS
+        time_steps = 5 * 60  # s Model time steps
+        p0 = 1013  # Standard air pressure hPa
+
+        """ Estimating Albedo """
+        df["a"] = albedo(df)
+
+        df["T_s"] = 0
+
+        for i in range(1, df.shape[0]):
+
+            """ Energy Balance starts """
+
+            # Vapor Pressure empirical relations
+            if "vp_a" not in list(df.columns):
+                df.loc[i, "vpa"] = (
+                        6.11
+                        * math.pow(
+                    10, 7.5 * df.loc[i - 1, "T_a"] / (df.loc[i - 1, "T_a"] + 237.3)
+                )
+                        * df.loc[i, "RH"]
+                        / 100
+                )
+            else:
+                df.loc[i, "vpa"] = df.loc[i, "vp_a"]
+
+            df.loc[i, "vp_ice"] = 6.112 * np.exp(
+                22.46 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
+            )
+
+            # Short Wave Radiation SW
+            df.loc[i, "SW"] = (1 - df.loc[i, "a"]) * (
+                    df.loc[i, "Rad"] + df.loc[i, "DRad"]
+            )
+
+            # Cloudiness from diffuse fraction
+            if df.loc[i, "Rad"] + df.loc[i, "DRad"] > 1:
+                df.loc[i, "cld"] = df.loc[i, "DRad"] / (
+                        df.loc[i, "Rad"] + df.loc[i, "DRad"]
+                )
+            else:
+                df.loc[i, "cld"] = 0
+
+            # atmospheric emissivity
+            df.loc[i, "e_a"] = (
+                                           1.24
+                                           * math.pow(abs(df.loc[i, "vpa"] / (df.loc[i, "T_a"] + 273.15)),
+                                                      1 / 7)
+                                   ) * (1 + 0.22 * math.pow(df.loc[i, "cld"], 2))
+
+            # Long Wave Radiation LW
+            if "oli000z0" not in list(df.columns):
+
+                df.loc[i, "LW"] = df.loc[i, "e_a"] * bc * math.pow(
+                    df.loc[i, "T_a"] + 273.15, 4
+                ) - surface["ie"] * bc * math.pow(df.loc[i - 1, "T_s"] + 273.15, 4)
+            else:
+                df.loc[i, "LW"] = df.loc[i, "oli000z0"] - surface["ie"] * bc * math.pow(
+                    df.loc[i - 1, "T_s"] + 273.15,
+                    4)
+
+            # Sensible Heat Qs
+            df.loc[i, "Qs"] = (
+                    ci
+                    * rho_a
+                    * df.loc[i, "p_a"]
+                    / p0
+                    * math.pow(k, 2)
+                    * df.loc[i, "v_a"]
+                    * (df.loc[i, "T_a"] - df.loc[i - 1, "T_s"])
+                    / (
+                            np.log(surface["h_aws"] / surface["z0mi"])
+                            * np.log(surface["h_aws"] / surface["z0hi"])
+                    )
+            )
+
+            # Total Energy W/m2
+            df.loc[i, "TotalE"] = df.loc[i, "SW"] + df.loc[i, "LW"] + df.loc[i, "Qs"]
+
+        x = df["When"]
+        mask = df["TotalE"] < 0
+        mask_index = df[mask].index
+        df.loc[mask_index, "Fountain"] = 1
+        mask = df["When"] >= dates["fountain_off_date"]
+        mask_index = df[mask].index
+        df.loc[mask_index, "Fountain"] = 0
+
+    return df["Fountain"]
 
 def icestupa(df, fountain, surface):
 
@@ -193,8 +340,16 @@ def icestupa(df, fountain, surface):
     for col in l:
         df[col] = 0
 
+    """ Estimating Fountain Runtime """
+    df["Fountain"] = fountain_runtime(df)
+    if site == 'schwarzsee':
+        df.Discharge = df.Discharge * df.Fountain
+    else:
+        df.Discharge = fountain["discharge"] * df.Fountain
+
     """ Estimating Albedo """
-    df["a"] = albedo(df, surface)
+    df["a"] = albedo(df)
+
 
     """ Estimating Fountain Spray radius """
     Area = math.pi * math.pow(fountain["aperture_f"], 2) / 4
