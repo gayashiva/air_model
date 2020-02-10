@@ -72,7 +72,7 @@ logger.addHandler(console_handler)
 #
 #
 # filename2 = os.path.join(
-#     folders['simulations_folder'], site + "_simulations_discharge.csv"
+#     folders['sim_folder'], site + "_simulations_discharge.csv"
 # )
 #
 # dfx.to_csv(filename2, sep=',')
@@ -99,7 +99,7 @@ for i, X in enumerate(param_values):
 
 
 filename2 = os.path.join(
-    folders['simulations_folder'], site + "_simulations_crittemp.csv"
+    folders['sim_folder'], site + "_simulations_crittemp.csv"
 )
 
 dfx.to_csv(filename2, sep=',')

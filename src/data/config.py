@@ -7,7 +7,7 @@ dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 # site = input("Input the Field Site Name: ") or "guttannen"
 
 site = "schwarzsee"
-option = "temperature"
+option = "schwarzsee"
 
 print("Site is", site)
 
@@ -81,7 +81,7 @@ if site == "plaffeien":
         dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
         input_folder=os.path.join(dir, "data/interim/plaffeien/"),
         output_folder=os.path.join(dir, "data/processed/plaffeien/"),
-        simulations_folder=os.path.join(dir, "data/processed/plaffeien/simulations/"),
+        sim_folder=os.path.join(dir, "data/processed/plaffeien/simulations/"),
         data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
     )
 

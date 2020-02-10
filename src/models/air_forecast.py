@@ -504,7 +504,6 @@ def icestupa(df, fountain, surface):
                     df.loc[i, "delta_T_s"] = -df.loc[i - 1, "T_s"]
 
             """ Energy Balance starts """
-
             # Vapor Pressure empirical relations
             if "vp_a" not in list(df.columns):
                 df.loc[i, "vpa"] = (

@@ -17,7 +17,6 @@ from SALib.sample import saltelli
 from SALib.analyze import sobol
 import matplotlib.colors
 
-# python -m src.features.build_features
 
 # Create the Logger
 logger = logging.getLogger()
@@ -25,7 +24,8 @@ logger.setLevel(logging.INFO)
 
 # Create the Handler for logging data to a file
 logger_handler = logging.FileHandler(
-    os.path.join(os.path.join(folders['dirname'], "data/logs/"), site + "_site.log"), mode="w"
+    os.path.join(os.path.join(folders["dirname"], "data/logs/"), site + "_site.log"),
+    mode="w",
 )
 logger_handler.setLevel(logging.DEBUG)
 
@@ -45,15 +45,11 @@ logger.addHandler(logger_handler)
 logger.addHandler(console_handler)
 
 #  read files
-filename0 = os.path.join(folders['input_folder'], site + "_" + option + "_input.csv")
+filename0 = os.path.join(folders['input_folder'], site + "_input.csv")
 df_in = pd.read_csv(filename0, sep=",")
 df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
-# end
-end_date = df_in["When"].iloc[-1]
-
-
-problem = {"num_vars": 1, "names": ["h_f"], "bounds": [[2, 8]]}
+problem = {"num_vars": 2, "names": ["ie", "a_i"], "bounds": [[0.81, 0.99], [0.36, 0.44]]}
 
 # Generate samples
 param_values = saltelli.sample(problem, 3)
@@ -74,14 +70,14 @@ dfo = dfo.fillna(0)
 for i, X in enumerate(param_values):
 
     #  read files
-    filename0 = os.path.join(folders['input_folder'], site + "_" + option + "_input.csv")
+    filename0 = os.path.join(folders['input_folder'], site + "_input.csv")
     df_in = pd.read_csv(filename0, sep=",")
     df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
     print(X)
-    fountain['h_f'] = X[0]
+    surface['ie'] = X[0]
     df = icestupa(df_in, fountain, surface)
-    dfo.loc[i, "h_f"] = X[0]
+    dfo.loc[i, "ie"] = X[0]
     dfo.loc[i, "Ice"] = float(df["ice"].tail(1))
     dfo.loc[i, "Meltwater"] = float(df["meltwater"].tail(1))
     dfo.loc[i, "Vapour"] = float(df["vapour"].tail(1))
@@ -111,7 +107,7 @@ cbar.set_label("Fountain Height[$m$]")
 fig.autofmt_xdate()
 plt.savefig(
     os.path.join(
-        folders['output_folder'], site + "_simulations_" + str(problem["names"][0]) + ".jpg"
+        folders['sim_folder'], site + "_simulations_" + str(problem["names"][0]) + ".jpg"
     ),
     bbox_inches="tight",
     dpi=300,
@@ -120,6 +116,6 @@ plt.clf()
 
 dfo = dfo.round(4)
 filename2 = os.path.join(
-    folders['output_folder'], site + "_simulations__" + str(problem["names"][0]) + ".csv"
+    folders['sim_folder'], site + "_simulations__" + str(problem["names"][0]) + ".csv"
 )
 dfo.to_csv(filename2, sep=",")
