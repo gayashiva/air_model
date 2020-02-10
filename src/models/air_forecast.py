@@ -368,21 +368,21 @@ def icestupa(df, fountain, surface):
     for i in range(1, df.shape[0]):
 
         # Ice Melted
-        if (df.loc[i - 1, "ice"] <= 0.05) & (df.Discharge[i:].sum() == 0):
+        if df.loc[i - 1, "ice"] <= 0.05:
             if df.Discharge[i:].sum() == 0:  # If ice melted after fountain run
                 df.loc[i - 1, "solid"] = 0
                 df.loc[i - 1, "ice"] = 0
                 df.loc[i - 1, "iceV"] = 0
                 break
 
-            if start != 0:  # If ice melted in between fountain run
+            else:  # If ice melted in between fountain run
                 df.loc[i - 1, "solid"] = 0
                 df.loc[i - 1, "ice"] = 0
                 df.loc[i - 1, "iceV"] = 0
                 state = 0
 
         # Initiate ice formation
-        if (df.loc[i, "Discharge"] > 0) & (start == 0):
+        if (df.loc[i, "Discharge"] > 0) & (state == 0):
             state = 1
             start = i - 1  # Set Model start time
             df.loc[i - 1, "r_ice"] = R_f

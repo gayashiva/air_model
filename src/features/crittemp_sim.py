@@ -43,31 +43,32 @@ console_handler.setFormatter(logger_formatter)
 logger.addHandler(logger_handler)
 logger.addHandler(console_handler)
 
-param_values = np.arange(3, 15, 0.5).tolist()
+param_values = np.arange(-9, 5, 0.5).tolist()
 
 dfx = pd.DataFrame({'MaxV': []})
 for i, X in enumerate(param_values):
 
     print(X)
-    fountain['discharge'] = X
+    fountain['crit_temp'] = X
 
     #  read files
     filename0 = os.path.join(folders["input_folder"] + site + "_input.csv")
     df_in = pd.read_csv(filename0, sep=",")
     df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
-    df_in["Prec"] = 0 # Remove precipitation
+    # Remove Precipitation
+    df_in["Prec"] = 0
 
     df = pd.DataFrame({'A': []})
     df = icestupa(df_in, fountain, surface)
     print("Model runtime", df["When"].iloc[-1] - df["When"].iloc[0])
 
-    dfx = dfx.append({'Discharge': X, 'Max Growthrate' : df[df["solid"]>0]["solid"].max()/5, 'Avg Growthrate' : df[df["solid"]>0]["solid"].max()/5, 'Water used' : df["sprayed"].iloc[-1], 'Endice' : df["iceV"].iloc[-1], 'Max SA' : df["SA"].max(), 'MaxV': df["iceV"].max(), 'h/r': df["h_r"].iloc[-1], 'r': df["r_ice"].max(), 'Meltwater': df["meltwater"].iloc[-1], 'Runtime': df["When"].iloc[-1] - df["When"].iloc[0]}, ignore_index=True)
+    dfx = dfx.append({'Critical Temp': X, 'Max Growthrate' : df[df["solid"]>0]["solid"].max()/5, 'Avg Growthrate' : df[df["solid"]>0]["solid"].mean()/5, 'Water used' : df["sprayed"].iloc[-1], 'Endice' : df["iceV"].iloc[-1], 'Max SA' : df["SA"].max(), 'MaxV': df["iceV"].max(), 'h/r': df["h_r"].iloc[-1], 'r': df["r_ice"].max(), 'Meltwater': df["meltwater"].iloc[-1], 'Runtime': df["When"].iloc[-1] - df["When"].iloc[0]}, ignore_index=True)
     print(dfx)
 
 
 filename2 = os.path.join(
-    folders['sim_folder'], site + "_simulations_discharge.csv"
+    folders['sim_folder'], site + "_simulations_crittemp.csv"
 )
 
 dfx.to_csv(filename2, sep=',')

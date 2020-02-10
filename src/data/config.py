@@ -14,9 +14,9 @@ print("Site is", site)
 max = False
 
 surface = dict(
-    ie=0.9,  # Ice Emissivity ie
-    a_i=0.4,  # Albedo of Ice a_i
-    a_s=0.85,  # Albedo of Fresh Snow a_s
+    ie=0.95,  # Ice Emissivity ie
+    a_i=0.34,  # Albedo of Ice a_i
+    a_s=0.75,  # Albedo of Fresh Snow a_s
     decay_t=10,  # Albedo dry decay rate decay_t_d
     z0mi=0.0017,  # Ice Momentum roughness length
     z0hi=0.0017,  # Ice Scalar roughness length
@@ -27,10 +27,10 @@ surface = dict(
 #
 # if max :
 #     surface = dict(
-#         ie=0.99,  # Ice Emissivity ie
-#         a_i=0.44,  # Albedo of Ice a_i
-#         a_s=0.93,  # Albedo of Fresh Snow a_s
-#         decay_t=11,  # Albedo dry decay rate decay_t_d
+#         ie=0.9975,  # Ice Emissivity ie
+#         a_i=0.3517,  # Albedo of Ice a_i
+#         a_s=0.7875,  # Albedo of Fresh Snow a_s
+#         decay_t=10.5,  # Albedo dry decay rate decay_t_d
 #         z0mi=0.0017,  # Ice Momentum roughness length
 #         z0hi=0.0017,  # Ice Scalar roughness length
 #         snow_fall_density=250,  # Snowfall density
@@ -41,10 +41,10 @@ surface = dict(
 #
 # else :
 #     surface = dict(
-#         ie=0.81,  # Ice Emissivity ie
-#         a_i=0.36,  # Albedo of Ice a_i
-#         a_s=0.77,  # Albedo of Fresh Snow a_s
-#         decay_t=9,  # Albedo dry decay rate decay_t_d
+#         ie=0.9025,  # Ice Emissivity ie
+#         a_i=0.323,  # Albedo of Ice a_i
+#         a_s=0.7125,  # Albedo of Fresh Snow a_s
+#         decay_t=9.5,  # Albedo dry decay rate decay_t_d
 #         z0mi=0.0017,  # Ice Momentum roughness length
 #         z0hi=0.0017,  # Ice Scalar roughness length
 #         snow_fall_density=250,  # Snowfall density
@@ -57,7 +57,7 @@ if site == "schwarzsee":
         dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
         input_folder=os.path.join(dir, "data/interim/schwarzsee/"),
         output_folder=os.path.join(dir, "data/processed/schwarzsee/"),
-        simulations_folder=os.path.join(dir, "data/processed/schwarzsee/simulations/"),
+        sim_folder=os.path.join(dir, "data/processed/schwarzsee/simulations/"),
         data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
     )
 
@@ -70,7 +70,7 @@ if site == "schwarzsee":
         aperture_f=0.005,  # Fountain aperture diameter
         h_f=1.35,  # Fountain steps h_f
         discharge=12,  # Fountain on discharge
-        crit_temp=-5,  # Fountain runtime temperature
+        crit_temp=-9.5,  # Fountain runtime temperature
         latitude = 46.693723,
         longitude = 7.297543,
         utc_offset = 1,

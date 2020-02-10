@@ -555,7 +555,7 @@ if option == "schwarzsee":
     dfds['When'] = dfds['When'].dt.strftime("%b %d")
 
     dfds2 = dfds[['When','solid', 'melted']]
-    dfds2 = dfds2.rename({'solid': 'Daily Ice frozen', 'melted': 'Daily Meltwater discharged'}, axis=1)
+    dfds2 = dfds2.rename({'solid': 'Ice frozen', 'melted': 'Meltwater discharged'}, axis=1)
 
     dfds2["label"] = ' '
     labels = ["Jan 29", "Feb 05", "Feb 12", "Feb 19", "Feb 26", "Mar 05", "Mar 12", "Mar 19"]

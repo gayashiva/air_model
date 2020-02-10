@@ -464,95 +464,31 @@ def icestupa(uncertain):
     return float(df["iceV"].max())
 
 
-problem = {"num_vars": 4, "names": ["ie", "a_i", "a_s", "decay_t"], "bounds": [[0.81, 0.99], [0.36, 0.44], [0.77, 0.93], [9, 11]]}
+problem = {"num_vars": 4, "names": ["ie", "a_i", "a_s", "decay_t"], "bounds": [[0.9025, 0.9975], [0.323, 0.3517], [0.7125, 0.7875], [9.5, 10.5]]}
 
 # Generate samples
-param_values = saltelli.sample(problem, 2)
-
-# Run model (example)
-Y = Ishigami.evaluate(param_values)
+param_values = saltelli.sample(problem, 20,  calc_second_order=False)
 
 # Output file Initialise
-columns = ["Ice", "IceV"]
-index = range(0, len(param_values))
+columns = ["ie", "a_i", "a_s", "decay_t", "Max IceV"]
+index = range(0, param_values.shape[0])
 dfo = pd.DataFrame(index=index, columns=columns)
 dfo = dfo.fillna(0)
+Y = np.zeros([param_values.shape[0]])
 
 for i, X in enumerate(param_values):
-
-    #  read files
-    filename0 = os.path.join(folders['input_folder'], site + "_input.csv")
-    df_in = pd.read_csv(filename0, sep=",")
-    df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
-
-    print(X)
-    df = icestupa(X)
+    Y[i] = icestupa(X)
     dfo.loc[i, "ie"] = X[0]
     dfo.loc[i, "a_i"] = X[1]
     dfo.loc[i, "a_s"] = X[2]
     dfo.loc[i, "decay_t"] = X[3]
-    dfo.loc[i, "Ice"] = float(df["ice"].tail(1))
-    dfo.loc[i, "Meltwater"] = float(df["meltwater"].tail(1))
-    dfo.loc[i, "Vapour"] = float(df["vapour"].tail(1))
-    dfo.loc[i, "Ice Max"] = df["ice"].max()
-    dfo.loc[i, "Runtime"] = df["When"].iloc[-1]
+    dfo.loc[i, "Max IceV"] = Y[i]
+
+
+Si = sobol.analyze(problem, Y, print_to_console=True)
 
 dfo = dfo.round(4)
 filename2 = os.path.join(
-    folders['sim_folder'], site + "_simulations__" + str(problem["names"]) + ".csv"
+    folders['sim_folder'], site + "_simulations_" + str(problem["names"]) + ".csv"
 )
 dfo.to_csv(filename2, sep=",")
-
-
-# # Create the coffee cup model function
-# def coffee_cup(kappa, T_env):
-#     # Initial temperature and time array
-#     time = np.linspace(0, 200, 150)            # Minutes
-#     T_0 = 95                                   # Celsius
-#
-#     # The equation describing the model
-#     def f(T, time, kappa, T_env):
-#         return -kappa*(T - T_env)
-#
-#     # Solving the equation by integration.
-#     temperature = odeint(f, T_0, time, args=(kappa, T_env))[:, 0]
-#
-#     # Return time and model output
-#     return time, temperature
-#
-# if __name__ == '__main__':
-#     # Create a model from the coffee_cup function and add labels
-#     model = un.Model(run=coffee_cup, labels=["Time (min)", "Temperature (C)"])
-#
-#     # Create the distributions
-#     kappa_dist = cp.Uniform(0.025, 0.075)
-#     T_env_dist = cp.Uniform(15, 25)
-#
-#     # Define the parameter dictionary
-#     parameters = {"kappa": kappa_dist, "T_env": T_env_dist}
-#
-#     # Set up the uncertainty quantification
-#     UQ = un.UncertaintyQuantification(model=model,
-#                                       parameters=parameters)
-#
-#     # Perform the uncertainty quantification using
-#     # polynomial chaos with point collocation (by default)
-#     data = UQ.quantify()
-#
-#     # model = un.Model(
-#     #     run = icestupa,
-#     #     labels = ["Ice Emissivity"]
-#     # )
-#     #
-#     # # Create distribution
-#     # ie_dist = cp.Uniform(0.81,0.99)
-#     #
-#     # parameters = {"ie": ie_dist}
-#     #
-#     # # Uncertainty Quantification
-#     # UQ = un.UncertaintyQuantification(
-#     #     model = model,
-#     #     parameters = parameters
-#     # )
-#     #
-#     # data = UQ.quantify(seed = 10)
