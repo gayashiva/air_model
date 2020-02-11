@@ -306,6 +306,10 @@ def icestupa(df, fountain, surface):
     state = 0
     ice_layer = 0
 
+    # Remove Precipitation from simulation
+    if option != 'schwarzsee':
+        df["Prec"] = 0
+
     l = [
         "T_s",  # Surface Temperature
         "delta_T_s",  # Temperature Change

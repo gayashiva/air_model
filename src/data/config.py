@@ -7,7 +7,7 @@ dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 # site = input("Input the Field Site Name: ") or "guttannen"
 
 site = "schwarzsee"
-option = "schwarzsee"
+option = "temperature"
 
 print("Site is", site)
 
@@ -69,8 +69,8 @@ if site == "schwarzsee":
     fountain = dict(
         aperture_f=0.005,  # Fountain aperture diameter
         h_f=1.35,  # Fountain steps h_f
-        discharge=12,  # Fountain on discharge
-        crit_temp=-9.5,  # Fountain runtime temperature
+        discharge=14,  # Fountain on discharge
+        crit_temp=-5,  # Fountain runtime temperature
         latitude = 46.693723,
         longitude = 7.297543,
         utc_offset = 1,

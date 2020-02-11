@@ -56,13 +56,11 @@ for i, X in enumerate(param_values):
     df_in = pd.read_csv(filename0, sep=",")
     df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
-    df_in["Prec"] = 0 # Remove precipitation
-
     df = pd.DataFrame({'A': []})
     df = icestupa(df_in, fountain, surface)
     print("Model runtime", df["When"].iloc[-1] - df["When"].iloc[0])
 
-    dfx = dfx.append({'Discharge': X, 'Max Growthrate' : df[df["solid"]>0]["solid"].max()/5, 'Avg Growthrate' : df[df["solid"]>0]["solid"].max()/5, 'Water used' : df["sprayed"].iloc[-1], 'Endice' : df["iceV"].iloc[-1], 'Max SA' : df["SA"].max(), 'MaxV': df["iceV"].max(), 'h/r': df["h_r"].iloc[-1], 'r': df["r_ice"].max(), 'Meltwater': df["meltwater"].iloc[-1], 'Runtime': df["When"].iloc[-1] - df["When"].iloc[0]}, ignore_index=True)
+    dfx = dfx.append({'Discharge': X, 'Max Growthrate' : df[df["solid"]>0]["solid"].max()/5, 'Avg Freeze Rate' : df[df["solid"]>0]["solid"].max()/5, 'Water used' : df["sprayed"].iloc[-1], 'Endice' : df["iceV"].iloc[-1], 'Max SA' : df["SA"].max(), 'MaxV': df["iceV"].max(), 'h/r': df["h_r"].iloc[-1], 'r': df["r_ice"].max(), 'Meltwater': df["meltwater"].iloc[-1], 'Runtime': df["When"].iloc[-1] - df["When"].iloc[0]}, ignore_index=True)
     print(dfx)
 
 

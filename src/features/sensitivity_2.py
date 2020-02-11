@@ -487,8 +487,15 @@ for i, X in enumerate(param_values):
 
 Si = sobol.analyze(problem, Y, print_to_console=True)
 
+
+
 dfo = dfo.round(4)
 filename2 = os.path.join(
     folders['sim_folder'], site + "_simulations_" + str(problem["names"]) + ".csv"
 )
 dfo.to_csv(filename2, sep=",")
+
+filename = os.path.join(
+    folders['sim_folder'], site + 'salib' + ".csv"
+)
+Si.to_csv(filename, site +, sep=",")
