@@ -20,7 +20,7 @@ import matplotlib.colors
 import uncertainpy as un
 import chaospy as cp
 
-def icestupa(uncertain):
+def icestupa(optimize):
 
     #  read files
     filename0 = os.path.join(folders['input_folder'], site + "_input.csv")
@@ -28,11 +28,9 @@ def icestupa(uncertain):
     df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
 
     "Simulations"
-    surface['ie'] = uncertain[0]
-    surface['a_i'] = uncertain[1]
-    surface['a_s'] = uncertain[2]
-    surface['decay_t'] = uncertain[3]
-    print(surface)
+    fountain['discharge'] = optimize[0]
+    fountain['crittemp'] = optimize[1]
+    print(fountain)
 
     """Constants"""
     Ls = 2848 * 1000  # J/kg Sublimation
@@ -461,33 +459,31 @@ def icestupa(uncertain):
         * 100,
     )
 
-    return float(df["iceV"].max())
+    return float(df["iceV"].max()), float((df["meltwater"].tail(1) + df["ice"].tail(1)) / df["sprayed"].tail(1))
 
 
-problem = {"num_vars": 4, "names": ["ie", "a_i", "a_s", "decay_t"], "bounds": [[0.9025, 0.9975], [0.323, 0.3517], [0.7125, 0.7875], [9.5, 10.5]]}
+problem = {"num_vars": 2, "names": ["discharge", "crittemp"], "bounds": [[8, 14], [-8, 2]]}
 
 # Generate samples
-param_values = saltelli.sample(problem, 20,  calc_second_order=False)
+param_values = saltelli.sample(problem, 2,  calc_second_order=False)
 
 # Output file Initialise
-columns = ["ie", "a_i", "a_s", "decay_t", "Max IceV"]
+columns = ["discharge", "crittemp", "Efficiency", "Max IceV"]
 index = range(0, param_values.shape[0])
 dfo = pd.DataFrame(index=index, columns=columns)
 dfo = dfo.fillna(0)
 Y = np.zeros([param_values.shape[0]])
+Z = np.zeros([param_values.shape[0]])
 
 for i, X in enumerate(param_values):
-    Y[i] = icestupa(X)
-    dfo.loc[i, "ie"] = X[0]
-    dfo.loc[i, "a_i"] = X[1]
-    dfo.loc[i, "a_s"] = X[2]
-    dfo.loc[i, "decay_t"] = X[3]
+    Y[i], Z[i] = icestupa(X)
+    dfo.loc[i, "discharge"] = X[0]
+    dfo.loc[i, "crittemp"] = X[1]
+    dfo.loc[i, "Efficiency"] = Z[i]
     dfo.loc[i, "Max IceV"] = Y[i]
 
 
 Si = sobol.analyze(problem, Y, print_to_console=True)
-
-
 
 dfo = dfo.round(4)
 filename2 = os.path.join(
@@ -496,6 +492,6 @@ filename2 = os.path.join(
 dfo.to_csv(filename2, sep=",")
 
 filename = os.path.join(
-    folders['sim_folder'], site + 'salib' + ".csv"
+    folders['sim_folder'], site + 'salib_maxv' + ".csv"
 )
-Si.to_csv(filename, site +, sep=",")
+Si.to_csv(filename, sep=",")

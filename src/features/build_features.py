@@ -864,7 +864,7 @@ pp.close()
 
 
 # Model Suggestion
-if fountain["discharge"] == 12:
+if (fountain["discharge"] == 12) & (fountain["crittemp"] == -6):
     filename = os.path.join(filename2 + "_suggestion.pdf")
     pp = PdfPages(filename)
 
