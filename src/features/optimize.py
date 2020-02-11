@@ -29,7 +29,7 @@ def icestupa(optimize):
 
     "Simulations"
     fountain['discharge'] = optimize[0]
-    fountain['crittemp'] = optimize[1]
+    fountain['crit_temp'] = optimize[1]
     print(fountain)
 
     """Constants"""
@@ -462,13 +462,13 @@ def icestupa(optimize):
     return float(df["iceV"].max()), float((df["meltwater"].tail(1) + df["ice"].tail(1)) / df["sprayed"].tail(1))
 
 
-problem = {"num_vars": 2, "names": ["discharge", "crittemp"], "bounds": [[8, 14], [-8, 2]]}
+problem = {"num_vars": 2, "names": ["discharge", "crit_temp"], "bounds": [[4, 14], [-7, 5]]}
 
 # Generate samples
-param_values = saltelli.sample(problem, 2,  calc_second_order=False)
+param_values = saltelli.sample(problem, 10,  calc_second_order=False)
 
 # Output file Initialise
-columns = ["discharge", "crittemp", "Efficiency", "Max IceV"]
+columns = ["discharge", "crit_temp", "Efficiency", "Max IceV"]
 index = range(0, param_values.shape[0])
 dfo = pd.DataFrame(index=index, columns=columns)
 dfo = dfo.fillna(0)
@@ -478,12 +478,9 @@ Z = np.zeros([param_values.shape[0]])
 for i, X in enumerate(param_values):
     Y[i], Z[i] = icestupa(X)
     dfo.loc[i, "discharge"] = X[0]
-    dfo.loc[i, "crittemp"] = X[1]
+    dfo.loc[i, "crit_temp"] = X[1]
     dfo.loc[i, "Efficiency"] = Z[i]
     dfo.loc[i, "Max IceV"] = Y[i]
-
-
-Si = sobol.analyze(problem, Y, print_to_console=True)
 
 dfo = dfo.round(4)
 filename2 = os.path.join(
@@ -494,4 +491,6 @@ dfo.to_csv(filename2, sep=",")
 filename = os.path.join(
     folders['sim_folder'], site + 'salib_maxv' + ".csv"
 )
+Si = sobol.analyze(problem, Y, print_to_console=True)
+
 Si.to_csv(filename, sep=",")

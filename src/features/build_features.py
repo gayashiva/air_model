@@ -864,7 +864,7 @@ pp.close()
 
 
 # Model Suggestion
-if (fountain["discharge"] == 12) & (fountain["crittemp"] == -6):
+if (fountain["discharge"] == 11.5) & (fountain["crit_temp"] == -2):
     filename = os.path.join(filename2 + "_suggestion.pdf")
     pp = PdfPages(filename)
 
@@ -967,16 +967,6 @@ if (fountain["discharge"] == 12) & (fountain["crittemp"] == -6):
     ax3.grid()
     # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
     fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
-
-    y = dfd[['$SW_net$', '$LW_net$', '$Q_S$', '$Q_L$']]
-    y.plot.bar(stacked=True, edgecolor=dfd['Discharge'], linewidth=0.5)
-    plt.xlabel('Days')
-    plt.ylabel('Energy [$W\,m^{-2}$]')
-    plt.legend(loc='upper left')
-    plt.ylim(-150, 150)
-    plt.xticks(rotation=45)
     pp.savefig(bbox_inches="tight")
     plt.clf()
 
