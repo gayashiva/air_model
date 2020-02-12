@@ -25,32 +25,32 @@ surface = dict(
     h_aws = 3,  # m height of AWS
 )
 
-if max :
-    surface = dict(
-        ie=0.9975,  # Ice Emissivity ie
-        a_i=0.3517,  # Albedo of Ice a_i
-        a_s=0.7875,  # Albedo of Fresh Snow a_s
-        decay_t=10.5,  # Albedo dry decay rate decay_t_d
-        z0mi=0.0017,  # Ice Momentum roughness length
-        z0hi=0.0017,  # Ice Scalar roughness length
-        snow_fall_density=250,  # Snowfall density
-        rain_temp=1,  # Temperature condition for liquid precipitation
-        h_aws=3,  # m height of AWS
-
-    )
-
-else :
-    surface = dict(
-        ie=0.9025,  # Ice Emissivity ie
-        a_i=0.323,  # Albedo of Ice a_i
-        a_s=0.7125,  # Albedo of Fresh Snow a_s
-        decay_t=9.5,  # Albedo dry decay rate decay_t_d
-        z0mi=0.0017,  # Ice Momentum roughness length
-        z0hi=0.0017,  # Ice Scalar roughness length
-        snow_fall_density=250,  # Snowfall density
-        rain_temp=1,  # Temperature condition for liquid precipitation
-        h_aws=3,  # m height of AWS
-    )
+# if max :
+#     surface = dict(
+#         ie=0.9975,  # Ice Emissivity ie
+#         a_i=0.3517,  # Albedo of Ice a_i
+#         a_s=0.7875,  # Albedo of Fresh Snow a_s
+#         decay_t=10.5,  # Albedo dry decay rate decay_t_d
+#         z0mi=0.0017,  # Ice Momentum roughness length
+#         z0hi=0.0017,  # Ice Scalar roughness length
+#         snow_fall_density=250,  # Snowfall density
+#         rain_temp=1,  # Temperature condition for liquid precipitation
+#         h_aws=3,  # m height of AWS
+#
+#     )
+#
+# else :
+#     surface = dict(
+#         ie=0.9025,  # Ice Emissivity ie
+#         a_i=0.323,  # Albedo of Ice a_i
+#         a_s=0.7125,  # Albedo of Fresh Snow a_s
+#         decay_t=9.5,  # Albedo dry decay rate decay_t_d
+#         z0mi=0.0017,  # Ice Momentum roughness length
+#         z0hi=0.0017,  # Ice Scalar roughness length
+#         snow_fall_density=250,  # Snowfall density
+#         rain_temp=1,  # Temperature condition for liquid precipitation
+#         h_aws=3,  # m height of AWS
+#     )
 
 if site == "schwarzsee":
     folders = dict(
