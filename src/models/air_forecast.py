@@ -128,14 +128,6 @@ def getSEA(date, latitude, longitude, utc_offset):
 def fountain_runtime(df, fountain):
     df["Fountain"] = 0  # Fountain run time
 
-    if option == 'temperature':
-        mask = df["T_a"] < fountain["crit_temp"]
-        mask_index = df[mask].index
-        df.loc[mask_index, "Fountain"] = 1
-        mask = df["When"] >= dates["fountain_off_date"]
-        mask_index = df[mask].index
-        df.loc[mask_index, "Fountain"] = 0
-
     if option == 'schwarzsee':
         df["Fountain"] = 0  # Fountain run time
 
@@ -167,6 +159,16 @@ def fountain_runtime(df, fountain):
                 & (df["When"] <= df_nights.loc[i, "End"]),
                 "Fountain",
             ] = 1
+
+    if option == 'temperature':
+        mask = df["T_a"] < fountain["crit_temp"]
+        mask_index = df[mask].index
+        df.loc[mask_index, "Fountain"] = 1
+        mask = df["When"] >= dates["fountain_off_date"]
+        mask_index = df[mask].index
+        df.loc[mask_index, "Fountain"] = 0
+
+
     if option == "energy":
 
         """Constants"""
@@ -183,12 +185,11 @@ def fountain_runtime(df, fountain):
         g = 9.8  # gravity
 
         """Miscellaneous"""
-        z = 3  # m height of AWS
         time_steps = 5 * 60  # s Model time steps
         p0 = 1013  # Standard air pressure hPa
 
         """ Estimating Albedo """
-        df["a"] = albedo(df)
+        df["a"] = albedo(df, surface)
 
         df["T_s"] = 0
 
@@ -211,6 +212,21 @@ def fountain_runtime(df, fountain):
 
             df.loc[i, "vp_ice"] = 6.112 * np.exp(
                 22.46 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
+            )
+
+            # Sublimation only
+            df.loc[i, "Ql"] = (
+                    0.623
+                    * Ls
+                    * rho_a
+                    / p0
+                    * math.pow(k, 2)
+                    * df.loc[i, "v_a"]
+                    * (df.loc[i, "vpa"] - df.loc[i, "vp_ice"])
+                    / (
+                            np.log(surface["h_aws"] / surface["z0mi"])
+                            * np.log(surface["h_aws"] / surface["z0hi"])
+                    )
             )
 
             # Short Wave Radiation SW
@@ -260,7 +276,7 @@ def fountain_runtime(df, fountain):
             )
 
             # Total Energy W/m2
-            df.loc[i, "TotalE"] = df.loc[i, "SW"] + df.loc[i, "LW"] + df.loc[i, "Qs"]
+            df.loc[i, "TotalE"] = df.loc[i, "SW"] + df.loc[i, "LW"] + df.loc[i, "Qs"] + df.loc[i, "Ql"]
 
         x = df["When"]
         mask = df["TotalE"] < 0
@@ -338,6 +354,7 @@ def icestupa(df, fountain, surface):
         "ppt",
         "theta_s",
         "cld",
+        "deposition",
     ]
     for col in l:
         df[col] = 0
@@ -366,7 +383,6 @@ def icestupa(df, fountain, surface):
     R_f = (
         df["r_f"].replace(0, np.NaN).mean()
     )  # todo implement variable spray radius for variable discharge
-    D_t = df["t_droplet"].replace(0, np.NaN).mean()
 
     """ Simulation """
     for i in range(1, df.shape[0]):
@@ -540,34 +556,27 @@ def icestupa(df, fountain, surface):
                 )
             )
 
-            df.loc[i, "gas"] -= (df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps) / Ls
+            if df.loc[i, "Ql"] < 0 :
+                df.loc[i, "gas"] -= (df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps) / Ls
 
-            # Removing gas quantity generated from previous time step
-            df.loc[i, "solid"] += (
-                df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
-            ) / Ls
+                # Removing gas quantity generated from previous ice
+                df.loc[i, "solid"] += (
+                    df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
+                ) / Ls
 
-            # Ice Temperature
-            df.loc[i, "delta_T_s"] += (
-                df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
-            ) / (ice_layer * ci)
+                # Ice Temperature
+                df.loc[i, "delta_T_s"] += (
+                    df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
+                ) / (ice_layer * ci)
 
-            """Hot Ice"""
-            if df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"] > 0:
+            else: # Deposition
 
-                # Melting Ice by Temperature
-                df.loc[i, "solid"] -= (
-                    (ice_layer * ci)
-                    * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
-                    / (-Lf)
-                )
-                df.loc[i, "melted"] += (
-                    (ice_layer * ci)
-                    * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
-                    / (-Lf)
-                )
+                df.loc[i, "deposition"] -= (df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps) / Ls
 
-                df.loc[i, "delta_T_s"] = -df.loc[i - 1, "T_s"]
+                # Adding new deposit
+                df.loc[i, "solid"] += (
+                                              df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
+                                      ) / Ls
 
             logger.info(
                 "Ice made after sublimation is %s thick at %s",
