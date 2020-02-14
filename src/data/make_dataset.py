@@ -4,48 +4,12 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.backends.backend_pdf import PdfPages
+from pandas.plotting import register_matplotlib_converters
 import math
 from pathlib import Path
 import os
 import logging
 from src.data.config import site, dates, option, folders, fountain, surface
-from pandas.plotting import register_matplotlib_converters
-
-register_matplotlib_converters()
-
-# python -m src.data.make_dataset
-
-def albedo(df, surface):
-
-    surface["decay_t"] = (
-        surface["decay_t"] * 24 * 60 / 5
-    )  # convert to 5 minute time steps
-    s = 0
-    f = 0
-
-    for i in range(1, df.shape[0]):
-
-        ti = surface["decay_t"]
-        a_min = surface["a_i"]
-
-        # Precipitation
-        if (df.loc[i, "Fountain"] == 0) & (df.loc[i, "Prec"] > 0):
-            if df.loc[i, "T_a"] < surface["rain_temp"]:  # Snow
-                s = 0
-                f = 0
-
-        if df.loc[i, "Fountain"] > 0:
-            f = 1
-            s = 0
-
-        if f == 0:  # last snowed
-            df.loc[i, "a"] = a_min + (surface["a_s"] - a_min) * math.exp(-s / ti)
-            s = s + 1
-        else:  # last sprayed
-            df.loc[i, "a"] = a_min
-            s = s + 1
-
-    return df["a"]
 
 def projectile_xy(v, hs=0.0, g=9.8):
     """
@@ -73,7 +37,7 @@ def projectile_xy(v, hs=0.0, g=9.8):
         data_xy.append((x, y))
         # use the time in increments of 0.1 seconds
         t += 0.01
-    return x, t
+    return x
 
 def getSEA(date, latitude, longitude, utc_offset):
     hour = date.hour
@@ -364,7 +328,7 @@ def emissivity(df):
         #             df.loc[i, "cld"] = df.loc[i, "cld"] / 96
 
     return df["vpa"], df["theta_s"], df["cld"]
-
+#
 # Remove Precipitation from simulation
 if option != 'schwarzsee':
     df["Prec"] = 0
@@ -672,21 +636,18 @@ filename = folders["input_folder"] + site
 
 df_out.to_csv(filename + "_raw_input.csv")
 
-df=df_out
-
 """ Derived Parameters"""
 
 l = [
-        "vpa",
-        "cld",
-        "a",
-        "Fountain",
-        "Discharge",
-        "SEA",
-        "e_a",
-        "v_f",
-        "r_f",
-    ]
+    "vpa",
+    "cld",
+    "a",
+    "SEA",
+    "e_a",
+    "r_f",
+    "Discharge",
+    "Fountain",
+]
 for col in l:
     df[col] = 0
 
@@ -757,10 +718,10 @@ for i in range(1, df.shape[0]):
             for j in range(i - 96, i):
                 df.loc[i, "cld"] += df.loc[j, "cld"]
         else:
-            for j in range(i, i + 96):
-                df.loc[i, "cld"] += df.loc[j, "cld"]
-
-                df.loc[i, "cld"] = df.loc[i, "cld"] / 96
+            if i < df.shape[0]:
+                for j in range(i, i + 96):
+                    df.loc[i, "cld"] += df.loc[j, "cld"]
+                    df.loc[i, "cld"] = df.loc[i, "cld"] / 96
 
     # atmospheric emissivity
     df.loc[i, "e_a"] = (
@@ -769,13 +730,24 @@ for i in range(1, df.shape[0]):
     ) * (1 + 0.22 * math.pow(df.loc[i, "cld"], 2))
 
     """ Fountain Spray radius """
-    df.loc[i, "v_f"] = df.loc[i, "Discharge"] / (60 * 1000 * Area)
-    df.loc[i, "r_f"], df.loc[i, "t_droplet"] = projectile_xy(
-        df.loc[i, "v_f"], fountain["h_f"]
+    v_f = df.loc[i, "Discharge"] / (60 * 1000 * Area)
+    df.loc[i, "r_f"] = projectile_xy(
+        v_f, fountain["h_f"]
     )
 
 df.to_csv(filename + "_input.csv")
 
+
+# filename = folders["input_folder"] + site + "_input.csv"
+# df = pd.read_csv(filename, sep=",")
+# df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
+
+
+print(df["cld"].tail())
+x = df.When
+
+plt.plot(x, df.cld, "k-", linewidth=0.5)
+plt.show()
 
 pp = PdfPages(folders["input_folder"] + site + "_derived_parameters" + ".pdf")
 
@@ -785,6 +757,7 @@ fig = plt.figure()
 ax1 = fig.add_subplot(111)
 
 y1 = df.Discharge
+print(y1.head())
 ax1.plot(x, y1, "k-", linewidth=0.5)
 ax1.set_ylabel("Discharge [$l\, min^{-1}$]")
 ax1.grid()
@@ -803,6 +776,7 @@ fig = plt.figure()
 ax1 = fig.add_subplot(111)
 
 y1 = df.r_f
+print(y1.head())
 ax1.plot(x, y1, "k-", linewidth=0.5)
 ax1.set_ylabel("Spray Radius [$m$]")
 ax1.grid()
@@ -820,6 +794,7 @@ fig = plt.figure()
 ax1 = fig.add_subplot(111)
 
 y1 = df.e_a
+print(y1.head())
 ax1.plot(x, y1, "k-", linewidth=0.5)
 ax1.set_ylabel("Atmospheric emissivity")
 ax1.grid()
@@ -834,6 +809,7 @@ pp.savefig(bbox_inches="tight")
 plt.clf()
 
 y1 = df.cld
+print(y1.head())
 ax1.plot(x, y1, "k-", linewidth=0.5)
 ax1.set_ylabel("Cloudiness")
 ax1.grid()
@@ -874,20 +850,6 @@ ax1.grid()
 fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
-
-# y1 = math.degrees(df["SEA"])
-# ax1.plot(x, y1, "k-", linewidth=0.5)
-# ax1.set_ylabel("Solar Elevation Angle[$\degree$]")
-# ax1.grid()
-#
-# # format the ticks
-# ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-# ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-# ax1.xaxis.set_minor_locator(mdates.DayLocator())
-# ax1.grid()
-# fig.autofmt_xdate()
-# pp.savefig(bbox_inches="tight")
-# plt.clf()
 
 pp.close()
 
@@ -988,12 +950,10 @@ plt.clf()
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 
-if option == "schwarzsee":
-    y2 = df.Discharge
-else:
-    y2 = df.Fountain
+
+y2 = df.Discharge
 ax1.plot(x, y2, "k-", linewidth=0.5)
-ax1.set_ylabel("Fountain on/off ")
+ax1.set_ylabel("Discharge Rate ")
 ax1.grid()
 
 # format the ticks

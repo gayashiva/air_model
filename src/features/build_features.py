@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages
 from src.data.config import site, dates, option, folders, fountain, surface
-from src.models.air_forecast import icestupa, projectile_xy
+from src.models.air_forecast import icestupa
 
 plt.rcParams["figure.figsize"] = (10,7)
 
@@ -690,7 +690,7 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
-y1 = df.theta_s
+y1 = df.SEA
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", linewidth=0.5)

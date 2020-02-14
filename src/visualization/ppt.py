@@ -19,6 +19,8 @@ from src.data.config import site, option, folders, fountain, surface
 plt.rcParams["figure.figsize"] = (10,7)
 matplotlib.rc('xtick', labelsize=5)
 
+
+
 # if (fountain['discharge'] == 12) and (fountain['t_c'] == -6):
 #     # Full Output
 #     if option == 'temperature':
