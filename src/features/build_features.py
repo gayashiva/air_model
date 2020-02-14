@@ -58,7 +58,7 @@ else:
 
 filename1 = os.path.join(filename1 + "_model_results.csv")
 
-same = True
+same = False
 
 if same:
     if os.path.isfile(filename1):
@@ -111,208 +111,6 @@ df.to_csv(filename4, sep=",")
 df = df.rename({'SW': '$SW_{net}$', 'LW': '$LW_{net}$', 'Qs': '$Q_S$', 'Ql': '$Q_L$' }, axis=1)
 
 # Plots
-
-
-
-"""Input Plots"""
-
-pp = PdfPages(folders["input_folder"] + site + "_data" + ".pdf")
-
-fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
-    nrows=6, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
-)
-
-# fig.suptitle("Field Data", fontsize=14)
-# Remove horizontal space between axes
-# fig.subplots_adjust(hspace=0)
-
-x = df.When
-
-if option == "schwarzsee":
-    y1 = df.Discharge
-else:
-    y1 = df.Fountain
-ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Discharge [$l\, min^{-1}$]")
-ax1.grid()
-
-ax1t = ax1.twinx()
-ax1t.plot(x, df.Prec * 1000, "b-", linewidth=0.5)
-ax1t.set_ylabel("Precipitation [$mm$]", color="b")
-for tl in ax1t.get_yticklabels():
-    tl.set_color("b")
-
-y2 = df.T_a
-ax2.plot(x, y2, "k-", linewidth=0.5)
-ax2.set_ylabel("Temperature [$\degree C$]")
-ax2.grid()
-
-
-y3 = df.Rad + df.DRad
-ax3.plot(x, y3, "k-", linewidth=0.5)
-ax3.set_ylabel("Global [$W\,m^{-2}$]")
-ax3.grid()
-
-ax3t = ax3.twinx()
-ax3t.plot(x, df.DRad, "b-", linewidth=0.5)
-ax3t.set_ylim(ax3.get_ylim())
-ax3t.set_ylabel("Diffuse [$W\,m^{-2}$]", color="b")
-for tl in ax3t.get_yticklabels():
-    tl.set_color("b")
-
-y4 = df.RH
-ax4.plot(x, y4, "k-", linewidth=0.5)
-ax4.set_ylabel("Humidity [$\%$]")
-ax4.grid()
-
-y5 = df.p_a
-ax5.plot(x, y5, "k-", linewidth=0.5)
-ax5.set_ylabel("Pressure [$hPa$]")
-ax5.grid()
-
-y6 = df.v_a
-ax6.plot(x, y6, "k-", linewidth=0.5)
-ax6.set_ylabel("Wind [$m\,s^{-1}$]")
-ax6.grid()
-
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-
-# rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-
-plt.savefig(
-    os.path.join(folders["input_folder"], site + "_data.jpg"),
-    bbox_inches="tight",
-    dpi=300,
-)
-
-plt.clf()
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-
-y1 = df.T_a
-ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Temperature [$\degree C$]")
-ax1.grid()
-
-# format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-
-y2 = df.Fountain
-ax1.plot(x, y2, "k-", linewidth=0.5)
-ax1.set_ylabel("Fountain on/off ")
-ax1.grid()
-
-# format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-
-y3 = df.Rad
-ax1.plot(x, y3, "k-", linewidth=0.5)
-ax1.set_ylabel("Direct SWR [$W\,m^{-2}$]")
-ax1.grid()
-
-# format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-
-y31 = df.DRad
-ax1.plot(x, y31, "k-", linewidth=0.5)
-ax1.set_ylabel("Direct SWR [$W\,m^{-2}$]")
-ax1.grid()
-
-# format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-
-y4 = df.Prec * 1000
-ax1.plot(x, y4, "k-", linewidth=0.5)
-ax1.set_ylabel("Ppt [$mm$]")
-ax1.grid()
-
-# format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-
-y5 = df.p_a
-ax1.plot(x, y5, "k-", linewidth=0.5)
-ax1.set_ylabel("Pressure [$hPa$]")
-ax1.grid()
-
-# format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-
-y6 = df.v_a
-ax1.plot(x, y6, "k-", linewidth=0.5)
-ax1.set_ylabel("Wind [$m\,s^{-1}$]")
-ax1.grid()
-
-# format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-pp.close()
-
-
 
 # Model Suggestion
 if (fountain["discharge"] == 11.5) & (fountain["crit_temp"] == -2):
@@ -794,7 +592,7 @@ pp.savefig(bbox_inches="tight")
 plt.clf()
 
 y1 = df.iceV
-y2 = df['TotalE'] + df['Q_L']
+y2 = df['TotalE'] + df['$Q_L$']
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
@@ -909,18 +707,27 @@ pp.savefig(bbox_inches="tight")
 plt.clf()
 
 y1 = df.cld
-y2 = df.e_a
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", linewidth=0.5)
 ax1.set_ylabel("Cloudiness")
 ax1.set_xlabel("Days")
 
-ax2 = ax1.twinx()
-ax2.plot(x, y2, "b-", linewidth=0.5)
-ax2.set_ylabel("Atmospheric emissivity ", color="b")
-for tl in ax2.get_yticklabels():
-    tl.set_color("b")
+#  format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
+y1 = df.e_a
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(x, y1, "k-", linewidth=0.5)
+ax1.set_ylabel("Atmospheric Emissivity")
+ax1.set_xlabel("Days")
 
 #  format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -942,7 +749,7 @@ ax1.set_xlabel("Days")
 
 ax2 = ax1.twinx()
 ax2.plot(x, y2, "b-", linewidth=0.5)
-ax2.set_ylabel("Precipitation [$l\,min^{-1}$]", color="b")
+ax2.set_ylabel("Precipitation [$l$]", color="b")
 for tl in ax2.get_yticklabels():
     tl.set_color("b")
 
