@@ -1,9 +1,6 @@
 import pandas as pd
 import numpy as np
 import math
-import os
-import matplotlib.pyplot as plt
-import datetime
 import logging
 from src.data.config import fountain, surface, site, option, dates, folders
 

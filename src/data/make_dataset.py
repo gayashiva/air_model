@@ -96,7 +96,6 @@ def getSEA(date, latitude, longitude, utc_offset):
     return math.radians(SEA)
 
 def discharge_rate(df, fountain):
-    df["Fountain"] = 0  # Fountain run time
 
     if option == 'schwarzsee':
         df["Fountain"] = 0  # Fountain run time
@@ -328,7 +327,7 @@ def emissivity(df):
         #             df.loc[i, "cld"] = df.loc[i, "cld"] / 96
 
     return df["vpa"], df["theta_s"], df["cld"]
-#
+
 # Remove Precipitation from simulation
 if option != 'schwarzsee':
     df["Prec"] = 0
@@ -645,7 +644,6 @@ l = [
     "SEA",
     "e_a",
     "r_f",
-    "Discharge",
     "Fountain",
 ]
 for col in l:
@@ -666,6 +664,8 @@ Area = math.pi * math.pow(fountain["aperture_f"], 2) / 4
 
 
 for i in range(1, df.shape[0]):
+
+    print(i,df.shape[0])
 
     if option == "schwarzsee":
 
@@ -717,11 +717,11 @@ for i in range(1, df.shape[0]):
         if i - 96 > 0:
             for j in range(i - 96, i):
                 df.loc[i, "cld"] += df.loc[j, "cld"]
+            df.loc[i, "cld"] = df.loc[i, "cld"] / 96
         else:
-            if i < df.shape[0]:
-                for j in range(i, i + 96):
-                    df.loc[i, "cld"] += df.loc[j, "cld"]
-                    df.loc[i, "cld"] = df.loc[i, "cld"] / 96
+            for j in range(0, i):
+                df.loc[i, "cld"] += df.loc[j, "cld"]
+            df.loc[i, "cld"] = df.loc[i, "cld"] / i
 
     # atmospheric emissivity
     df.loc[i, "e_a"] = (
@@ -742,13 +742,6 @@ df.to_csv(filename + "_input.csv")
 # df = pd.read_csv(filename, sep=",")
 # df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
 
-
-print(df["cld"].tail())
-x = df.When
-
-plt.plot(x, df.cld, "k-", linewidth=0.5)
-plt.show()
-
 pp = PdfPages(folders["input_folder"] + site + "_derived_parameters" + ".pdf")
 
 x = df.When
@@ -757,7 +750,6 @@ fig = plt.figure()
 ax1 = fig.add_subplot(111)
 
 y1 = df.Discharge
-print(y1.head())
 ax1.plot(x, y1, "k-", linewidth=0.5)
 ax1.set_ylabel("Discharge [$l\, min^{-1}$]")
 ax1.grid()
@@ -776,7 +768,6 @@ fig = plt.figure()
 ax1 = fig.add_subplot(111)
 
 y1 = df.r_f
-print(y1.head())
 ax1.plot(x, y1, "k-", linewidth=0.5)
 ax1.set_ylabel("Spray Radius [$m$]")
 ax1.grid()
@@ -808,8 +799,9 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
 y1 = df.cld
-print(y1.head())
 ax1.plot(x, y1, "k-", linewidth=0.5)
 ax1.set_ylabel("Cloudiness")
 ax1.grid()
@@ -823,6 +815,8 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
 y1 = df.vpa
 ax1.plot(x, y1, "k-", linewidth=0.5)
 ax1.set_ylabel("Vapour Pressure")
@@ -837,6 +831,8 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
 y1 = df.a
 ax1.plot(x, y1, "k-", linewidth=0.5)
 ax1.set_ylabel("Albedo")
