@@ -153,7 +153,7 @@ def icestupa(df, fountain, surface):
                     )
                 )
 
-            logger.info(
+            logger.debug(
                 "Ice radius is %s and ice is %s at %s",
                 df.loc[i, "r_ice"],
                 df.loc[i, "h_ice"],
@@ -171,7 +171,7 @@ def icestupa(df, fountain, surface):
 
             else:
                 ice_layer = dx * df.loc[i, "SA"] * rho_i
-                logger.info("Ice layer is %s thick at %s", ice_layer, df.loc[i, "When"])
+                logger.debug("Ice layer is %s thick at %s", ice_layer, df.loc[i, "When"])
 
             # Precipitation to ice quantity
             if df.loc[i, "T_a"] < surface["rain_temp"]:
@@ -225,7 +225,7 @@ def icestupa(df, fountain, surface):
                 / p0
                 * math.pow(k, 2)
                 * df.loc[i, "v_a"]
-                * (df.loc[i, "vpa"] - df.loc[i, "vp_ice"])
+                * (df.loc[i, "vp_a"] - df.loc[i, "vp_ice"])
                 / (
                     np.log(surface["h_aws"] / surface["z0mi"])
                     * np.log(surface["h_aws"] / surface["z0hi"])
@@ -245,20 +245,24 @@ def icestupa(df, fountain, surface):
                     df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
                 ) / (ice_layer * ci)
 
+                logger.debug(
+                    "Gas made after sublimation is %s ",
+                    round(df.loc[i, "gas"]),
+                )
+
             else: # Deposition
 
-                df.loc[i, "deposition"] -= (df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps) / Ls
+                df.loc[i, "deposition"] += (df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps) / Ls
 
                 # Adding new deposit
                 df.loc[i, "solid"] += (
                                               df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
                                       ) / Ls
 
-            logger.info(
-                "Ice made after sublimation is %s thick at %s",
-                round(df.loc[i, "solid"]),
-                df.loc[i, "When"],
-            )
+                logger.debug(
+                    "Ice made after deposition is %s thick",
+                    round(df.loc[i, "deposition"]),
+                )
 
 
             df.loc[i, "SRf"] = (
@@ -338,19 +342,10 @@ def icestupa(df, fountain, surface):
 
                 else:
                     """ When fountain off and energy negative """
-
-                    if df.loc[i - 1, "liquid"] < 0:
-                        logger.error(
-                            "Liquid is %s at %s",
-                            round(df.loc[i, "delta_T_s"]),
-                            df.loc[i, "When"],
-                        )
-                        df.loc[i - 1, "liquid"] = 0
-
                     # Cooling Ice
                     df.loc[i, "delta_T_s"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
 
-                logger.info(
+                logger.debug(
                     "Ice made after energy neg is %s thick at %s",
                     round(df.loc[i, "solid"]),
                     df.loc[i, "When"],
@@ -380,7 +375,7 @@ def icestupa(df, fountain, surface):
                     df.loc[i - 1, "T_s"] = 0
                     df.loc[i, "delta_T_s"] = 0
 
-                logger.info(
+                logger.debug(
                     "Ice melted is %s thick at %s",
                     round(df.loc[i, "solid"]),
                     df.loc[i, "When"],
@@ -397,7 +392,7 @@ def icestupa(df, fountain, surface):
             df.loc[i, "water"] = df.loc[i - 1, "water"] + df.loc[i, "liquid"]
             df.loc[i, "iceV"] = df.loc[i, "ice"] / rho_i
 
-            logger.info(
+            logger.debug(
                 "Ice volume is %s and meltwater is %s at %s",
                 df.loc[i, "ice"],
                 df.loc[i, "meltwater"],

@@ -499,7 +499,7 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
-y1 = df.meltwater
+y1 = df.water
 y2 = df.sprayed
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
@@ -512,6 +512,8 @@ ax2.plot(x, y2, "b-", linewidth=0.5)
 ax2.set_ylabel("Water sprayed [$l$]", color="b")
 for tl in ax2.get_yticklabels():
     tl.set_color("b")
+
+ax1.set_ylim(ax2.get_ylim())
 
 #  format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -671,7 +673,7 @@ y2 = df.deposition / 5
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(x, y1, "b-", linewidth=0.5)
+ax1.plot(x, y1, "k-", linewidth=0.5)
 ax1.set_ylabel("Gas Production rate [$l\,min^{-1}$]")
 ax1.set_xlabel("Days")
 
@@ -680,6 +682,8 @@ ax2.plot(x, y2, "b-", linewidth=0.5)
 ax2.set_ylabel("Deposition rate [$l\,min^{-1}$]", color="b")
 for tl in ax2.get_yticklabels():
     tl.set_color("b")
+
+ax2.set_ylim(ax1.get_ylim())
 
 #  format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
