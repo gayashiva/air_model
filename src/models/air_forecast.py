@@ -6,6 +6,7 @@ from src.data.config import fountain, surface, site, option, dates, folders
 
 pd.options.mode.chained_assignment = None  # Suppress Setting with warning
 
+
 def icestupa(df, fountain, surface):
 
     logger = logging.getLogger(__name__)
@@ -37,6 +38,7 @@ def icestupa(df, fountain, surface):
     start = 0  # model start step
     state = 0
     ice_layer = 0
+    shape = "truncated"
 
     l = [
         "T_s",  # Surface Temperature
@@ -55,6 +57,7 @@ def icestupa(df, fountain, surface):
         "LW",
         "Qs",
         "Ql",
+        "Qc",
         "meltwater",
         "SA",
         "h_ice",
@@ -76,17 +79,13 @@ def icestupa(df, fountain, surface):
     for i in range(1, df.shape[0]):
 
         # Ice Melted
-        if df.loc[i - 1, "ice"] <= 0.05:
+        if df.loc[i - 1, "iceV"] <= 0:
+            df.loc[i - 1, "solid"] = 0
+            df.loc[i - 1, "ice"] = 0
+            df.loc[i - 1, "iceV"] = 0
             if df.Discharge[i:].sum() == 0:  # If ice melted after fountain run
-                df.loc[i - 1, "solid"] = 0
-                df.loc[i - 1, "ice"] = 0
-                df.loc[i - 1, "iceV"] = 0
                 break
-
             else:  # If ice melted in between fountain run
-                df.loc[i - 1, "solid"] = 0
-                df.loc[i - 1, "ice"] = 0
-                df.loc[i - 1, "iceV"] = 0
                 state = 0
 
         # Initiate ice formation
@@ -98,60 +97,123 @@ def icestupa(df, fountain, surface):
 
         if state == 1:
 
-            """ Keeping r_ice constant to determine SA """
-            if (df.Discharge[i] > 0) & (df.loc[i - 1, "r_ice"] >= R_f):
-                # Ice Radius
-                df.loc[i, "r_ice"] = df.loc[
-                    i - 1, "r_ice"
-                ]  # Ice radius same as Initial Fountain Spray Radius
+            if shape == "cone":
 
-                # Ice Height
-                df.loc[i, "h_ice"] = (
-                    3 * df.loc[i - 1, "iceV"] / (math.pi * df.loc[i, "r_ice"] ** 2)
-                )
+                if (df.Discharge[i] > 0) & (df.loc[i - 1, "r_ice"] >= R_f):
+                    # Ice Radius
+                    df.loc[i, "r_ice"] = df.loc[
+                        i - 1, "r_ice"
+                    ]  # Ice radius same as Initial Fountain Spray Radius
 
-                # Height by Radius ratio
-                df.loc[i, "h_r"] = df.loc[i - 1, "h_ice"] / df.loc[i - 1, "r_ice"]
-
-                # Area of Conical Ice Surface
-                df.loc[i, "SA"] = (
-                    math.pi
-                    * df.loc[i, "r_ice"]
-                    * math.pow(
-                        (
-                            math.pow(df.loc[i, "r_ice"], 2)
-                            + math.pow((df.loc[i, "h_ice"]), 2)
-                        ),
-                        1 / 2,
+                    # Ice Height
+                    df.loc[i, "h_ice"] = (
+                        3 * df.loc[i - 1, "iceV"] / (math.pi * df.loc[i, "r_ice"] ** 2)
                     )
-                )
 
-            else:
+                    # Height by Radius ratio
+                    df.loc[i, "h_r"] = df.loc[i - 1, "h_ice"] / df.loc[i - 1, "r_ice"]
 
-                """ Keeping h_r constant to determine SA """
-                # Height to radius ratio
-                df.loc[i, "h_r"] = df.loc[i - 1, "h_r"]
-
-                # Ice Radius
-                df.loc[i, "r_ice"] = math.pow(
-                    df.loc[i - 1, "iceV"] / math.pi * (3 / df.loc[i, "h_r"]), 1 / 3
-                )
-
-                # Ice Height
-                df.loc[i, "h_ice"] = df.loc[i, "h_r"] * df.loc[i, "r_ice"]
-
-                # Area of Conical Ice Surface
-                df.loc[i, "SA"] = (
-                    math.pi
-                    * df.loc[i, "r_ice"]
-                    * math.pow(
-                        (
-                            math.pow(df.loc[i, "r_ice"], 2)
-                            + math.pow(df.loc[i, "r_ice"] * df.loc[i, "h_r"], 2)
-                        ),
-                        1 / 2,
+                    # Area of Conical Ice Surface
+                    df.loc[i, "SA"] = (
+                        math.pi
+                        * df.loc[i, "r_ice"]
+                        * math.pow(
+                            (
+                                math.pow(df.loc[i, "r_ice"], 2)
+                                + math.pow((df.loc[i, "h_ice"]), 2)
+                            ),
+                            1 / 2,
+                        )
                     )
-                )
+
+                else:
+
+                    # Height to radius ratio
+                    df.loc[i, "h_r"] = df.loc[i - 1, "h_r"]
+
+                    # Ice Radius
+                    df.loc[i, "r_ice"] = math.pow(
+                        df.loc[i - 1, "iceV"] / math.pi * (3 / df.loc[i, "h_r"]), 1 / 3
+                    )
+
+                    # Ice Height
+                    df.loc[i, "h_ice"] = df.loc[i, "h_r"] * df.loc[i, "r_ice"]
+
+                    # Area of Conical Ice Surface
+                    df.loc[i, "SA"] = (
+                        math.pi
+                        * df.loc[i, "r_ice"]
+                        * math.pow(
+                            (
+                                math.pow(df.loc[i, "r_ice"], 2)
+                                + math.pow(df.loc[i, "r_ice"] * df.loc[i, "h_r"], 2)
+                            ),
+                            1 / 2,
+                        )
+                    )
+
+                df.loc[i, "SRf"] = (
+                                           0.5
+                                           * df.loc[i, "h_ice"]
+                                           * df.loc[i, "r_ice"]
+                                           * math.cos(df.loc[i, "SEA"])
+                                           + math.pi
+                                           * math.pow(df.loc[i, "r_ice"], 2)
+                                           * 0.5
+                                           * math.sin(df.loc[i, "SEA"])
+                                   ) / (
+                                           math.pi
+                                           * math.pow(
+                                       (math.pow(df.loc[i, "h_ice"], 2) + math.pow(df.loc[i, "r_ice"], 2)),
+                                       1 / 2,
+                                   )
+                                           * df.loc[i, "r_ice"]
+                                   )
+
+            if shape == "truncated":
+                if df.Discharge[i] > 0:
+
+                    df.loc[i, "r_ice"] = R_f
+
+                    coefficients = [1, -3 * fountain["h_f"] + 2 * fountain["h_f"] ** 2, fountain["h_f"] ** 2,
+                                    -3 * df.loc[i - 1, "iceV"] * fountain["h_f"] ** 2 / (math.pi * R_f ** 2)]
+
+                    p = np.poly1d(coefficients)
+                    r = np.roots(p)
+
+                    for j in range(len(r)):
+                        if np.isreal(r[j]):
+                            df.loc[i, "h_ice"] = np.real(r[j])
+
+                    df.loc[i, "r_top"] = R_f / fountain["h_f"] * (fountain["h_f"] - df.loc[i, "h_ice"])
+
+                    df.loc[i, "SA"] = (
+                            math.pi * df.loc[i, "r_top"] ** 2
+                            + math.pi * df.loc[i, "r_ice"] * math.pow(fountain["h_f"] ** 2 + df.loc[i, "r_ice"] ** 2, 1 / 2)
+                            - math.pi * df.loc[i, "r_top"] * math.pow(
+                        (fountain["h_f"] - df.loc[i, "h_ice"]) ** 2 + df.loc[i, "r_top"] ** 2, 1 / 2)
+                    )
+
+                else:
+
+                    df.loc[i, "h_ice"] = df.loc[i - 1, "h_ice"]
+                    df.loc[i, "r_ice"] = math.pow(
+                        df.loc[i - 1, "iceV"] / (math.pi * df.loc[i, "h_ice"]), 1 / 2
+                    )
+                    df.loc[i, "r_top"] = df.loc[i, "r_ice"]
+                    df.loc[i, "SA"] = (
+                            math.pi * df.loc[i, "r_ice"] ** 2
+                            + math.pi * df.loc[i, "r_ice"] * df.loc[i, "h_ice"]
+                    )
+
+                df.loc[i, "SRf"] = (
+                                           ((df.loc[i, "r_ice"] - df.loc[i, "r_top"]) * fountain["h_f"] + df.loc[i, "r_top"] * df.loc[
+                                               i, "h_ice"])
+                                           * math.cos(df.loc[i, "SEA"])
+                                           + math.pi
+                                           * math.pow(df.loc[i, "r_top"], 2)
+                                           * math.sin(df.loc[i, "SEA"])
+                                   ) / df.loc[i, "SA"]
 
             logger.debug(
                 "Ice radius is %s and ice is %s at %s",
@@ -186,36 +248,13 @@ def icestupa(df, fountain, surface):
             # Fountain water output
             df.loc[i, "liquid"] = df.loc[i, "Discharge"] * (1 - ftl) * time_steps / 60
 
-            """ When fountain run """
-            if df.loc[i, "liquid"] > 0:
-
-                # Conduction Freezing
-                if df.loc[i - 1, "T_s"] < 0:
-
-                    df.loc[i, "solid"] += (ice_layer * ci * (-df.loc[i - 1, "T_s"])) / (
-                        Lf
-                    )
-
-                    if df.loc[i, "solid"] > df.loc[i, "liquid"]:
-                        df.loc[i, "solid"] = df.loc[i, "liquid"]
-                        df.loc[i, "liquid"] = 0
-                    else:
-                        df.loc[i, "liquid"] -= (
-                            ice_layer * ci * (-df.loc[i - 1, "T_s"])
-                        ) / Lf
-
-                    logger.error(
-                        "Ice layer made %s thick ice at %s",
-                        df.loc[i, "solid"],
-                        df.loc[i, "When"],
-                    )
-                    df.loc[i, "delta_T_s"] = -df.loc[i - 1, "T_s"]
-
             """ Energy Balance starts """
 
             df.loc[i, "vp_ice"] = 6.112 * np.exp(
                 22.46 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
             )
+
+
 
             # Sublimation only
             df.loc[i, "Ql"] = (
@@ -265,22 +304,20 @@ def icestupa(df, fountain, surface):
                 )
 
 
-            df.loc[i, "SRf"] = (
-                0.5
-                * df.loc[i, "h_ice"]
-                * df.loc[i, "r_ice"]
-                * math.cos(df.loc[i, "SEA"])
-                + math.pi
-                * math.pow(df.loc[i, "r_ice"], 2)
-                * 0.5
-                * math.sin(df.loc[i, "SEA"])
-            ) / (
-                math.pi
-                * math.pow(
-                    (math.pow(df.loc[i, "h_ice"], 2) + math.pow(df.loc[i, "r_ice"], 2)),
-                    1 / 2,
-                )
-                * df.loc[i, "r_ice"]
+
+            # Sensible Heat Qs
+            df.loc[i, "Qs"] = (
+                    ci
+                    * rho_a
+                    * df.loc[i, "p_a"]
+                    / p0
+                    * math.pow(k, 2)
+                    * df.loc[i, "v_a"]
+                    * (df.loc[i, "T_a"] - df.loc[i - 1, "T_s"])
+                    / (
+                            np.log(surface["h_aws"] / surface["z0mi"])
+                            * np.log(surface["h_aws"] / surface["z0hi"])
+                    )
             )
 
             # Short Wave Radiation SW
@@ -297,23 +334,25 @@ def icestupa(df, fountain, surface):
             else:
                 df.loc[i, "LW"] = df.loc[i, "oli000z0"] - surface["ie"] * bc * math.pow(df.loc[i - 1, "T_s"] + 273.15, 4)
 
-            # Sensible Heat Qs
-            df.loc[i, "Qs"] = (
-                ci
-                * rho_a
-                * df.loc[i, "p_a"]
-                / p0
-                * math.pow(k, 2)
-                * df.loc[i, "v_a"]
-                * (df.loc[i, "T_a"] - df.loc[i - 1, "T_s"])
-                / (
-                    np.log(surface["h_aws"] / surface["z0mi"])
-                    * np.log(surface["h_aws"] / surface["z0hi"])
+            # Conduction Freezing
+            if (df.loc[i, "liquid"] > 0) & (df.loc[i - 1, "T_s"] < 0):
+                df.loc[i, "Qc"] = ice_layer * ci * (df.loc[i - 1, "T_s"]) / (df.loc[i, "SA"] * time_steps)
+                df.loc[i, "delta_T_s"] = -df.loc[i - 1, "T_s"]
+
+                logger.debug(
+                    "Ice layer made %s thick ice at %s",
+                    df.loc[i, "solid"],
+                    df.loc[i, "When"],
                 )
-            )
 
             # Total Energy W/m2
-            df.loc[i, "TotalE"] = df.loc[i, "SW"] + df.loc[i, "LW"] + df.loc[i, "Qs"]
+            df.loc[i, "TotalE"] = df.loc[i, "SW"] + df.loc[i, "LW"] + df.loc[i, "Qs"] + df.loc[i, "Qc"]
+
+            logger.debug(
+                "Energy is %s thick at %s",
+                round(df.loc[i, "Qc"]),
+                df.loc[i, "When"],
+            )
 
             # Total Energy Joules
             df.loc[i, "EJoules"] = df.loc[i, "TotalE"] * time_steps * df.loc[i, "SA"]
@@ -334,21 +373,15 @@ def icestupa(df, fountain, surface):
                     else:
                         df.loc[i, "solid"] += (df.loc[i, "EJoules"]) / (-Lf)
 
-                    logger.warning(
-                        "Ice made after energy neg is %s thick at temp %s",
-                        round(df.loc[i, "solid"]),
-                        df.loc[i - 1, "T_s"],
-                    )
-
                 else:
                     """ When fountain off and energy negative """
                     # Cooling Ice
                     df.loc[i, "delta_T_s"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
 
                 logger.debug(
-                    "Ice made after energy neg is %s thick at %s",
+                    "Ice made after energy neg is %s thick at temp %s",
                     round(df.loc[i, "solid"]),
-                    df.loc[i, "When"],
+                    df.loc[i - 1, "T_s"],
                 )
 
             else:
@@ -377,7 +410,7 @@ def icestupa(df, fountain, surface):
 
                 logger.debug(
                     "Ice melted is %s thick at %s",
-                    round(df.loc[i, "solid"]),
+                    round(df.loc[i, "melted"]),
                     df.loc[i, "When"],
                 )
 

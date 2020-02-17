@@ -108,7 +108,7 @@ else:
 filename4 = os.path.join(filename2 + "_model_results.csv")
 df.to_csv(filename4, sep=",")
 
-df = df.rename({'SW': '$SW_{net}$', 'LW': '$LW_{net}$', 'Qs': '$Q_S$', 'Ql': '$Q_L$' }, axis=1)
+df = df.rename({'SW': '$SW_{net}$', 'LW': '$LW_{net}$', 'Qs': '$Q_S$', 'Ql': '$Q_L$', 'Qc': '$Q_C$' }, axis=1)
 
 # Plots
 
@@ -390,7 +390,7 @@ if option == "schwarzsee":
     fig.subplots_adjust(hspace=0)
 
     y1 = dfds2[['Ice frozen', 'Meltwater discharged']]
-    z = dfd[['$SW_{net}$', '$LW_{net}$', '$Q_S$', '$Q_L$']]
+    z = dfd[['$SW_{net}$', '$LW_{net}$', '$Q_S$', '$Q_L$', '$Q_C$']]
     y3 = dfd['SA']
 
 
