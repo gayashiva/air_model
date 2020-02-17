@@ -11,6 +11,8 @@ import os
 import logging
 from src.data.config import site, dates, option, folders, fountain, surface
 
+start = time.time()
+
 def projectile_xy(v, hs=0.0, g=9.8):
     """
     calculate a list of (x, y) projectile motion data points
@@ -634,7 +636,6 @@ df_out.to_csv(filename + "_raw_input.csv")
 """ Derived Parameters"""
 
 l = [
-    "vp_a",
     "cld",
     "a",
     "SEA",
@@ -729,6 +730,9 @@ for i in range(1, df.shape[0]):
 
 df.to_csv(filename + "_input.csv")
 
+total = time.time() - start
+
+print("Total time : ", total / 60)
 
 # filename = folders["input_folder"] + site + "_input.csv"
 # df = pd.read_csv(filename, sep=",")
