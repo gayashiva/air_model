@@ -6,6 +6,7 @@ import matplotlib.dates as mdates
 from matplotlib.backends.backend_pdf import PdfPages
 from pandas.plotting import register_matplotlib_converters
 import math
+import time
 from pathlib import Path
 import os
 import logging
@@ -519,7 +520,7 @@ if site == "plaffeien":
         df_in["fkl010z0"], errors="coerce"
     )  # Add wind speed data
     df_in["p_a"] = pd.to_numeric(df_in["prestas0"], errors="coerce")  # Air pressure
-    df_in["vp_a"] = pd.to_numeric(
+    df_in["vpa"] = pd.to_numeric(
         df_in["pva200s0"], errors="coerce"
     )  # Vapour pressure over air
 
@@ -528,10 +529,10 @@ if site == "plaffeien":
     # Fill nans
     df_in = df_in.fillna(method="ffill")
 
-    df_out = df_in[["When", "T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a",]]
+    df_out = df_in[["When", "T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vpa",]]
 
     # 5 minute sum
-    cols = ["T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a"]
+    cols = ["T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vpa"]
     df_out[cols] = df_out[cols] / 2
     df_out = df_out.set_index("When").resample("5T").ffill().reset_index()
 
@@ -545,7 +546,7 @@ if site == "plaffeien":
         "DRad",
         "Prec",
         "p_a",
-        "vp_a",
+        "vpa",
     ]
     df_out = df_out[cols]
     df_out = df_out.round(5)
@@ -592,7 +593,7 @@ if site == "guttannen":
         df_in["fkl010z0"], errors="coerce"
     )  # Add wind speed data
     df_in["p_a"] = pd.to_numeric(df_in["prestas0"], errors="coerce")  # Air pressure
-    df_in["vp_a"] = pd.to_numeric(
+    df_in["vpa"] = pd.to_numeric(
         df_in["pva200s0"], errors="coerce"
     )  # Vapour pressure over air
 
@@ -605,12 +606,12 @@ if site == "guttannen":
     df_in = df_in.fillna(method="ffill")
 
     df_out = df_in[
-        ["When", "T_a", "RH", "v_a", "Rad", "DRad", "oli000z0", "Prec", "p_a", "vp_a",]
+        ["When", "T_a", "RH", "v_a", "Rad", "DRad", "oli000z0", "Prec", "p_a", "vpa",]
     ]
     df_out = df_out.round(5)
 
     # 5 minute sum
-    cols = ["T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vp_a", "oli000z0"]
+    cols = ["T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vpa", "oli000z0"]
     df_out[cols] = df_out[cols] / 2
     df_out = df_out.set_index("When").resample("5T").ffill().reset_index()
 
@@ -623,7 +624,7 @@ if site == "guttannen":
         "DRad",
         "Prec",
         "p_a",
-        "vp_a",
+        "vpa",
     ]
     df_out = df_out[cols]
     df_out = df_out.round(5)
@@ -695,7 +696,7 @@ for i in range(1, df.shape[0]):
     )
 
     """ Vapour Pressure"""
-    if "vp_a" not in list(df.columns):
+    if "vpa" not in list(df.columns):
         df.loc[i, "vp_a"] = (6.11 * math.pow(10, 7.5 * df.loc[i - 1, "T_a"] / (df.loc[i - 1, "T_a"] + 237.3))* df.loc[i, "RH"]/ 100)
 
 
@@ -781,7 +782,6 @@ fig = plt.figure()
 ax1 = fig.add_subplot(111)
 
 y1 = df.e_a
-print(y1.head())
 ax1.plot(x, y1, "k-", linewidth=0.5)
 ax1.set_ylabel("Atmospheric emissivity")
 ax1.grid()
