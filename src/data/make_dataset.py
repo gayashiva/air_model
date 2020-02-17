@@ -698,7 +698,8 @@ for i in range(1, df.shape[0]):
     """ Vapour Pressure"""
     if "vpa" not in list(df.columns):
         df.loc[i, "vp_a"] = (6.11 * math.pow(10, 7.5 * df.loc[i - 1, "T_a"] / (df.loc[i - 1, "T_a"] + 237.3))* df.loc[i, "RH"]/ 100)
-
+    else:
+        df.loc[i, "vpa"] = df.loc[i, "vp_a"]
 
     """Cloudiness"""
     # Cloudiness from diffuse fraction
