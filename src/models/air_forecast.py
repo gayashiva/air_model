@@ -92,10 +92,10 @@ def icestupa(df, fountain, surface):
         if (df.loc[i, "Discharge"] > 0) & (state == 0):
             state = 1
             start = i - 1  # Set Model start time
-            df.loc[i - 1, "r_ice"] = R_f
+            df.loc[i - 1, "r_ice"] = df.loc[i, "r_f"]
             df.loc[i - 1, "h_ice"] = dx
-            ice_layer = dx * math.pi * R_f**2 * rho_i
-            df.loc[i - 1, "iceV"] = dx * math.pi * R_f**2
+            ice_layer = dx * math.pi * df.loc[i, "r_f"]**2 * rho_i
+            df.loc[i - 1, "iceV"] = dx * math.pi * df.loc[i, "r_f"]**2
 
             logger.debug(
                 "Ice layer initialised %s thick at %s", ice_layer, df.loc[i, "When"]
@@ -106,7 +106,7 @@ def icestupa(df, fountain, surface):
 
             if shape == "cone":
 
-                if (df.Discharge[i] > 0) & (df.loc[i - 1, "r_ice"] >= R_f):
+                if (df.Discharge[i] > 0) & (df.loc[i - 1, "r_ice"] >= df.loc[i, "r_f"]):
                     # Ice Radius
                     df.loc[i, "r_ice"] = df.loc[
                         i - 1, "r_ice"
@@ -178,13 +178,13 @@ def icestupa(df, fountain, surface):
                                    )
 
             if shape == "truncated":
-                if (df.Discharge[i] > 0) & (df.loc[i - 1, "r_ice"] >= R_f):
+                if (df.melted[i - 1] == 0):
 
                     H = fountain["h_f"]
-                    df.loc[i, "r_ice"] = R_f
+                    df.loc[i, "r_ice"] = df.loc[i - 1, "r_ice"]
 
                     coefficients = [1, -3 * H + 2 * H ** 2, H ** 2,
-                                    -3 * df.loc[i - 1, "iceV"] * H ** 2 / (math.pi * R_f ** 2)]
+                                    -3 * df.loc[i - 1, "iceV"] * H ** 2 / (math.pi * df.loc[i, "r_ice"] ** 2)]
 
                     p = np.poly1d(coefficients)
                     r = np.roots(p)
@@ -193,7 +193,7 @@ def icestupa(df, fountain, surface):
                         if np.isreal(r[j]):
                             df.loc[i, "h_ice"] = np.real(r[j])
 
-                    df.loc[i, "r_top"] = R_f / H * (H - df.loc[i, "h_ice"])
+                    df.loc[i, "r_top"] = df.loc[i, "r_f"] / H * (H - df.loc[i, "h_ice"])
 
                     df.loc[i, "SA"] = (
                             math.pi * df.loc[i, "r_top"] ** 2
@@ -204,12 +204,18 @@ def icestupa(df, fountain, surface):
 
                 else:
 
-                    melt_thickness = -df.loc[i - 1, "solid"] / (df.loc[i - 1, "SA"] * rho_i)
+                    H = df.loc[i, "r_f"] * math.tan(math.atan(df.loc[i, "r_f"] / fountain["h_f"]))
 
-                    H = R_f * math.tan(math.atan(R_f / fountain["h_f"]))
-                    df.loc[i, "h_ice"] = df.loc[i - 1, "h_ice"] - melt_thickness
-                    df.loc[i, "r_ice"] = df.loc[i - 1, "r_ice"] - melt_thickness
-                    df.loc[i, "r_top"] = df.loc[i - 1, "r_top"] - melt_thickness
+                    melt_thickness = df.loc[i - 1, "melted"] / (df.loc[i - 1, "SA"] * rho_i)
+                    FSA = math.pi * df.loc[i - 1, "r_top"] ** 2
+                    CSA = math.pi * df.loc[i - 1, "r_ice"] * math.pow(H ** 2 + df.loc[i - 1, "r_ice"] ** 2, 1 / 2) - math.pi * df.loc[i - 1, "r_top"] * math.pow(
+                        (H - df.loc[i - 1, "h_ice"]) ** 2 + df.loc[i - 1, "r_top"] ** 2, 1 / 2)
+                    reduced_radius = melt_thickness/ (CSA + df.loc[i - 1, "h_ice"]/ df.loc[i - 1, "r_ice"] * FSA)
+
+
+                    df.loc[i, "h_ice"] = df.loc[i - 1, "h_ice"] - df.loc[i - 1, "h_ice"]/ df.loc[i - 1, "r_ice"] * reduced_radius
+                    df.loc[i, "r_ice"] = df.loc[i - 1, "r_ice"] - reduced_radius
+                    df.loc[i, "r_top"] = df.loc[i - 1, "r_top"] - reduced_radius
 
                     df.loc[i, "SA"] = (
                             math.pi * df.loc[i, "r_top"] ** 2
