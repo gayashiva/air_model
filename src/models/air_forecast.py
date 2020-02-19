@@ -20,7 +20,7 @@ def icestupa(df, fountain, surface):
     Ls = 2848 * 1000  # J/kg Sublimation
     Le = 2514 * 1000  # J/kg Evaporation
     Lf = 334 * 1000  #  J/kg Fusion
-    cw = 4.186 * 1000  # J/kg Specific heat water
+    cw = 4.186 * 1000  # J/kgC Specific heat water
     ci = 2.108 * 1000  # J/kgC Specific heat ice
     rho_w = 1000  # Density of water
     rho_i = 916  # Density of Ice rho_i
@@ -201,9 +201,19 @@ def icestupa(df, fountain, surface):
             """ Energy Balance starts """
 
             df.loc[i, "vp_ice"] = 6.112 * np.exp(
-                22.46 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
+                22.46 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 272.62)
             )
 
+            df.loc[i, "vp_w"] = 6.112 * np.exp(
+                17.62 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
+            )
+
+            if df.Discharge[i] > 0: # Water Boundary
+                df.loc[i, "vp_s"] = df.loc[i, "vp_w"]
+                c_s = cw
+            else:
+                df.loc[i, "vp_s"] = df.loc[i, "vp_ice"]
+                c_s = ci
 
 
             # Sublimation only
@@ -214,12 +224,14 @@ def icestupa(df, fountain, surface):
                 / p0
                 * math.pow(k, 2)
                 * df.loc[i, "v_a"]
-                * (df.loc[i, "vp_a"] - df.loc[i, "vp_ice"])
+                * (df.loc[i, "vp_a"] - df.loc[i, "vp_s"])
                 / (
                     np.log(surface["h_aws"] / surface["z0mi"])
                     * np.log(surface["h_aws"] / surface["z0hi"])
                 )
             )
+
+
 
             if df.loc[i, "Ql"] < 0 :
                 df.loc[i, "gas"] -= (df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps) / Ls
@@ -257,7 +269,7 @@ def icestupa(df, fountain, surface):
 
             # Sensible Heat Qs
             df.loc[i, "Qs"] = (
-                    ci
+                    c_s
                     * rho_a
                     * df.loc[i, "p_a"]
                     / p0
@@ -286,7 +298,7 @@ def icestupa(df, fountain, surface):
 
             # Conduction Freezing
             if (df.loc[i, "liquid"] > 0) & (df.loc[i - 1, "T_s"] < 0):
-                df.loc[i, "Qc"] = ice_layer * ci * (df.loc[i - 1, "T_s"]) / (df.loc[i, "SA"] * time_steps)
+                df.loc[i, "Qc"] = ice_layer * ci * (-df.loc[i - 1, "T_s"]) / (df.loc[i, "SA"] * time_steps)
                 df.loc[i, "delta_T_s"] = -df.loc[i - 1, "T_s"]
 
                 logger.debug(
