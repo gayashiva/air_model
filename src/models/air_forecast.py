@@ -38,7 +38,7 @@ def icestupa(df, fountain, surface):
     start = 0  # model start step
     state = 0
     ice_layer = 0
-    shape = "truncated"
+    shape = "cone"
 
     l = [
         "T_s",  # Surface Temperature
