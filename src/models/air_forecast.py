@@ -208,18 +208,21 @@ def icestupa(df, fountain, surface):
                 17.62 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
             )
 
-            if df.Discharge[i] > 0: # Water Boundary
+            # Water Boundary
+            if df.Discharge[i] > 0:
                 df.loc[i, "vp_s"] = df.loc[i, "vp_w"]
                 c_s = cw
+                L = Le
             else:
                 df.loc[i, "vp_s"] = df.loc[i, "vp_ice"]
                 c_s = ci
+                L = Ls
 
 
             # Sublimation only
             df.loc[i, "Ql"] = (
                 0.623
-                * Ls
+                * L
                 * rho_a
                 / p0
                 * math.pow(k, 2)
@@ -234,12 +237,12 @@ def icestupa(df, fountain, surface):
 
 
             if df.loc[i, "Ql"] < 0 :
-                df.loc[i, "gas"] -= (df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps) / Ls
+                df.loc[i, "gas"] -= (df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps) / L
 
                 # Removing gas quantity generated from previous ice
                 df.loc[i, "solid"] += (
                     df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
-                ) / Ls
+                ) / L
 
                 # Ice Temperature
                 df.loc[i, "delta_T_s"] += (
@@ -253,12 +256,12 @@ def icestupa(df, fountain, surface):
 
             else: # Deposition
 
-                df.loc[i, "deposition"] += (df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps) / Ls
+                df.loc[i, "deposition"] += (df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps) / L
 
                 # Adding new deposit
                 df.loc[i, "solid"] += (
                                               df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
-                                      ) / Ls
+                                      ) / L
 
                 logger.debug(
                     "Ice made after deposition is %s thick",
