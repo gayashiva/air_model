@@ -597,7 +597,7 @@ y1 = df.T_s
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Surface Temperature (C)")
+ax1.set_ylabel("Surface Temperature [$\degree C$]")
 ax1.set_xlabel("Days")
 
 #  format the ticks
