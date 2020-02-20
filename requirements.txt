@@ -7,10 +7,8 @@ click
 pandas
 Sphinx
 coverage
-awscli
+pillow
 flake8
 pillow
 matplotlib
-python-dotenv>=0.5.1
 scipy
-uncertainpy

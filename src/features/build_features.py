@@ -58,7 +58,7 @@ else:
 
 filename1 = os.path.join(filename1 + "_model_results.csv")
 
-same = False
+same = True
 
 if same:
     if os.path.isfile(filename1):
