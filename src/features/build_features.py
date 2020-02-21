@@ -58,7 +58,7 @@ else:
 
 filename1 = os.path.join(filename1 + "_model_results.csv")
 
-same = True
+same = False
 
 if same:
     if os.path.isfile(filename1):
@@ -357,9 +357,8 @@ if option == "schwarzsee":
     dfd["Discharge"] = dfd["Discharge"].astype(int)
     dfd["Discharge"] = dfd["Discharge"].astype(str)
 
-    dfd['meltwater'] = dfd['meltwater'] * -1 / 1000
-    dfds['melted'] = dfds['melted'] * -1 / 1000
-    dfds['solid'] = dfds['solid'] / 1000
+    dfds['melted'] = dfds['melted'] * -1 / (dfd['SA'] * 1000) * 100
+    dfds['solid'] = dfds['solid'] / (dfd['SA'] * 916) * 100
     dfds["When"] = pd.to_datetime(dfds["When"], format="%Y.%m.%d %H:%M:%S")
     dfds['When'] = dfds['When'].dt.strftime("%b %d")
 
@@ -395,7 +394,8 @@ if option == "schwarzsee":
 
 
     y1.plot(kind='bar', stacked=True, edgecolor='black', linewidth=0.5, color=['#D9E9FA', '#0C70DE'], ax=ax1)
-    ax1.set_ylabel('Volume [$m^{3}$]')
+    ax1.set_ylabel('Thickness [$cm$]')
+    ax1.set_ylim(-2.5, 2.5)
     ax1.legend(loc='upper right' , prop={'size': 6})
 
     ax1.grid( axis="y",color="black", alpha=.3, linewidth=.5, which="major")
@@ -403,7 +403,7 @@ if option == "schwarzsee":
                       prop=dict(size=6), frameon=True,
                       loc='upper left',
                       )
-    at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+    at.patch.set_boxstyle("round,pad=0,rounding_size=0.2")
     ax1.add_artist(at)
 
 

@@ -204,9 +204,7 @@ def icestupa(df, fountain, surface):
                 22.46 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 272.62)
             )
 
-            df.loc[i, "vp_w"] = 6.112 * np.exp(
-                17.62 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
-            )
+            df.loc[i, "vp_w"] = 6.112
 
             # Water Boundary
             if df.Discharge[i] > 0:
