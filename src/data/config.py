@@ -15,8 +15,8 @@ max = False
 
 surface = dict(
     ie=0.95,  # Ice Emissivity ie
-    a_i=0.34,  # Albedo of Ice a_i
-    a_s=0.75,  # Albedo of Fresh Snow a_s
+    a_i=0.35,  # Albedo of Ice a_i
+    a_s=0.85,  # Albedo of Fresh Snow a_s
     decay_t=10,  # Albedo dry decay rate decay_t_d
     z0mi=0.0017,  # Ice Momentum roughness length
     z0hi=0.0017,  # Ice Scalar roughness length

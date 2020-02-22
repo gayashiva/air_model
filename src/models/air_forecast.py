@@ -193,7 +193,6 @@ def icestupa(df, fountain, surface):
                     * math.pi
                     * math.pow(df.loc[i, "r_ice"], 2)
                 )
-                df.loc[i, "solid"] = df.loc[i, "solid"] + df.loc[i, "ppt"]
 
             # Fountain water output
             df.loc[i, "liquid"] = df.loc[i, "Discharge"] * (1 - ftl) * time_steps / 60
@@ -209,15 +208,16 @@ def icestupa(df, fountain, surface):
             # Water Boundary
             if df.Discharge[i] > 0:
                 df.loc[i, "vp_s"] = df.loc[i, "vp_w"]
-                c_s = cw
                 L = Le
+                c_s = cw
+
             else:
                 df.loc[i, "vp_s"] = df.loc[i, "vp_ice"]
-                c_s = ci
                 L = Ls
+                c_s = ci
 
 
-            # Sublimation only
+
             df.loc[i, "Ql"] = (
                 0.623
                 * L
@@ -256,16 +256,10 @@ def icestupa(df, fountain, surface):
 
                 df.loc[i, "deposition"] += (df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps) / L
 
-                # Adding new deposit
-                df.loc[i, "solid"] += (
-                                              df.loc[i, "Ql"] * (df.loc[i, "SA"]) * time_steps
-                                      ) / L
-
                 logger.debug(
                     "Ice made after deposition is %s thick",
                     round(df.loc[i, "deposition"]),
                 )
-
 
 
             # Sensible Heat Qs
@@ -380,13 +374,13 @@ def icestupa(df, fountain, surface):
             """ Quantities of all phases """
             df.loc[i, "T_s"] = df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]
             df.loc[i, "meltwater"] = df.loc[i - 1, "meltwater"] + df.loc[i, "melted"]
-            df.loc[i, "ice"] = df.loc[i - 1, "ice"] + df.loc[i, "solid"]
+            df.loc[i, "ice"] = df.loc[i - 1, "ice"] + df.loc[i, "solid"] + df.loc[i, "ppt"] + df.loc[i, "deposition"]
             df.loc[i, "vapour"] = df.loc[i - 1, "vapour"] + df.loc[i, "gas"]
             df.loc[i, "sprayed"] = (
                 df.loc[i - 1, "sprayed"] + df.loc[i, "Discharge"] * time_steps / 60
             )
             df.loc[i, "water"] = df.loc[i - 1, "water"] + df.loc[i, "liquid"]
-            df.loc[i, "iceV"] = df.loc[i, "ice"] / rho_i
+            df.loc[i, "iceV"] = (df.loc[i, "ice"] - df.loc[i, "ppt"]) / rho_i + df.loc[i, "ppt"] / surface["snow_fall_density"]
 
             logger.debug(
                 "Ice volume is %s and meltwater is %s at %s",
@@ -399,10 +393,12 @@ def icestupa(df, fountain, surface):
 
     print("Ice Mass Remaining", float(df["ice"].tail(1)))
     print("Meltwater", float(df["meltwater"].tail(1)))
-    print("Ice Volume Max", float(df["iceV"].max()))
+    print("Sublimated", float(df["vapour"].tail(1)))
     print("Fountain sprayed", float(df["sprayed"].tail(1)))
     print("Ppt", df["ppt"].sum())
-    print("Sublimated", float(df["vapour"].tail(1)))
+    print("Deposition", df["deposition"].sum())
+    print("Water not frozen", float(df["water"].tail(1)))
+    print("Ice Volume Max", float(df["iceV"].max()))
     print("Model ended", df.loc[i - 1, "When"])
     print("Model runtime", df.loc[i - 1, "When"] - df.loc[start, "When"])
     print("Max growth rate", float(df["solid"].max()/5))

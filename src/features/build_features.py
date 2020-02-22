@@ -384,7 +384,7 @@ if option == "schwarzsee":
     dfd = dfd.set_index("label")
 
     fig, (ax1, ax2, ax3) = plt.subplots(
-        nrows=3, ncols=1, sharex=True, figsize=(10, 5)
+        nrows=3, ncols=1, sharex=True, figsize=(15, 12)
     )
     fig.subplots_adjust(hspace=0)
 
