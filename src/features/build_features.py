@@ -17,6 +17,7 @@ import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages
 from src.data.config import site, dates, option, folders, fountain, surface
 from src.models.air_forecast import icestupa
+from src.data.make_dataset import projectile_xy, discharge_rate
 
 plt.rcParams["figure.figsize"] = (10,7)
 
@@ -113,7 +114,7 @@ df = df.rename({'SW': '$SW_{net}$', 'LW': '$LW_{net}$', 'Qs': '$Q_S$', 'Ql': '$Q
 # Plots
 
 # Model Suggestion
-if (fountain["discharge"] == 11.5) & (fountain["crit_temp"] == -2):
+if (fountain["discharge"] == 10.5):
     filename = os.path.join(filename2 + "_suggestion.pdf")
     pp = PdfPages(filename)
 

@@ -28,8 +28,8 @@ surface = dict(
 # if max :
 #     surface = dict(
 #         ie=0.9975,  # Ice Emissivity ie
-#         a_i=0.3517,  # Albedo of Ice a_i
-#         a_s=0.7875,  # Albedo of Fresh Snow a_s
+#         a_i=0.36175,  # Albedo of Ice a_i
+#         a_s=0.8925,  # Albedo of Fresh Snow a_s
 #         decay_t=10.5,  # Albedo dry decay rate decay_t_d
 #         z0mi=0.0017,  # Ice Momentum roughness length
 #         z0hi=0.0017,  # Ice Scalar roughness length
@@ -42,8 +42,8 @@ surface = dict(
 # else :
 #     surface = dict(
 #         ie=0.9025,  # Ice Emissivity ie
-#         a_i=0.323,  # Albedo of Ice a_i
-#         a_s=0.7125,  # Albedo of Fresh Snow a_s
+#         a_i=0.3325,  # Albedo of Ice a_i
+#         a_s=0.8075,  # Albedo of Fresh Snow a_s
 #         decay_t=9.5,  # Albedo dry decay rate decay_t_d
 #         z0mi=0.0017,  # Ice Momentum roughness length
 #         z0hi=0.0017,  # Ice Scalar roughness length
@@ -69,8 +69,8 @@ if site == "schwarzsee":
     fountain = dict(
         aperture_f=0.005,  # Fountain aperture diameter
         h_f=1.35,  # Fountain steps h_f
-        discharge=11.5,  # Fountain on discharge
-        crit_temp=-2,  # Fountain runtime temperature
+        discharge=3.58,  # Fountain on discharge
+        crit_temp=-5,  # Fountain runtime temperature
         latitude = 46.693723,
         longitude = 7.297543,
         utc_offset = 1,
@@ -93,7 +93,7 @@ if site == "plaffeien":
     fountain = dict(
         aperture_f=0.005,  # Fountain hole diameter
         h_f=1,  # Fountain steps h_f
-        discharge=4,  # Fountain on discharge in LPM
+        discharge=10.5,  # Fountain on discharge in LPM
         crit_temp=-1,  # Fountain runtime temperature
     )
 

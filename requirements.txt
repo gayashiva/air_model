@@ -11,4 +11,5 @@ pillow
 flake8
 pillow
 matplotlib
+SALib
 scipy
