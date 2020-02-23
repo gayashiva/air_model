@@ -57,9 +57,11 @@ index = range(0, param_values.shape[0])
 dfo = pd.DataFrame(index=index, columns=columns)
 dfo = dfo.fillna(0)
 Y = np.zeros([param_values.shape[0]])
+Z = np.zeros([param_values.shape[0]])
 
 for j, X in enumerate(param_values):
 
+    print(j/param_values.shape[0] * 100)
     print(X)
     surface['ie'] = X[0]
     surface['a_i'] = X[1]
@@ -136,7 +138,7 @@ for j, X in enumerate(param_values):
     dfo.loc[j, "a_s"] = X[2]
     dfo.loc[j, "decay_t"] = X[3]
     dfo.loc[j, "Max IceV"] = Y[j]
-    dfo.loc[j, "Max IceV"] = Z[j]
+    dfo.loc[j, "Efficiency"] = Z[j]
 
 
 Si = sobol.analyze(problem, Y, print_to_console=True)
