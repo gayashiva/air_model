@@ -391,6 +391,13 @@ def icestupa(df, fountain, surface):
 
     df = df[start:i]
 
+    print("Ice Volume Max", float(df["iceV"].max()))
+    print(
+        "Fountain efficiency",
+        float((df["meltwater"].tail(1) + df["ice"].tail(1)) / (
+                    df["sprayed"].tail(1) + df["ppt"].sum() + df["deposition"].sum()) * 100
+              ))
+
     print("Ice Mass Remaining", float(df["ice"].tail(1)))
     print("Meltwater", float(df["meltwater"].tail(1)))
     print("Sublimated", float(df["vapour"].tail(1)))
@@ -398,14 +405,9 @@ def icestupa(df, fountain, surface):
     print("Ppt", df["ppt"].sum())
     print("Deposition", df["deposition"].sum())
     print("Water not frozen", float(df["water"].tail(1)))
-    print("Ice Volume Max", float(df["iceV"].max()))
     print("Model ended", df.loc[i - 1, "When"])
     print("Model runtime", df.loc[i - 1, "When"] - df.loc[start, "When"])
     print("Max growth rate", float(df["solid"].max()/5))
-    print(
-        "Fountain efficiency",
-        float((df["meltwater"].tail(1) + df["ice"].tail(1)) / df["sprayed"].tail(1))
-        * 100,
-    )
+
 
     return df

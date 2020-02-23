@@ -129,12 +129,14 @@ for j, X in enumerate(param_values):
     df = icestupa(df_in, fountain, surface)
 
     Y[j] = df["iceV"].max()
+    Z[j] = (df["meltwater"].tail(1) + df["ice"].tail(1)) / (df["sprayed"].tail(1) + df["ppt"].sum() + df["deposition"].sum())
 
     dfo.loc[j, "ie"] = X[0]
     dfo.loc[j, "a_i"] = X[1]
     dfo.loc[j, "a_s"] = X[2]
     dfo.loc[j, "decay_t"] = X[3]
     dfo.loc[j, "Max IceV"] = Y[j]
+    dfo.loc[j, "Max IceV"] = Z[j]
 
 
 Si = sobol.analyze(problem, Y, print_to_console=True)
