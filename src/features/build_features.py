@@ -88,6 +88,7 @@ else:
 
     print("Total time : ", total / 60)
 
+
 # # Output for manim
 # filename2 = os.path.join(folders["output_folder"], site + "_model_gif.csv")
 # cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
@@ -112,114 +113,172 @@ df = df.rename({'SW': '$SW_{net}$', 'LW': '$LW_{net}$', 'Qs': '$Q_S$', 'Ql': '$Q
 
 # Plots
 
-# Model Suggestion
-if (fountain["discharge"] == 10.5):
-    filename = os.path.join(filename2 + "_suggestion.pdf")
-    pp = PdfPages(filename)
 
-    x = df.When
-    y1 = df.iceV
+pp = PdfPages(filename2 + "_results.pdf")
 
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-    ax1.plot(x, y1, "b-", lw=1)
-    ax1.set_ylabel("Ice Volume [$m^3$]")
-    ax1.set_xlabel("Days")
+x = df.When
+y1 = df.iceV
 
-    # Include Validation line segment 1
-    ax1.plot(
-        [datetime(2019, 2, 14, 16), datetime(2019, 2, 14, 16)],
-        [0.67115, 1.042],
-        color="green",
-        lw=1,
-    )
-    ax1.scatter(datetime(2019, 2, 14, 16), 0.856575, color="green", marker="o")
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(x, y1, "k-")
+ax1.set_ylabel("Ice Volume [$m^3$]")
+ax1.set_xlabel("Days")
 
-    # Include Validation line segment 2
-    ax1.plot(
-        [datetime(2019, 3, 10, 18), datetime(2019, 3, 10, 18)],
-        [0.037, 0.222],
-        color="green",
-        lw=1,
-    )
-    ax1.scatter(datetime(2019, 3, 10, 18), 0.1295, color="green", marker="o")
+#  format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
 
-    #  format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
+y1 = df.SA
 
-    plt.savefig(
-        os.path.join(folders["output_folder"], site + "_result.jpg"),
-        bbox_inches="tight",
-        dpi=300,
-    )
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(x, y1, "k-")
+ax1.set_ylabel("Surface Area [$m^2$]")
+ax1.set_xlabel("Days")
 
-    plt.clf()
+#  format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
 
-    fig, (ax1, ax2, ax3) = plt.subplots(nrows=3, ncols=1, sharex=True, figsize=(10, 5))
+y1 = df.h_ice
+y2 = df.r_ice
 
-    # fig.suptitle("Mass and Energy balance", fontsize=14)
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(x, y1, "k-")
+ax1.set_ylabel("Ice Cone Height [$m$]")
+ax1.set_xlabel("Days")
 
-    x = df.When
-    y1 = df.ice
+ax2 = ax1.twinx()
+ax2.plot(x, y2, "b-", linewidth=0.5)
+ax2.set_ylabel("Ice Radius", color="b")
+for tl in ax2.get_yticklabels():
+    tl.set_color("b")
 
-    ax1.plot(x, y1, "b-")
-    ax1.set_ylabel("Ice [kg]")
-    ax1.grid()
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
+#  format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
 
-    y2 = df.SA
-    ax2.plot(x, y2, "b-")
-    ax2.set_ylabel("Surface Area [$m^2$]")
-    ax2.grid()
+y1 = df.SRf
 
-    y3 = df['TotalE'] + df['$Q_L$']
-    ax3.plot(x, y3, "b-")
-    ax3.set_ylabel("E [$W\,m^{-2}$]")
-    ax3.grid()
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(x, y1, "k-", linewidth=0.5)
+ax1.set_ylabel("Solar Area fraction")
+ax1.set_xlabel("Days")
 
-    # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
+#  format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
 
-    fig, (ax1, ax2, ax3) = plt.subplots(
-        nrows=3, ncols=1, sharex=True, sharey=True, figsize=(10, 5)
-    )
+y1 = df.iceV
+y2 = df['TotalE'] + df['$Q_L$']
 
-    # fig.suptitle("Mass balance", fontsize=14)
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(x, y1, "k-")
+ax1.set_ylabel("Ice Volume [$m^3$]")
+ax1.set_xlabel("Days")
 
-    x = df.When
-    y1 = df.ice
+ax2 = ax1.twinx()
+ax2.plot(x, y2, "b-", linewidth=0.5)
+ax2.set_ylabel("Energy [$W\,m^{-2}$]", color="b")
+for tl in ax2.get_yticklabels():
+    tl.set_color("b")
 
-    ax1.plot(x, y1, "b-")
-    ax1.set_ylabel("Ice [kg]")
-    ax1.grid()
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
+#  format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
 
-    y2 = df.meltwater
-    ax2.plot(x, y2, "b-")
-    ax2.set_ylabel("Meltwater [kg]")
-    ax2.grid()
+y1 = df.T_s
 
-    y3 = df.vapour
-    ax3.plot(x, y3, "b-")
-    ax3.set_ylabel("Vapour [kg]")
-    ax3.grid()
-    # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(x, y1, "k-", linewidth=0.5)
+ax1.set_ylabel("Surface Temperature [$\degree C$]")
+ax1.set_xlabel("Days")
 
-    pp.close()
+#  format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
+y1 = df.solid / 5
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(x, y1, "b-", linewidth=0.5)
+ax1.set_ylabel("Ice Production rate [$l\,min^{-1}$]")
+ax1.set_xlabel("Days")
+
+#  format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
+y1 = df.gas / 5
+y2 = df.deposition / 5
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(x, y1, "k-", linewidth=0.5)
+ax1.set_ylabel("Gas Production rate [$l\,min^{-1}$]")
+ax1.set_xlabel("Days")
+
+ax2 = ax1.twinx()
+ax2.plot(x, y2, "b-", linewidth=0.5)
+ax2.set_ylabel("Deposition rate [$l\,min^{-1}$]", color="b")
+for tl in ax2.get_yticklabels():
+    tl.set_color("b")
+
+ax2.set_ylim(ax1.get_ylim())
+
+#  format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+plt.close('all')
+
+pp.close()
+
 
 """Paper Output"""
 if option == "schwarzsee":
@@ -477,183 +536,4 @@ if option == "schwarzsee":
 
 
     pp.close()
-
-
-pp = PdfPages(filename2 + "_results.pdf")
-
-x = df.When
-y1 = df.iceV
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-ax1.plot(x, y1, "k-")
-ax1.set_ylabel("Ice Volume [$m^3$]")
-ax1.set_xlabel("Days")
-
-#  format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-y1 = df.SA
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-ax1.plot(x, y1, "k-")
-ax1.set_ylabel("Surface Area [$m^2$]")
-ax1.set_xlabel("Days")
-
-#  format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-fig= plt.figure()
-z.plot.bar( stacked=True, edgecolor = dfd['Discharge'], linewidth=0.5)
-plt.xlabel('Days')
-plt.ylabel('Energy [$W\,m^{-2}$]')
-plt.legend(loc = 'upper left')
-plt.ylim(-150, 150)
-plt.xticks(rotation=45)
-
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-y1 = df.h_ice
-y2 = df.r_ice
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-ax1.plot(x, y1, "k-")
-ax1.set_ylabel("Ice Cone Height [$m$]")
-ax1.set_xlabel("Days")
-
-ax2 = ax1.twinx()
-ax2.plot(x, y2, "b-", linewidth=0.5)
-ax2.set_ylabel("Ice Radius", color="b")
-for tl in ax2.get_yticklabels():
-    tl.set_color("b")
-
-#  format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-y1 = df.SRf
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Solar Area fraction")
-ax1.set_xlabel("Days")
-
-#  format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-y1 = df.iceV
-y2 = df['TotalE'] + df['$Q_L$']
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-ax1.plot(x, y1, "k-")
-ax1.set_ylabel("Ice Volume [$m^3$]")
-ax1.set_xlabel("Days")
-
-ax2 = ax1.twinx()
-ax2.plot(x, y2, "b-", linewidth=0.5)
-ax2.set_ylabel("Energy [$W\,m^{-2}$]", color="b")
-for tl in ax2.get_yticklabels():
-    tl.set_color("b")
-
-#  format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-y1 = df.T_s
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Surface Temperature [$\degree C$]")
-ax1.set_xlabel("Days")
-
-#  format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-y1 = df.solid / 5
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-ax1.plot(x, y1, "b-", linewidth=0.5)
-ax1.set_ylabel("Ice Production rate [$l\,min^{-1}$]")
-ax1.set_xlabel("Days")
-
-#  format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-y1 = df.gas / 5
-y2 = df.deposition / 5
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Gas Production rate [$l\,min^{-1}$]")
-ax1.set_xlabel("Days")
-
-ax2 = ax1.twinx()
-ax2.plot(x, y2, "b-", linewidth=0.5)
-ax2.set_ylabel("Deposition rate [$l\,min^{-1}$]", color="b")
-for tl in ax2.get_yticklabels():
-    tl.set_color("b")
-
-ax2.set_ylim(ax1.get_ylim())
-
-#  format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-ax1.grid()
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-plt.close('all')
-
-pp.close()
-
-
 
