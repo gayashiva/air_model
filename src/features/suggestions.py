@@ -578,7 +578,7 @@ y3 = dfd['SA']
 
 
 y1.plot(kind='bar', stacked=True, edgecolor='black', linewidth=0.5, color=['#D9E9FA', '#0C70DE'], ax=ax1)
-ax1.set_ylabel('Thickness [$cm$]')
+ax1.set_ylabel('Thickness Change [$cm$]')
 ax1.set_ylim(-2.5, 2.5)
 ax1.legend(loc='upper right' , prop={'size': 6})
 

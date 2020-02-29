@@ -59,7 +59,7 @@ else:
 
 filename1 = os.path.join(filename1 + "_model_results.csv")
 
-same = False
+same = True
 
 if same:
     if os.path.isfile(filename1):
@@ -443,8 +443,8 @@ if option == "schwarzsee":
 
     dfd = dfd.set_index("label")
 
-    fig, (ax1, ax2, ax3) = plt.subplots(
-        nrows=3, ncols=1, sharex=True, figsize=(15, 12)
+    fig, (ax1, ax3) = plt.subplots(
+        nrows=2, ncols=1, sharex=True, figsize=(15, 12)
     )
     fig.subplots_adjust(hspace=0)
 
@@ -454,7 +454,7 @@ if option == "schwarzsee":
 
 
     y1.plot(kind='bar', stacked=True, edgecolor='black', linewidth=0.5, color=['#D9E9FA', '#0C70DE'], ax=ax1)
-    ax1.set_ylabel('Thickness [$cm$]')
+    ax1.set_ylabel('Thickness Change [$cm$]')
     ax1.set_ylim(-2.5, 2.5)
     ax1.legend(loc='upper right' , prop={'size': 6})
 
@@ -466,23 +466,10 @@ if option == "schwarzsee":
     at.patch.set_boxstyle("round,pad=0,rounding_size=0.2")
     ax1.add_artist(at)
 
-
-    z.plot.bar(stacked=True, edgecolor=dfd['Discharge'], linewidth=0.5, ax=ax2)
-    ax2.set_ylabel('Energy [$W\,m^{-2}$]')
-    ax2.legend(loc='lower right', prop={'size': 6})
-    ax2.set_ylim(-120, 120)
-    ax2.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
-    at = AnchoredText("(b)",
-                      prop=dict(size=6), frameon=True,
-                      loc='upper left',
-                      )
-    at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-    ax2.add_artist(at)
-
-    y3.plot.bar(edgecolor='#0C70DE',  color=['#D9E9FA'], linewidth=0.5, ax=ax3)
+    y3.plot.bar(edgecolor='k',  color=['tab:gray'], linewidth=0.5, ax=ax3)
     ax3.set_ylabel('Area [$m^2$]')
     ax3.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
-    at = AnchoredText("(c)",
+    at = AnchoredText("(b)",
                       prop=dict(size=6), frameon=True,
                       loc='upper left',
                       )
