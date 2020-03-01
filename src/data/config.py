@@ -62,7 +62,7 @@ if site == "schwarzsee":
     )
 
     dates = dict(
-        start_date=datetime(2019, 1, 29, 16),
+        start_date=datetime(2019, 1, 30, 17),
         end_date=datetime(2019, 3, 20, 18),
         fountain_off_date=datetime(2019, 3, 10, 18),
     )
