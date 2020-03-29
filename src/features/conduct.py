@@ -29,6 +29,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
+import time
+from tqdm import tqdm
+from time import sleep
 
 A = 0.34839 # cross sectional area of wall element in m^2
 rho = 916.0  # density of wall material in kg / m^3
@@ -45,7 +48,7 @@ N = 2 # number of discrete wall segments
 dx = L/N # length of each wall segment in meters
 
 total_time = 14*3600.0 # total duration of simulation in seconds
-nsteps = 500 # number of timesteps
+nsteps = 5000 # number of timesteps
 dt = total_time/nsteps # duration of timestep in seconds
 
 # The size of this nondimensional factor gives a rough idea
@@ -91,7 +94,8 @@ Q_dot_in = 1500.0 # heater power in watts
 #print Q_dot_in
 #print Q_dot_out
 
-for j in range(len(timesamps)-1):
+for j in tqdm(range(len(timesamps)-1)):
+
    # get the outside wall temperature and heat flow at current time
    T_out = T[len(x)-1, j]
    Q_dot_out = sigma * A * (pow(T_out,4) - pow(T_inf,4)) + h * A * (T_out - T_inf)
@@ -102,6 +106,8 @@ for j in range(len(timesamps)-1):
    # now loop through the interior elements to get their temp for the next time
    for i in range(len(x)-2):
       T[i+1,j+1] = T[i+1,j] + simfac * (T[i,j] - 2*T[i+1,j] + T[i+2,j])
+
+   # time.sleep(0.02)
 
 
 # this plots the temperature vs time data as a surface

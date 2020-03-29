@@ -1,8 +1,10 @@
 import pandas as pd
 import numpy as np
 import math
+import time
 import logging
 from src.data.config import fountain, surface, site, option, dates, folders
+from tqdm import tqdm
 
 pd.options.mode.chained_assignment = None  # Suppress Setting with warning
 
@@ -22,7 +24,7 @@ def conduct(steps , T_initial, Q_dot_in, A):
     ddx = L / N  # length of each wall segment in meters
 
     total_time = 5 * 60.0  # total duration of simulation in seconds
-    nsteps = 500  # number of timesteps
+    nsteps = 5  # number of timesteps
     dt = total_time / nsteps  # duration of timestep in seconds
 
     # The size of this nondimensional factor gives a rough idea
@@ -45,8 +47,8 @@ def conduct(steps , T_initial, Q_dot_in, A):
     T = np.zeros((X.shape))
 
     # set the initial temperature profile of the wall
-    for i in range(len(x)):
-        T[i, 0] = T_initial
+    for ctr in range(len(x)):
+        T[ctr, 0] = T_initial
 
 
     for j in range(len(timesamps) - 1):
@@ -59,8 +61,8 @@ def conduct(steps , T_initial, Q_dot_in, A):
         # and now compute temperature at the inside boundary for the next time step
         T[0, j + 1] = T[0, j] + simfac * (T[1, j] - T[0, j] + heatfac * Q_dot_in)
         # now loop through the interior elements to get their temp for the next time
-        for i in range(len(x) - 2):
-            T[i + 1, j + 1] = T[i + 1, j] + simfac * (T[i, j] - 2 * T[i + 1, j] + T[i + 2, j])
+        for ctr in range(len(x) - 2):
+            T[ctr + 1, j + 1] = T[ctr + 1, j] + simfac * (T[ctr, j] - 2 * T[ctr + 1, j] + T[ctr + 2, j])
 
     return (T.mean() - T_initial)
 
@@ -133,7 +135,7 @@ def icestupa(df, fountain, surface):
     )  # todo implement variable spray radius for variable discharge
 
     """ Simulation """
-    for i in range(1, df.shape[0]):
+    for i in tqdm(range(1, df.shape[0])):
 
         # Ice Melted
         if df.loc[i - 1, "iceV"] <= 0:
@@ -438,7 +440,7 @@ def icestupa(df, fountain, surface):
             df.loc[i, "water"] = df.loc[i - 1, "water"] + df.loc[i, "liquid"]
             df.loc[i, "iceV"] = (df.loc[i, "ice"] - df.loc[i, "ppt"]) / rho_i + df.loc[i, "ppt"] / surface["snow_fall_density"]
 
-            logger.debug(
+            logger.critical(
                 "Ice volume is %s and meltwater is %s at %s",
                 df.loc[i, "ice"],
                 df.loc[i, "meltwater"],
@@ -464,6 +466,5 @@ def icestupa(df, fountain, surface):
     print("Model ended", df.loc[i - 1, "When"])
     print("Model runtime", df.loc[i - 1, "When"] - df.loc[start, "When"])
     print("Max growth rate", float(df["solid"].max()/5))
-
 
     return df

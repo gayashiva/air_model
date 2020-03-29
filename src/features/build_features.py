@@ -18,6 +18,7 @@ from src.data.config import site, dates, option, folders, fountain, surface
 from src.models.air_forecast import icestupa
 from src.data.make_dataset import projectile_xy, discharge_rate
 
+
 plt.rcParams["figure.figsize"] = (10,7)
 
 start = time.time()
