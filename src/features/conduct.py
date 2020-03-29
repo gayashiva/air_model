@@ -33,22 +33,22 @@ import time
 from tqdm import tqdm
 from time import sleep
 
-A = 0.34839 # cross sectional area of wall element in m^2
+A = 1 # cross sectional area of wall element in m^2
 rho = 916.0  # density of wall material in kg / m^3
 k = 2.1  # thermal conductivity of wall material in W / (m*K)
 c = 2.097 * 1000  # specific heat capacity in J / (kg*K)
 sigma = 5.6704E-08  # Stefan-Boltzmann constant in W * m^-2 * K^-4
 h = 0.0  # convective heat transfer coefficient in W / (m^2 * K)
 
-T_initial = 300.0 # initial temperature in Kelvin
-T_inf = 300.0 # ambient temperature in Kelvin
+T_initial = 263.0 # initial temperature in Kelvin
+T_inf = 273.0 # ambient temperature in Kelvin
 
-L = 0.1143 # thickness of the entire wall in meters
-N = 2 # number of discrete wall segments
+L = 1 # thickness of the entire wall in meters
+N = 10 # number of discrete wall segments
 dx = L/N # length of each wall segment in meters
 
-total_time = 14*3600.0 # total duration of simulation in seconds
-nsteps = 5000 # number of timesteps
+total_time = 5*60.0 # total duration of simulation in seconds
+nsteps = 500 # number of timesteps
 dt = total_time/nsteps # duration of timestep in seconds
 
 # The size of this nondimensional factor gives a rough idea
@@ -87,7 +87,7 @@ for i in range(len(x)):
 # print X
 # print T
 
-Q_dot_in = 1500.0 # heater power in watts
+Q_dot_in = 0.0 # heater power in watts
 #T_out = T[len(x)-1, 0]
 #Q_dot_out = sigma * A * (pow(T_out,4) - pow(T_inf,4)) + h * A * (T_out - T_inf)
 
@@ -107,9 +107,7 @@ for j in tqdm(range(len(timesamps)-1)):
    for i in range(len(x)-2):
       T[i+1,j+1] = T[i+1,j] + simfac * (T[i,j] - 2*T[i+1,j] + T[i+2,j])
 
-   # time.sleep(0.02)
-
-
+print(T[:,- 1].mean())
 # this plots the temperature vs time data as a surface
 fig1 = plt.figure()
 ax = fig1.add_subplot(111, projection='3d')

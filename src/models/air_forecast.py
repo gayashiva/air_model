@@ -5,26 +5,32 @@ import time
 import logging
 from src.data.config import fountain, surface, site, option, dates, folders
 from tqdm import tqdm
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 pd.options.mode.chained_assignment = None  # Suppress Setting with warning
 
-def conduct(steps , T_initial, Q_dot_in, A):
-    # A = 1  # cross sectional area of wall element in m^2
+
+def conduct(T_initial):
+    A = 1  # cross sectional area of wall element in m^2
     rho = 916.0  # density of wall material in kg / m^3
     k = 2.1  # thermal conductivity of wall material in W / (m*K)
     c = 2.097 * 1000  # specific heat capacity in J / (kg*K)
-    sigma = 5.6704E-08  # Stefan-Boltzmann constant in W * m^-2 * K^-4
+    sigma = 5.6704e-08  # Stefan-Boltzmann constant in W * m^-2 * K^-4
     h = 0.0  # convective heat transfer coefficient in W / (m^2 * K)
 
     T_initial = T_initial + 273.15  # initial temperature in Kelvin
     T_inf = 273.15  # ambient temperature in Kelvin
 
-    L = 0.001 * steps  # thickness of the entire wall in meters
-    N =  steps + 1 # number of discrete wall segments
+    Q_dot_in = 0
+
+    L = 0.01  # thickness of the entire wall in meters
+    N = 10  # number of discrete wall segments
     ddx = L / N  # length of each wall segment in meters
 
     total_time = 5 * 60.0  # total duration of simulation in seconds
-    nsteps = 5  # number of timesteps
+    nsteps = 500  # number of timesteps
     dt = total_time / nsteps  # duration of timestep in seconds
 
     # The size of this nondimensional factor gives a rough idea
@@ -41,7 +47,7 @@ def conduct(steps , T_initial, Q_dot_in, A):
 
     # "In the 2-D case with inputs of length M and N, the outputs are of
     # shape (N, M) for 'xy' indexing and (M, N) for 'ij' indexing."
-    X, TIME = np.meshgrid(x, timesamps, indexing='ij')
+    X, TIME = np.meshgrid(x, timesamps, indexing="ij")
 
     # initialize a big 2D array to store temperature values
     T = np.zeros((X.shape))
@@ -50,21 +56,35 @@ def conduct(steps , T_initial, Q_dot_in, A):
     for ctr in range(len(x)):
         T[ctr, 0] = T_initial
 
-
     for j in range(len(timesamps) - 1):
         # get the outside wall temperature and heat flow at current time
         T_out = T[len(x) - 1, j]
-        Q_dot_out = sigma * A * (pow(T_out, 4) - pow(T_inf, 4)) + h * A * (T_out - T_inf)
+        Q_dot_out = sigma * A * (pow(T_out, 4) - pow(T_inf, 4)) + h * A * (
+            T_out - T_inf
+        )
         # now compute temperature at the outside boundary for the next time step
-        T[len(x) - 1, j + 1] = T_out + simfac * (T[len(x) - 2, j] - T_out - heatfac * Q_dot_out)
+        T[len(x) - 1, j + 1] = T_out + simfac * (
+            T[len(x) - 2, j] - T_out - heatfac * Q_dot_out
+        )
 
         # and now compute temperature at the inside boundary for the next time step
         T[0, j + 1] = T[0, j] + simfac * (T[1, j] - T[0, j] + heatfac * Q_dot_in)
         # now loop through the interior elements to get their temp for the next time
         for ctr in range(len(x) - 2):
-            T[ctr + 1, j + 1] = T[ctr + 1, j] + simfac * (T[ctr, j] - 2 * T[ctr + 1, j] + T[ctr + 2, j])
+            T[ctr + 1, j + 1] = T[ctr + 1, j] + simfac * (
+                T[ctr, j] - 2 * T[ctr + 1, j] + T[ctr + 2, j]
+            )
 
-    return (T.mean() - T_initial)
+    # # this plots the temperature vs time data as a surface
+    # fig1 = plt.figure()
+    # ax = fig1.add_subplot(111, projection='3d')
+    # foo = ax.plot_surface(X * 100, TIME / 3600, T)
+    # ax.set_xlabel('x (cm)')
+    # ax.set_ylabel('time (hr)')
+    # ax.set_zlabel('temperature (K)')
+    # plt.show()
+
+    return T[:,- 1].mean()-273
 
 
 def icestupa(df, fountain, surface):
@@ -153,13 +173,12 @@ def icestupa(df, fountain, surface):
             start = i - 1  # Set Model start time
             df.loc[i - 1, "r_ice"] = R_f
             df.loc[i - 1, "h_ice"] = dx
-            ice_layer = dx * math.pi * R_f**2 * rho_i
-            df.loc[i - 1, "iceV"] = dx * math.pi * R_f**2
+            ice_layer = dx * math.pi * R_f ** 2 * rho_i
+            df.loc[i - 1, "iceV"] = dx * math.pi * R_f ** 2
 
             logger.debug(
                 "Ice layer initialised %s thick at %s", ice_layer, df.loc[i, "When"]
             )
-
 
         if state == 1:
 
@@ -217,22 +236,22 @@ def icestupa(df, fountain, surface):
                 )
 
             df.loc[i, "SRf"] = (
-                                       0.5
-                                       * df.loc[i, "h_ice"]
-                                       * df.loc[i, "r_ice"]
-                                       * math.cos(df.loc[i, "SEA"])
-                                       + math.pi
-                                       * math.pow(df.loc[i, "r_ice"], 2)
-                                       * 0.5
-                                       * math.sin(df.loc[i, "SEA"])
-                               ) / (
-                                       math.pi
-                                       * math.pow(
-                                   (math.pow(df.loc[i, "h_ice"], 2) + math.pow(df.loc[i, "r_ice"], 2)),
-                                   1 / 2,
-                               )
-                                       * df.loc[i, "r_ice"]
-                               )
+                0.5
+                * df.loc[i, "h_ice"]
+                * df.loc[i, "r_ice"]
+                * math.cos(df.loc[i, "SEA"])
+                + math.pi
+                * math.pow(df.loc[i, "r_ice"], 2)
+                * 0.5
+                * math.sin(df.loc[i, "SEA"])
+            ) / (
+                math.pi
+                * math.pow(
+                    (math.pow(df.loc[i, "h_ice"], 2) + math.pow(df.loc[i, "r_ice"], 2)),
+                    1 / 2,
+                )
+                * df.loc[i, "r_ice"]
+            )
 
             logger.debug(
                 "Ice radius is %s and ice is %s at %s",
@@ -276,8 +295,6 @@ def icestupa(df, fountain, surface):
                 L = Ls
                 c_s = ci
 
-
-
             df.loc[i, "Ql"] = (
                 0.623
                 * L
@@ -292,9 +309,7 @@ def icestupa(df, fountain, surface):
                 )
             )
 
-
-
-            if df.loc[i, "Ql"] < 0 :
+            if df.loc[i, "Ql"] < 0:
                 df.loc[i, "gas"] -= (df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps) / L
 
                 # Removing gas quantity generated from previous ice
@@ -303,36 +318,39 @@ def icestupa(df, fountain, surface):
                 ) / L
 
                 # Ice Temperature
-                df.loc[i, "delta_T_s"] += conduct(i-start, df.loc[i-1, 'T_s'], df.loc[i, "Ql"], df.loc[i, "SA"])
+                df.loc[i, "delta_T_s"] += (
+                    df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
+                ) / (ice_layer * ci)
+                # df.loc[i, "delta_T_s"] += conduct(i-start, df.loc[i-1, 'T_s'], df.loc[i, "Ql"])
 
                 logger.debug(
-                    "Gas made after sublimation is %s ",
-                    round(df.loc[i, "gas"]),
+                    "Gas made after sublimation is %s ", round(df.loc[i, "gas"])
                 )
 
-            else: # Deposition
+            else:  # Deposition
 
-                df.loc[i, "deposition"] += (df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps) / L
+                df.loc[i, "deposition"] += (
+                    df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
+                ) / L
 
                 logger.debug(
                     "Ice made after deposition is %s thick",
                     round(df.loc[i, "deposition"]),
                 )
 
-
             # Sensible Heat Qs
             df.loc[i, "Qs"] = (
-                    c_s
-                    * rho_a
-                    * df.loc[i, "p_a"]
-                    / p0
-                    * math.pow(k, 2)
-                    * df.loc[i, "v_a"]
-                    * (df.loc[i, "T_a"] - df.loc[i - 1, "T_s"])
-                    / (
-                            np.log(surface["h_aws"] / surface["z0mi"])
-                            * np.log(surface["h_aws"] / surface["z0hi"])
-                    )
+                c_s
+                * rho_a
+                * df.loc[i, "p_a"]
+                / p0
+                * math.pow(k, 2)
+                * df.loc[i, "v_a"]
+                * (df.loc[i, "T_a"] - df.loc[i - 1, "T_s"])
+                / (
+                    np.log(surface["h_aws"] / surface["z0mi"])
+                    * np.log(surface["h_aws"] / surface["z0hi"])
+                )
             )
 
             # Short Wave Radiation SW
@@ -347,11 +365,18 @@ def icestupa(df, fountain, surface):
                     df.loc[i, "T_a"] + 273.15, 4
                 ) - surface["ie"] * bc * math.pow(df.loc[i - 1, "T_s"] + 273.15, 4)
             else:
-                df.loc[i, "LW"] = df.loc[i, "oli000z0"] - surface["ie"] * bc * math.pow(df.loc[i - 1, "T_s"] + 273.15, 4)
+                df.loc[i, "LW"] = df.loc[i, "oli000z0"] - surface["ie"] * bc * math.pow(
+                    df.loc[i - 1, "T_s"] + 273.15, 4
+                )
 
             # Conduction Freezing
             if (df.loc[i, "liquid"] > 0) & (df.loc[i - 1, "T_s"] < 0):
-                df.loc[i, "Qc"] = ice_layer * ci * (-df.loc[i - 1, "T_s"]) / (df.loc[i, "SA"] * time_steps)
+                df.loc[i, "Qc"] = (
+                    ice_layer
+                    * ci
+                    * (-df.loc[i - 1, "T_s"])
+                    / (df.loc[i, "SA"] * time_steps)
+                )
                 df.loc[i, "delta_T_s"] = -df.loc[i - 1, "T_s"]
 
                 logger.debug(
@@ -361,12 +386,12 @@ def icestupa(df, fountain, surface):
                 )
 
             # Total Energy W/m2
-            df.loc[i, "TotalE"] = df.loc[i, "SW"] + df.loc[i, "LW"] + df.loc[i, "Qs"] + df.loc[i, "Qc"]
+            df.loc[i, "TotalE"] = (
+                df.loc[i, "SW"] + df.loc[i, "LW"] + df.loc[i, "Qs"] + df.loc[i, "Qc"]
+            )
 
             logger.debug(
-                "Energy is %s thick at %s",
-                round(df.loc[i, "Qc"]),
-                df.loc[i, "When"],
+                "Energy is %s thick at %s", round(df.loc[i, "Qc"]), df.loc[i, "When"]
             )
 
             # Total Energy Joules
@@ -391,7 +416,8 @@ def icestupa(df, fountain, surface):
                 else:
                     """ When fountain off and energy negative """
                     # Cooling Ice
-                    df.loc[i, "delta_T_s"] += conduct(i-start, df.loc[i-1, 'T_s'], df.loc[i, "TotalE"], df.loc[i, "SA"])
+                    df.loc[i, "delta_T_s"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
+                    # df.loc[i, "delta_T_s"] += conduct(i-start, df.loc[i-1, 'T_s'], df.loc[i, "TotalE"])
 
                 logger.debug(
                     "Ice made after energy neg is %s thick at temp %s",
@@ -402,7 +428,12 @@ def icestupa(df, fountain, surface):
             else:
 
                 # Heating Ice
-                df.loc[i, "delta_T_s"] += conduct(i-start, df.loc[i-1, 'T_s'], df.loc[i, "TotalE"], df.loc[i, "SA"])
+                df.loc[i, "delta_T_s"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
+                # df.loc[i, "delta_T_s"] += conduct(i-start, df.loc[i-1, 'T_s'], df.loc[i, "TotalE"])
+
+                print(df.loc[i-1, 'T_s'], df.loc[i, "TotalE"])
+
+                print(df.loc[i-1, 'T_s'] + (df.loc[i, "TotalE"]) / (dx * rho_i * ci), conduct( df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
 
                 """Hot Ice"""
                 if (df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]) > 0:
@@ -432,15 +463,22 @@ def icestupa(df, fountain, surface):
             """ Quantities of all phases """
             df.loc[i, "T_s"] = df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]
             df.loc[i, "meltwater"] = df.loc[i - 1, "meltwater"] + df.loc[i, "melted"]
-            df.loc[i, "ice"] = df.loc[i - 1, "ice"] + df.loc[i, "solid"] + df.loc[i, "ppt"] + df.loc[i, "deposition"]
+            df.loc[i, "ice"] = (
+                df.loc[i - 1, "ice"]
+                + df.loc[i, "solid"]
+                + df.loc[i, "ppt"]
+                + df.loc[i, "deposition"]
+            )
             df.loc[i, "vapour"] = df.loc[i - 1, "vapour"] + df.loc[i, "gas"]
             df.loc[i, "sprayed"] = (
                 df.loc[i - 1, "sprayed"] + df.loc[i, "Discharge"] * time_steps / 60
             )
             df.loc[i, "water"] = df.loc[i - 1, "water"] + df.loc[i, "liquid"]
-            df.loc[i, "iceV"] = (df.loc[i, "ice"] - df.loc[i, "ppt"]) / rho_i + df.loc[i, "ppt"] / surface["snow_fall_density"]
+            df.loc[i, "iceV"] = (df.loc[i, "ice"] - df.loc[i, "ppt"]) / rho_i + df.loc[
+                i, "ppt"
+            ] / surface["snow_fall_density"]
 
-            logger.critical(
+            logger.debug(
                 "Ice volume is %s and meltwater is %s at %s",
                 df.loc[i, "ice"],
                 df.loc[i, "meltwater"],
@@ -452,9 +490,12 @@ def icestupa(df, fountain, surface):
     print("Ice Volume Max", float(df["iceV"].max()))
     print(
         "Fountain efficiency",
-        float((df["meltwater"].tail(1) + df["ice"].tail(1)) / (
-                    df["sprayed"].tail(1) + df["ppt"].sum() + df["deposition"].sum()) * 100
-              ))
+        float(
+            (df["meltwater"].tail(1) + df["ice"].tail(1))
+            / (df["sprayed"].tail(1) + df["ppt"].sum() + df["deposition"].sum())
+            * 100
+        ),
+    )
 
     print("Ice Mass Remaining", float(df["ice"].tail(1)))
     print("Meltwater", float(df["meltwater"].tail(1)))
@@ -465,6 +506,6 @@ def icestupa(df, fountain, surface):
     print("Water not frozen", float(df["water"].tail(1)))
     print("Model ended", df.loc[i - 1, "When"])
     print("Model runtime", df.loc[i - 1, "When"] - df.loc[start, "When"])
-    print("Max growth rate", float(df["solid"].max()/5))
+    print("Max growth rate", float(df["solid"].max() / 5))
 
     return df
