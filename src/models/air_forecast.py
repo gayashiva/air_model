@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import math
 import logging
+from tqdm import tqdm
 from src.data.config import fountain, surface, site, option, dates, folders
 
 pd.options.mode.chained_assignment = None  # Suppress Setting with warning
@@ -75,7 +76,7 @@ def icestupa(df, fountain, surface):
     )  # todo implement variable spray radius for variable discharge
 
     """ Simulation """
-    for i in range(1, df.shape[0]):
+    for i in tqdm(range(1, df.shape[0])):
 
         # Ice Melted
         if df.loc[i - 1, "iceV"] <= 0:
