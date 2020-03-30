@@ -39,12 +39,13 @@ k = 2.1  # thermal conductivity of wall material in W / (m*K)
 c = 2.097 * 1000  # specific heat capacity in J / (kg*K)
 sigma = 5.6704E-08  # Stefan-Boltzmann constant in W * m^-2 * K^-4
 h = 0.0  # convective heat transfer coefficient in W / (m^2 * K)
+Q_dot_in = -300.0 # heater power in watts
 
 T_initial = 263.0 # initial temperature in Kelvin
 T_inf = 273.0 # ambient temperature in Kelvin
 
-L = 1 # thickness of the entire wall in meters
-N = 10 # number of discrete wall segments
+L = 0.01 # thickness of the entire wall in meters
+N = 2 # number of discrete wall segments
 dx = L/N # length of each wall segment in meters
 
 total_time = 5*60.0 # total duration of simulation in seconds
@@ -87,7 +88,7 @@ for i in range(len(x)):
 # print X
 # print T
 
-Q_dot_in = 0.0 # heater power in watts
+
 #T_out = T[len(x)-1, 0]
 #Q_dot_out = sigma * A * (pow(T_out,4) - pow(T_inf,4)) + h * A * (T_out - T_inf)
 
