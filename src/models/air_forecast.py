@@ -304,10 +304,9 @@ def icestupa(df, fountain, surface):
                 ) / L
 
                 # Ice Temperature
-                # df.loc[i, "delta_T_s"] += (
-                #     df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
-                # ) / (ice_layer * ci)
-                df.loc[i, "delta_T_s"] += conduct(df.loc[i-1, 'T_s'], df.loc[i, "Ql"])
+                df.loc[i, "delta_T_s"] += (
+                    df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
+                ) / (ice_layer * ci)
 
                 logger.debug(
                     "Gas made after sublimation is %s ", round(df.loc[i, "gas"])
@@ -402,8 +401,8 @@ def icestupa(df, fountain, surface):
                 else:
                     """ When fountain off and energy negative """
                     # Cooling Ice
-                    # df.loc[i, "delta_T_s"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
-                    df.loc[i, "delta_T_s"] += conduct(df.loc[i-1, 'T_s'], df.loc[i, "TotalE"])
+                    df.loc[i, "delta_T_s"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
+                    # df.loc[i, "delta_T_s"] += conduct(df.loc[i-1, 'T_s'], df.loc[i, "TotalE"])
 
                 logger.debug(
                     "Ice made after energy neg is %s thick at temp %s",
@@ -414,8 +413,8 @@ def icestupa(df, fountain, surface):
             else:
 
                 # Heating Ice
-                # df.loc[i, "delta_T_s"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
-                df.loc[i, "delta_T_s"] += conduct(df.loc[i-1, 'T_s'], df.loc[i, "TotalE"])
+                df.loc[i, "delta_T_s"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
+                # df.loc[i, "delta_T_s"] += conduct(df.loc[i-1, 'T_s'], df.loc[i, "TotalE"])
 
                 # print(df.loc[i-1, 'T_s'], df.loc[i, "TotalE"])
 
@@ -464,7 +463,7 @@ def icestupa(df, fountain, surface):
                 i, "ppt"
             ] / surface["snow_fall_density"]
 
-            logger.critical(
+            logger.debug(
                 "Ice volume is %s and temperature is %s at %s",
                 df.loc[i, "ice"],
                 df.loc[i, "T_s"],
