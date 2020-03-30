@@ -6,8 +6,8 @@ dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 # site = input("Input the Field Site Name: ") or "guttannen"
 
-site = "schwarzsee"
-option = "schwarzsee"
+site = "guttannen"
+option = "guttannen"
 
 print("Site is", site)
 
@@ -102,13 +102,13 @@ if site == "guttannen":
         dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
         input_folder=os.path.join(dir, "data/interim/guttannen/"),
         output_folder=os.path.join(dir, "data/processed/guttannen/"),
-        data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
+        data_file=os.path.join(dir, "data/raw/" + site + "_2020.txt"),
     )
 
     dates = dict(
-        start_date=datetime(2018, 1, 10),
-        end_date=datetime(2018, 3, 1),
-        fountain_off_date=datetime(2018, 2, 1),
+        start_date=datetime(2019, 11, 22),
+        end_date=datetime(2020, 1, 20),
+        fountain_off_date=datetime(2020, 2, 1),
     )
     fountain = dict(
         aperture_f=0.005,  # Fountain hole diameter
