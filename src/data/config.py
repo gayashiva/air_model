@@ -106,8 +106,8 @@ if site == "guttannen":
     )
 
     dates = dict(
-        start_date=datetime(2019, 11, 22),
-        end_date=datetime(2020, 1, 20),
+        start_date=datetime(2019, 12, 14),
+        end_date=datetime(2020, 1, 19),
         fountain_off_date=datetime(2020, 2, 1),
     )
     fountain = dict(

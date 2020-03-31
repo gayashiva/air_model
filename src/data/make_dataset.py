@@ -393,7 +393,6 @@ if __name__ == '__main__':
                 "Wind Speed": "v_a",
                 "Temperature": "T_a",
                 "Humidity": "RH",
-                "Volume": "V",
                 "Pressure": "p_a",
             },
             inplace=True,
@@ -484,7 +483,15 @@ if __name__ == '__main__':
         df_in = df_in.drop(["Pluviometer"], axis=1)
         df_in = df_in.drop(["Wind Direction"], axis=1)
 
-        print(df_in.head())
+        mask = (df_in["When"] >= dates["start_date"]) & (df_in["When"] <= dates["end_date"])
+        df_in = df_in.loc[mask]
+        df_in = df_in.reset_index()
+
+        # Error Correction
+
+        # v_a mean
+        v_a = df_in["Wind Speed"].replace(5643.2, np.NaN).mean()  # m/s Average Humidity
+        df_in["Wind Speed"] = df_in["Wind Speed"].replace(5643.2, v_a)
 
         """
                 Parameter
@@ -499,12 +506,12 @@ if __name__ == '__main__':
         # Add Radiation data
         df_in2 = pd.read_csv(os.path.join(folders["dirname"], "data/raw/guttannen_2020_add.txt"), encoding="latin-1", skiprows=2, sep=";")
         df_in2["When"] = pd.to_datetime(df_in2["time"], format="%Y%m%d%H%M")  # Datetime
-        print(df_in2.head())
 
         # Convert to int
         df_in2["oli000z0"] = pd.to_numeric(
             df_in2["oli000z0"], errors="coerce"
         )  # Add Longwave Radiation data
+
         df_in2["gre000z0"] = pd.to_numeric(
             df_in2["gre000z0"], errors="coerce"
         )  # Add Radiation data
@@ -513,7 +520,6 @@ if __name__ == '__main__':
             df_in2["rre150z0"], errors="coerce"
         )  # Add Precipitation data
 
-        df_in2["p_a"] = pd.to_numeric(df_in2["prestas0"], errors="coerce")  # Air pressure
         df_in2["vpa"] = pd.to_numeric(
             df_in2["pva200s0"], errors="coerce"
         )  # Vapour pressure over air
@@ -524,6 +530,8 @@ if __name__ == '__main__':
         df_in2["DRad"] = df_in2["gre000z0"] * 0.1
         df_in2["LW"] = df_in2["oli000z0"]
 
+        df_in2 = df_in2.set_index("When").resample("5T").ffill().reset_index()
+
         mask = (df_in["When"] >= dates["start_date"]) & (df_in["When"] <= dates["end_date"])
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
@@ -533,6 +541,8 @@ if __name__ == '__main__':
         )
         df_in2 = df_in2.loc[mask]
         df_in2 = df_in2.reset_index()
+
+
 
         days = pd.date_range(start=dates["start_date"], end=dates["end_date"], freq="5T")
         days = pd.DataFrame({"When": days})
@@ -563,6 +573,7 @@ if __name__ == '__main__':
         df = df.loc[mask]
         df = df.reset_index()
 
+
         df["cld"] = 0
         df["SEA"] = 0
         df["e_a"] = 0
@@ -573,19 +584,41 @@ if __name__ == '__main__':
                 "Wind Speed": "v_a",
                 "Temperature": "T_a",
                 "Humidity": "RH",
-                "Volume": "V",
                 "Pressure": "p_a",
             },
             inplace=True,
         )
 
+        # Error Correction
+        df["Rad"] = df["Rad"].replace(np.NaN, 0)
+        df["DRad"] = df["DRad"].replace(np.NaN, 0)
+        df["Prec"] = df["Prec"].replace(np.NaN, 0)
+        df["vpa"] = df["vpa"].replace(np.NaN, 0)
+
+        # print(df['Rad'].head(100))
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111)
+        # x = df.When
+        # y1 = df['Rad']
+        # ax1.plot(x, y1, "k-", linewidth=0.5)
+        # ax1.set_ylabel("Radiation")
+        # ax1.grid()
+        #
+        # # format the ticks
+        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        # ax1.grid()
+        # fig.autofmt_xdate()
+        # plt.show()
+
         for i in range(1, df.shape[0]):
-            if np.isnan(df.loc[i, "Rad"]):
-                df.loc[i, "Rad"] = df.loc[i - 1, "Rad"]
-            if np.isnan(df.loc[i, "DRad"]):
-                df.loc[i, "DRad"] = df.loc[i - 1, "DRad"]
-            if np.isnan(df.loc[i, "Prec"]):
-                df.loc[i, "Prec"] = df.loc[i - 1, "Prec"]
+            # if np.isnan(df.loc[i, "Rad"]):
+            #     df.loc[i, "Rad"] = df.loc[i - 1, "Rad"]
+            # if np.isnan(df.loc[i, "DRad"]):
+            #     df.loc[i, "DRad"] = df.loc[i - 1, "DRad"]
+            # if np.isnan(df.loc[i, "Prec"]):
+            #     df.loc[i, "Prec"] = df.loc[i - 1, "Prec"]
 
             """Solar Elevation Angle"""
             df.loc[i, "SEA"] = getSEA(
@@ -630,7 +663,7 @@ if __name__ == '__main__':
 
         df_out = df_out.round(5)
 
-        print(df_out.head())
+        print(df_out.tail())
 
     filename = folders["input_folder"] + site
 

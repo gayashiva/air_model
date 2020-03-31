@@ -98,7 +98,7 @@ def icestupa(df, fountain, surface):
     time_steps = 5 * 60  # s Model time steps
     p0 = 1013  # Standard air pressure hPa
     ftl = 0  # Fountain flight time loss ftl
-    dx = 0.001  # Ice layer thickness dx #todo temperature gradient required to model
+    dx = 0.0001  # Ice layer thickness dx #todo temperature gradient required to model
 
     """Initialise"""
     start = 0  # model start step

@@ -90,16 +90,6 @@ else:
     print("Total time : ", total / 60)
 
 
-# # Output for manim
-# filename2 = os.path.join(folders["output_folder"], site + "_model_gif.csv")
-# cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
-# df[cols].to_csv(filename2, sep=",")
-
-# Output for energy balance
-# filename3 = os.path.join(folders["output_folder"], site + "_model_energy.csv")
-# cols = ["When", "SW", "LW", "Qs", "Ql", "SA", "iceV"]
-# df[cols].to_csv(filename3, sep=",")
-
 # Full Output
 if option == "temperature":
     filename2 = (
@@ -368,23 +358,23 @@ if option == "schwarzsee":
     ax1.set_ylabel("Ice Volume [$m^3$]")
     ax1.set_xlabel("Days")
 
-    # Include Validation line segment 1
-    ax1.plot(
-        [datetime(2019, 2, 14, 16), datetime(2019, 2, 14, 16)],
-        [0.67115, 1.042],
-        color="green",
-        lw=1,
-    )
-    ax1.scatter(datetime(2019, 2, 14, 16), 0.856575, color="green", marker="o")
-
-    # Include Validation line segment 2
-    ax1.plot(
-        [datetime(2019, 3, 10, 18), datetime(2019, 3, 10, 18)],
-        [0.037, 0.222],
-        color="green",
-        lw=1,
-    )
-    ax1.scatter(datetime(2019, 3, 10, 18), 0.1295, color="green", marker="o")
+    # # Include Validation line segment 1
+    # ax1.plot(
+    #     [datetime(2019, 2, 14, 16), datetime(2019, 2, 14, 16)],
+    #     [0.67115, 1.042],
+    #     color="green",
+    #     lw=1,
+    # )
+    # ax1.scatter(datetime(2019, 2, 14, 16), 0.856575, color="green", marker="o")
+    #
+    # # Include Validation line segment 2
+    # ax1.plot(
+    #     [datetime(2019, 3, 10, 18), datetime(2019, 3, 10, 18)],
+    #     [0.037, 0.222],
+    #     color="green",
+    #     lw=1,
+    # )
+    # ax1.scatter(datetime(2019, 3, 10, 18), 0.1295, color="green", marker="o")
 
     #  format the ticks
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
