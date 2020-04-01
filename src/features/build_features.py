@@ -445,7 +445,7 @@ if option == "schwarzsee":
 
     y1.plot(kind='bar', stacked=True, edgecolor='black', linewidth=0.5, color=['#D9E9FA', '#0C70DE'], ax=ax1)
     ax1.set_ylabel('Thickness Change [$cm$]')
-    ax1.set_ylim(-2.5, 2.5)
+    ax1.set_ylim(-5, 5)
     ax1.legend(loc='upper right' , prop={'size': 6})
 
     ax1.grid( axis="y",color="black", alpha=.3, linewidth=.5, which="major")
@@ -476,7 +476,7 @@ if option == "schwarzsee":
     plt.xlabel('Days')
     plt.ylabel('Energy [$W\,m^{-2}$]')
     plt.legend(loc='upper left')
-    plt.ylim(-150, 150)
+    plt.ylim(-300, 300)
     plt.xticks(rotation=45)
     pp.savefig(bbox_inches="tight")
     plt.clf()

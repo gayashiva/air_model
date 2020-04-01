@@ -530,8 +530,8 @@ if __name__ == '__main__':
             df_in3["rre150z0"], errors="coerce"
         )  # Add Precipitation data
 
-        df_in3["vpa"] = pd.to_numeric(
-            df_in2["pva200s0"], errors="coerce"
+        df_in3["vp_a"] = pd.to_numeric(
+            df_in3["pva200s0"], errors="coerce"
         )  # Vapour pressure over air
 
         df_in3["Prec"] = df_in3["Prec"] / 1000
@@ -544,13 +544,11 @@ if __name__ == '__main__':
             df_in3["fkl010z0"], errors="coerce"
         )  # Wind speed
 
+        df_in3["Wind Speed"] = df_in3["Wind Speed"]/3.6
+
         df_in3["Humidity"] = pd.to_numeric(
             df_in3["ure200s0"], errors="coerce"
         )
-
-        df_in2["Rad"] = df_in2["gre000z0"] - df_in2["gre000z0"] * 0.1
-        df_in2["DRad"] = df_in2["gre000z0"] * 0.1
-        df_in2["LW"] = df_in2["oli000z0"]
 
         df_in2 = df_in2.set_index("When").resample("5T").ffill().reset_index()
         df_in3 = df_in3.set_index("When").resample("5T").ffill().reset_index()
@@ -583,8 +581,8 @@ if __name__ == '__main__':
         df_5 = df_in2.loc[mask]
         df_5 = df_5.reset_index()
         df_4["Pressure"] = df_5["prestas0"]
-        df_4["Rad"] = df_5["Rad"]
-        df_4["DRad"] = df_5["DRad"]
+        df_4["gre000z0"] = df_5["gre000z0"]
+        df_4["oli000z0"] = df_5["oli000z0"]
 
 
         df_4["Discharge"] = 0
@@ -607,8 +605,8 @@ if __name__ == '__main__':
                 [
                     "When",
                     "Discharge",
-                    "Wind Speed",
                     "Temperature",
+                    "Wind Speed",
                     "Humidity",
                     "Pressure",
                 ]
@@ -616,12 +614,11 @@ if __name__ == '__main__':
             on="When",
         )
 
-        # Add Radiation DataFrame
-        df["Rad"] = df_2["Rad"]
-        df["DRad"] = df_2["DRad"]
-        df["LW"] = df_2["LW"]
+        # Fill with other station-
+        df["gre000z0"] = df_2["gre000z0"]
+        df["oli000z0"] = df_2["oli000z0"]
         df["Prec"] = df_3["Prec"]
-        df["vp_a"] = df_3["vpa"]
+        df["vp_a"] = df_3["vp_a"]
 
         mask = (df["When"] >= dates["start_date"]) & (df["When"] <= dates["error_date"])
         df = df.loc[mask]
@@ -643,12 +640,14 @@ if __name__ == '__main__':
         )
 
         # Error Correction
-        df["Rad"] = df["Rad"].replace(np.NaN, 0)
-        df["DRad"] = df["DRad"].replace(np.NaN, 0)
+        df["gre000z0"] = df["gre000z0"].replace(np.NaN, 0)
         df["Prec"] = df["Prec"].replace(np.NaN, 0)
         df["vp_a"] = df["vp_a"].replace(np.NaN, 0)
 
-        df["cld"] = 0
+        cld = 0.5
+        df["Rad"] = df_in2["gre000z0"] - df_in2["gre000z0"] * cld
+        df["DRad"] = df_in2["gre000z0"] * cld
+        df["cld"] = cld
         df["SEA"] = 0
         df["e_a"] = 0
 
@@ -663,23 +662,6 @@ if __name__ == '__main__':
                 fountain["utc_offset"],
             )
 
-            """Cloudiness"""
-            # Cloudiness from diffuse fraction
-            if df.loc[i, "Rad"] + df.loc[i, "DRad"] > 1:
-                df.loc[i, "cld"] = df.loc[i, "DRad"] / (
-                        df.loc[i, "Rad"] + df.loc[i, "DRad"]
-                )
-            else:
-                # Night Cloudiness average of last 8 hours
-                if i - 96 > 0:
-                    for j in range(i - 96, i):
-                        df.loc[i, "cld"] += df.loc[j, "cld"]
-                    df.loc[i, "cld"] = df.loc[i, "cld"] / 96
-                else:
-                    for j in range(0, i):
-                        df.loc[i, "cld"] += df.loc[j, "cld"]
-                    df.loc[i, "cld"] = df.loc[i, "cld"] / i
-
             """ Vapour Pressure"""
             if "vpa" not in list(df.columns):
                 df.loc[i, "vp_a"] = (6.11 * math.pow(10, 7.5 * df.loc[i - 1, "T_a"] / (df.loc[i - 1, "T_a"] + 237.3)) * df.loc[i, "RH"] / 100)
@@ -690,10 +672,8 @@ if __name__ == '__main__':
             df.loc[i, "e_a"] = ( 1.24 * math.pow(abs(df.loc[i, "vp_a"] / (df.loc[i, "T_a"] + 273.15)), 1 / 7)
                                ) * (1 + 0.22 * math.pow(df.loc[i, "cld"], 2))
 
-
-
         df_out = df[
-            ["When", "T_a", "RH", "v_a", "Discharge", "Rad", "DRad", "Prec", "p_a", "SEA", "cld", "vp_a", "e_a"]
+            ["When", "T_a", "RH", "v_a", "Discharge", "Rad", "DRad", "oli000z0", "Prec", "p_a", "SEA", "cld", "vp_a", "e_a"]
         ]
 
         df_out = df_out.round(5)
