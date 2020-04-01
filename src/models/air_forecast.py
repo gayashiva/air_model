@@ -139,6 +139,7 @@ def icestupa(df, fountain, surface):
     R_f = (
         df["r_f"].replace(0, np.NaN).mean()
     )  # todo implement variable spray radius for variable discharge
+    R_f = 8
 
     """ Simulation """
     for i in tqdm(range(1, df.shape[0])):
@@ -470,7 +471,7 @@ def icestupa(df, fountain, surface):
                 df.loc[i, "When"],
             )
 
-    df = df[start:i]
+    # df = df[start:i]
 
     print("Ice Volume Max", float(df["iceV"].max()))
     print(

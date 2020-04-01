@@ -7,6 +7,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from pandas.plotting import register_matplotlib_converters
 import math
 import time
+from tqdm import tqdm
 from pathlib import Path
 import os
 import logging
@@ -497,10 +498,14 @@ if __name__ == '__main__':
                 Parameter
                 ---------
                           Unit                                 Description
-                pva200s0  hPa                                  Vapour pressure 2 m above ground; current value
+                oli000z0
                 prestas0  hPa                                  Pressure at station level (QFE); current value
                 gre000z0  W/m²                                 Global radiation; ten minutes mean
+                pva200s0  hPa                                  Vapour pressure 2 m above ground; current value
                 rre150z0  mm                                   Precipitation; ten minutes total
+                ure200s0  %                                    Relative air humidity 2 m above ground;
+                fkl010z0  m/s                                  Wind speed scalar; ten minutes mean
+                tre200s0  °C                                   Air temperature 2 m above ground; current
         """
 
         # Add Radiation data
@@ -516,35 +521,84 @@ if __name__ == '__main__':
             df_in2["gre000z0"], errors="coerce"
         )  # Add Radiation data
 
-        df_in2["Prec"] = pd.to_numeric(
-            df_in2["rre150z0"], errors="coerce"
+        # Add rest of data
+        df_in3 = pd.read_csv(os.path.join(folders["dirname"], "data/raw/guttannen_2020_add_2.txt"), encoding="latin-1",
+                             skiprows=2, sep=";")
+        df_in3["When"] = pd.to_datetime(df_in3["time"], format="%Y%m%d%H%M")  # Datetime
+
+        df_in3["Prec"] = pd.to_numeric(
+            df_in3["rre150z0"], errors="coerce"
         )  # Add Precipitation data
 
-        df_in2["vpa"] = pd.to_numeric(
+        df_in3["vpa"] = pd.to_numeric(
             df_in2["pva200s0"], errors="coerce"
         )  # Vapour pressure over air
 
-        df_in2["Prec"] = df_in2["Prec"] / 1000
+        df_in3["Prec"] = df_in3["Prec"] / 1000
+
+        df_in3["Temperature"] = pd.to_numeric(
+            df_in3["tre200s0"], errors="coerce"
+        )  # Air temperature
+
+        df_in3["Wind Speed"] = pd.to_numeric(
+            df_in3["fkl010z0"], errors="coerce"
+        )  # Wind speed
+
+        df_in3["Humidity"] = pd.to_numeric(
+            df_in3["ure200s0"], errors="coerce"
+        )
 
         df_in2["Rad"] = df_in2["gre000z0"] - df_in2["gre000z0"] * 0.1
         df_in2["DRad"] = df_in2["gre000z0"] * 0.1
         df_in2["LW"] = df_in2["oli000z0"]
 
         df_in2 = df_in2.set_index("When").resample("5T").ffill().reset_index()
+        df_in3 = df_in3.set_index("When").resample("5T").ffill().reset_index()
 
-        mask = (df_in["When"] >= dates["start_date"]) & (df_in["When"] <= dates["end_date"])
+        mask = (df_in["When"] >= dates["start_date"]) & (df_in["When"] <= dates["error_date"])
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
 
         mask = (df_in2["When"] >= dates["start_date"]) & (
+                df_in2["When"] <= dates["error_date"]
+        )
+        df_2 = df_in2.loc[mask]
+        df_2 = df_2.reset_index()
+
+        mask = (df_in3["When"] >= dates["start_date"]) & (
+                df_in3["When"] <= dates["error_date"]
+        )
+        df_3 = df_in3.loc[mask]
+        df_3 = df_3.reset_index()
+
+        mask = (df_in3["When"] >= dates["error_date"]) & (
+                df_in3["When"] <= dates["end_date"]
+        )
+        df_4 = df_in3.loc[mask]
+        df_4 = df_4.reset_index()
+
+        mask = (df_in2["When"] >= dates["error_date"]) & (
                 df_in2["When"] <= dates["end_date"]
         )
-        df_in2 = df_in2.loc[mask]
-        df_in2 = df_in2.reset_index()
+        df_5 = df_in2.loc[mask]
+        df_5 = df_5.reset_index()
+        df_4["Pressure"] = df_5["prestas0"]
+        df_4["Rad"] = df_5["Rad"]
+        df_4["DRad"] = df_5["DRad"]
 
 
+        df_4["Discharge"] = 0
+        mask = df_4["Temperature"] < fountain["crit_temp"]
+        mask_index = df_4[mask].index
+        df_4.loc[mask_index, "Discharge"] = 15
+        mask = df_4["When"] >= dates["fountain_off_date"]
+        mask_index = df_4[mask].index
+        df_4.loc[mask_index, "Discharge"] = 0
 
-        days = pd.date_range(start=dates["start_date"], end=dates["end_date"], freq="5T")
+        # print(df_3.tail())
+        # print(df_4.head())
+
+        days = pd.date_range(start=dates["start_date"], end=dates["error_date"], freq="5T")
         days = pd.DataFrame({"When": days})
 
         df = pd.merge(
@@ -554,7 +608,6 @@ if __name__ == '__main__':
                     "When",
                     "Discharge",
                     "Wind Speed",
-                    "Maximum Wind Speed",
                     "Temperature",
                     "Humidity",
                     "Pressure",
@@ -564,19 +617,19 @@ if __name__ == '__main__':
         )
 
         # Add Radiation DataFrame
-        df["Rad"] = df_in2["Rad"]
-        df["DRad"] = df_in2["DRad"]
-        df["Prec"] = df_in2["Prec"]
-        df["vpa"] = df_in2["vpa"]
+        df["Rad"] = df_2["Rad"]
+        df["DRad"] = df_2["DRad"]
+        df["LW"] = df_2["LW"]
+        df["Prec"] = df_3["Prec"]
+        df["vp_a"] = df_3["vpa"]
 
-        mask = (df["When"] >= dates["start_date"]) & (df["When"] <= dates["end_date"])
+        mask = (df["When"] >= dates["start_date"]) & (df["When"] <= dates["error_date"])
         df = df.loc[mask]
         df = df.reset_index()
 
-
-        df["cld"] = 0
-        df["SEA"] = 0
-        df["e_a"] = 0
+        # Add rest of data
+        df_4 = df_4.reindex(df_4.index.drop(0)).reset_index(drop=True)
+        df = df.append(df_4, ignore_index=True)
 
         # CSV output
         df.rename(
@@ -593,32 +646,14 @@ if __name__ == '__main__':
         df["Rad"] = df["Rad"].replace(np.NaN, 0)
         df["DRad"] = df["DRad"].replace(np.NaN, 0)
         df["Prec"] = df["Prec"].replace(np.NaN, 0)
-        df["vpa"] = df["vpa"].replace(np.NaN, 0)
+        df["vp_a"] = df["vp_a"].replace(np.NaN, 0)
 
-        # print(df['Rad'].head(100))
-        # fig = plt.figure()
-        # ax1 = fig.add_subplot(111)
-        # x = df.When
-        # y1 = df['Rad']
-        # ax1.plot(x, y1, "k-", linewidth=0.5)
-        # ax1.set_ylabel("Radiation")
-        # ax1.grid()
-        #
-        # # format the ticks
-        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        # ax1.grid()
-        # fig.autofmt_xdate()
-        # plt.show()
+        df["cld"] = 0
+        df["SEA"] = 0
+        df["e_a"] = 0
 
-        for i in range(1, df.shape[0]):
-            # if np.isnan(df.loc[i, "Rad"]):
-            #     df.loc[i, "Rad"] = df.loc[i - 1, "Rad"]
-            # if np.isnan(df.loc[i, "DRad"]):
-            #     df.loc[i, "DRad"] = df.loc[i - 1, "DRad"]
-            # if np.isnan(df.loc[i, "Prec"]):
-            #     df.loc[i, "Prec"] = df.loc[i - 1, "Prec"]
+
+        for i in tqdm(range(1, df.shape[0])):
 
             """Solar Elevation Angle"""
             df.loc[i, "SEA"] = getSEA(
@@ -690,7 +725,7 @@ if __name__ == '__main__':
     Area = math.pi * math.pow(fountain["aperture_f"], 2) / 4
 
 
-    for i in range(1, df.shape[0]):
+    for i in tqdm(range(1, df.shape[0])):
 
         if option == "schwarzsee":
 

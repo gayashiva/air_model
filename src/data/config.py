@@ -106,15 +106,16 @@ if site == "guttannen":
     )
 
     dates = dict(
-        start_date=datetime(2019, 12, 14),
-        end_date=datetime(2020, 1, 19),
-        fountain_off_date=datetime(2020, 2, 1),
+        start_date=datetime(2019, 11, 21),
+        end_date=datetime(2020, 2, 15),
+        error_date=datetime(2020, 1, 19),
+        fountain_off_date=datetime(2020, 3, 1),
     )
     fountain = dict(
         aperture_f=0.005,  # Fountain aperture diameter
         h_f=4,  # Fountain steps h_f
         discharge=3.58,  # Fountain on discharge
-        crit_temp=-5,  # Fountain runtime temperature
+        crit_temp=0,  # Fountain runtime temperature
         latitude=46.656640,
         longitude=8.291040,
         utc_offset=1,
