@@ -419,7 +419,7 @@ def icestupa(df, fountain, surface):
 
                 # print(df.loc[i-1, 'T_s'], df.loc[i, "TotalE"])
 
-                # print((df.loc[i, "TotalE"]) / (dx * rho_i * ci), df.loc[i, "delta_T_s"], df.loc[i, "When"])
+                # print((df.loc[i, "TotalE"] * time_steps) / (dx * rho_i * ci), df.loc[i, "delta_T_s"], df.loc[i, "When"])
 
                 """Hot Ice"""
                 if (df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]) > 0:
