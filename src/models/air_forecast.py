@@ -18,11 +18,11 @@ def icestupa(df, fountain, surface):
     logger.critical("This is a critical message")
 
     """Constants"""
-    Ls = 2848 * 1000  # J/kg Sublimation
-    Le = 2514 * 1000  # J/kg Evaporation
-    Lf = 334 * 1000  #  J/kg Fusion
-    cw = 4.186 * 1000  # J/kgC Specific heat water
-    ci = 2.108 * 1000  # J/kgC Specific heat ice
+    L_s = 2848 * 1000  # J/kg Sublimation
+    L_e = 2514 * 1000  # J/kg Evaporation
+    L_f = 334 * 1000  #  J/kg Fusion
+    c_w = 4.186 * 1000  # J/kgC Specific heat water
+    c_i = 2.108 * 1000  # J/kgC Specific heat ice
     rho_w = 1000  # Density of water
     rho_i = 916  # Density of Ice rho_i
     rho_a = 1.29  # kg/m3 air density at mean sea level
@@ -37,7 +37,7 @@ def icestupa(df, fountain, surface):
     """Initialise"""
     start = 0  # model start step
     state = 0
-    ice_layer = 0
+    ice_thickness = 0
 
     l = [
         "T_s",  # Surface Temperature
@@ -93,11 +93,10 @@ def icestupa(df, fountain, surface):
             start = i - 1  # Set Model start time
             df.loc[i - 1, "r_ice"] = R_f
             df.loc[i - 1, "h_ice"] = surface['dx']
-            ice_layer = surface['dx'] * math.pi * R_f**2 * rho_i
             df.loc[i - 1, "iceV"] = surface['dx'] * math.pi * R_f**2
 
             logger.debug(
-                "Ice layer initialised %s thick at %s", ice_layer, df.loc[i, "When"]
+                "Ice layer initialised %s thick at %s", df.loc[i - 1, "iceV"], df.loc[i, "When"]
             )
 
 
@@ -184,8 +183,8 @@ def icestupa(df, fountain, surface):
             )
 
             # Update AIR ice layer
-            ice_layer = surface['dx'] * df.loc[i, "SA"] * rho_i
-            logger.debug("Ice layer is %s thick at %s", ice_layer, df.loc[i, "When"])
+            ice_thickness = surface['dx'] * rho_i
+            logger.debug("Ice layer is %s thick at %s", ice_thickness, df.loc[i, "When"])
 
             # Precipitation to ice quantity
             if df.loc[i, "T_a"] < surface["rain_temp"]:
@@ -210,13 +209,13 @@ def icestupa(df, fountain, surface):
             # Water Boundary
             if df.Discharge[i] > 0:
                 df.loc[i, "vp_s"] = df.loc[i, "vp_w"]
-                L = Le
-                c_s = cw
+                L = L_e
+                c_s = c_w
 
             else:
                 df.loc[i, "vp_s"] = df.loc[i, "vp_ice"]
-                L = Ls
-                c_s = ci
+                L = L_s
+                c_s = c_i
 
 
 
@@ -246,8 +245,8 @@ def icestupa(df, fountain, surface):
 
                 # Ice Temperature
                 df.loc[i, "delta_T_s"] += (
-                    df.loc[i, "Ql"] * df.loc[i, "SA"] * time_steps
-                ) / (ice_layer * ci)
+                    df.loc[i, "Ql"] * time_steps
+                ) / (ice_thickness * c_i)
 
                 logger.debug(
                     "Gas made after sublimation is %s ",
@@ -295,7 +294,7 @@ def icestupa(df, fountain, surface):
 
             # Conduction Freezing
             if (df.loc[i, "liquid"] > 0) & (df.loc[i - 1, "T_s"] < 0):
-                df.loc[i, "Qc"] = ice_layer * ci * (-df.loc[i - 1, "T_s"]) / (df.loc[i, "SA"] * time_steps)
+                df.loc[i, "Qc"] = ice_thickness * c_i * (-df.loc[i - 1, "T_s"]) / time_steps
                 df.loc[i, "delta_T_s"] = -df.loc[i - 1, "T_s"]
 
                 logger.debug(
@@ -323,19 +322,19 @@ def icestupa(df, fountain, surface):
 
                     """Freezing water"""
 
-                    df.loc[i, "liquid"] -= (df.loc[i, "EJoules"]) / (-Lf)
+                    df.loc[i, "liquid"] -= (df.loc[i, "EJoules"]) / (-L_f)
 
                     if df.loc[i, "liquid"] < 0:
-                        df.loc[i, "liquid"] += (df.loc[i, "EJoules"]) / (-Lf)
+                        df.loc[i, "liquid"] += (df.loc[i, "EJoules"]) / (-L_f)
                         df.loc[i, "solid"] += df.loc[i, "liquid"]
                         df.loc[i, "liquid"] = 0
                     else:
-                        df.loc[i, "solid"] += (df.loc[i, "EJoules"]) / (-Lf)
+                        df.loc[i, "solid"] += (df.loc[i, "EJoules"]) / (-L_f)
 
                 else:
                     """ When fountain off and energy negative """
                     # Cooling Ice
-                    df.loc[i, "delta_T_s"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
+                    df.loc[i, "delta_T_s"] += (df.loc[i, "TotalE"] * time_steps) / (ice_thickness * c_i)
 
                 logger.debug(
                     "Ice made after energy neg is %s thick at temp %s",
@@ -346,22 +345,22 @@ def icestupa(df, fountain, surface):
             else:
 
                 # Heating Ice
-                df.loc[i, "delta_T_s"] += (df.loc[i, "EJoules"]) / (ice_layer * ci)
+                df.loc[i, "delta_T_s"] += (df.loc[i, "TotalE"] * time_steps ) / (ice_thickness * c_i)
 
                 """Hot Ice"""
                 if (df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]) > 0:
 
                     # Melting Ice by Temperature
                     df.loc[i, "solid"] -= (
-                        (ice_layer * ci)
+                        (ice_thickness * c_i * df.loc[i, "SA"])
                         * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
-                        / (-Lf)
+                        / (-L_f)
                     )
 
                     df.loc[i, "melted"] += (
-                        (ice_layer * ci)
+                        (ice_thickness * c_i * df.loc[i, "SA"])
                         * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
-                        / (-Lf)
+                        / (-L_f)
                     )
 
                     df.loc[i - 1, "T_s"] = 0
