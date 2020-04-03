@@ -169,8 +169,6 @@ if __name__ == '__main__':
     for i in range(param_values.shape[0]):
         I[i], Y[i], Z[i] = q.get()   # Returns output or blocks until rea
 
-    print(Y)
-
     for j in I:
         j=int(j)
         dfo.loc[j, "ie"] = param_values[j][0]
@@ -182,5 +180,19 @@ if __name__ == '__main__':
         dfo.loc[j, "Efficiency"] = Z[j]
 
     print(dfo)
+
+    dfo = dfo.round(4)
+
+    filename2 = os.path.join(
+        folders['sim_folder'], site + "_simulations_" + str(problem["names"]) + ".csv"
+    )
+    dfo.to_csv(filename2, sep=",")
+
+    Si = sobol.analyze(problem, Y, print_to_console=True)
+
+    filename = os.path.join(
+        folders['sim_folder'], site + 'salib' + ".csv"
+    )
+    Si.to_csv(filename, sep=",")
 
     print('That took {} minutes'.format((time.time() - starttime)/60))

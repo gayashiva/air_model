@@ -49,10 +49,11 @@ filename0 = os.path.join(folders['input_folder'], site + "_input.csv")
 df_in = pd.read_csv(filename0, sep=",")
 df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
-problem = {"num_vars": 2, "names": ["ie", "a_i"], "bounds": [[0.81, 0.99], [0.36, 0.44]]}
+problem = {"num_vars": 1, "names": ["dx"],
+           "bounds": [[.001, 0.02]]}
 
 # Generate samples
-param_values = saltelli.sample(problem, 3)
+param_values = saltelli.sample(problem, 5)
 
 # Plots
 fig = plt.figure()
@@ -70,14 +71,14 @@ dfo = dfo.fillna(0)
 for i, X in enumerate(param_values):
 
     #  read files
-    filename0 = os.path.join(folders['input_folder'], site + "_input.csv")
+    filename0 = os.path.join(folders["input_folder"] + site + "_input.csv")
     df_in = pd.read_csv(filename0, sep=",")
     df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
     print(X)
-    surface['ie'] = X[0]
+    surface['dx'] = X[0]
     df = icestupa(df_in, fountain, surface)
-    dfo.loc[i, "ie"] = X[0]
+    dfo.loc[i, "dx"] = X[0]
     dfo.loc[i, "Ice"] = float(df["ice"].tail(1))
     dfo.loc[i, "Meltwater"] = float(df["meltwater"].tail(1))
     dfo.loc[i, "Vapour"] = float(df["vapour"].tail(1))
@@ -101,7 +102,7 @@ ax1.grid()
 sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
 sm.set_array([])
 cbar = fig.colorbar(sm)
-cbar.set_label("Fountain Height[$m$]")
+cbar.set_label("Layer Thickness[$m$]")
 
 # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
 fig.autofmt_xdate()
@@ -116,6 +117,6 @@ plt.clf()
 
 dfo = dfo.round(4)
 filename2 = os.path.join(
-    folders['sim_folder'], site + "_simulations__" + str(problem["names"][0]) + ".csv"
+    folders['sim_folder'], site + "_simulations_" + str(problem["names"][0]) + ".csv"
 )
 dfo.to_csv(filename2, sep=",")
