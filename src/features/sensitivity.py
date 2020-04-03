@@ -23,11 +23,11 @@ from multiprocessing import Process, Pool
 
 def icestupa_sim(index, X, q):
 
-    # surface['ie'] = X[0]
-    # surface['a_i'] = X[1]
-    # surface['a_s'] = X[2]
-    # surface['decay_t'] = X[3]
-    surface['dx'] = X[0]
+    surface['ie'] = X[0]
+    surface['a_i'] = X[1]
+    surface['a_s'] = X[2]
+    surface['decay_t'] = X[3]
+    surface['dx'] = X[4]
 
     #  read files
     filename0 = os.path.join(folders["input_folder"] + site + "_raw_input.csv")
@@ -95,7 +95,7 @@ def icestupa_sim(index, X, q):
     Max_IceV = df["iceV"].max()
     Efficiency = float((df["meltwater"].tail(1) + df["ice"].tail(1)) / (df["sprayed"].tail(1) + df["ppt"].sum() + df["deposition"].sum()))
 
-    q.put((index, Max_IceV, Efficiency))
+    q.put((int(index), Max_IceV, Efficiency))
 
 
 # Create the Logger
@@ -127,11 +127,11 @@ logger.addHandler(console_handler)
 
 if __name__ == '__main__':
 
-    # problem = {"num_vars": 5, "names": ["ie", "a_i", "a_s", "decay_t", "dx"],
-    #            "bounds": [[0.9025, 0.9975], [0.3325, 0.36175], [0.8075, 0.8925], [9.5, 10.5], [.00095, 0.00105]]}
+    problem = {"num_vars": 5, "names": ["ie", "a_i", "a_s", "decay_t", "dx"],
+               "bounds": [[0.9025, 0.9975], [0.3325, 0.36175], [0.8075, 0.8925], [9.5, 10.5], [.00095, 0.00105]]}
 
-    problem = {"num_vars": 1, "names": ["dx"],
-               "bounds": [[.00095, 0.00105]]}
+    # problem = {"num_vars": 1, "names": ["dx"],
+    #            "bounds": [[.00095, 0.00105]]}
 
     # Generate samples
     param_values = saltelli.sample(problem, 1, calc_second_order=False)
@@ -149,7 +149,6 @@ if __name__ == '__main__':
     q = mp.Queue()
 
     for j, X in enumerate(param_values):
-        print(param_values[j])
         tasks.append((j, X, q))
 
 
@@ -168,18 +167,20 @@ if __name__ == '__main__':
     I = np.zeros([param_values.shape[0]])
 
     for i in range(param_values.shape[0]):
-        print(q.get())
         I[i], Y[i], Z[i] = q.get()   # Returns output or blocks until rea
 
     print(Y)
 
     for j in I:
-        # dfo.loc[j, "ie"] = X[0]
-        # dfo.loc[j, "a_i"] = X[1]
-        # dfo.loc[j, "a_s"] = X[2]
-        # dfo.loc[j, "decay_t"] = X[3]
-        dfo.loc[j, "dx"] = param_values[j][0]
-        dfo.loc[j, "Max IceV"] = Y[j]
+        j=int(j)
+        dfo.loc[j, "ie"] = param_values[j][0]
+        dfo.loc[j, "a_i"] = param_values[j][1]
+        dfo.loc[j, "a_s"] = param_values[j][2]
+        dfo.loc[j, "decay_t"] = param_values[j][3]
+        dfo.loc[j, "dx"] = param_values[j][4]
+        dfo.loc[j, "Max_IceV"] = Y[j]
         dfo.loc[j, "Efficiency"] = Z[j]
+
+    print(dfo)
 
     print('That took {} minutes'.format((time.time() - starttime)/60))
