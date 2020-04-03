@@ -46,13 +46,13 @@ logger.addHandler(logger_handler)
 logger.addHandler(console_handler)
 
 
-problem = {"num_vars": 4, "names": ["ie", "a_i", "a_s", "decay_t"], "bounds": [[0.9025, 0.9975], [0.3325, 0.36175], [0.8075, 0.8925], [9.5, 10.5]]}
+problem = {"num_vars": 5, "names": ["ie", "a_i", "a_s", "decay_t", "dx"], "bounds": [[0.9025, 0.9975], [0.3325, 0.36175], [0.8075, 0.8925], [9.5, 10.5], [.00095,0.00105]]}
 
 # Generate samples
-param_values = saltelli.sample(problem, 500,  calc_second_order=False)
+param_values = saltelli.sample(problem, 1,  calc_second_order=False)
 
 # Output file Initialise
-columns = ["ie", "a_i", "a_s", "decay_t", "Max IceV"]
+columns = ["ie", "a_i", "a_s", "decay_t", "dx", "Max IceV"]
 index = range(0, param_values.shape[0])
 dfo = pd.DataFrame(index=index, columns=columns)
 dfo = dfo.fillna(0)
@@ -67,6 +67,7 @@ for j, X in enumerate(param_values):
     surface['a_i'] = X[1]
     surface['a_s'] = X[2]
     surface['decay_t'] = X[3]
+    surface['dx'] = X[4]
 
     #  read files
     filename0 = os.path.join(folders["input_folder"] + site + "_raw_input.csv")
@@ -137,6 +138,7 @@ for j, X in enumerate(param_values):
     dfo.loc[j, "a_i"] = X[1]
     dfo.loc[j, "a_s"] = X[2]
     dfo.loc[j, "decay_t"] = X[3]
+    dfo.loc[j, "dx"] = X[4]
     dfo.loc[j, "Max IceV"] = Y[j]
     dfo.loc[j, "Efficiency"] = Z[j]
 

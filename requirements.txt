@@ -13,3 +13,4 @@ pillow
 matplotlib
 scipy
 tqdm
+SALib

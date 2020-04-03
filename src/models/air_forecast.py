@@ -33,7 +33,6 @@ def icestupa(df, fountain, surface):
     time_steps = 5 * 60  # s Model time steps
     p0 = 1013  # Standard air pressure hPa
     ftl = 0  # Fountain flight time loss ftl
-    dx = 0.001  # Ice layer thickness dx #todo temperature gradient required to model
 
     """Initialise"""
     start = 0  # model start step
@@ -93,9 +92,9 @@ def icestupa(df, fountain, surface):
             state = 1
             start = i - 1  # Set Model start time
             df.loc[i - 1, "r_ice"] = R_f
-            df.loc[i - 1, "h_ice"] = dx
-            ice_layer = dx * math.pi * R_f**2 * rho_i
-            df.loc[i - 1, "iceV"] = dx * math.pi * R_f**2
+            df.loc[i - 1, "h_ice"] = surface['dx']
+            ice_layer = surface['dx'] * math.pi * R_f**2 * rho_i
+            df.loc[i - 1, "iceV"] = surface['dx'] * math.pi * R_f**2
 
             logger.debug(
                 "Ice layer initialised %s thick at %s", ice_layer, df.loc[i, "When"]
@@ -118,6 +117,7 @@ def icestupa(df, fountain, surface):
                 # Height by Radius ratio
                 df.loc[i, "h_r"] = df.loc[i - 1, "h_ice"] / df.loc[i - 1, "r_ice"]
 
+
                 # Area of Conical Ice Surface
                 df.loc[i, "SA"] = (
                     math.pi
@@ -132,6 +132,7 @@ def icestupa(df, fountain, surface):
                 )
 
             else:
+
 
                 # Height to radius ratio
                 df.loc[i, "h_r"] = df.loc[i - 1, "h_r"]
@@ -183,7 +184,7 @@ def icestupa(df, fountain, surface):
             )
 
             # Update AIR ice layer
-            ice_layer = dx * df.loc[i, "SA"] * rho_i
+            ice_layer = surface['dx'] * df.loc[i, "SA"] * rho_i
             logger.debug("Ice layer is %s thick at %s", ice_layer, df.loc[i, "When"])
 
             # Precipitation to ice quantity
