@@ -217,8 +217,6 @@ def icestupa(df, fountain, surface):
                 L = L_s
                 c_s = c_i
 
-
-
             df.loc[i, "Ql"] = (
                 0.623
                 * L

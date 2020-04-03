@@ -44,18 +44,8 @@ console_handler.setFormatter(logger_formatter)
 logger.addHandler(logger_handler)
 logger.addHandler(console_handler)
 
-# #  read files
-# filename0 = os.path.join(folders['input_folder'], site + "_input.csv")
-# df_in = pd.read_csv(filename0, sep=",")
-# df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
-#
-
-#
-# # Generate samples
-# param_values = saltelli.sample(problem, 5)
-
 problem = {"num_vars": 1, "names": ["dx"],
-           "bounds": [[1e-04, 1e-02]]}
+           "bounds": [[1e-03, 1e-02]]}
 
 filename = os.path.join(
     folders['sim_folder'], site + "_simulations_" + str(problem["names"]) + ".csv"
@@ -73,36 +63,14 @@ norm = matplotlib.colors.Normalize(
     vmin=problem["bounds"][0][0], vmax=problem["bounds"][0][1]
 )
 
-# # Output file Initialise
-# columns = ["Ice", "IceV"]
-# index = range(0, len(param_values))
-# dfo = pd.DataFrame(index=index, columns=columns)
-# dfo = dfo.fillna(0)
-
-for i, X in enumerate(param_values):
-
-    # #  read files
-    # filename0 = os.path.join(folders["input_folder"] + site + "_input.csv")
-    # df_in = pd.read_csv(filename0, sep=",")
-    # df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
-    #
-    # print(X)
-    # surface['dx'] = X[0]
-    # df = icestupa(df_in, fountain, surface)
-    dfo.loc[i, "dx"] = X[0]
-    dfo.loc[i, "Ice"] = float(df["ice"].tail(1))
-    dfo.loc[i, "Meltwater"] = float(df["meltwater"].tail(1))
-    dfo.loc[i, "Vapour"] = float(df["vapour"].tail(1))
-    dfo.loc[i, "Ice Max"] = df["ice"].max()
-    dfo.loc[i, "Runtime"] = df["When"].iloc[-1]
-
-    x = dfo["Efficiency"]
-    y1 = dfo["Max_IceV"]
+for i in range(dfo.shape[0]):
+    x = dfo.Efficiency[i]
+    y1 = dfo.Max_IceV[i]
 
     ax1 = fig.add_subplot(111)
-    ax1.plot(x, y1, linewidth=0.5, color=cmap(norm(X[0])))
-    ax1.set_ylabel("Ice Volume[$m^3$]")
-    ax1.set_xlabel("Days")
+    ax1.scatter(x, y1, color=cmap(norm(dfo.dx[i])))
+    ax1.set_ylabel("Max_IceV[$m^3$]")
+    ax1.set_xlabel("Efficiency")
 
 # format the ticks
 ax1.grid()
@@ -111,20 +79,14 @@ sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
 sm.set_array([])
 cbar = fig.colorbar(sm)
 cbar.set_label("Layer Thickness[$m$]")
+plt.show()
 
-# rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
-fig.autofmt_xdate()
-plt.savefig(
-    os.path.join(
-        folders['sim_folder'], site + "_simulations_" + str(problem["names"][0]) + ".jpg"
-    ),
-    bbox_inches="tight",
-    dpi=300,
-)
-plt.clf()
+# plt.savefig(
+#     os.path.join(
+#         folders['sim_folder'], site + "_simulations_" + str(problem["names"][0]) + ".jpg"
+#     ),
+#     bbox_inches="tight",
+#     dpi=300,
+# )
 
-dfo = dfo.round(4)
-filename2 = os.path.join(
-    folders['sim_folder'], site + "_simulations_" + str(problem["names"][0]) + ".csv"
-)
-dfo.to_csv(filename2, sep=",")
+

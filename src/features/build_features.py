@@ -109,6 +109,9 @@ else:
 filename4 = os.path.join(filename2 + "_model_results.csv")
 df.to_csv(filename4, sep=",")
 
+df['melt_thick'] = df['melted']/ (df['SA'] * 1000)
+print(df['melt_thick'].replace(0, np.NaN).max() )
+
 df = df.rename({'SW': '$SW_{net}$', 'LW': '$LW_{net}$', 'Qs': '$Q_S$', 'Ql': '$Q_L$', 'Qc': '$Q_C$' }, axis=1)
 
 # Plots
