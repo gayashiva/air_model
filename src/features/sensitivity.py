@@ -95,6 +95,8 @@ def icestupa_sim(index, X, q):
     Max_IceV = df["iceV"].max()
     Efficiency = float((df["meltwater"].tail(1) + df["ice"].tail(1)) / (df["sprayed"].tail(1) + df["ppt"].sum() + df["deposition"].sum()))
 
+    del [[df_in, df]]
+
     q.put((index, Max_IceV, Efficiency))
 
 
@@ -131,10 +133,10 @@ if __name__ == '__main__':
     #            "bounds": [[0.9025, 0.9975], [0.3325, 0.36175], [0.8075, 0.8925], [9.5, 10.5], [.00095, 0.00105]]}
 
     problem = {"num_vars": 1, "names": ["dx"],
-               "bounds": [[1e-04, 1e-02]]}
+               "bounds": [[1e-04, 1e-03]]}
 
     # Generate samples
-    param_values = saltelli.sample(problem, 10, calc_second_order=False)
+    param_values = saltelli.sample(problem, 5, calc_second_order=False)
 
     # Output file Initialise
     columns = ["ie", "a_i", "a_s", "decay_t", "dx", "Max_IceV", "Efficiency"]
@@ -167,7 +169,7 @@ if __name__ == '__main__':
     I = np.zeros([param_values.shape[0]])
 
     for i in range(param_values.shape[0]):
-        I[i], Y[i], Z[i] = q.get()   # Returns output or blocks until rea
+        I[i], Y[i], Z[i] = q.get()   # Returns output
 
     for j in I:
         j=int(j)
@@ -184,7 +186,7 @@ if __name__ == '__main__':
     dfo = dfo.round(4)
 
     filename2 = os.path.join(
-        folders['sim_folder'], site + "_simulations_" + str(problem["names"]) + ".csv"
+        folders['sim_folder'], site + "_simulations_" + str(problem["names"]) + str(param_values.shape[0]) + ".csv"
     )
     dfo.to_csv(filename2, sep=",")
 
