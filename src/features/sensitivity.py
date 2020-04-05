@@ -129,14 +129,15 @@ logger.addHandler(console_handler)
 
 if __name__ == '__main__':
 
-    # problem = {"num_vars": 5, "names": ["ie", "a_i", "a_s", "decay_t", "dx"],
+    # problem = {"num_vars": 5, "names": ["ie", "a_i", "   Paleblue1.
+    # a_s", "decay_t", "dx"],
     #            "bounds": [[0.9025, 0.9975], [0.3325, 0.36175], [0.8075, 0.8925], [9.5, 10.5], [.00095, 0.00105]]}
 
     problem = {"num_vars": 1, "names": ["dx"],
-               "bounds": [[1e-04, 1e-03]]}
+               "bounds": [[1e-02, 1]]}
 
     # Generate samples
-    param_values = saltelli.sample(problem, 5, calc_second_order=False)
+    param_values = saltelli.sample(problem, 10, calc_second_order=False)
 
     # Output file Initialise
     columns = ["ie", "a_i", "a_s", "decay_t", "dx", "Max_IceV", "Efficiency"]

@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 from logging import StreamHandler
 from pandas.plotting import register_matplotlib_converters
+
 register_matplotlib_converters()
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -44,13 +45,17 @@ console_handler.setFormatter(logger_formatter)
 logger.addHandler(logger_handler)
 logger.addHandler(console_handler)
 
-problem = {"num_vars": 1, "names": ["dx"],
-           "bounds": [[1e-04, 1e-03]]}
-param_values = saltelli.sample(problem, 5, calc_second_order=False)
+problem = {"num_vars": 1, "names": ["dx"], "bounds": [[1e-02, 1]]}
+param_values = saltelli.sample(problem, 10, calc_second_order=False)
 
 filename = os.path.join(
-        folders['sim_folder'], site + "_simulations_" + str(problem["names"]) + str(param_values.shape[0]) + ".csv"
-    )
+    folders["sim_folder"],
+    site
+    + "_simulations_"
+    + str(problem["names"])
+    + str(param_values.shape[0])
+    + ".csv",
+)
 
 #  read files
 dfo = pd.read_csv(filename, sep=",")
@@ -97,5 +102,3 @@ plt.show()
 #     bbox_inches="tight",
 #     dpi=300,
 # )
-
-
