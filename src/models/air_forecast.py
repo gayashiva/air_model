@@ -242,7 +242,7 @@ def icestupa(df, fountain, surface):
 
                 # Ice Temperature
                 df.loc[i, "delta_T_s"] += (df.loc[i, "Ql"] * time_steps) / (
-                    ice_thickness * c_i
+                    ice_thickness * c_s
                 )
 
                 logger.debug(
@@ -349,7 +349,7 @@ def icestupa(df, fountain, surface):
 
                 # Heating Ice
                 df.loc[i, "delta_T_s"] += (df.loc[i, "TotalE"] * time_steps) / (
-                    ice_thickness * c_i
+                    ice_thickness * c_s
                 )
 
                 """Hot Ice"""
@@ -357,13 +357,13 @@ def icestupa(df, fountain, surface):
 
                     # Melting Ice by Temperature
                     df.loc[i, "solid"] -= (
-                        (ice_thickness * c_i * df.loc[i, "SA"])
+                        (ice_thickness * c_s * df.loc[i, "SA"])
                         * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
                         / (-L_f)
                     )
 
                     df.loc[i, "melted"] += (
-                        (ice_thickness * c_i * df.loc[i, "SA"])
+                        (ice_thickness * c_s * df.loc[i, "SA"])
                         * (-(df.loc[i - 1, "T_s"] + df.loc[i, "delta_T_s"]))
                         / (-L_f)
                     )
@@ -409,7 +409,7 @@ def icestupa(df, fountain, surface):
         * 100
     )
 
-    print("\n Ice Volume Max", float(df["iceV"].max()))
+    print("\nIce Volume Max", float(df["iceV"].max()))
     print("Fountain efficiency", Efficiency)
     print("Ice Mass Remaining", float(df["ice"].tail(1)))
     print("Meltwater", float(df["meltwater"].tail(1)))

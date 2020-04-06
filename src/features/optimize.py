@@ -112,7 +112,7 @@ def icestupa(optimize):
         )
     R_f = (
         df["r_f"].replace(0, np.NaN).mean()
-    )  # todo implement variable spray radius for variable discharge
+    )
     D_t = df["t_droplet"].replace(0, np.NaN).mean()
 
     """ Simulation """
