@@ -110,7 +110,6 @@ filename4 = os.path.join(filename2 + "_model_results.csv")
 df.to_csv(filename4, sep=",")
 
 df['melt_thick'] = df['melted']/ (df['SA'] * 1000)
-print(df['melt_thick'].replace(0, np.NaN).max() )
 
 df = df.rename({'SW': '$SW_{net}$', 'LW': '$LW_{net}$', 'Qs': '$Q_S$', 'Ql': '$Q_L$', 'Qc': '$Q_C$' }, axis=1)
 
@@ -242,6 +241,23 @@ fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "b-", linewidth=0.5)
 ax1.set_ylabel("Ice Production rate [$l\,min^{-1}$]")
+ax1.set_xlabel("Days")
+
+#  format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+ax1.grid()
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
+y1 = df.thickness * 1000
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(x, y1, "b-", linewidth=0.5)
+ax1.set_ylabel("Thickness melted [$mm$]")
 ax1.set_xlabel("Days")
 
 #  format the ticks
@@ -419,7 +435,7 @@ if option == "schwarzsee":
     dfd["Discharge"] = dfd["Discharge"].astype(int)
     dfd["Discharge"] = dfd["Discharge"].astype(str)
 
-    dfds['melted'] = dfds['melted'] * -1 / (dfd['SA'] * 1000) * 100
+    dfds['melted'] = dfds['melted'] * -1 / (dfd['SA'] * 916) * 100
     dfds['solid'] = dfds['solid'] / (dfd['SA'] * 916) * 100
     dfds["When"] = pd.to_datetime(dfds["When"], format="%Y.%m.%d %H:%M:%S")
     dfds['When'] = dfds['When'].dt.strftime("%b %d")

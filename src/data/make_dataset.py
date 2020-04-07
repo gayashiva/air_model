@@ -8,6 +8,7 @@ from pandas.plotting import register_matplotlib_converters
 import math
 import time
 from pathlib import Path
+from tqdm import tqdm
 import os
 import logging
 from src.data.config import site, dates, option, folders, fountain, surface
@@ -465,7 +466,7 @@ if __name__ == '__main__':
         )
 
 
-        for i in range(1, df.shape[0]):
+        for i in tqdm(range(1, df.shape[0])):
             if np.isnan(df.loc[i, "Rad"]):
                 df.loc[i, "Rad"] = df.loc[i - 1, "Rad"]
             if np.isnan(df.loc[i, "DRad"]):

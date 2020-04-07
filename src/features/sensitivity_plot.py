@@ -45,29 +45,47 @@ console_handler.setFormatter(logger_formatter)
 logger.addHandler(logger_handler)
 logger.addHandler(console_handler)
 
-problem = {"num_vars": 1, "names": ["dx"], "bounds": [[1e-02, 1]]}
-param_values = saltelli.sample(problem, 10, calc_second_order=False)
+problem = {"num_vars": 1, "names": ["dx"], "bounds": [[1e-02, 1e-01]]}
+param_values = saltelli.sample(problem, 4, calc_second_order=False)
 
 filename = os.path.join(
-    folders["sim_folder"],
-    site
-    + "_simulations_"
-    + str(problem["names"])
-    + str(param_values.shape[0])
-    + ".csv",
-)
+        folders['sim_folder'], site + "_simulations_" + str(problem["names"]) + str(param_values.shape[0]) + ".csv"
+    )
 
+filename2 = os.path.join(
+        folders['sim_folder'], site + "_simulations_" + str(problem["names"]) + "_full" + ".csv"
+    )
 #  read files
 dfo = pd.read_csv(filename, sep=",")
+dfo2 = pd.read_csv(filename2, sep=",")
 
 print(dfo)
 
-x = dfo.dx
+x1 = dfo.dx * 1000
 y1 = dfo.Max_IceV
 
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-ax1.scatter(x, y1)
+# x2 = dfo.dx * 1000
+# y2 = dfo.max_melt_thickness * 1000
+
+# x2 = dfo2.dx
+# y2 = dfo2.max_melt_thickness * -1
+
+fig, ax = plt.subplots()
+ax.scatter(x1, y1)
+# ax.scatter(x2, y2)
+# lims = [
+#     np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
+#     np.max([ax.get_xlim(), ax.get_ylim()]),  # max of both axes
+# ]
+#
+# # now plot both limits against eachother
+# ax.plot(lims, lims, 'k-', alpha=0.75, zorder=0)
+# ax.set_aspect('equal')
+# ax.set_xlim(lims)
+# ax.set_ylim(lims)
+ax.set_ylabel("Max Ice Volume[$m3$]")
+ax.set_xlabel("Ice Layer thickness[mm]")
+ax.grid()
 plt.show()
 
 # # Plots

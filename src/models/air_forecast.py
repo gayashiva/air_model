@@ -368,6 +368,9 @@ def icestupa(df, fountain, surface):
                         / (-L_f)
                     )
 
+                    df.loc[i,"thickness"] = df.loc[i, 'melted'] / (df.loc[i, 'SA'] * rho_i)
+
+
                     df.loc[i - 1, "T_s"] = 0
                     df.loc[i, "delta_T_s"] = 0
 
