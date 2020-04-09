@@ -72,7 +72,7 @@ def icestupa(df, fountain, surface):
     """ Estimating Fountain Spray radius """
     R_f = (
         df["r_f"].replace(0, np.NaN).mean()
-    )  # todo implement variable spray radius for variable discharge
+    )
 
 
 
@@ -108,8 +108,7 @@ def icestupa(df, fountain, surface):
 
             if (df.Discharge[i] > 0) & (df.loc[i - 1, "r_ice"] >= R_f):
                 # Ice Radius
-                df.loc[i, "r_ice"] = df.loc[i, "r_f"]  # Ice radius same as Initial Fountain Spray Radius
-                print(df.loc[i, "r_ice"])
+                df.loc[i, "r_ice"] = R_f # Ice Radius Max
 
                 # Ice Height
                 df.loc[i, "h_ice"] = (
