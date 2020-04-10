@@ -74,9 +74,6 @@ def icestupa(df, fountain, surface):
         df["r_f"].replace(0, np.NaN).mean()
     )
 
-
-
-
     """ Simulation """
     for i in tqdm(range(1, df.shape[0])):
 
@@ -94,7 +91,7 @@ def icestupa(df, fountain, surface):
         if (df.loc[i, "Discharge"] > 0) & (state == 0):
             state = 1
             start = i - 1  # Set Model start time
-            df.loc[i - 1, "r_ice"] = R_f
+            df.loc[i - 1, "r_ice"] = df.loc[i, "r_f"]
             df.loc[i - 1, "h_ice"] = surface["dx"]
             df.loc[i - 1, "iceV"] = surface["dx"] * math.pi * R_f ** 2
 
@@ -106,9 +103,9 @@ def icestupa(df, fountain, surface):
 
         if state == 1:
 
-            if (df.Discharge[i] > 0) & (df.loc[i - 1, "r_ice"] >= R_f):
+            if (df.Discharge[i] > 0) & (df.loc[i - 1, "r_ice"] >= df.loc[i, "r_f"]):
                 # Ice Radius
-                df.loc[i, "r_ice"] = R_f # Ice Radius Max
+                df.loc[i, "r_ice"] = df.loc[i-1, "r_ice"]
 
                 # Ice Height
                 df.loc[i, "h_ice"] = (
@@ -189,7 +186,16 @@ def icestupa(df, fountain, surface):
             )
 
             # Precipitation to ice quantity
-            if df.loc[i, "T_a"] < surface["rain_temp"]:
+            if (df.loc[i, "T_a"] < surface["rain_temp"]) and df.loc[i, "Prec"] > 0:
+
+                if df.loc[i, 'When']<= dates['fountain_off_date']:
+                    df.loc[i, "ppt"] = (
+                            surface["snow_fall_density"]
+                            * df.loc[i, "Prec"]
+                            * math.pi
+                            * R_f**2)
+
+
                 df.loc[i, "ppt"] = (
                     surface["snow_fall_density"]
                     * df.loc[i, "Prec"]
