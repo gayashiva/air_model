@@ -37,7 +37,6 @@ def icestupa(df, fountain, surface):
     """Initialise"""
     start = 0  # model start step
     state = 0
-    ice_thickness = 0
 
     l = [
         "T_s",  # Surface Temperature
