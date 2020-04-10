@@ -91,7 +91,7 @@ def icestupa(df, fountain, surface):
         if (df.loc[i, "Discharge"] > 0) & (state == 0):
             state = 1
             start = i - 1  # Set Model start time
-            df.loc[i - 1, "r_ice"] = df.loc[i, "r_f"]
+            df.loc[i - 1, "r_ice"] = R_f
             df.loc[i - 1, "h_ice"] = surface["dx"]
             df.loc[i - 1, "iceV"] = surface["dx"] * math.pi * R_f ** 2
 
@@ -103,7 +103,7 @@ def icestupa(df, fountain, surface):
 
         if state == 1:
 
-            if (df.Discharge[i] > 0) & (df.loc[i - 1, "r_ice"] >= df.loc[i, "r_f"]):
+            if (df.Discharge[i] > 0) & (df.loc[i - 1, "r_ice"] >= R_f):
                 # Ice Radius
                 df.loc[i, "r_ice"] = df.loc[i-1, "r_ice"]
 
