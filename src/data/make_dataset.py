@@ -15,7 +15,7 @@ from src.data.config import site, dates, option, folders, fountain, surface
 
 start = time.time()
 
-def projectile_xy(v, hs=0.0, g=9.8):
+def projectile_xy(v, hs=0.0, theta_f=0, g=9.8):
     """
     calculate a list of (x, y) projectile motion data points
     where:
@@ -28,7 +28,7 @@ def projectile_xy(v, hs=0.0, g=9.8):
     """
     data_xy = []
     t = 0.0
-    theta_f = math.radians(45)
+    theta_f = math.radians(theta_f)
     while True:
         # now calculate the height y
         y = hs + (t * v * math.sin(theta_f)) - (g * t * t) / 2
@@ -201,13 +201,13 @@ def discharge_rate(df, fountain):
 
             # Short Wave Radiation SW
             df.loc[i, "SW"] = (1 - df.loc[i, "a"]) * (
-                    df.loc[i, "Rad"] + df.loc[i, "DRad"]
+                    df.loc[i, "SW_direct"] + df.loc[i, "DRad"]
             )
 
             # Cloudiness from diffuse fraction
-            if df.loc[i, "Rad"] + df.loc[i, "DRad"] > 1:
+            if df.loc[i, "SW_direct"] + df.loc[i, "DRad"] > 1:
                 df.loc[i, "cld"] = df.loc[i, "DRad"] / (
-                        df.loc[i, "Rad"] + df.loc[i, "DRad"]
+                        df.loc[i, "SW_direct"] + df.loc[i, "DRad"]
                 )
             else:
                 df.loc[i, "cld"] = 0
@@ -263,71 +263,6 @@ def discharge_rate(df, fountain):
 
     return df["Fountain"], df["Discharge"]
 
-def emissivity(df):
-    S_0 = 1360  # W m-2
-
-    for i in range(1, df.shape[0]) :
-
-        # Vapor Pressure empirical relations
-        if "vp_a" not in list(df.columns):
-            df.loc[i, "vp_a"] = (
-                    6.11
-                    * math.pow(
-                10, 7.5 * df.loc[i - 1, "T_a"] / (df.loc[i - 1, "T_a"] + 237.3)
-            )
-                    * df.loc[i, "RH"]
-                    / 100
-            )
-
-        # Estimating Solar Area fraction
-        df.loc[i, "theta_s"] = getSEA(
-            df.loc[i, "When"],
-            fountain["latitude"],
-            fountain["longitude"],
-            fountain["utc_offset"],
-        )
-
-        optical_air_mass = 35 * math.sin(df.loc[i, "theta_s"] * (math.pow((1224 * math.pow(math.sin(df.loc[i, "theta_s"]), 2) + 1), -0.5)))
-        tau_R_tau_pg = 1.021 - 0.084* math.pow((optical_air_mass * (0.00949 * df.loc[i, "p_a"] + 0.051)), 0.5)
-        precipitable_water = 4650 * df.loc[i, "vp_a"] / (df.loc[i, "T_a"] + 273.15)
-        # print(optical_air_mass, precipitable_water)
-        tau_w = 1 - 0.077 * math.pow((optical_air_mass * precipitable_water),0.3)
-        tau_a = math.pow(0.935, optical_air_mass)
-        df.loc[i, "S_clr"] = S_0 * math.sin(df.loc[i, "theta_s"]) * tau_R_tau_pg * tau_w * tau_a
-
-        if df.loc[i, "S_clr"] != 0:
-            df.loc[i, "s"] = (df.loc[i, "Rad"] + df.loc[i, "DRad"]) / df.loc[i, "S_clr"]
-            if df.loc[i, "s"] > 1:
-                df.loc[i, "s"] = 1
-            df.loc[i, "e_a"] = (1 - df.loc[i, "s"]) + df.loc[i, "s"] * (0.83 - 0.18 * math.pow( 10, -0.067 * df.loc[i, "vp_a"]))
-        else:
-            if i - 96 > 0:
-                for j in range(i - 96, i):
-                    df.loc[i, "e_a"] += df.loc[j, "e_a"]
-            else:
-                for j in range(i, i + 96):
-                    df.loc[i, "e_a"] += df.loc[j, "e_a"]
-
-                    df.loc[i, "e_a"] = df.loc[i, "e_a"] / 96
-
-        # # Cloudiness from diffuse fraction
-        # if df.loc[i, "Rad"] + df.loc[i, "DRad"] > 1:
-        #     df.loc[i, "cld"] = df.loc[i, "DRad"] / (
-        #             df.loc[i, "Rad"] + df.loc[i, "DRad"]
-        #     )
-        # else:
-        # # Night Cloudiness average of last 8 hours
-        #     if i - 96 > 0:
-        #         for j in range(i - 96, i):
-        #             df.loc[i, "cld"] += df.loc[j, "cld"]
-        #     else:
-        #         for j in range(i, i + 96):
-        #             df.loc[i, "cld"] += df.loc[j, "cld"]
-        #
-        #             df.loc[i, "cld"] = df.loc[i, "cld"] / 96
-
-    return df["vp_a"], df["theta_s"], df["cld"]
-
 
 if __name__ == '__main__':
 
@@ -356,23 +291,6 @@ if __name__ == '__main__':
 
         # Drop
         df_in = df_in.drop(["Pluviometer"], axis=1)
-
-        # Add Radiation data
-        df_in2 = pd.read_csv(
-            os.path.join(folders["dirname"], "data/raw/plaffeien_rad.txt"),
-            sep="\s+",
-            skiprows=2,
-        )
-        df_in2["When"] = pd.to_datetime(df_in2["time"], format="%Y%m%d%H%M")
-        df_in2["ods000z0"] = pd.to_numeric(df_in2["ods000z0"], errors="coerce")
-        df_in2["gre000z0"] = pd.to_numeric(df_in2["gre000z0"], errors="coerce")
-        df_in2["Rad"] = df_in2["gre000z0"] - df_in2["ods000z0"]
-        df_in2["DRad"] = df_in2["ods000z0"]
-
-        # Add Precipitation data
-        df_in2["Prec"] = pd.to_numeric(df_in2["rre150z0"], errors="coerce")
-        df_in2["Prec"] = df_in2["Prec"] / 2  # 5 minute sum
-        df_in2 = df_in2.set_index("When").resample("5T").ffill().reset_index()
 
         # Datetime
         df_in["When"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
@@ -414,6 +332,23 @@ if __name__ == '__main__':
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
 
+        # Add Radiation data
+        df_in2 = pd.read_csv(
+            os.path.join(folders["dirname"], "data/raw/plaffeien_rad.txt"),
+            sep="\s+",
+            skiprows=2,
+        )
+        df_in2["When"] = pd.to_datetime(df_in2["time"], format="%Y%m%d%H%M")
+        df_in2["ods000z0"] = pd.to_numeric(df_in2["ods000z0"], errors="coerce")
+        df_in2["gre000z0"] = pd.to_numeric(df_in2["gre000z0"], errors="coerce")
+        df_in2["SW_direct"] = df_in2["gre000z0"] - df_in2["ods000z0"]
+        df_in2["DRad"] = df_in2["ods000z0"]
+
+        # Add Precipitation data
+        df_in2["Prec"] = pd.to_numeric(df_in2["rre150z0"], errors="coerce")
+        df_in2["Prec"] = df_in2["Prec"] / 2  # 5 minute sum
+        df_in2 = df_in2.set_index("When").resample("5T").ffill().reset_index()
+
         mask = (df_in2["When"] >= dates["start_date"]) & (
             df_in2["When"] <= dates["end_date"]
         )
@@ -441,13 +376,9 @@ if __name__ == '__main__':
         )
 
         # Add Radiation DataFrame
-        df["Rad"] = df_in2["Rad"]
+        df["SW_direct"] = df_in2["SW_direct"]
         df["DRad"] = df_in2["DRad"]
         df["Prec"] = df_in2["Prec"] / 1000
-
-        mask = (df["When"] >= dates["start_date"]) & (df["When"] <= dates["end_date"])
-        df = df.loc[mask]
-        df = df.reset_index()
 
         df["cld"] = 0
         df["SEA"] = 0
@@ -459,20 +390,37 @@ if __name__ == '__main__':
                 "Wind Speed": "v_a",
                 "Temperature": "T_a",
                 "Humidity": "RH",
-                "Volume": "V",
                 "Pressure": "p_a",
+                "SW_direct": 'SW_direct',
+                "DRad": 'SW_diffuse',
             },
             inplace=True,
         )
 
+        # v_a mean
+        v_a = df["v_a"].replace(0, np.NaN).mean()  # m/s Average Humidity
+        df["v_a"] = df["v_a"].replace(0, v_a)
 
         for i in tqdm(range(1, df.shape[0])):
-            if np.isnan(df.loc[i, "Rad"]):
-                df.loc[i, "Rad"] = df.loc[i - 1, "Rad"]
-            if np.isnan(df.loc[i, "DRad"]):
-                df.loc[i, "DRad"] = df.loc[i - 1, "DRad"]
+            if np.isnan(df.loc[i, "SW_direct"]):
+                df.loc[i, "SW_direct"] = df.loc[i - 1, "SW_direct"]
+            if np.isnan(df.loc[i, "SW_diffuse"]):
+                df.loc[i, "SW_diffuse"] = df.loc[i - 1, "SW_diffuse"]
             if np.isnan(df.loc[i, "Prec"]):
                 df.loc[i, "Prec"] = df.loc[i - 1, "Prec"]
+
+        df_out = df[
+            ["When", "T_a", "RH", "v_a", "Discharge", "SW_direct", "SW_diffuse", "Prec", "p_a"]
+        ]
+
+        df_out = df_out.round(5)
+
+        filename = folders["input_folder"]
+
+        df_out.to_csv(filename + "input.csv")
+
+
+        for i in tqdm(range(1, df.shape[0])):
 
             """Solar Elevation Angle"""
             df.loc[i, "SEA"] = getSEA(
@@ -484,9 +432,9 @@ if __name__ == '__main__':
 
             """Cloudiness"""
             # Cloudiness from diffuse fraction
-            if df.loc[i, "Rad"] + df.loc[i, "DRad"] > 1:
-                df.loc[i, "cld"] = df.loc[i, "DRad"] / (
-                        df.loc[i, "Rad"] + df.loc[i, "DRad"]
+            if df.loc[i, "SW_direct"] + df.loc[i, "SW_diffuse"] > 1:
+                df.loc[i, "cld"] = df.loc[i, "SW_diffuse"] / (
+                        df.loc[i, "SW_direct"] + df.loc[i, "SW_diffuse"]
                 )
             else:
                 # Night Cloudiness average of last 8 hours
@@ -509,12 +457,10 @@ if __name__ == '__main__':
             df.loc[i, "e_a"] = ( 1.24 * math.pow(abs(df.loc[i, "vp_a"] / (df.loc[i, "T_a"] + 273.15)), 1 / 7)
                                ) * (1 + 0.22 * math.pow(df.loc[i, "cld"], 2))
 
-        # v_a mean
-        v_a = df["v_a"].replace(0, np.NaN).mean()  # m/s Average Humidity
-        df["v_a"] = df["v_a"].replace(0, v_a)
+
 
         df_out = df[
-            ["When", "T_a", "RH", "v_a", "Discharge", "Rad", "DRad", "Prec", "p_a", "SEA", "cld", "vp_a", "e_a"]
+            ["When", "T_a", "RH", "v_a", "Discharge", "SW_direct", "SW_diffuse", "Prec", "p_a", "SEA", "cld", "vp_a", "e_a"]
         ]
 
         df_out = df_out.round(5)
@@ -547,8 +493,8 @@ if __name__ == '__main__':
         # Add Radiation data
         df_in["ods000z0"] = pd.to_numeric(df_in["ods000z0"], errors="coerce")
         df_in["gre000z0"] = pd.to_numeric(df_in["gre000z0"], errors="coerce")
-        df_in["Rad"] = df_in["gre000z0"] - df_in["ods000z0"]
-        df_in["DRad"] = df_in["ods000z0"]
+        df_in["SW_direct"] = df_in["gre000z0"] - df_in["ods000z0"]
+        df_in["SW_diffuse"] = df_in["ods000z0"]
         df_in["T_a"] = pd.to_numeric(
             df_in["tre200s0"], errors="coerce"
         )  # Add Temperature data
@@ -569,10 +515,10 @@ if __name__ == '__main__':
         # Fill nans
         df_in = df_in.fillna(method="ffill")
 
-        df_out = df_in[["When", "T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vpa",]]
+        df_out = df_in[["When", "T_a", "RH", "v_a", "SW_direct", "SW_diffuse", "Prec", "p_a", "vpa",]]
 
         # 5 minute sum
-        cols = ["T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vpa"]
+        cols = ["T_a", "RH", "v_a", "SW_direct", "SW_diffuse", "Prec", "p_a", "vpa"]
         df_out[cols] = df_out[cols] / 2
         df_out = df_out.set_index("When").resample("5T").ffill().reset_index()
 
@@ -592,8 +538,8 @@ if __name__ == '__main__':
             "T_a",
             "RH",
             "v_a",
-            "Rad",
-            "DRad",
+            "SW_direct",
+            "SW_diffuse",
             "Prec",
             "p_a",
             "vpa",
@@ -648,8 +594,8 @@ if __name__ == '__main__':
             df_in["pva200s0"], errors="coerce"
         )  # Vapour pressure over air
 
-        df_in["Rad"] = df_in["gre000z0"] - df_in["gre000z0"] * 0.1
-        df_in["DRad"] = df_in["gre000z0"] * 0.1
+        df_in["SW_direct"] = df_in["gre000z0"] - df_in["gre000z0"] * 0.1
+        df_in["SW_diffuse"] = df_in["gre000z0"] * 0.1
         df_in["LW"] = df_in["oli000z0"]
         df_in["Prec"] = df_in["Prec"] / 1000
 
@@ -657,12 +603,12 @@ if __name__ == '__main__':
         df_in = df_in.fillna(method="ffill")
 
         df_out = df_in[
-            ["When", "T_a", "RH", "v_a", "Rad", "DRad", "oli000z0", "Prec", "p_a", "vpa",]
+            ["When", "T_a", "RH", "v_a", "SW_direct", "SW_diffuse", "oli000z0", "Prec", "p_a", "vpa",]
         ]
         df_out = df_out.round(5)
 
         # 5 minute sum
-        cols = ["T_a", "RH", "v_a", "Rad", "DRad", "Prec", "p_a", "vpa", "oli000z0"]
+        cols = ["T_a", "RH", "v_a", "SW_direct", "SW_diffuse", "Prec", "p_a", "vpa", "oli000z0"]
         df_out[cols] = df_out[cols] / 2
         df_out = df_out.set_index("When").resample("5T").ffill().reset_index()
 
@@ -671,8 +617,8 @@ if __name__ == '__main__':
             "T_a",
             "RH",
             "v_a",
-            "Rad",
-            "DRad",
+            "SW_direct",
+            "SW_diffuse",
             "Prec",
             "p_a",
             "vpa",
@@ -738,7 +684,7 @@ if __name__ == '__main__':
         """ Fountain Spray radius """
         v_f = df.loc[i, "Discharge"] / (60 * 1000 * Area)
         df.loc[i, "r_f"] = projectile_xy(
-            v_f, fountain["h_f"]
+            v_f, fountain["h_f"], fountain["theta_f"]
         )
 
     df.to_csv(filename + "_input.csv")
@@ -891,13 +837,13 @@ if __name__ == '__main__':
     ax2.grid()
 
 
-    y3 = df.Rad + df.DRad
+    y3 = df.SW_direct + df.SW_diffuse
     ax3.plot(x, y3, "k-", linewidth=0.5)
     ax3.set_ylabel("Global [$W\,m^{-2}$]")
     ax3.grid()
 
     ax3t = ax3.twinx()
-    ax3t.plot(x, df.DRad, "b-", linewidth=0.5)
+    ax3t.plot(x, df.SW_diffuse, "b-", linewidth=0.5)
     ax3t.set_ylim(ax3.get_ylim())
     ax3t.set_ylabel("Diffuse [$W\,m^{-2}$]", color="b")
     for tl in ax3t.get_yticklabels():
@@ -972,7 +918,7 @@ if __name__ == '__main__':
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
 
-    y3 = df.Rad
+    y3 = df.SW_direct
     ax1.plot(x, y3, "k-", linewidth=0.5)
     ax1.set_ylabel("Direct SWR [$W\,m^{-2}$]")
     ax1.grid()
@@ -989,7 +935,7 @@ if __name__ == '__main__':
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
 
-    y31 = df.DRad
+    y31 = df.SW_diffuse
     ax1.plot(x, y31, "k-", linewidth=0.5)
     ax1.set_ylabel("Diffuse SWR [$W\,m^{-2}$]")
     ax1.grid()

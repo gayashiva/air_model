@@ -94,10 +94,7 @@ else:
 # cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
 # df[cols].to_csv(filename2, sep=",")
 
-# Output for energy balance
-# filename3 = os.path.join(folders["output_folder"], site + "_model_energy.csv")
-# cols = ["When", "SW", "LW", "Qs", "Ql", "SA", "iceV"]
-# df[cols].to_csv(filename3, sep=",")
+
 
 # Full Output
 if option == "temperature":
@@ -109,13 +106,16 @@ else:
 filename4 = os.path.join(filename2 + "_model_results.csv")
 df.to_csv(filename4, sep=",")
 
+# Output for surface area
+filename3 = os.path.join(folders["output_folder"], site + "_area.csv")
+cols = ["When", "SA", "iceV"]
+df[cols].to_csv(filename3, sep=",")
+
 df['melt_thick'] = df['melted']/ (df['SA'] * 1000)
 
 df = df.rename({'SW': '$SW_{net}$', 'LW': '$LW_{net}$', 'Qs': '$Q_S$', 'Ql': '$Q_L$', 'Qc': '$Q_C$' }, axis=1)
 
 # Plots
-
-
 pp = PdfPages(filename2 + "_results.pdf")
 
 x = df.When
@@ -333,13 +333,13 @@ if option == "schwarzsee":
     ax2.set_ylabel("Temperature [$\degree C$]")
     ax2.grid()
 
-    y3 = df.Rad + df.DRad
+    y3 = df.SW_direct + df.SW_diffuse
     ax3.plot(x, y3, "k-", linewidth=0.5)
     ax3.set_ylabel("Global [$W\,m^{-2}$]")
     ax3.grid()
 
     ax3t = ax3.twinx()
-    ax3t.plot(x, df.DRad, "b-", linewidth=0.5)
+    ax3t.plot(x, df.SW_diffuse, "b-", linewidth=0.5)
     ax3t.set_ylim(ax3.get_ylim())
     ax3t.set_ylabel("Diffuse [$W\,m^{-2}$]", color="b")
     for tl in ax3t.get_yticklabels():
