@@ -839,7 +839,7 @@ class Icestupa:
                     )
 
             # Fountain water output
-            self.df.loc[i, "liquid"] = self.df.loc[i, "Discharge"] * (1 - ftl) * self.constants['time_steps'] / 60
+            self.df.loc[i, "liquid"] = self.df.loc[i, "Discharge"] * (1 - self.fountain['ftl']) * self.constants['time_steps'] / 60
 
             self.energy_balance(i)
 
