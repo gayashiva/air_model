@@ -7,15 +7,39 @@ from tqdm import tqdm
 import os
 import math
 import time
-from pandas.plotting import register_matplotlib_converters
-register_matplotlib_converters()
 import matplotlib
-from matplotlib.offsetbox import AnchoredText
 import math
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
+def uniform(parameter, interval):
+    """
+    A closure that creates a function that takes a `parameter` as input and
+    returns a uniform distribution with `interval` around `parameter`.
+    Parameters
+    ----------
+    interval : int, float
+        The interval of the uniform distribution around `parameter`.
+    Returns
+    -------
+    distribution : function
+        A function that takes `parameter` as input and returns a
+        uniform distribution with `interval` around this `parameter`.
+    Notes
+    -----
+    This function ultimately calculates:
+    .. code-block:: Python
+        cp.Uniform(parameter - abs(interval/2.*parameter),
+                   parameter + abs(interval/2.*parameter)).
+    """
+    if parameter == 0:
+        raise ValueError("Creating a percentage distribution around 0 does not work")
+
+    return cp.Uniform(parameter - abs(interval/2.*parameter),
+                      parameter + abs(interval/2.*parameter))
+
+    return distribution
 
 class Icestupa(un.Model):
     constants = dict(
@@ -37,39 +61,40 @@ class Icestupa(un.Model):
 
     )
 
-    fountain = dict(
-        aperture_f=0.005,  # Fountain aperture diameter
-        theta_f=45,  # Fountain aperture diameter
-        h_f=1.35,  # Fountain steps h_f
-        latitude=46.693723,
-        longitude=7.297543,
-        utc_offset=1,
-        ftl=0  # Fountain flight time loss ftl,
-    )
-
-    dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    dirname = os.path.dirname(__file__)
 
     def __init__(self, site='schwarzsee'):
 
-        super(Icestupa, self).__init__(labels=["Time (5 minutes)", "Ice Volume (m3)"])
-        self.ie=0.95  # Ice Emissivity ie
-        self.a_i=0.35  # Albedo of Ice a_i
-        self.a_s=0.85  # Albedo of Fresh Snow a_s
-        self.decay_t=10  # Albedo decay rate decay_t_d
-        self.dx=1e-02  # Ice layer thickness
-        self.z0mi=0.0017  # Ice Momentum roughness length
-        self.z0hi=0.0017  # Ice Scalar roughness length
-        self.snow_fall_density=250  # Snowfall density
-        self.rain_temp=1  # Temperature condition for liquid precipitation
-        
-        self.site = site
-        self.folders = dict(
-            input_folder=os.path.join(self.dirname, "data/interim/" + site + "/"),
-            output_folder=os.path.join(self.dirname, "data/processed/" + site + "/"),
-            sim_folder=os.path.join(self.dirname, "data/processed/" + site + "/simulations"),
-        )
+        super(Icestupa, self).__init__(labels=["Time (days)", "Ice Volume (m3)"])
 
-        input_file = self.folders["input_folder"] + "raw_input.csv"
+        """Surface"""
+        self.ie = 0.95  # Ice Emissivity ie
+        self.a_i = 0.35  # Albedo of Ice a_i
+        self.a_s = 0.85  # Albedo of Fresh Snow a_s
+        self.decay_t = 10  # Albedo decay rate decay_t_d
+        self.rain_temp = 1  # Temperature condition for liquid precipitation
+
+        """Meteorological"""
+        self.z0mi = 0.0017  # Ice Momentum roughness length
+        self.z0hi = 0.0017  # Ice Scalar roughness length
+        self.snow_fall_density = 250  # Snowfall density
+
+
+        """Fountain"""
+        self.aperture_f = 0.005  # Fountain aperture diameter
+        self.theta_f = 45  # Fountain aperture diameter
+        self.h_f = 1.35  # Fountain steps h_f
+
+        """Constants"""
+        self.latitude = 46.693723
+        self.longitude = 7.297543
+        self.utc_offset = 1
+        self.ftl = 0  # Fountain flight time loss ftl,
+        self.dx = 1e-02  # Ice layer thickness
+
+        self.site = site
+
+        input_file = os.path.join(self.dirname, "data/raw_input.csv")
 
         self.state = 0
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
@@ -96,9 +121,9 @@ class Icestupa(un.Model):
 
     def SEA(self, date):
 
-        latitude = self.fountain['latitude']
-        longitude = self.fountain['longitude']
-        utc_offset = self.fountain['utc_offset']
+        latitude = self.latitude
+        longitude = self.longitude
+        utc_offset = self.utc_offset
         hour = date.hour
         minute = date.minute
         # Check your timezone to add the offset
@@ -154,11 +179,11 @@ class Icestupa(un.Model):
 
         return math.radians(SEA)
 
-    def projectile_xy(self, v, theta_f, g=9.81):
-        hs = self.fountain["h_f"]
+    def projectile_xy(self, v, g=9.81):
+        hs = self.h_f
         data_xy = []
         t = 0.0
-        theta_f = math.radians(theta_f)
+        theta_f = math.radians(self.theta_f)
         while True:
             # now calculate the height y
             y = hs + (t * v * math.sin(theta_f)) - (g * t * t) / 2
@@ -214,7 +239,7 @@ class Icestupa(un.Model):
                 self.df[col] = 0
 
         """ Fountain Spray radius """
-        Area = math.pi * math.pow(self.fountain["aperture_f"], 2) / 4
+        Area = math.pi * math.pow(self.aperture_f, 2) / 4
 
         """Albedo Decay"""
         self.decay_t = (
@@ -223,7 +248,7 @@ class Icestupa(un.Model):
         s = 0
         f = 0
 
-        for i in tqdm(range(1, self.df.shape[0])):
+        for i in (range(1, self.df.shape[0])):
 
             """Solar Elevation Angle"""
             self.df.loc[i, "SEA"] = self.SEA(self.df.loc[i, "When"])
@@ -231,8 +256,8 @@ class Icestupa(un.Model):
             """ Vapour Pressure"""
             if "vp_a" in missing:
                 self.df.loc[i, "vp_a"] = (
-                            6.11 * math.pow(10, 7.5 * self.df.loc[i - 1, "T_a"] / (self.df.loc[i - 1, "T_a"] + 237.3)) *
-                            self.df.loc[i, "RH"] / 100)
+                        6.11 * math.pow(10, 7.5 * self.df.loc[i - 1, "T_a"] / (self.df.loc[i - 1, "T_a"] + 237.3)) *
+                        self.df.loc[i, "RH"] / 100)
 
             """LW incoming"""
             if "LW_in" in missing:
@@ -263,19 +288,19 @@ class Icestupa(un.Model):
 
             """ Fountain Spray radius """
             v_f = self.df.loc[i, "Discharge"] / (60 * 1000 * Area)
-            self.df.loc[i, "r_f"] = self.projectile_xy(v_f, self.fountain['theta_f'])
+            self.df.loc[i, "r_f"] = self.projectile_xy(v_f)
 
             s, f = self.albedo(i, s, f)
 
         self.df = self.df.round(5)
 
-        self.df.to_csv(self.folders["input_folder"] + "model_input.csv")
+        self.df.to_csv(os.path.join(self.dirname, "data/model_input.csv"))
 
         self.print_input()
 
     def print_input(self):
 
-        pp = PdfPages(self.folders["input_folder"] + "derived_parameters.pdf")
+        pp = PdfPages("derived_parameters.pdf")
 
         x = self.df.When
 
@@ -382,7 +407,7 @@ class Icestupa(un.Model):
 
         """Input Plots"""
 
-        pp = PdfPages(self.folders["input_folder"] + "data" + ".pdf")
+        pp = PdfPages("data" + ".pdf")
 
         fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
             nrows=6, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
@@ -446,7 +471,7 @@ class Icestupa(un.Model):
         pp.savefig(bbox_inches="tight")
 
         plt.savefig(
-            os.path.join(self.folders["input_folder"], "data.jpg"),
+            "data.jpg",
             bbox_inches="tight",
             dpi=300,
         )
@@ -761,31 +786,40 @@ class Icestupa(un.Model):
         print("Ppt", self.df["ppt"].sum())
         print("Model runtime", self.df.loc[i - 1, "When"] - self.df.loc[0, "When"])
 
-        # Full Output
-        filename4 = os.path.join(self.folders["output_folder"] + "model_results.csv")
-        self.df.to_csv(filename4, sep=",")
-
-        return float(self.df["iceV"].max()), Efficiency
+        # # Full Output
+        # filename4 = os.path.join(self.dirname, "data/model_results.csv")
+        # self.df.to_csv(filename4, sep=",")
 
     def run(self, **parameters):
         self.set_parameters(**parameters)
-        print(self.ie, self.dx)
 
-        self.df = pd.read_csv(self.folders["input_folder"] + "model_input.csv", sep=",", header=0, parse_dates=["When"])
+        self.df = pd.read_csv(os.path.join(self.dirname, "data/model_input.csv"), sep=",", header=0, parse_dates=["When"])
 
-        mask = self.df["When"] <= self.dates['fountain_off_date']
-        self.df = self.df.loc[mask]
-        self.df = self.df.reset_index(drop=True)
+        # mask = self.df["When"] <= self.dates['fountain_off_date']
+        # self.df = self.df.loc[mask]
+        # self.df = self.df.reset_index(drop=True)
 
-        # """Albedo Decay"""
-        # self.decay_t = (
-        #         self.decay_t * 24 * 60 * 60 / self.constants['time_steps']
-        # )  # convert to 5 minute time steps
-        # s = 0
-        # f = 0
-        #
-        # for i in range(1, self.df.shape[0]):
-        #     s,f = self.albedo(i,s,f)
+        fountain_parameters = ['aperture_f', 'h_f']
+
+        if 'aperture_f' in parameters.keys(): #todo change to general
+            """ Fountain Spray radius """
+            Area = math.pi * math.pow(self.aperture_f, 2) / 4
+
+            for i in range(1, self.df.shape[0]):
+                v_f = self.df.loc[i, "Discharge"] / (60 * 1000 * Area)
+                self.df.loc[i, "r_f"] = self.projectile_xy(v_f, self.theta_f)
+                # s, f = self.albedo(i, s, f)
+
+        if 'a_i' in parameters.keys():
+            """Albedo Decay"""
+            self.decay_t = (
+                    self.decay_t * 24 * 60 * 60 / self.constants['time_steps']
+            )  # convert to 5 minute time steps
+            s = 0
+            f = 0
+
+            for i in range(1, self.df.shape[0]):
+                s, f = self.albedo(i, s, f)
 
         l = [
             "T_s",  # Surface Temperature
@@ -823,7 +857,7 @@ class Icestupa(un.Model):
         self.df.loc[0, "h_ice"] = self.dx
         self.df.loc[0, "iceV"] = self.dx * math.pi * self.df.loc[0, "r_ice"] ** 2
 
-        for i in tqdm(range(1, self.df.shape[0])):
+        for i in (range(1, self.df.shape[0])):
 
             # Ice Melted
             if self.df.loc[i - 1, "iceV"] <= 0:
@@ -856,7 +890,7 @@ class Icestupa(un.Model):
                     )
 
             # Fountain water output
-            self.df.loc[i, "liquid"] = self.df.loc[i, "Discharge"] * (1 - self.fountain['ftl']) * self.constants['time_steps'] / 60
+            self.df.loc[i, "liquid"] = self.df.loc[i, "Discharge"] * (1 - self.ftl) * self.constants['time_steps'] / 60
 
             self.energy_balance(i)
 
@@ -905,7 +939,7 @@ class Icestupa(un.Model):
                     )
 
                     self.df.loc[i, "thickness"] = self.df.loc[i, 'melted'] / (
-                                self.df.loc[i, 'SA'] * self.constants['rho_i'])
+                            self.df.loc[i, 'SA'] * self.constants['rho_i'])
 
                     self.df.loc[i - 1, "T_s"] = 0
                     self.df.loc[i, "delta_T_s"] = 0
@@ -928,8 +962,9 @@ class Icestupa(un.Model):
                                      self.df.loc[
                                          i, "ppt"
                                      ] / self.snow_fall_density
+        self.summary(i)
 
-        return self.df.index.values*5/60, self.df["iceV"].values
+        return self.df.index.values * 5 / (60 * 24), self.df["iceV"].values
 
     def print_output(self):
 
@@ -939,7 +974,7 @@ class Icestupa(un.Model):
                                  axis=1)
 
         # Plots
-        pp = PdfPages(self.folders["output_folder"] + "model_results.pdf")
+        pp = PdfPages("model_results.pdf")
 
         x = self.df.When
         y1 = self.df.iceV
@@ -1121,33 +1156,80 @@ class Icestupa(un.Model):
 
         pp.close()
 
+
+def max_volume(time, values):
+    # Calculate the feature using time, values and info.
+    icev_max = values.max()
+    # Return the feature times and values.
+    return None, icev_max
+
+
+list_of_feature_functions = [max_volume]
+
+features = un.Features(new_features=list_of_feature_functions,
+                       features_to_run=["max_volume"])
 # Define a parameter list
 # parameters= {"ie": 0.95,
 #              "a_i": 0.35,
 #              "a_s": 0.85,
 #              "decay_t": 10,
-#              "dx": 1e-02,
 #              "z0mi": 0.0017,
 #              "z0hi": 0.0017,
 #              "snow_fall_density": 250,
 #              "rain_temp": 1}
 
-parameters= {"ie": 0.95,
-             "dx": 1e-02}
+
+
+# # Set all parameters to have a uniform distribution
+# # within a 20% interval around their fixed value
+# parameters.set_all_distributions(un.uniform(0.05))
+
+# # Create the distributions
+# h_f_dist = cp.Uniform(1.34, 1.36)
+# aperture_f_dist = cp.Uniform(0.0045, 0.0055)
+#
+# # Define the parameter dictionary
+# parameters = {"h_f": h_f_dist, "aperture_f": aperture_f_dist}
+
+
+ie = 0.95
+a_i =0.35
+a_s = 0.85
+decay_t = 10
+
+interval = 0.05
+
+ie_dist = uniform(ie, interval)
+a_i_dist = uniform(a_i, interval)
+a_s_dist = uniform(a_s, interval)
+decay_t_dist = uniform(decay_t, interval)
+rain_temp_dist = cp.Uniform(0, 2)
+z0mi_dist = cp.Uniform(0.0007, 0.0027)
+z0hi_dist = cp.Uniform(0.0007, 0.0027)
+
+snow_fall_density_dist = cp.Uniform(200, 300)
+
+parameters = {"ie": ie_dist,
+             "a_i": a_i_dist,
+             "a_s": a_s_dist,
+             "decay_t": decay_t_dist,
+              "rain_temp": rain_temp_dist,
+              "z0hi": z0hi_dist,
+              "z0hi": z0hi_dist,
+              "snow_fall_density": snow_fall_density_dist
+              }
+
 
 # Create the parameters
 parameters = un.Parameters(parameters)
-
-# Set all parameters to have a uniform distribution
-# within a 20% interval around their fixed value
-parameters.set_all_distributions(un.uniform(0.05))
 
 # Initialize the model
 model = Icestupa()
 
 # Set up the uncertainty quantification
 UQ = un.UncertaintyQuantification(model=model,
-                                  parameters=parameters)
+                                  parameters=parameters,
+                                  features=features)
 
 # Perform the uncertainty quantification using
 # polynomial chaos with point collocation (by default)
