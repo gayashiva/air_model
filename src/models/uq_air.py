@@ -1229,16 +1229,12 @@ model = Icestupa()
 # Set up the uncertainty quantification
 UQ = un.UncertaintyQuantification(model=model,
                                   parameters=parameters,
-                                  features=features)
+                                  features=features,
+                                  interpolate=True)
 
 # Perform the uncertainty quantification using
 # polynomial chaos with point collocation (by default)
 data = UQ.quantify()
 
-# print(data["Icestupa"])
 
-# fig, ax = plt.subplots()
-# ax.plot(data["Icestupa"].time, data["Icestupa"].mean)
-# ax.set_xlabel(data["Icestupa"].labels[0])
-# ax.set_ylabel(data["Icestupa"].labels[1])
-# plt.show()
+
