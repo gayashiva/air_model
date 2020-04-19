@@ -41,6 +41,12 @@ def uniform(parameter, interval):
 
     return distribution
 
+def max_volume(time, values):
+    # Calculate the feature using time, values and info.
+    icev_max = values.max()
+    # Return the feature times and values.
+    return None, icev_max
+
 class Icestupa(un.Model):
     constants = dict(
         L_s=2848 * 1000,  # J/kg Sublimation
@@ -248,7 +254,7 @@ class Icestupa(un.Model):
         s = 0
         f = 0
 
-        for i in (range(1, self.df.shape[0])):
+        for i in tqdm(range(1, self.df.shape[0])):
 
             """Solar Elevation Angle"""
             self.df.loc[i, "SEA"] = self.SEA(self.df.loc[i, "When"])
@@ -1157,84 +1163,74 @@ class Icestupa(un.Model):
         pp.close()
 
 
-def max_volume(time, values):
-    # Calculate the feature using time, values and info.
-    icev_max = values.max()
-    # Return the feature times and values.
-    return None, icev_max
-
-
-list_of_feature_functions = [max_volume]
-
-features = un.Features(new_features=list_of_feature_functions,
-                       features_to_run=["max_volume"])
-# Define a parameter list
-# parameters= {"ie": 0.95,
-#              "a_i": 0.35,
-#              "a_s": 0.85,
-#              "decay_t": 10,
-#              "z0mi": 0.0017,
-#              "z0hi": 0.0017,
-#              "snow_fall_density": 250,
-#              "rain_temp": 1}
 
 
 
-# # Set all parameters to have a uniform distribution
-# # within a 20% interval around their fixed value
-# parameters.set_all_distributions(un.uniform(0.05))
-
-# # Create the distributions
-# h_f_dist = cp.Uniform(1.34, 1.36)
-# aperture_f_dist = cp.Uniform(0.0045, 0.0055)
+# list_of_feature_functions = [max_volume]
 #
-# # Define the parameter dictionary
-# parameters = {"h_f": h_f_dist, "aperture_f": aperture_f_dist}
+# features = un.Features(new_features=list_of_feature_functions,
+#                        features_to_run=["max_volume"])
+#
+#
+# # # Set all parameters to have a uniform distribution
+# # # within a 20% interval around their fixed value
+# # parameters.set_all_distributions(un.uniform(0.05))
+#
+# ie = 0.95
+# a_i =0.35
+# a_s = 0.85
+# decay_t = 10
+#
+# interval = 0.05
+#
+# ie_dist = uniform(ie, interval)
+# a_i_dist = uniform(a_i, interval)
+# a_s_dist = uniform(a_s, interval)
+# decay_t_dist = uniform(decay_t, interval)
+# rain_temp_dist = cp.Uniform(0, 2)
+# z0mi_dist = cp.Uniform(0.0007, 0.0027)
+# z0hi_dist = cp.Uniform(0.0007, 0.0027)
+# snow_fall_density_dist = cp.Uniform(200, 300)
+#
+# parameters = {"ie": ie_dist,
+#              "a_i": a_i_dist,
+#              "a_s": a_s_dist,
+#              "decay_t": decay_t_dist,
+#               "rain_temp": rain_temp_dist,
+#               "z0hi": z0hi_dist,
+#               "z0hi": z0hi_dist,
+#               "snow_fall_density": snow_fall_density_dist
+#               }
+#
+#
+# # Create the parameters
+# parameters = un.Parameters(parameters)
+#
+# # Initialize the model
+# model = Icestupa()
+#
+# # Set up the uncertainty quantification
+# UQ = un.UncertaintyQuantification(model=model,
+#                                   parameters=parameters,
+#                                   features=features,
+#                                   interpolate=True)
+#
+# # Perform the uncertainty quantification using
+# # polynomial chaos with point collocation (by default)
+# data = UQ.quantify()
 
 
-ie = 0.95
-a_i =0.35
-a_s = 0.85
-decay_t = 10
+if __name__ == '__main__':
 
-interval = 0.05
+    start = time.time()
 
-ie_dist = uniform(ie, interval)
-a_i_dist = uniform(a_i, interval)
-a_s_dist = uniform(a_s, interval)
-decay_t_dist = uniform(decay_t, interval)
-rain_temp_dist = cp.Uniform(0, 2)
-z0mi_dist = cp.Uniform(0.0007, 0.0027)
-z0hi_dist = cp.Uniform(0.0007, 0.0027)
+    schwarzsee = Icestupa()
 
-snow_fall_density_dist = cp.Uniform(200, 300)
+    schwarzsee.derive_parameters()
 
-parameters = {"ie": ie_dist,
-             "a_i": a_i_dist,
-             "a_s": a_s_dist,
-             "decay_t": decay_t_dist,
-              "rain_temp": rain_temp_dist,
-              "z0hi": z0hi_dist,
-              "z0hi": z0hi_dist,
-              "snow_fall_density": snow_fall_density_dist
-              }
+    schwarzsee.run()
 
+    total = time.time() - start
 
-# Create the parameters
-parameters = un.Parameters(parameters)
-
-# Initialize the model
-model = Icestupa()
-
-# Set up the uncertainty quantification
-UQ = un.UncertaintyQuantification(model=model,
-                                  parameters=parameters,
-                                  features=features,
-                                  interpolate=True)
-
-# Perform the uncertainty quantification using
-# polynomial chaos with point collocation (by default)
-data = UQ.quantify()
-
-
+    print("Total time : ", total / 60)
 
