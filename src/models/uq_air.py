@@ -48,24 +48,24 @@ def max_volume(time, values):
     return None, icev_max
 
 class Icestupa(un.Model):
-    constants = dict(
-        L_s=2848 * 1000,  # J/kg Sublimation
-        L_e=2514 * 1000,  # J/kg Evaporation
-        L_f=334 * 1000,  # J/kg Fusion
-        c_w=4.186 * 1000,  # J/kgC Specific heat water
-        c_i=2.108 * 1000,  # J/kgC Specific heat ice
-        rho_w=1000,  # Density of water
-        rho_i=916,  # Density of Ice rho_i
-        rho_a=1.29,  # kg/m3 air density at mean sea level
-        k=0.4,  # Van Karman constant
-        bc=5.670367 * math.pow(10, -8),  # Stefan Boltzman constant
 
-        time_steps=5 * 60,  # s Model time steps
-        vp_w=6.112,  # Saturation Water vapour pressure
-        p0=1013,  # Standard air pressure hPa
-        h_aws=3,  # m height of AWS
+    """Physical Constants"""
+    L_s = 2848 * 1000  # J/kg Sublimation
+    L_e = 2514 * 1000  # J/kg Evaporation
+    L_f = 334 * 1000  # J/kg Fusion
+    c_w = 4.186 * 1000  # J/kgC Specific heat water
+    c_i = 2.108 * 1000  # J/kgC Specific heat ice
+    rho_w = 1000  # Density of water
+    rho_i = 916  # Density of Ice rho_i
+    rho_a = 1.29  # kg/m3 air density at mean sea level
+    k = 0.4  # Van Karman constant
+    bc = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
+    p0 = 1013  # Standard air pressure hPa
+    vp_w = 6.112  # Saturation Water vapour pressure
 
-    )
+    """Model constants"""
+    time_steps = 5 * 60  # s Model time steps
+    dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
     dirname = os.path.dirname(__file__)
 
@@ -91,12 +91,13 @@ class Icestupa(un.Model):
         self.theta_f = 45  # Fountain aperture diameter
         self.h_f = 1.35  # Fountain steps h_f
 
-        """Constants"""
+        """Site constants"""
         self.latitude = 46.693723
         self.longitude = 7.297543
         self.utc_offset = 1
         self.ftl = 0  # Fountain flight time loss ftl,
         self.dx = 1e-02  # Ice layer thickness
+        self.h_aws = 3  # m height of AWS
 
         self.site = site
 
@@ -250,7 +251,7 @@ class Icestupa(un.Model):
 
         """Albedo Decay"""
         self.decay_t = (
-                self.decay_t * 24 * 60 * 60 / self.constants['time_steps']
+                self.decay_t * 24 * 60 * 60 / self.time_steps
         )  # convert to 5 minute time steps
         s = 0
         f = 0
@@ -290,7 +291,7 @@ class Icestupa(un.Model):
                                          ) * (1 + 0.22 * math.pow(self.df.loc[row.Index, "cld"], 2))
 
 
-                self.df.loc[row.Index, "LW_in"] = self.df.loc[row.Index, "e_a"] * self.constants['bc'] * math.pow(
+                self.df.loc[row.Index, "LW_in"] = self.df.loc[row.Index, "e_a"] * self.bc * math.pow(
                     row.T_a + 273.15, 4
                 )
 
@@ -686,63 +687,60 @@ class Icestupa(un.Model):
 
         # Water Boundary
         if self.df.Discharge[i] > 0:
-            self.df.loc[i, "vp_s"] = self.constants['vp_w']
-            self.L = self.constants['L_e']
-            self.c_s = self.constants['c_w']
+            self.df.loc[i, "vp_s"] = self.vp_w
+            self.L = self.L_e
+            self.c_s = self.c_w
 
         else:
             self.df.loc[i, "vp_s"] = self.df.loc[i, "vp_ice"]
-            self.L = self.constants['L_s']
-            self.c_s = self.constants['c_i']
+            self.L = self.L_s
+            self.c_s = self.c_i
 
         self.df.loc[i, "Ql"] = (
                 0.623
                 * self.L
-                * self.constants['rho_a']
-                / self.constants['p0']
-                * math.pow(self.constants['k'], 2)
+                * self.rho_a
+                / self.p0
+                * math.pow(self.k, 2)
                 * self.df.loc[i, "v_a"]
                 * (self.df.loc[i, "vp_a"] - self.df.loc[i, "vp_s"])
                 / (
-                        np.log(self.constants["h_aws"] / self.z0mi)
-                        * np.log(self.constants["h_aws"] / self.z0hi)
+                        np.log(self.h_aws / self.z0mi)
+                        * np.log(self.h_aws / self.z0hi)
                 )
         )
 
         if self.df.loc[i, "Ql"] < 0:
-            self.df.loc[i, "gas"] -= (self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.constants[
-                'time_steps']) / self.L
+            self.df.loc[i, "gas"] -= (self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.time_steps) / self.L
 
             # Removing gas quantity generated from previous ice
             self.df.loc[i, "solid"] += (
-                                               self.df.loc[i, "Ql"] * (self.df.loc[i, "SA"]) * self.constants[
-                                           'time_steps']
+                                               self.df.loc[i, "Ql"] * (self.df.loc[i, "SA"]) * self.time_steps
                                        ) / self.L
 
             # Ice Temperature
-            self.df.loc[i, "delta_T_s"] += (self.df.loc[i, "Ql"] * self.constants['time_steps']) / (
-                    self.constants['rho_i'] * self.dx * self.c_s
+            self.df.loc[i, "delta_T_s"] += (self.df.loc[i, "Ql"] * self.time_steps) / (
+                    self.rho_i * self.dx * self.c_s
             )
 
         else:  # Deposition
 
             self.df.loc[i, "deposition"] += (
-                                                    self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.constants[
-                                                'time_steps']
+                                                    self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.time_steps
                                             ) / self.L
 
         # Sensible Heat Qs
         self.df.loc[i, "Qs"] = (
                 self.c_s
-                * self.constants['rho_a']
+                * self.rho_a
                 * self.df.loc[i, "p_a"]
-                / self.constants['p0']
-                * math.pow(self.constants['k'], 2)
+                / self.p0
+                * math.pow(self.k, 2)
                 * self.df.loc[i, "v_a"]
                 * (self.df.loc[i, "T_a"] - self.df.loc[i - 1, "T_s"])
                 / (
-                        np.log(self.constants["h_aws"] / self.z0mi)
-                        * np.log(self.constants["h_aws"] / self.z0hi)
+                        np.log(self.h_aws / self.z0mi)
+                        * np.log(self.h_aws / self.z0hi)
                 )
         )
 
@@ -754,19 +752,19 @@ class Icestupa(un.Model):
         # Long Wave Radiation LW
         if "LW_in" not in list(self.df.columns):
 
-            self.df.loc[i, "LW"] = self.df.loc[i, "e_a"] * self.constants['bc'] * math.pow(
+            self.df.loc[i, "LW"] = self.df.loc[i, "e_a"] * self.bc * math.pow(
                 self.df.loc[i, "T_a"] + 273.15, 4
-            ) - self.ie * self.constants['bc'] * math.pow(self.df.loc[i - 1, "T_s"] + 273.15, 4)
+            ) - self.ie * self.bc * math.pow(self.df.loc[i - 1, "T_s"] + 273.15, 4)
         else:
-            self.df.loc[i, "LW"] = self.df.loc[i, "LW_in"] - self.ie * self.constants['bc'] * math.pow(
+            self.df.loc[i, "LW"] = self.df.loc[i, "LW_in"] - self.ie * self.bc * math.pow(
                 self.df.loc[i - 1, "T_s"] + 273.15, 4
             )
 
         # Conduction Freezing
         if (self.df.loc[i, "liquid"] > 0) & (self.df.loc[i - 1, "T_s"] < 0):
             self.df.loc[i, "Qc"] = (
-                    self.constants['rho_i'] * self.dx * self.constants['c_i'] * (
-                -self.df.loc[i - 1, "T_s"]) / self.constants['time_steps']
+                    self.rho_i * self.dx * self.c_i * (
+                -self.df.loc[i - 1, "T_s"]) / self.time_steps
             )
             self.df.loc[i, "delta_T_s"] = -self.df.loc[i - 1, "T_s"]
 
@@ -776,7 +774,7 @@ class Icestupa(un.Model):
         )
 
         # Total Energy Joules
-        self.df.loc[i, "EJoules"] = self.df.loc[i, "TotalE"] * self.constants['time_steps'] * self.df.loc[i, "SA"]
+        self.df.loc[i, "EJoules"] = self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]
 
     def summary(self, i):
 
@@ -821,7 +819,7 @@ class Icestupa(un.Model):
         if 'a_i' in parameters.keys():
             """Albedo Decay"""
             self.decay_t = (
-                    self.decay_t * 24 * 60 * 60 / self.constants['time_steps']
+                    self.decay_t * 24 * 60 * 60 / self.time_steps
             )  # convert to 5 minute time steps
             s = 0
             f = 0
@@ -898,7 +896,7 @@ class Icestupa(un.Model):
                     )
 
             # Fountain water output
-            self.df.loc[i, "liquid"] = self.df.loc[i, "Discharge"] * (1 - self.ftl) * self.constants['time_steps'] / 60
+            self.df.loc[i, "liquid"] = self.df.loc[i, "Discharge"] * (1 - self.ftl) * self.time_steps / 60
 
             self.energy_balance(i)
 
@@ -909,45 +907,45 @@ class Icestupa(un.Model):
 
                     """Freezing water"""
 
-                    self.df.loc[i, "liquid"] -= (self.df.loc[i, "EJoules"]) / (-self.constants['L_f'])
+                    self.df.loc[i, "liquid"] -= (self.df.loc[i, "EJoules"]) / (-self.L_f)
 
                     if self.df.loc[i, "liquid"] < 0:
-                        self.df.loc[i, "liquid"] += (self.df.loc[i, "EJoules"]) / (-self.constants['L_f'])
+                        self.df.loc[i, "liquid"] += (self.df.loc[i, "EJoules"]) / (-self.L_f)
                         self.df.loc[i, "solid"] += self.df.loc[i, "liquid"]
                         self.df.loc[i, "liquid"] = 0
                     else:
-                        self.df.loc[i, "solid"] += (self.df.loc[i, "EJoules"]) / (-self.constants['L_f'])
+                        self.df.loc[i, "solid"] += (self.df.loc[i, "EJoules"]) / (-self.L_f)
 
                 else:
                     """ When fountain off and energy negative """
                     # Cooling Ice
-                    self.df.loc[i, "delta_T_s"] += (self.df.loc[i, "TotalE"] * self.constants['time_steps']) / (
-                            self.constants['rho_i'] * self.dx * self.c_s
+                    self.df.loc[i, "delta_T_s"] += (self.df.loc[i, "TotalE"] * self.time_steps) / (
+                            self.rho_i * self.dx * self.c_s
                     )
 
             else:
                 # Heating Ice
-                self.df.loc[i, "delta_T_s"] += (self.df.loc[i, "TotalE"] * self.constants['time_steps']) / (
-                        self.constants['rho_i'] * self.dx * self.c_s
+                self.df.loc[i, "delta_T_s"] += (self.df.loc[i, "TotalE"] * self.time_steps) / (
+                        self.rho_i * self.dx * self.c_s
                 )
 
                 """Hot Ice"""
                 if (self.df.loc[i - 1, "T_s"] + self.df.loc[i, "delta_T_s"]) > 0:
                     # Melting Ice by Temperature
                     self.df.loc[i, "solid"] -= (
-                            (self.constants['rho_i'] * self.dx * self.c_s * self.df.loc[i, "SA"])
+                            (self.rho_i * self.dx * self.c_s * self.df.loc[i, "SA"])
                             * (-(self.df.loc[i - 1, "T_s"] + self.df.loc[i, "delta_T_s"]))
-                            / (-self.constants['L_f'])
+                            / (-self.L_f)
                     )
 
                     self.df.loc[i, "melted"] += (
-                            (self.constants['rho_i'] * self.dx * self.c_s * self.df.loc[i, "SA"])
+                            (self.rho_i * self.dx * self.c_s * self.df.loc[i, "SA"])
                             * (-(self.df.loc[i - 1, "T_s"] + self.df.loc[i, "delta_T_s"]))
-                            / (-self.constants['L_f'])
+                            / (-self.L_f)
                     )
 
                     self.df.loc[i, "thickness"] = self.df.loc[i, 'melted'] / (
-                            self.df.loc[i, 'SA'] * self.constants['rho_i'])
+                            self.df.loc[i, 'SA'] * self.rho_i)
 
                     self.df.loc[i - 1, "T_s"] = 0
                     self.df.loc[i, "delta_T_s"] = 0
@@ -963,10 +961,10 @@ class Icestupa(un.Model):
             )
             self.df.loc[i, "vapour"] = self.df.loc[i - 1, "vapour"] + self.df.loc[i, "gas"]
             self.df.loc[i, "sprayed"] = (
-                    self.df.loc[i - 1, "sprayed"] + self.df.loc[i, "Discharge"] * self.constants['time_steps'] / 60
+                    self.df.loc[i - 1, "sprayed"] + self.df.loc[i, "Discharge"] * self.time_steps / 60
             )
             self.df.loc[i, "water"] = self.df.loc[i - 1, "water"] + self.df.loc[i, "liquid"]
-            self.df.loc[i, "iceV"] = (self.df.loc[i, "ice"] - self.df.loc[i, "ppt"]) / self.constants['rho_i'] + \
+            self.df.loc[i, "iceV"] = (self.df.loc[i, "ice"] - self.df.loc[i, "ppt"]) / self.rho_i + \
                                      self.df.loc[
                                          i, "ppt"
                                      ] / self.snow_fall_density
