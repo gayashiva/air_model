@@ -1040,7 +1040,7 @@ class Icestupa(un.Model):
         self.df.loc[0, "h_ice"] = self.dx
         self.df.loc[0, "iceV"] = self.dx * math.pi * self.df.loc[0, "r_ice"] ** 2
 
-        for row in self.df[1:].itertuples(), total=self.df.shape[0]:
+        for row in self.df[1:].itertuples():
             i = row.Index
 
             # Ice Melted
@@ -1178,14 +1178,14 @@ z0mi_dist = cp.Uniform(0.0007, 0.0027)
 z0hi_dist = cp.Uniform(0.0007, 0.0027)
 snow_fall_density_dist = cp.Uniform(200, 300)
 
-parameters = {"ie": ie_dist
-             # "a_i": a_i_dist,
-             # "a_s": a_s_dist,
-             # "decay_t": decay_t_dist,
-             #  "rain_temp": rain_temp_dist,
-             #  "z0hi": z0hi_dist,
-             #  "z0hi": z0hi_dist,
-             #  "snow_fall_density": snow_fall_density_dist
+parameters = {"ie": ie_dist,
+             "a_i": a_i_dist,
+             "a_s": a_s_dist,
+             "decay_t": decay_t_dist,
+              "rain_temp": rain_temp_dist,
+              "z0hi": z0hi_dist,
+              "z0hi": z0hi_dist,
+              "snow_fall_density": snow_fall_density_dist
               }
 
 
