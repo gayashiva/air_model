@@ -92,7 +92,7 @@ class Icestupa():
             fountain_off_date=self.df.loc[fountain_off, "When"],
         )
 
-        self.df = self.df[start:fountain_off]
+        self.df = self.df[start:]
         self.df = self.df.reset_index(drop=True)
 
     def SEA(self, date):
@@ -180,12 +180,12 @@ class Icestupa():
 
         """Albedo"""
         # Precipitation
-        if (row.Discharge == 0) & (row.Prec > 0):
+        if (self.df.loc[i, "Discharge"] == 0) & (self.df.loc[i, "Prec"] > 0):
             if self.df.loc[i, "T_a"] < self.rain_temp:  # Snow
                 s = 0
                 f = 0
 
-        if row.Discharge > 0:
+        if self.df.loc[i, "Discharge"] > 0:
             f = 1
             s = 0
 
@@ -672,7 +672,7 @@ class Icestupa():
                 / self.p0
                 * math.pow(self.k, 2)
                 * self.df.loc[i, "v_a"]
-                * (self.df.loc[i, "vp_a"] - self.df.loc[i, "vp_s"])
+                * (row.vp_a - self.df.loc[i, "vp_s"])
                 / (
                         np.log(self.h_aws / self.z0mi)
                         * np.log(self.h_aws / self.z0hi)
@@ -719,15 +719,9 @@ class Icestupa():
         )
 
         # Long Wave Radiation LW
-        if "LW_in" not in list(self.df.columns):
-
-            self.df.loc[i, "LW"] = self.df.loc[i, "e_a"] * self.bc * math.pow(
-                self.df.loc[i, "T_a"] + 273.15, 4
-            ) - self.ie * self.bc * math.pow(self.df.loc[i - 1, "T_s"] + 273.15, 4)
-        else:
-            self.df.loc[i, "LW"] = self.df.loc[i, "LW_in"] - self.ie * self.bc * math.pow(
-                self.df.loc[i - 1, "T_s"] + 273.15, 4
-            )
+        self.df.loc[i, "LW"] = row.LW_in - self.ie * self.bc * math.pow(
+            self.df.loc[i - 1, "T_s"] + 273.15, 4
+        )
 
         # Conduction Freezing
         if (self.liquid > 0) & (self.df.loc[i - 1, "T_s"] < 0):
@@ -1111,7 +1105,7 @@ if __name__ == '__main__':
 
     schwarzsee = Icestupa()
 
-    # schwarzsee.derive_parameters()
+    schwarzsee.derive_parameters()
 
     schwarzsee.run()
 
