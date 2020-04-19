@@ -234,6 +234,7 @@ class Icestupa(un.Model):
             "a",
             "cld",
             "SEA",
+            "e_a",
             "vp_a",
             "r_f",
             "LW_in",
@@ -254,49 +255,50 @@ class Icestupa(un.Model):
         s = 0
         f = 0
 
-        for i in tqdm(range(1, self.df.shape[0])):
+        for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
 
             """Solar Elevation Angle"""
-            self.df.loc[i, "SEA"] = self.SEA(self.df.loc[i, "When"])
+            self.df.loc[row.Index, "SEA"] = self.SEA(row.When)
 
             """ Vapour Pressure"""
             if "vp_a" in missing:
-                self.df.loc[i, "vp_a"] = (
-                        6.11 * math.pow(10, 7.5 * self.df.loc[i - 1, "T_a"] / (self.df.loc[i - 1, "T_a"] + 237.3)) *
-                        self.df.loc[i, "RH"] / 100)
+                self.df.loc[row.Index, "vp_a"] = (
+                        6.11 * math.pow(10, 7.5 * self.df.loc[row.Index - 1, "T_a"] / (self.df.loc[row.Index - 1, "T_a"] + 237.3)) *
+                        row.RH / 100)
 
             """LW incoming"""
             if "LW_in" in missing:
 
                 # Cloudiness from diffuse fraction
-                if self.df.loc[i, "SW_direct"] + self.df.loc[i, "SW_diffuse"] > 1:
-                    self.df.loc[i, "cld"] = self.df.loc[i, "SW_diffuse"] / (
-                            self.df.loc[i, "SW_direct"] + self.df.loc[i, "SW_diffuse"]
+                if row.SW_direct + row.SW_diffuse > 1:
+                    self.df.loc[row.Index, "cld"] = row.SW_diffuse / (
+                            row.SW_direct  + row.SW_diffuse
                     )
                 else:
                     # Night Cloudiness average of last 8 hours
-                    if i - 96 > 0:
-                        for j in range(i - 96, i):
-                            self.df.loc[i, "cld"] += self.df.loc[j, "cld"]
-                        self.df.loc[i, "cld"] = self.df.loc[i, "cld"] / 96
+                    if row.Index - 96 > 0:
+                        for j in range(row.Index - 96, row.Index):
+                            self.df.loc[row.Index, "cld"] += self.df.loc[j, "cld"]
+                        self.df.loc[row.Index, "cld"] = self.df.loc[row.Index, "cld"] / 96
                     else:
-                        for j in range(0, i):
-                            self.df.loc[i, "cld"] += self.df.loc[j, "cld"]
-                        self.df.loc[i, "cld"] = self.df.loc[i, "cld"] / i
+                        for j in range(0, row.Index):
+                            self.df.loc[row.Index, "cld"] += self.df.loc[j, "cld"]
+                        self.df.loc[row.Index, "cld"] = self.df.loc[row.Index, "cld"] / row.Index
 
-                self.df.loc[i, "e_a"] = (1.24 * math.pow(abs(self.df.loc[i, "vp_a"] / (self.df.loc[i, "T_a"] + 273.15)),
+                self.df.loc[row.Index, "e_a"] = (1.24 * math.pow(abs(self.df.loc[row.Index, "vp_a"] / (row.T_a + 273.15)),
                                                          1 / 7)
-                                         ) * (1 + 0.22 * math.pow(self.df.loc[i, "cld"], 2))
+                                         ) * (1 + 0.22 * math.pow(self.df.loc[row.Index, "cld"], 2))
 
-                self.df.loc[i, "LW_in"] = self.df.loc[i, "e_a"] * self.constants['bc'] * math.pow(
-                    self.df.loc[i, "T_a"] + 273.15, 4
+
+                self.df.loc[row.Index, "LW_in"] = self.df.loc[row.Index, "e_a"] * self.constants['bc'] * math.pow(
+                    row.T_a + 273.15, 4
                 )
 
             """ Fountain Spray radius """
-            v_f = self.df.loc[i, "Discharge"] / (60 * 1000 * Area)
-            self.df.loc[i, "r_f"] = self.projectile_xy(v_f)
+            v_f = row.Discharge / (60 * 1000 * Area)
+            self.df.loc[row.Index, "r_f"] = self.projectile_xy(v_f)
 
-            s, f = self.albedo(i, s, f)
+            s, f = self.albedo(row.Index, s, f)
 
         self.df = self.df.round(5)
 
@@ -863,7 +865,7 @@ class Icestupa(un.Model):
         self.df.loc[0, "h_ice"] = self.dx
         self.df.loc[0, "iceV"] = self.dx * math.pi * self.df.loc[0, "r_ice"] ** 2
 
-        for i in (range(1, self.df.shape[0])):
+        for i in tqdm(range(1, self.df.shape[0])):
 
             # Ice Melted
             if self.df.loc[i - 1, "iceV"] <= 0:
