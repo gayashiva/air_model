@@ -180,12 +180,12 @@ class Icestupa():
 
         """Albedo"""
         # Precipitation
-        if (self.df.loc[i, "Discharge"] == 0) & (self.df.loc[i, "Prec"] > 0):
+        if (row.Discharge == 0) & (row.Prec > 0):
             if self.df.loc[i, "T_a"] < self.rain_temp:  # Snow
                 s = 0
                 f = 0
 
-        if self.df.loc[i, "Discharge"] > 0:
+        if row.Discharge > 0:
             f = 1
             s = 0
 
@@ -276,8 +276,6 @@ class Icestupa():
 
         self.df.to_csv(self.folders["input_folder"] + "model_input.csv")
 
-
-
     def print_input(self):
 
         pp = PdfPages(self.folders["input_folder"] + "derived_parameters.pdf")
@@ -318,9 +316,8 @@ class Icestupa():
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111)
         # y1 = self.df.e_a
         # ax1.plot(x, y1, "k-", linewidth=0.5)
         # ax1.set_ylabel("Atmospheric emissivity")
@@ -650,7 +647,8 @@ class Icestupa():
                                         * self.df.loc[i, "r_ice"]
                                 )
 
-    def energy_balance(self, i):
+    def energy_balance(self, row):
+        i = row.Index
 
         self.vp_ice = 6.112 * np.exp(
             22.46 * (self.df.loc[i - 1, "T_s"]) / ((self.df.loc[i - 1, "T_s"]) + 272.62)
@@ -704,7 +702,7 @@ class Icestupa():
         self.df.loc[i, "Qs"] = (
                 self.c_s
                 * self.rho_a
-                * self.df.loc[i, "p_a"]
+                * row.p_a
                 / self.p0
                 * math.pow(self.k, 2)
                 * self.df.loc[i, "v_a"]
@@ -716,8 +714,8 @@ class Icestupa():
         )
 
         # Short Wave Radiation SW
-        self.df.loc[i, "SW"] = (1 - self.df.loc[i, "a"]) * (
-                self.df.loc[i, "SW_direct"] * self.SRf + self.df.loc[i, "SW_diffuse"]
+        self.df.loc[i, "SW"] = (1 - row.a) * (
+                row.SW_direct * self.SRf + row.SW_diffuse
         )
 
         # Long Wave Radiation LW
@@ -762,10 +760,6 @@ class Icestupa():
         print("Meltwater", float(self.df["meltwater"].tail(1)))
         print("Ppt", self.df["ppt"].sum())
         print("Model runtime", self.df.loc[i - 1, "When"] - self.df.loc[0, "When"])
-
-        # # Full Output
-        # filename4 = os.path.join(self.dirname, "data/model_results.csv")
-        # self.df.to_csv(filename4, sep=",")
 
     def print_output(self):
 
@@ -997,7 +991,8 @@ class Icestupa():
         self.df.loc[0, "h_ice"] = self.dx
         self.df.loc[0, "iceV"] = self.dx * math.pi * self.df.loc[0, "r_ice"] ** 2
 
-        for i in tqdm(range(1, self.df.shape[0])):
+        for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
+            i = row.Index
 
             # Ice Melted
             if self.df.loc[i - 1, "iceV"] <= 0:
@@ -1012,27 +1007,27 @@ class Icestupa():
             self.surface_area(i)
 
             # Precipitation to ice quantity
-            if (self.df.loc[i, "T_a"] < self.rain_temp) and self.df.loc[i, "Prec"] > 0:
+            if (row.T_a < self.rain_temp) and row.Prec > 0:
 
                 if self.df.loc[i, 'When'] <= self.dates['fountain_off_date']:
                     self.df.loc[i, "ppt"] = (
                             self.snow_fall_density
-                            * self.df.loc[i, "Prec"]
+                            * row.Prec
                             * math.pi
                             * self.r_mean ** 2)
                 else:
 
                     self.df.loc[i, "ppt"] = (
                             self.snow_fall_density
-                            * self.df.loc[i, "Prec"]
+                            * row.Prec
                             * math.pi
                             * math.pow(self.df.loc[i, "r_ice"], 2)
                     )
 
             # Fountain water output
-            self.liquid = self.df.loc[i, "Discharge"] * (1 - self.ftl) * self.time_steps / 60
+            self.liquid = row.Discharge * (1 - self.ftl) * self.time_steps / 60
 
-            self.energy_balance(i)
+            self.energy_balance(row)
 
             if self.EJoules < 0:
 
@@ -1116,10 +1111,9 @@ if __name__ == '__main__':
 
     schwarzsee = Icestupa()
 
-    schwarzsee.derive_parameters()
+    # schwarzsee.derive_parameters()
 
     schwarzsee.run()
-
 
     total = time.time() - start
 
