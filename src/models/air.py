@@ -272,9 +272,11 @@ class Icestupa():
 
         self.df = self.df.round(5)
 
+        self.df = self.df.drop(["e_a", "cld", "Unnamed: 0"], axis=1)
+
         self.df.to_csv(self.folders["input_folder"] + "model_input.csv")
 
-        self.print_input()
+
 
     def print_input(self):
 
@@ -319,35 +321,35 @@ class Icestupa():
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
 
-        y1 = self.df.e_a
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Atmospheric emissivity")
-        ax1.grid()
+        # y1 = self.df.e_a
+        # ax1.plot(x, y1, "k-", linewidth=0.5)
+        # ax1.set_ylabel("Atmospheric emissivity")
+        # ax1.grid()
+        #
+        # # format the ticks
+        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        # ax1.grid()
+        # fig.autofmt_xdate()
+        # pp.savefig(bbox_inches="tight")
+        # plt.clf()
 
-        # format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        y1 = self.df.cld
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Cloudiness")
-        ax1.grid()
-
-        # format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111)
+        # y1 = self.df.cld
+        # ax1.plot(x, y1, "k-", linewidth=0.5)
+        # ax1.set_ylabel("Cloudiness")
+        # ax1.grid()
+        #
+        # # format the ticks
+        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        # ax1.grid()
+        # fig.autofmt_xdate()
+        # pp.savefig(bbox_inches="tight")
+        # plt.clf()
 
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
@@ -630,7 +632,7 @@ class Icestupa():
             )
             )
 
-        self.df.loc[i, "SRf"] = (
+        self.SRf = (
                                         0.5
                                         * self.df.loc[i, "h_ice"]
                                         * self.df.loc[i, "r_ice"]
@@ -650,7 +652,7 @@ class Icestupa():
 
     def energy_balance(self, i):
 
-        self.df.loc[i, "vp_ice"] = 6.112 * np.exp(
+        self.vp_ice = 6.112 * np.exp(
             22.46 * (self.df.loc[i - 1, "T_s"]) / ((self.df.loc[i - 1, "T_s"]) + 272.62)
         )
 
@@ -661,7 +663,7 @@ class Icestupa():
             self.c_s = self.c_w
 
         else:
-            self.df.loc[i, "vp_s"] = self.df.loc[i, "vp_ice"]
+            self.df.loc[i, "vp_s"] = self.vp_ice
             self.L = self.L_s
             self.c_s = self.c_i
 
@@ -680,10 +682,10 @@ class Icestupa():
         )
 
         if self.df.loc[i, "Ql"] < 0:
-            self.df.loc[i, "gas"] -= (self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.time_steps) / self.L
+            self.gas -= (self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.time_steps) / self.L
 
             # Removing gas quantity generated from previous ice
-            self.df.loc[i, "solid"] += (
+            self.solid += (
                                                self.df.loc[i, "Ql"] * (self.df.loc[i, "SA"]) * self.time_steps
                                        ) / self.L
 
@@ -715,7 +717,7 @@ class Icestupa():
 
         # Short Wave Radiation SW
         self.df.loc[i, "SW"] = (1 - self.df.loc[i, "a"]) * (
-                self.df.loc[i, "SW_direct"] * self.df.loc[i, "SRf"] + self.df.loc[i, "SW_diffuse"]
+                self.df.loc[i, "SW_direct"] * self.SRf + self.df.loc[i, "SW_diffuse"]
         )
 
         # Long Wave Radiation LW
@@ -730,7 +732,7 @@ class Icestupa():
             )
 
         # Conduction Freezing
-        if (self.df.loc[i, "liquid"] > 0) & (self.df.loc[i - 1, "T_s"] < 0):
+        if (self.liquid > 0) & (self.df.loc[i - 1, "T_s"] < 0):
             self.df.loc[i, "Qc"] = (
                     self.rho_i * self.dx * self.c_i * (
                 -self.df.loc[i - 1, "T_s"]) / self.time_steps
@@ -743,14 +745,14 @@ class Icestupa():
         )
 
         # Total Energy Joules
-        self.df.loc[i, "EJoules"] = self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]
+        self.EJoules = self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]
 
     def summary(self, i):
 
         self.df = self.df[:i]
         Efficiency = float(
             (self.df["meltwater"].tail(1) + self.df["ice"].tail(1))
-            / (self.df["sprayed"].tail(1) + self.df["ppt"].sum() + self.df["deposition"].sum())
+            / (self.df["Discharge"].sum() * self.time_steps / 60 + self.df["ppt"].sum() + self.df["deposition"].sum())
             * 100
         )
 
@@ -968,13 +970,8 @@ class Icestupa():
             "T_s",  # Surface Temperature
             "ice",
             "iceV",
-            "solid",
-            "liquid",
             "vapour",
-            "melted",
-            "gas",
             "water",
-            "sprayed",
             "TotalE",
             "SW",
             "LW",
@@ -985,17 +982,14 @@ class Icestupa():
             "SA",
             "h_ice",
             "r_ice",
-            "SRf",
-            "vp_ice",
             "ppt",
             "deposition",
         ]
         for col in l:
             self.df[col] = 0
 
-        self.delta_T_s = 0
 
-        # self.delta_T_s, self.solid, self.liquid, self.gas, self.melted, self.SRf, self.vp_ice, self.EJoules = [0] * 8
+        self.delta_T_s, self.solid, self.liquid, self.gas, self.melted, self.SRf, self.vp_ice, self.EJoules= [0] * 8
 
         """Initialize"""
         self.r_mean = self.df['r_f'].replace(0, np.NaN).mean()
@@ -1036,25 +1030,25 @@ class Icestupa():
                     )
 
             # Fountain water output
-            self.df.loc[i, "liquid"] = self.df.loc[i, "Discharge"] * (1 - self.ftl) * self.time_steps / 60
+            self.liquid = self.df.loc[i, "Discharge"] * (1 - self.ftl) * self.time_steps / 60
 
             self.energy_balance(i)
 
-            if self.df.loc[i, "EJoules"] < 0:
+            if self.EJoules < 0:
 
                 """ And fountain on """
-                if self.df.loc[i - 1, "liquid"] > 0:
+                if self.df.loc[i - 1, "Discharge"] > 0:
 
                     """Freezing water"""
 
-                    self.df.loc[i, "liquid"] -= (self.df.loc[i, "EJoules"]) / (-self.L_f)
+                    self.liquid -= (self.EJoules) / (-self.L_f)
 
-                    if self.df.loc[i, "liquid"] < 0:
-                        self.df.loc[i, "liquid"] += (self.df.loc[i, "EJoules"]) / (-self.L_f)
-                        self.df.loc[i, "solid"] += self.df.loc[i, "liquid"]
-                        self.df.loc[i, "liquid"] = 0
+                    if self.liquid < 0:
+                        self.liquid += (self.EJoules) / (-self.L_f)
+                        self.solid += self.liquid
+                        self.liquid = 0
                     else:
-                        self.df.loc[i, "solid"] += (self.df.loc[i, "EJoules"]) / (-self.L_f)
+                        self.solid += (self.EJoules) / (-self.L_f)
 
                 else:
                     """ When fountain off and energy negative """
@@ -1072,19 +1066,19 @@ class Icestupa():
                 """Hot Ice"""
                 if (self.df.loc[i - 1, "T_s"] + self.delta_T_s) > 0:
                     # Melting Ice by Temperature
-                    self.df.loc[i, "solid"] -= (
+                    self.solid -= (
                             (self.rho_i * self.dx * self.c_s * self.df.loc[i, "SA"])
                             * (-(self.df.loc[i - 1, "T_s"] + self.delta_T_s))
                             / (-self.L_f)
                     )
 
-                    self.df.loc[i, "melted"] += (
+                    self.melted += (
                             (self.rho_i * self.dx * self.c_s * self.df.loc[i, "SA"])
                             * (-(self.df.loc[i - 1, "T_s"] + self.delta_T_s))
                             / (-self.L_f)
                     )
 
-                    self.df.loc[i, "thickness"] = self.df.loc[i, 'melted'] / (
+                    self.df.loc[i, "thickness"] = self.melted / (
                             self.df.loc[i, 'SA'] * self.rho_i)
 
                     self.df.loc[i - 1, "T_s"] = 0
@@ -1092,26 +1086,25 @@ class Icestupa():
 
             """ Quantities of all phases """
             self.df.loc[i, "T_s"] = self.df.loc[i - 1, "T_s"] + self.delta_T_s
-            self.df.loc[i, "meltwater"] = self.df.loc[i - 1, "meltwater"] + self.df.loc[i, "melted"]
+            self.df.loc[i, "meltwater"] = self.df.loc[i - 1, "meltwater"] + self.melted
             self.df.loc[i, "ice"] = (
                     self.df.loc[i - 1, "ice"]
-                    + self.df.loc[i, "solid"]
+                    + self.solid
                     + self.df.loc[i, "ppt"]
                     + self.df.loc[i, "deposition"]
             )
-            self.df.loc[i, "vapour"] = self.df.loc[i - 1, "vapour"] + self.df.loc[i, "gas"]
-            self.df.loc[i, "sprayed"] = (
-                    self.df.loc[i - 1, "sprayed"] + self.df.loc[i, "Discharge"] * self.time_steps / 60
-            )
-            self.df.loc[i, "water"] = self.df.loc[i - 1, "water"] + self.df.loc[i, "liquid"]
+            self.df.loc[i, "vapour"] = self.df.loc[i - 1, "vapour"] + self.gas
+            self.df.loc[i, "water"] = self.df.loc[i - 1, "water"] + self.liquid
             self.df.loc[i, "iceV"] = (self.df.loc[i, "ice"] - self.df.loc[i, "ppt"]) / self.rho_i + \
                                      self.df.loc[
                                          i, "ppt"
                                      ] / self.snow_fall_density
-            self.delta_T_s = 0
+
+            self.delta_T_s, self.solid, self.liquid, self.gas, self.melted, self.SRf, self.vp_ice, self.EJoules = [0] * 8
+
         self.summary(i)
 
-        self.print_output()
+        # self.print_output()
 
         return self.df.index.values * 5 / (60 * 24), self.df["iceV"].values
 
@@ -1123,7 +1116,7 @@ if __name__ == '__main__':
 
     schwarzsee = Icestupa()
 
-    # schwarzsee.derive_parameters()
+    schwarzsee.derive_parameters()
 
     schwarzsee.run()
 
