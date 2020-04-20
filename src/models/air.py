@@ -276,14 +276,9 @@ class Icestupa():
 
         self.df = self.df.drop(["e_a", "cld", "Unnamed: 0"], axis=1)
 
-        # Create storage object with filename `processed_data`
         data_store = pd.HDFStore(self.folders["input_folder"] + 'model_input.h5')
-
-        # Put DataFrame into the object setting the key as 'preprocessed_df'
-        data_store['df'] = df
+        data_store['df'] = self.df
         data_store.close()
-
-        # self.df.to_csv(self.folders["input_folder"] + "model_input.csv")
 
     def print_input(self):
 
@@ -960,13 +955,9 @@ class Icestupa():
 
     def run(self):
 
-        # Access data store
         data_store = pd.HDFStore(self.folders["input_folder"] + "model_input.h5")
-
-        # Retrieve data using key
         self.df = data_store['df']
         data_store.close()
-        # self.df = pd.read_csv(self.folders["input_folder"] + "model_input.csv", sep=",", header=0, parse_dates=["When"])
 
 
         l = [

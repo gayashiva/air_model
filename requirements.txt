@@ -13,6 +13,6 @@ pillow
 matplotlib
 scipy
 tqdm
-SALib
 uncertainpy
 chaospy
+tables

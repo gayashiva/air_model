@@ -2,16 +2,8 @@ import uncertainpy as un
 import chaospy as cp
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
-from tqdm import tqdm
 import os
 import math
-import time
-import matplotlib
-import math
-import matplotlib.dates as mdates
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
 
 def uniform(parameter, interval):
     """
@@ -357,7 +349,12 @@ class UQ_Icestupa(un.Model):
     def run(self, **parameters):
         self.set_parameters(**parameters)
 
-        self.df = pd.read_csv(self.folders["input_folder"] + "model_input.csv", sep=",", header=0, parse_dates=["When"])
+        # Access data store
+        data_store = pd.HDFStore(self.folders["input_folder"] + "model_input.h5")
+
+        # Retrieve data using key
+        self.df = data_store['df']
+        data_store.close()
 
         if 'aperture_f' in parameters.keys(): #todo change to general
             """ Fountain Spray radius """
@@ -545,14 +542,14 @@ z0mi_dist = cp.Uniform(0.0007, 0.0027)
 z0hi_dist = cp.Uniform(0.0007, 0.0027)
 snow_fall_density_dist = cp.Uniform(200, 300)
 
-parameters = {"ie": ie_dist
-             # "a_i": a_i_dist,
-             # "a_s": a_s_dist,
-             # "decay_t": decay_t_dist,
-             #  "rain_temp": rain_temp_dist,
-             #  "z0hi": z0hi_dist,
-             #  "z0hi": z0hi_dist,
-             #  "snow_fall_density": snow_fall_density_dist
+parameters = {"ie": ie_dist,
+             "a_i": a_i_dist,
+             "a_s": a_s_dist,
+             "decay_t": decay_t_dist,
+              "rain_temp": rain_temp_dist,
+              "z0mi": z0mi_dist,
+              "z0hi": z0hi_dist,
+              "snow_fall_density": snow_fall_density_dist
               }
 
 
