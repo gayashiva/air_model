@@ -174,18 +174,20 @@ class Icestupa():
             t += 0.01
         return x
 
-    def albedo(self, i, s=0, f=0):
+    def albedo(self, row, s=0, f=0):
+
+        i = row.Index
 
         a_min = self.a_i
 
         """Albedo"""
         # Precipitation
-        if (self.df.loc[i, "Discharge"] == 0) & (self.df.loc[i, "Prec"] > 0):
-            if self.df.loc[i, "T_a"] < self.rain_temp:  # Snow
+        if (row.Discharge == 0) & (row.Prec > 0):
+            if row.T_a < self.rain_temp:  # Snow
                 s = 0
                 f = 0
 
-        if self.df.loc[i, "Discharge"] > 0:
+        if row.Discharge > 0:
             f = 1
             s = 0
 
@@ -268,13 +270,20 @@ class Icestupa():
             v_f = row.Discharge / (60 * 1000 * Area)
             self.df.loc[row.Index, "r_f"] = self.projectile_xy(v_f)
 
-            s, f = self.albedo(row.Index, s, f)
+            s, f = self.albedo(row, s, f)
 
         self.df = self.df.round(5)
 
         self.df = self.df.drop(["e_a", "cld", "Unnamed: 0"], axis=1)
 
-        self.df.to_csv(self.folders["input_folder"] + "model_input.csv")
+        # Create storage object with filename `processed_data`
+        data_store = pd.HDFStore(self.folders["input_folder"] + 'model_input.h5')
+
+        # Put DataFrame into the object setting the key as 'preprocessed_df'
+        data_store['df'] = df
+        data_store.close()
+
+        # self.df.to_csv(self.folders["input_folder"] + "model_input.csv")
 
     def print_input(self):
 
@@ -951,7 +960,13 @@ class Icestupa():
 
     def run(self):
 
-        self.df = pd.read_csv(self.folders["input_folder"] + "model_input.csv", sep=",", header=0, parse_dates=["When"])
+        # Access data store
+        data_store = pd.HDFStore(self.folders["input_folder"] + "model_input.h5")
+
+        # Retrieve data using key
+        self.df = data_store['df']
+        data_store.close()
+        # self.df = pd.read_csv(self.folders["input_folder"] + "model_input.csv", sep=",", header=0, parse_dates=["When"])
 
 
         l = [
@@ -1084,10 +1099,7 @@ class Icestupa():
             )
             self.df.loc[i, "vapour"] = self.df.loc[i - 1, "vapour"] + self.gas
             self.df.loc[i, "water"] = self.df.loc[i - 1, "water"] + self.liquid
-            self.df.loc[i, "iceV"] = (self.df.loc[i, "ice"] - self.df.loc[i, "ppt"]) / self.rho_i + \
-                                     self.df.loc[
-                                         i, "ppt"
-                                     ] / self.snow_fall_density
+            self.df.loc[i, "iceV"] = self.df.loc[i, "ice"]/ self.rho_i
 
             self.delta_T_s, self.solid, self.liquid, self.gas, self.melted, self.SRf, self.vp_ice, self.EJoules = [0] * 8
 

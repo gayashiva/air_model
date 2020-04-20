@@ -47,7 +47,7 @@ def max_volume(time, values):
     # Return the feature times and values.
     return None, icev_max
 
-class Icestupa(un.Model):
+class UQ_Icestupa(un.Model):
 
     """Physical Constants"""
     L_s = 2848 * 1000  # J/kg Sublimation
@@ -69,7 +69,7 @@ class Icestupa(un.Model):
 
     def __init__(self, site='schwarzsee'):
 
-        super(Icestupa, self).__init__(labels=["Time (days)", "Ice Volume (m3)"], interpolate=True)
+        super(UQ_Icestupa, self).__init__(labels=["Time (days)", "Ice Volume (m3)"], interpolate=True)
 
         """Surface"""
         self.ie = 0.95  # Ice Emissivity ie
@@ -130,66 +130,6 @@ class Icestupa(un.Model):
         self.df = self.df[start:]
         self.df = self.df.reset_index(drop=True)
 
-    def SEA(self, date):
-
-        latitude = self.latitude
-        longitude = self.longitude
-        utc_offset = self.utc_offset
-        hour = date.hour
-        minute = date.minute
-        # Check your timezone to add the offset
-        hour_minute = (hour + minute / 60) - utc_offset
-        day_of_year = date.timetuple().tm_yday
-
-        g = (360 / 365.25) * (day_of_year + hour_minute / 24)
-
-        g_radians = math.radians(g)
-
-        declination = (
-                0.396372
-                - 22.91327 * math.cos(g_radians)
-                + 4.02543 * math.sin(g_radians)
-                - 0.387205 * math.cos(2 * g_radians)
-                + 0.051967 * math.sin(2 * g_radians)
-                - 0.154527 * math.cos(3 * g_radians)
-                + 0.084798 * math.sin(3 * g_radians)
-        )
-
-        time_correction = (
-                0.004297
-                + 0.107029 * math.cos(g_radians)
-                - 1.837877 * math.sin(g_radians)
-                - 0.837378 * math.cos(2 * g_radians)
-                - 2.340475 * math.sin(2 * g_radians)
-        )
-
-        SHA = (hour_minute - 12) * 15 + longitude + time_correction
-
-        if SHA > 180:
-            SHA_corrected = SHA - 360
-        elif SHA < -180:
-            SHA_corrected = SHA + 360
-        else:
-            SHA_corrected = SHA
-
-        lat_radians = math.radians(latitude)
-        d_radians = math.radians(declination)
-        SHA_radians = math.radians(SHA)
-
-        SZA_radians = math.acos(
-            math.sin(lat_radians) * math.sin(d_radians)
-            + math.cos(lat_radians) * math.cos(d_radians) * math.cos(SHA_radians)
-        )
-
-        SZA = math.degrees(SZA_radians)
-
-        SEA = 90 - SZA
-
-        if SEA < 0:  # Before Sunrise or after sunset
-            SEA = 0
-
-        return math.radians(SEA)
-
     def projectile_xy(self, v, g=9.81):
         hs = self.h_f
         data_xy = []
@@ -209,18 +149,20 @@ class Icestupa(un.Model):
             t += 0.01
         return x
 
-    def albedo(self, i, s=0, f=0):
+    def albedo(self, row, s=0, f=0):
+
+        i = row.Index
 
         a_min = self.a_i
 
         """Albedo"""
         # Precipitation
-        if (self.df.loc[i, "Discharge"] == 0) & (self.df.loc[i, "Prec"] > 0):
-            if self.df.loc[i, "T_a"] < self.rain_temp:  # Snow
+        if (row.Discharge == 0) & (row.Prec > 0):
+            if row.T_a < self.rain_temp:  # Snow
                 s = 0
                 f = 0
 
-        if self.df.loc[i, "Discharge"] > 0:
+        if row.Discharge > 0:
             f = 1
             s = 0
 
@@ -232,384 +174,6 @@ class Icestupa(un.Model):
             self.df.loc[i, "a"] = self.a_i
 
         return s, f
-
-    def derive_parameters(self):
-
-        missing = [
-            "a",
-            "cld",
-            "SEA",
-            "e_a",
-            "vp_a",
-            "r_f",
-            "LW_in",
-        ]
-        for col in missing:
-            if col in list(self.df.columns):
-                missing = missing.remove(col)
-            else:
-                self.df[col] = 0
-
-        """ Fountain Spray radius """
-        Area = math.pi * math.pow(self.aperture_f, 2) / 4
-
-        """Albedo Decay"""
-        self.decay_t = (
-                self.decay_t * 24 * 60 * 60 / self.time_steps
-        )  # convert to 5 minute time steps
-        s = 0
-        f = 0
-
-        for row in self.df[1:].itertuples():
-
-            """Solar Elevation Angle"""
-            self.df.loc[row.Index, "SEA"] = self.SEA(row.When)
-
-            """ Vapour Pressure"""
-            if "vp_a" in missing:
-                self.df.loc[row.Index, "vp_a"] = (
-                        6.11 * math.pow(10, 7.5 * self.df.loc[row.Index - 1, "T_a"] / (self.df.loc[row.Index - 1, "T_a"] + 237.3)) *
-                        row.RH / 100)
-
-            """LW incoming"""
-            if "LW_in" in missing:
-
-                # Cloudiness from diffuse fraction
-                if row.SW_direct + row.SW_diffuse > 1:
-                    self.df.loc[row.Index, "cld"] = row.SW_diffuse / (
-                            row.SW_direct  + row.SW_diffuse
-                    )
-                else:
-                    # Night Cloudiness average of last 8 hours
-                    if row.Index - 96 > 0:
-                        for j in range(row.Index - 96, row.Index):
-                            self.df.loc[row.Index, "cld"] += self.df.loc[j, "cld"]
-                        self.df.loc[row.Index, "cld"] = self.df.loc[row.Index, "cld"] / 96
-                    else:
-                        for j in range(0, row.Index):
-                            self.df.loc[row.Index, "cld"] += self.df.loc[j, "cld"]
-                        self.df.loc[row.Index, "cld"] = self.df.loc[row.Index, "cld"] / row.Index
-
-                self.df.loc[row.Index, "e_a"] = (1.24 * math.pow(abs(self.df.loc[row.Index, "vp_a"] / (row.T_a + 273.15)),
-                                                         1 / 7)
-                                         ) * (1 + 0.22 * math.pow(self.df.loc[row.Index, "cld"], 2))
-
-
-                self.df.loc[row.Index, "LW_in"] = self.df.loc[row.Index, "e_a"] * self.bc * math.pow(
-                    row.T_a + 273.15, 4
-                )
-
-            """ Fountain Spray radius """
-            v_f = row.Discharge / (60 * 1000 * Area)
-            self.df.loc[row.Index, "r_f"] = self.projectile_xy(v_f)
-
-            s, f = self.albedo(row.Index, s, f)
-
-        self.df = self.df.round(5)
-
-        self.df = self.df.drop(["e_a", "cld", "Unnamed: 0"], axis=1)
-
-        self.df.to_csv(self.folders["input_folder"] + "model_input.csv")
-
-    def print_input(self):
-
-        pp = PdfPages(self.folders["input_folder"] + "derived_parameters.pdf")
-
-        x = self.df.When
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-
-        y1 = self.df.Discharge
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Discharge [$l\, min^{-1}$]")
-        ax1.grid()
-
-        # format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-
-        y1 = self.df.r_f
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Spray Radius [$m$]")
-        ax1.grid()
-
-        # format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        # fig = plt.figure()
-        # ax1 = fig.add_subplot(111)
-        # y1 = self.df.e_a
-        # ax1.plot(x, y1, "k-", linewidth=0.5)
-        # ax1.set_ylabel("Atmospheric emissivity")
-        # ax1.grid()
-        #
-        # # format the ticks
-        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        # ax1.grid()
-        # fig.autofmt_xdate()
-        # pp.savefig(bbox_inches="tight")
-        # plt.clf()
-
-        # fig = plt.figure()
-        # ax1 = fig.add_subplot(111)
-        # y1 = self.df.cld
-        # ax1.plot(x, y1, "k-", linewidth=0.5)
-        # ax1.set_ylabel("Cloudiness")
-        # ax1.grid()
-        #
-        # # format the ticks
-        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        # ax1.grid()
-        # fig.autofmt_xdate()
-        # pp.savefig(bbox_inches="tight")
-        # plt.clf()
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        y1 = self.df.vp_a
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Vapour Pressure")
-        ax1.grid()
-
-        # format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        y1 = self.df.a
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Albedo")
-        ax1.grid()
-
-        # format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        pp.close()
-
-        """Input Plots"""
-
-        pp = PdfPages("data" + ".pdf")
-
-        fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
-            nrows=6, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
-        )
-
-        # fig.suptitle("Field Data", fontsize=14)
-        # Remove horizontal space between axes
-        # fig.subplots_adjust(hspace=0)
-
-        x = self.df.When
-
-        y1 = self.df.Discharge
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Discharge [$l\, min^{-1}$]")
-        ax1.grid()
-
-        ax1t = ax1.twinx()
-        ax1t.plot(x, self.df.Prec * 1000, "b-", linewidth=0.5)
-        ax1t.set_ylabel("Precipitation [$mm$]", color="b")
-        for tl in ax1t.get_yticklabels():
-            tl.set_color("b")
-
-        y2 = self.df.T_a
-        ax2.plot(x, y2, "k-", linewidth=0.5)
-        ax2.set_ylabel("Temperature [$\degree C$]")
-        ax2.grid()
-
-        y3 = self.df.SW_direct + self.df.SW_diffuse
-        ax3.plot(x, y3, "k-", linewidth=0.5)
-        ax3.set_ylabel("Global [$W\,m^{-2}$]")
-        ax3.grid()
-
-        ax3t = ax3.twinx()
-        ax3t.plot(x, self.df.SW_diffuse, "b-", linewidth=0.5)
-        ax3t.set_ylim(ax3.get_ylim())
-        ax3t.set_ylabel("Diffuse [$W\,m^{-2}$]", color="b")
-        for tl in ax3t.get_yticklabels():
-            tl.set_color("b")
-
-        y4 = self.df.RH
-        ax4.plot(x, y4, "k-", linewidth=0.5)
-        ax4.set_ylabel("Humidity [$\%$]")
-        ax4.grid()
-
-        y5 = self.df.p_a
-        ax5.plot(x, y5, "k-", linewidth=0.5)
-        ax5.set_ylabel("Pressure [$hPa$]")
-        ax5.grid()
-
-        y6 = self.df.v_a
-        ax6.plot(x, y6, "k-", linewidth=0.5)
-        ax6.set_ylabel("Wind [$m\,s^{-1}$]")
-        ax6.grid()
-
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-
-        # rotates and right aligns the x labels, and moves the bottom of the axes up to make room for them
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-
-        plt.savefig(
-            "data.jpg",
-            bbox_inches="tight",
-            dpi=300,
-        )
-
-        plt.clf()
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-
-        y1 = self.df.T_a
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Temperature [$\degree C$]")
-        ax1.grid()
-
-        # format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-
-        y2 = self.df.Discharge
-        ax1.plot(x, y2, "k-", linewidth=0.5)
-        ax1.set_ylabel("Discharge Rate ")
-        ax1.grid()
-
-        # format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-
-        y3 = self.df.SW_direct
-        ax1.plot(x, y3, "k-", linewidth=0.5)
-        ax1.set_ylabel("Direct SWR [$W\,m^{-2}$]")
-        ax1.grid()
-
-        # format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-
-        y31 = self.df.SW_diffuse
-        ax1.plot(x, y31, "k-", linewidth=0.5)
-        ax1.set_ylabel("Diffuse SWR [$W\,m^{-2}$]")
-        ax1.grid()
-
-        # format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-
-        y4 = self.df.Prec * 1000
-        ax1.plot(x, y4, "k-", linewidth=0.5)
-        ax1.set_ylabel("Ppt [$mm$]")
-        ax1.grid()
-
-        # format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-
-        y5 = self.df.p_a
-        ax1.plot(x, y5, "k-", linewidth=0.5)
-        ax1.set_ylabel("Pressure [$hPa$]")
-        ax1.grid()
-
-        # format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-
-        y6 = self.df.v_a
-        ax1.plot(x, y6, "k-", linewidth=0.5)
-        ax1.set_ylabel("Wind [$m\,s^{-1}$]")
-        ax1.grid()
-
-        # format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        pp.close()
 
     def surface_area(self, i):
 
@@ -790,200 +354,6 @@ class Icestupa(un.Model):
         print("Ppt", self.df["ppt"].sum())
         print("Model runtime", self.df.loc[i - 1, "When"] - self.df.loc[0, "When"])
 
-    def print_output(self):
-
-        # Full Output
-        filename4 = self.folders["input_folder"] + "model_results.csv"
-        self.df.to_csv(filename4, sep=",")
-
-        self.df['melt_thick'] = self.df['melted'] / (self.df['SA'] * 1000)
-
-        self.df = self.df.rename({'SW': '$SW_{net}$', 'LW': '$LW_{net}$', 'Qs': '$Q_S$', 'Ql': '$Q_L$', 'Qc': '$Q_C$'},
-                                 axis=1)
-
-        # Plots
-        pp = PdfPages(self.folders["output_folder"] + "model_results.pdf")
-
-        x = self.df.When
-        y1 = self.df.iceV
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Ice Volume [$m^3$]")
-        ax1.set_xlabel("Days")
-
-        #  format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        y1 = self.df.SA
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Surface Area [$m^2$]")
-        ax1.set_xlabel("Days")
-
-        #  format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        y1 = self.df.h_ice
-        y2 = self.df.r_ice
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Ice Cone Height [$m$]")
-        ax1.set_xlabel("Days")
-
-        ax2 = ax1.twinx()
-        ax2.plot(x, y2, "b-", linewidth=0.5)
-        ax2.set_ylabel("Ice Radius", color="b")
-        for tl in ax2.get_yticklabels():
-            tl.set_color("b")
-
-        #  format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        y1 = self.df.SRf
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Solar Area fraction")
-        ax1.set_xlabel("Days")
-
-        #  format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        y1 = self.df.iceV
-        y2 = self.df['TotalE'] + self.df['$Q_L$']
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Ice Volume [$m^3$]")
-        ax1.set_xlabel("Days")
-
-        ax2 = ax1.twinx()
-        ax2.plot(x, y2, "b-", linewidth=0.5)
-        ax2.set_ylabel("Energy [$W\,m^{-2}$]", color="b")
-        for tl in ax2.get_yticklabels():
-            tl.set_color("b")
-
-        #  format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        y1 = self.df.T_s
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Surface Temperature [$\degree C$]")
-        ax1.set_xlabel("Days")
-
-        #  format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        y1 = self.df.solid / 5
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.plot(x, y1, "b-", linewidth=0.5)
-        ax1.set_ylabel("Ice Production rate [$l\,min^{-1}$]")
-        ax1.set_xlabel("Days")
-
-        #  format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        y1 = self.df.thickness * 1000
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.plot(x, y1, "b-", linewidth=0.5)
-        ax1.set_ylabel("Thickness melted [$mm$]")
-        ax1.set_xlabel("Days")
-
-        #  format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        y1 = self.df.gas / 5
-        y2 = self.df.deposition / 5
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Gas Production rate [$l\,min^{-1}$]")
-        ax1.set_xlabel("Days")
-
-        ax2 = ax1.twinx()
-        ax2.plot(x, y2, "b-", linewidth=0.5)
-        ax2.set_ylabel("Deposition rate [$l\,min^{-1}$]", color="b")
-        for tl in ax2.get_yticklabels():
-            tl.set_color("b")
-
-        ax2.set_ylim(ax1.get_ylim())
-
-        #  format the ticks
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-        plt.close('all')
-
-        pp.close()
-
     def run(self, **parameters):
         self.set_parameters(**parameters)
 
@@ -993,10 +363,9 @@ class Icestupa(un.Model):
             """ Fountain Spray radius """
             Area = math.pi * math.pow(self.aperture_f, 2) / 4
 
-            for i in range(1, self.df.shape[0]):
-                v_f = self.df.loc[i, "Discharge"] / (60 * 1000 * Area)
-                self.df.loc[i, "r_f"] = self.projectile_xy(v_f, self.theta_f)
-                # s, f = self.albedo(i, s, f)
+            for row in self.df[1:].itertuples():
+                v_f = row.Discharge / (60 * 1000 * Area)
+                self.df.loc[i, "r_f"] = self.projectile_xy(v_f)
 
         if 'a_i' in parameters.keys():
             """Albedo Decay"""
@@ -1006,8 +375,8 @@ class Icestupa(un.Model):
             s = 0
             f = 0
 
-            for i in range(1, self.df.shape[0]):
-                s, f = self.albedo(i, s, f)
+            for row in self.df[1:].itertuples():
+                s, f = self.albedo(row, s, f)
 
         l = [
             "T_s",  # Surface Temperature
@@ -1139,12 +508,10 @@ class Icestupa(un.Model):
             )
             self.df.loc[i, "vapour"] = self.df.loc[i - 1, "vapour"] + self.gas
             self.df.loc[i, "water"] = self.df.loc[i - 1, "water"] + self.liquid
-            self.df.loc[i, "iceV"] = (self.df.loc[i, "ice"] - self.df.loc[i, "ppt"]) / self.rho_i + \
-                                     self.df.loc[
-                                         i, "ppt"
-                                     ] / self.snow_fall_density
+            self.df.loc[i, "iceV"] = self.df.loc[i, "ice"] / self.rho_i
 
             self.delta_T_s, self.solid, self.liquid, self.gas, self.melted, self.SRf, self.vp_ice, self.EJoules = [0] * 8
+
 
         self.summary(i)
 
@@ -1178,14 +545,14 @@ z0mi_dist = cp.Uniform(0.0007, 0.0027)
 z0hi_dist = cp.Uniform(0.0007, 0.0027)
 snow_fall_density_dist = cp.Uniform(200, 300)
 
-parameters = {"ie": ie_dist,
-             "a_i": a_i_dist,
-             "a_s": a_s_dist,
-             "decay_t": decay_t_dist,
-              "rain_temp": rain_temp_dist,
-              "z0hi": z0hi_dist,
-              "z0hi": z0hi_dist,
-              "snow_fall_density": snow_fall_density_dist
+parameters = {"ie": ie_dist
+             # "a_i": a_i_dist,
+             # "a_s": a_s_dist,
+             # "decay_t": decay_t_dist,
+             #  "rain_temp": rain_temp_dist,
+             #  "z0hi": z0hi_dist,
+             #  "z0hi": z0hi_dist,
+             #  "snow_fall_density": snow_fall_density_dist
               }
 
 
@@ -1193,7 +560,7 @@ parameters = {"ie": ie_dist,
 parameters = un.Parameters(parameters)
 
 # Initialize the model
-model = Icestupa()
+model = UQ_Icestupa()
 
 # Set up the uncertainty quantification
 UQ = un.UncertaintyQuantification(model=model,
@@ -1203,5 +570,7 @@ UQ = un.UncertaintyQuantification(model=model,
 
 # Perform the uncertainty quantification using
 # polynomial chaos with point collocation (by default)
-data = UQ.quantify()
+data = UQ.quantify(data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
+                    figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
+                    filename="Ice")
 
