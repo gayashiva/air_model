@@ -57,7 +57,6 @@ class UQ_Icestupa(un.Model):
 
     """Model constants"""
     time_steps = 5 * 60  # s Model time steps
-    dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
     def __init__(self, site='schwarzsee'):
 
@@ -91,17 +90,9 @@ class UQ_Icestupa(un.Model):
 
         self.site = site
 
-        self.folders = dict(
-            input_folder=os.path.join(self.dirname, "data/interim/" + site + "/"),
-            output_folder=os.path.join(self.dirname, "data/processed/" + site + "/"),
-            sim_folder=os.path.join(self.dirname, "data/processed/" + site + "/simulations"),
-        )
-
-        input_file = self.folders["input_folder"] + "raw_input.csv"
-
         self.state = 0
 
-        data_store = pd.HDFStore(self.folders["input_folder"] + "model_input.h5")
+        data_store = pd.HDFStore("/home/surya/Programs/PycharmProjects/air_model/data/interim/schwarzsee/model_input.h5")
         self.df = data_store['df']
         data_store.close()
 
@@ -354,6 +345,25 @@ class UQ_Icestupa(un.Model):
     def run(self, **parameters):
         self.set_parameters(**parameters)
 
+        if 'aperture_f' in parameters.keys():  # todo change to general
+            """ Fountain Spray radius """
+            Area = math.pi * math.pow(self.aperture_f, 2) / 4
+
+            for row in self.df[1:].itertuples():
+                v_f = row.Discharge / (60 * 1000 * Area)
+                self.df.loc[i, "r_f"] = self.projectile_xy(v_f, self.theta_f)
+
+        if 'a_i' or 'rain_temp' in parameters.keys():
+            """Albedo Decay"""
+            self.decay_t = (
+                    self.decay_t * 24 * 60 * 60 / self.time_steps
+            )  # convert to 5 minute time steps
+            s = 0
+            f = 0
+
+            for row in self.df[1:].itertuples():
+                s, f = self.albedo(row, s, f)
+
         l = [
             "T_s",  # Surface Temperature
             "ice",
@@ -520,14 +530,15 @@ z0mi_dist = cp.Uniform(0.0007, 0.0027)
 z0hi_dist = cp.Uniform(0.0007, 0.0027)
 snow_fall_density_dist = cp.Uniform(200, 300)
 
-parameters = {"ie": ie_dist,
-             "a_i": a_i_dist,
-             "a_s": a_s_dist,
-             "decay_t": decay_t_dist,
-             #  "rain_temp": rain_temp_dist,
-             #  "z0mi": z0mi_dist,
-             #  "z0hi": z0hi_dist,
-             #  "snow_fall_density": snow_fall_density_dist
+parameters = {
+             #    "ie": ie_dist,
+             # "a_i": a_i_dist,
+             # "a_s": a_s_dist,
+             # "decay_t": decay_t_dist,
+              "rain_temp": rain_temp_dist,
+              "z0mi": z0mi_dist,
+              "z0hi": z0hi_dist,
+              "snow_fall_density": snow_fall_density_dist
               }
 
 

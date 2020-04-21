@@ -15,11 +15,10 @@ import uncertainpy as un
 
 dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-filename1 = os.path.join(dirname, "models/data/Icestupa_ie.h5")
-filename2 = os.path.join(dirname, "models/data/Icestupa_full.h5")
+filename1 = os.path.join(dirname, "models/data/surface.h5")
 
 data = un.Data()
-data.load(filename2)
+data.load(filename1)
 
 # print(data["Icestupa"])
 
