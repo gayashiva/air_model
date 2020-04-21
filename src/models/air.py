@@ -18,7 +18,7 @@ import numpy as np
 import scipy.stats as stats
 
 
-class Icestupa:
+class Icestupa: #todo create subclass
 
     """Physical Constants"""
 
@@ -53,18 +53,21 @@ class Icestupa:
         self.z0hi = 0.0017  # Ice Scalar roughness length
         self.snow_fall_density = 250  # Snowfall density
 
+
         """Fountain"""
         self.aperture_f = 0.005  # Fountain aperture diameter
-        self.theta_f = 45  # Fountain aperture diameter
         self.h_f = 1.35  # Fountain steps h_f
 
         """Site constants"""
         self.latitude = 46.693723
         self.longitude = 7.297543
         self.utc_offset = 1
+
+        """Miscellaneous"""
         self.ftl = 0  # Fountain flight time loss ftl,
         self.dx = 1e-02  # Ice layer thickness
         self.h_aws = 3  # m height of AWS
+        self.theta_f = 45  # Fountain aperture diameter
 
         self.site = site
 

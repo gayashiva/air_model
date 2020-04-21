@@ -77,16 +77,18 @@ class UQ_Icestupa(un.Model):
 
         """Fountain"""
         self.aperture_f = 0.005  # Fountain aperture diameter
-        self.theta_f = 45  # Fountain aperture diameter
         self.h_f = 1.35  # Fountain steps h_f
 
         """Site constants"""
         self.latitude = 46.693723
         self.longitude = 7.297543
         self.utc_offset = 1
+
+        """Miscellaneous"""
         self.ftl = 0  # Fountain flight time loss ftl,
         self.dx = 1e-02  # Ice layer thickness
         self.h_aws = 3  # m height of AWS
+        self.theta_f = 45  # Fountain aperture diameter
 
         self.site = site
 
@@ -115,8 +117,6 @@ class UQ_Icestupa(un.Model):
 
         self.df = self.df[start:]
         self.df = self.df.reset_index(drop=True)
-
-
 
     def projectile_xy(self, v, g=9.81):
         hs = self.h_f
@@ -242,7 +242,7 @@ class UQ_Icestupa(un.Model):
         )
 
         # Water Boundary
-        if self.df.Discharge[i] > 0:
+        if (row.Discharge > 0) or (row.T_a > self.rain_temp and row.Prec > 0):
             self.df.loc[i, "vp_s"] = self.vp_w
             self.L = self.L_e
             self.c_s = self.c_w
@@ -344,6 +344,7 @@ class UQ_Icestupa(un.Model):
 
     def run(self, **parameters):
         self.set_parameters(**parameters)
+        print(parameters.values())
 
         if 'aperture_f' in parameters.keys():  # todo change to general
             """ Fountain Spray radius """
@@ -351,7 +352,7 @@ class UQ_Icestupa(un.Model):
 
             for row in self.df[1:].itertuples():
                 v_f = row.Discharge / (60 * 1000 * Area)
-                self.df.loc[i, "r_f"] = self.projectile_xy(v_f, self.theta_f)
+                self.df.loc[row.Index, "r_f"] = self.projectile_xy(v_f)
 
         if 'a_i' or 'rain_temp' in parameters.keys():
             """Albedo Decay"""
@@ -525,20 +526,32 @@ ie_dist = uniform(ie, interval)
 a_i_dist = uniform(a_i, interval)
 a_s_dist = uniform(a_s, interval)
 decay_t_dist = uniform(decay_t, interval)
+
 rain_temp_dist = cp.Uniform(0, 2)
 z0mi_dist = cp.Uniform(0.0007, 0.0027)
 z0hi_dist = cp.Uniform(0.0007, 0.0027)
 snow_fall_density_dist = cp.Uniform(200, 300)
 
+aperture_f_dist = uniform(0.005, interval)
+height_f_dist = uniform(1.35, interval)
+
+# parameters = {
+#                 "ie": ie_dist,
+#              "a_i": a_i_dist,
+#              "a_s": a_s_dist,
+#              "decay_t": decay_t_dist
+# }
+
+# parameters = {
+#               "rain_temp": rain_temp_dist,
+#               "z0mi": z0mi_dist,
+#               "z0hi": z0hi_dist,
+#               "snow_fall_density": snow_fall_density_dist
+#               }
+
 parameters = {
-             #    "ie": ie_dist,
-             # "a_i": a_i_dist,
-             # "a_s": a_s_dist,
-             # "decay_t": decay_t_dist,
-              "rain_temp": rain_temp_dist,
-              "z0mi": z0mi_dist,
-              "z0hi": z0hi_dist,
-              "snow_fall_density": snow_fall_density_dist
+              "aperture_f": aperture_f_dist,
+              "height_f": height_f_dist,
               }
 
 
@@ -558,5 +571,7 @@ UQ = un.UncertaintyQuantification(model=model,
 # polynomial chaos with point collocation (by default)
 data = UQ.quantify(data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
                     figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
-                    filename="Surface")
+                    filename="Fountain")
+
+# data = UQ.quantify(filename="Meteorological")
 
