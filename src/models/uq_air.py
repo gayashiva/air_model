@@ -100,7 +100,10 @@ class UQ_Icestupa(un.Model):
         input_file = self.folders["input_folder"] + "raw_input.csv"
 
         self.state = 0
-        self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
+
+        data_store = pd.HDFStore(self.folders["input_folder"] + "model_input.h5")
+        self.df = data_store['df']
+        data_store.close()
 
         i = 0
         start = 0
@@ -121,6 +124,8 @@ class UQ_Icestupa(un.Model):
 
         self.df = self.df[start:]
         self.df = self.df.reset_index(drop=True)
+
+
 
     def projectile_xy(self, v, g=9.81):
         hs = self.h_f
@@ -349,32 +354,6 @@ class UQ_Icestupa(un.Model):
     def run(self, **parameters):
         self.set_parameters(**parameters)
 
-        # Access data store
-        data_store = pd.HDFStore(self.folders["input_folder"] + "model_input.h5")
-
-        # Retrieve data using key
-        self.df = data_store['df']
-        data_store.close()
-
-        if 'aperture_f' in parameters.keys(): #todo change to general
-            """ Fountain Spray radius """
-            Area = math.pi * math.pow(self.aperture_f, 2) / 4
-
-            for row in self.df[1:].itertuples():
-                v_f = row.Discharge / (60 * 1000 * Area)
-                self.df.loc[i, "r_f"] = self.projectile_xy(v_f)
-
-        if 'a_i' in parameters.keys():
-            """Albedo Decay"""
-            self.decay_t = (
-                    self.decay_t * 24 * 60 * 60 / self.time_steps
-            )  # convert to 5 minute time steps
-            s = 0
-            f = 0
-
-            for row in self.df[1:].itertuples():
-                s, f = self.albedo(row, s, f)
-
         l = [
             "T_s",  # Surface Temperature
             "ice",
@@ -397,8 +376,7 @@ class UQ_Icestupa(un.Model):
         for col in l:
             self.df[col] = 0
 
-
-        self.delta_T_s, self.solid, self.liquid, self.gas, self.melted, self.SRf, self.vp_ice, self.EJoules= [0] * 8
+        self.delta_T_s, self.solid, self.liquid, self.gas, self.melted, self.SRf, self.vp_ice, self.EJoules = [0] * 8
 
         """Initialize"""
         self.r_mean = self.df['r_f'].replace(0, np.NaN).mean()
@@ -507,8 +485,8 @@ class UQ_Icestupa(un.Model):
             self.df.loc[i, "water"] = self.df.loc[i - 1, "water"] + self.liquid
             self.df.loc[i, "iceV"] = self.df.loc[i, "ice"] / self.rho_i
 
-            self.delta_T_s, self.solid, self.liquid, self.gas, self.melted, self.SRf, self.vp_ice, self.EJoules = [0] * 8
-
+            self.delta_T_s, self.solid, self.liquid, self.gas, self.melted, self.SRf, self.vp_ice, self.EJoules = [
+                                                                                                                      0] * 8
 
         self.summary(i)
 
@@ -546,10 +524,10 @@ parameters = {"ie": ie_dist,
              "a_i": a_i_dist,
              "a_s": a_s_dist,
              "decay_t": decay_t_dist,
-              "rain_temp": rain_temp_dist,
-              "z0mi": z0mi_dist,
-              "z0hi": z0hi_dist,
-              "snow_fall_density": snow_fall_density_dist
+             #  "rain_temp": rain_temp_dist,
+             #  "z0mi": z0mi_dist,
+             #  "z0hi": z0hi_dist,
+             #  "snow_fall_density": snow_fall_density_dist
               }
 
 
@@ -569,5 +547,5 @@ UQ = un.UncertaintyQuantification(model=model,
 # polynomial chaos with point collocation (by default)
 data = UQ.quantify(data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
                     figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
-                    filename="Ice")
+                    filename="Surface")
 
