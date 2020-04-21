@@ -335,38 +335,6 @@ class Icestupa:
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        # fig = plt.figure()
-        # ax1 = fig.add_subplot(111)
-        # y1 = self.df.e_a
-        # ax1.plot(x, y1, "k-", linewidth=0.5)
-        # ax1.set_ylabel("Atmospheric emissivity")
-        # ax1.grid()
-        #
-        # # format the ticks
-        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        # ax1.grid()
-        # fig.autofmt_xdate()
-        # pp.savefig(bbox_inches="tight")
-        # plt.clf()
-
-        # fig = plt.figure()
-        # ax1 = fig.add_subplot(111)
-        # y1 = self.df.cld
-        # ax1.plot(x, y1, "k-", linewidth=0.5)
-        # ax1.set_ylabel("Cloudiness")
-        # ax1.grid()
-        #
-        # # format the ticks
-        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        # ax1.grid()
-        # fig.autofmt_xdate()
-        # pp.savefig(bbox_inches="tight")
-        # plt.clf()
-
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
         y1 = self.df.vp_a
@@ -678,7 +646,7 @@ class Icestupa:
         )
 
         # Water Boundary
-        if self.df.Discharge[i] > 0:
+        if (row.Discharge > 0) or (row.T_a > self.rain_temp and row.Prec > 0):
             self.df.loc[i, "vp_s"] = self.vp_w
             self.L = self.L_e
             self.c_s = self.c_w
