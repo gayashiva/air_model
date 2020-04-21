@@ -18,32 +18,6 @@ import numpy as np
 import scipy.stats as stats
 
 
-def gaussian_spray(E):
-    dr = 0.00001
-    mu = 0
-    L_f = 2848 * 1000
-    r_mean = 2
-    sigma = r_mean / 3
-    # V = self.df.loc[i, "Discharge"] * self.time_steps
-    V = 4 * 5 * 60
-    r = np.arange(0, r_mean, dr)
-    h = []
-    water_available = V * stats.norm.pdf(r, mu, sigma)
-    water_frozen = 0
-
-    for i in range(0, len(r)):
-        EJ = E * 2 * math.pi * r[i] * dr
-
-        if water_available[i] > -EJ / L_f:
-            water_frozen = -EJ / L_f
-            h.append(water_frozen / 2 * math.pi * r[i] * dr)
-        else:
-            print("waterless")
-            water_frozen = water_available[i]
-            h.append(water_frozen / 2 * math.pi * r[i] * dr)
-    return r, h
-
-
 class Icestupa:
 
     """Physical Constants"""
