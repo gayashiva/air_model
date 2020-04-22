@@ -37,7 +37,7 @@ def max_volume(time, values):
     # Calculate the feature using time, values and info.
     icev_max = values.max()
     # Return the feature times and values.
-    return None, icev_max
+    return None, icev_max #todo include efficiency
 
 class UQ_Icestupa(un.Model):
 
@@ -118,9 +118,10 @@ class UQ_Icestupa(un.Model):
         self.df = self.df[start:]
         self.df = self.df.reset_index(drop=True)
 
-    def projectile_xy(self, v, g=9.81):
+    def projectile_xy(self, v):
         hs = self.h_f
         data_xy = []
+        g = 9.81
         t = 0.0
         theta_f = math.radians(self.theta_f)
         while True:
@@ -535,6 +536,12 @@ snow_fall_density_dist = cp.Uniform(200, 300)
 aperture_f_dist = uniform(0.005, interval)
 height_f_dist = uniform(1.35, interval)
 
+dx_dist = cp.Uniform(0.0001, 0.01)
+
+# parameters = {
+#                 "dx": dx_dist,
+# }
+
 # parameters = {
 #                 "ie": ie_dist,
 #              "a_i": a_i_dist,
@@ -542,17 +549,17 @@ height_f_dist = uniform(1.35, interval)
 #              "decay_t": decay_t_dist
 # }
 
-# parameters = {
-#               "rain_temp": rain_temp_dist,
-#               "z0mi": z0mi_dist,
-#               "z0hi": z0hi_dist,
-#               "snow_fall_density": snow_fall_density_dist
-#               }
-
 parameters = {
-              "aperture_f": aperture_f_dist,
-              "height_f": height_f_dist,
+              "rain_temp": rain_temp_dist,
+              "z0mi": z0mi_dist,
+              "z0hi": z0hi_dist,
+              "snow_fall_density": snow_fall_density_dist
               }
+
+# parameters = {
+#               "aperture_f": aperture_f_dist,
+#               "height_f": height_f_dist,
+#               }
 
 
 # Create the parameters
@@ -571,7 +578,7 @@ UQ = un.UncertaintyQuantification(model=model,
 # polynomial chaos with point collocation (by default)
 data = UQ.quantify(data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
                     figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
-                    filename="Fountain")
+                    filename="Meteorological")
 
 # data = UQ.quantify(filename="Meteorological")
 
