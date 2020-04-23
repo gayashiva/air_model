@@ -12,12 +12,16 @@ import math
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.colors
 import uncertainpy as un
+import statistics as st
+
 
 input = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/"
 figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/"
 
-names = ["Fountain", "Surface", "Meteorological", "Ice_thickness"]
+names = ["Fountain", "Surface", "Meteorological"]
 variance = []
+mean = []
+evaluations = []
 
 # for name in names:
 #     data = un.Data()
@@ -29,24 +33,28 @@ variance = []
 
 for name in names:
     data = un.Data()
-    filename1 = input + name + "_corrected.h5"
+    filename1 = input + name + ".h5"
     data.load(filename1)
-    variance.append(math.sqrt(data["max_volume"].variance))
-    print(data.model_name)
-    plot1 = un.plotting.PlotUncertainty(filename1)
-    plot1.prediction_interval_1d()
+    variance.append(data["max_volume"].variance)
+    mean.append(data["max_volume"].mean)
+    evaluations.extend(data["max_volume"].evaluations)
 
-    if len(data.uncertain_parameters) > 1:
-        plt.bar(data.uncertain_parameters, data["max_volume"].sobol_first)
-        plt.savefig(figures + name + "_sobol_first.jpg", bbox_inches="tight", dpi=300)
-        plt.clf()
+    # plot1 = un.plotting.PlotUncertainty(filename1)
+    # plot1.prediction_interval_1d(show = True)
 
+    # if len(data.uncertain_parameters) > 1:
+    #     plt.bar(data.uncertain_parameters, data["max_volume"].sobol_first * 100)
+    #     plt.ylabel("Sensitivity of variance(%)")
+    #     plt.savefig(figures + name + "_sobol_first.jpg", bbox_inches="tight", dpi=300)
+    #     plt.clf()
 
+print(st.mean(evaluations))
+print(st.variance(evaluations))
 
 fig, ax = plt.subplots()
 ax.bar(names, variance)
 ax.set_xlabel("Type")
-ax.set_ylabel("Standard deviation")
+ax.set_ylabel("Variance")
 plt.savefig(figures + "error_type.jpg", bbox_inches="tight", dpi=300)
 
 # data = un.Data()

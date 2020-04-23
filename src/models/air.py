@@ -299,6 +299,8 @@ class Icestupa: #todo create subclass
         data_store["df"] = self.df
         data_store.close()
 
+        self.print_input()
+
     def print_input(self):
 
         pp = PdfPages(self.folders["input_folder"] + "derived_parameters.pdf")
@@ -1193,7 +1195,7 @@ if __name__ == "__main__":
 
     schwarzsee = Icestupa()
 
-    # schwarzsee.derive_parameters()
+    schwarzsee.derive_parameters()
 
     # schwarzsee.run()
 

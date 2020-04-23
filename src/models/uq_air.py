@@ -60,7 +60,7 @@ class UQ_Icestupa(un.Model):
 
     def __init__(self, site='schwarzsee'):
 
-        super(UQ_Icestupa, self).__init__(labels=["Time (days)", "Ice Volume (m3)"], interpolate=True)
+        super(UQ_Icestupa, self).__init__(labels=["Time (days)", "Ice Volume (m3)"], interpolate=False)
 
         """Surface"""
         self.ie = 0.95  # Ice Emissivity ie
@@ -327,22 +327,6 @@ class UQ_Icestupa(un.Model):
         # Total Energy Joules
         self.EJoules = self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]
 
-    def summary(self, i):
-
-        self.df = self.df[:i]
-        Efficiency = float(
-            (self.df["meltwater"].tail(1) + self.df["ice"].tail(1))
-            / (self.df["Discharge"].sum() * self.time_steps / 60 + self.df["ppt"].sum() + self.df["deposition"].sum())
-            * 100
-        )
-
-        print("\nIce Volume Max", float(self.df["iceV"].max()))
-        print("Fountain efficiency", Efficiency)
-        print("Ice Mass Remaining", float(self.df["ice"].tail(1)))
-        print("Meltwater", float(self.df["meltwater"].tail(1)))
-        print("Ppt", self.df["ppt"].sum())
-        print("Model runtime", self.df.loc[i - 1, "When"] - self.df.loc[0, "When"])
-
     def run(self, **parameters):
         self.set_parameters(**parameters)
         print(parameters.values())
@@ -500,11 +484,22 @@ class UQ_Icestupa(un.Model):
             self.delta_T_s, self.solid, self.liquid, self.gas, self.melted, self.SRf, self.vp_ice, self.EJoules = [
                                                                                                                       0] * 8
 
-        self.summary(i)
+        Efficiency = float(
+            (self.df["meltwater"].tail(1) + self.df["ice"].tail(1))
+            / (self.df["Discharge"].sum() * self.time_steps / 60 + self.df["ppt"].sum() + self.df["deposition"].sum())
+            * 100
+        )
 
-        # self.print_output()
+        print("\nIce Volume Max", float(self.df["iceV"].max()))
+        print("Fountain efficiency", Efficiency)
+        print("Ice Mass Remaining", float(self.df["ice"].tail(1)))
+        print("Meltwater", float(self.df["meltwater"].tail(1)))
+        print("Ppt", self.df["ppt"].sum())
+        print("Model runtime", self.df.loc[i - 1, "When"] - self.df.loc[0, "When"])
 
-        return self.df.index.values * 5 / (60 * 24), self.df["iceV"].values
+        self.df = self.df.set_index('When').resample('1H').mean().reset_index()
+
+        return self.df.index.values / 24, self.df["iceV"].values
 
 list_of_feature_functions = [max_volume]
 
@@ -533,28 +528,27 @@ z0mi_dist = cp.Uniform(0.0007, 0.0027)
 z0hi_dist = cp.Uniform(0.0007, 0.0027)
 snow_fall_density_dist = cp.Uniform(200, 300)
 
+interval = 0.01
+
 aperture_f_dist = uniform(0.005, interval)
 height_f_dist = uniform(1.35, interval)
 
 dx_dist = cp.Uniform(0.0001, 0.01)
 
-# parameters = {
-#                 "dx": dx_dist,
-# }
-
-# parameters = {
-#                 "ie": ie_dist,
-#              "a_i": a_i_dist,
-#              "a_s": a_s_dist,
-#              "decay_t": decay_t_dist
-# }
-
 parameters = {
-              "rain_temp": rain_temp_dist,
-              "z0mi": z0mi_dist,
-              "z0hi": z0hi_dist,
-              "snow_fall_density": snow_fall_density_dist
-              }
+                "ie": ie_dist,
+                "a_i": a_i_dist,
+                "a_s": a_s_dist,
+                "decay_t": decay_t_dist,
+                "dx": dx_dist
+}
+
+# parameters = {
+#               "rain_temp": rain_temp_dist,
+#               "z0mi": z0mi_dist,
+#               "z0hi": z0hi_dist,
+#               "snow_fall_density": snow_fall_density_dist
+#               }
 
 # parameters = {
 #               "aperture_f": aperture_f_dist,
@@ -578,7 +572,7 @@ UQ = un.UncertaintyQuantification(model=model,
 # polynomial chaos with point collocation (by default)
 data = UQ.quantify(data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
                     figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
-                    filename="Meteorological")
+                    filename="Surface2")
 
 # data = UQ.quantify(filename="Meteorological")
 
