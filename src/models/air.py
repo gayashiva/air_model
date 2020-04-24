@@ -39,35 +39,34 @@ class Icestupa: #todo create subclass
     time_steps = 5 * 60  # s Model time steps
     dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
+    """Surface"""
+    ie = 0.95  # Ice Emissivity ie
+    a_i = 0.35  # Albedo of Ice a_i
+    a_s = 0.85  # Albedo of Fresh Snow a_s
+    decay_t = 10  # Albedo decay rate decay_t_d
+    dx = 1e-02  # Ice layer thickness
+
+    """Meteorological"""
+    z0mi = 0.0017  # Ice Momentum roughness length
+    z0hi = 0.0017  # Ice Scalar roughness length
+    snow_fall_density = 250  # Snowfall density
+    rain_temp = 1  # Temperature condition for liquid precipitation
+
+    """Fountain"""
+    aperture_f = 0.005  # Fountain aperture diameter
+    h_f = 1.35  # Fountain steps h_f
+
+    """Site constants"""
+    latitude = 46.693723
+    longitude = 7.297543
+    utc_offset = 1
+
+    """Miscellaneous"""
+    ftl = 0  # Fountain flight time loss ftl,
+    h_aws = 3  # m height of AWS
+    theta_f = 45  # Fountain aperture diameter
+
     def __init__(self, site="schwarzsee"):
-
-        """Surface"""
-        self.ie = 0.95  # Ice Emissivity ie
-        self.a_i = 0.35  # Albedo of Ice a_i
-        self.a_s = 0.85  # Albedo of Fresh Snow a_s
-        self.decay_t = 10  # Albedo decay rate decay_t_d
-        self.rain_temp = 1  # Temperature condition for self.liquid precipitation
-
-        """Meteorological"""
-        self.z0mi = 0.0017  # Ice Momentum roughness length
-        self.z0hi = 0.0017  # Ice Scalar roughness length
-        self.snow_fall_density = 250  # Snowfall density
-
-
-        """Fountain"""
-        self.aperture_f = 0.005  # Fountain aperture diameter
-        self.h_f = 1.35  # Fountain steps h_f
-
-        """Site constants"""
-        self.latitude = 46.693723
-        self.longitude = 7.297543
-        self.utc_offset = 1
-
-        """Miscellaneous"""
-        self.ftl = 0  # Fountain flight time loss ftl,
-        self.dx = 1e-02  # Ice layer thickness
-        self.h_aws = 3  # m height of AWS
-        self.theta_f = 45  # Fountain aperture diameter
 
         self.site = site
 
@@ -993,18 +992,12 @@ class Icestupa: #todo create subclass
                 # Precipitation to ice quantity
                 if row.T_a < self.rain_temp and row.Prec > 0:
 
-                    if self.df.loc[i, "When"] <= self.dates["fountain_off_date"]:
-                        self.df.loc[i, "ppt"] = (
-                            self.snow_fall_density * row.Prec * math.pi * self.r_mean ** 2
-                        )
-                    else:
-
-                        self.df.loc[i, "ppt"] = (
-                            self.snow_fall_density
-                            * row.Prec
-                            * math.pi
-                            * math.pow(self.df.loc[i, "r_ice"], 2)
-                        )
+                    self.df.loc[i, "ppt"] = (
+                        self.snow_fall_density
+                        * row.Prec
+                        * math.pi
+                        * math.pow(self.df.loc[i, "r_ice"], 2)
+                    )
 
                 # Fountain water output
                 self.liquid = row.Discharge * (1 - self.ftl) * self.time_steps / 60
@@ -1079,13 +1072,7 @@ class Icestupa: #todo create subclass
                     [0] * 8
                 )
 
-        self.summary(i)
 
-        self.print_output()
-
-
-class UQ_Icestupa(Icestupa):
-    pass
 
 if __name__ == "__main__":
 
