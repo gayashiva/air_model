@@ -39,7 +39,7 @@ def max_volume(time, values):
     # Return the feature times and values.
     return None, icev_max #todo include efficiency
 
-class UQ_Icestupa(un.Model):
+class UQ_Icestupa(Icestupa, un.Model):
 
     """Physical Constants"""
     L_s = 2848 * 1000  # J/kg Sublimation
@@ -499,7 +499,7 @@ class UQ_Icestupa(un.Model):
 
         self.df = self.df.set_index('When').resample('1H').mean().reset_index()
 
-        return self.df.index.values / 24, self.df["iceV"].values
+        return self.df.index.values / 24, self.df["iceV"].valuesz
 
 list_of_feature_functions = [max_volume]
 

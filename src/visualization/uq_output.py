@@ -42,14 +42,15 @@ for name in names:
     # plot1 = un.plotting.PlotUncertainty(filename1)
     # plot1.prediction_interval_1d(show = True)
 
-    # if len(data.uncertain_parameters) > 1:
-    #     plt.bar(data.uncertain_parameters, data["max_volume"].sobol_first * 100)
-    #     plt.ylabel("Sensitivity of variance(%)")
-    #     plt.savefig(figures + name + "_sobol_first.jpg", bbox_inches="tight", dpi=300)
-    #     plt.clf()
+    if len(data.uncertain_parameters) > 1:
+        plt.bar(data.uncertain_parameters, data["max_volume"].sobol_first * 100)
+        plt.ylabel("Sensitivity of variance(%)")
+        plt.savefig(figures + name + "_sobol_first.jpg", bbox_inches="tight", dpi=300)
+        plt.clf()
 
-print(st.mean(evaluations))
-print(st.variance(evaluations))
+# print(st.mean(evaluations))
+# print(st.variance(evaluations))
+# print(2*st.stdev(evaluations))
 
 fig, ax = plt.subplots()
 ax.bar(names, variance)
