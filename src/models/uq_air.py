@@ -44,7 +44,7 @@ class UQ_Icestupa(un.Model, Icestupa):
 
     def __init__(self):
 
-        super(UQ_Icestupa, self).__init__(labels=["Time (days)", "Ice Volume (m3)"], interpolate=False)
+        super(UQ_Icestupa, self).__init__(labels=["Time (days)", "Ice Volume (m3)"], interpolate=True)
 
         data_store = pd.HDFStore("/home/surya/Programs/PycharmProjects/air_model/data/interim/schwarzsee/model_input.h5")
         self.df = data_store['df']

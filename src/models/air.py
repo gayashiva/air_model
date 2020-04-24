@@ -752,8 +752,6 @@ class Icestupa: #todo create subclass
         self.EJoules = self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]
 
     def summary(self):
-
-        self.df = self.df[:i]
         Efficiency = float(
             (self.df["meltwater"].tail(1) + self.df["ice"].tail(1))
             / (
@@ -769,7 +767,7 @@ class Icestupa: #todo create subclass
         print("Ice Mass Remaining", float(self.df["ice"].tail(1)))
         print("Meltwater", float(self.df["meltwater"].tail(1)))
         print("Ppt", self.df["ppt"].sum())
-        print("Model runtime", self.df.loc[i - 1, "When"] - self.df.loc[0, "When"])
+        print("Model runtime", self.df.loc[- 1, "When"] - self.df.loc[0, "When"])
 
         # Full Output
         filename4 = self.folders["output_folder"] + "model_results.csv"
@@ -897,6 +895,11 @@ class Icestupa: #todo create subclass
 
     def melt_freeze(self):
 
+        data_store = pd.HDFStore(
+            "/home/surya/Programs/PycharmProjects/air_model/data/interim/schwarzsee/model_input.h5")
+        self.df = data_store['df']
+        data_store.close()
+
         l = [
             "T_s",  # Surface Temperature
             "ice",
@@ -942,6 +945,7 @@ class Icestupa: #todo create subclass
                     self.df.loc[i - 1, "ice"] = 0
                     self.df.loc[i - 1, "iceV"] = 0
                     if self.df.Discharge[i:].sum() == 0:  # If ice melted after fountain run
+                        self.df = self.df[:i]
                         break
                     else:  # If ice melted in between fountain run
                         self.state = 0
@@ -1033,13 +1037,15 @@ class Icestupa: #todo create subclass
 
 
 
+
+
 if __name__ == "__main__":
 
     start = time.time()
 
     schwarzsee = Icestupa()
 
-    schwarzsee.derive_parameters()
+    # schwarzsee.derive_parameters()
 
     schwarzsee.melt_freeze()
 
