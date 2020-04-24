@@ -751,7 +751,7 @@ class Icestupa: #todo create subclass
         # Total Energy Joules
         self.EJoules = self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]
 
-    def summary(self, i):
+    def summary(self):
 
         self.df = self.df[:i]
         Efficiency = float(
@@ -774,6 +774,8 @@ class Icestupa: #todo create subclass
         # Full Output
         filename4 = self.folders["output_folder"] + "model_results.csv"
         self.df.to_csv(filename4, sep=",")
+
+        self.print_output()
 
     def print_output(self):
 
@@ -893,49 +895,6 @@ class Icestupa: #todo create subclass
 
         pp.close()
 
-    def run(self, **parameters):
-
-        self.set_parameters(**parameters)
-        print(parameters.values())
-
-        if 'aperture_f' in parameters.keys():  # todo change to general
-            """ Fountain Spray radius """
-            Area = math.pi * math.pow(self.aperture_f, 2) / 4
-
-            for row in self.df[1:].itertuples():
-                v_f = row.Discharge / (60 * 1000 * Area)
-                self.df.loc[row.Index, "r_f"] = self.projectile_xy(v_f)
-
-        if 'a_i' or 'rain_temp' in parameters.keys():
-            """Albedo Decay"""
-            self.decay_t = (
-                    self.decay_t * 24 * 60 * 60 / self.time_steps
-            )  # convert to 5 minute time steps
-            s = 0
-            f = 0
-
-            for row in self.df[1:].itertuples():
-                s, f = self.albedo(row, s, f)
-
-        self.melt_freeze()
-
-        Efficiency = float(
-            (self.df["meltwater"].tail(1) + self.df["ice"].tail(1))
-            / (self.df["Discharge"].sum() * self.time_steps / 60 + self.df["ppt"].sum() + self.df["deposition"].sum())
-            * 100
-        )
-
-        print("\nIce Volume Max", float(self.df["iceV"].max()))
-        print("Fountain efficiency", Efficiency)
-        print("Ice Mass Remaining", float(self.df["ice"].tail(1)))
-        print("Meltwater", float(self.df["meltwater"].tail(1)))
-        print("Ppt", self.df["ppt"].sum())
-        print("Model runtime", self.df.loc[i - 1, "When"] - self.df.loc[0, "When"])
-
-        self.df = self.df.set_index('When').resample('1H').mean().reset_index()
-
-        return self.df.index.values / 24, self.df["iceV"].values
-
     def melt_freeze(self):
 
         l = [
@@ -964,7 +923,7 @@ class Icestupa: #todo create subclass
             [0] * 8
         )
 
-        for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
+        for row in self.df[1:].itertuples():
             i = row.Index
 
             if i == 1 :
@@ -1080,11 +1039,11 @@ if __name__ == "__main__":
 
     schwarzsee = Icestupa()
 
-    # schwarzsee.derive_parameters()
-
-    # schwarzsee.run()
+    schwarzsee.derive_parameters()
 
     schwarzsee.melt_freeze()
+
+    schwarzsee.summary()
 
     total = time.time() - start
 

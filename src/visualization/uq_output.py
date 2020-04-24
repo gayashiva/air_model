@@ -18,7 +18,7 @@ import statistics as st
 input = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/"
 figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/"
 
-names = ["Fountain", "Surface", "Meteorological"]
+names = ["Fount", "Surface", "Meteo"]
 variance = []
 mean = []
 evaluations = []

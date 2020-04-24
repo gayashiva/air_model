@@ -142,8 +142,8 @@ dx_dist = cp.Uniform(0.0001, 0.01)
 #               }
 
 parameters = {
-              "aperture_f": aperture_f_dist
-              # "height_f": height_f_dist,
+              "aperture_f": aperture_f_dist,
+              "height_f": height_f_dist
               }
 
 
@@ -163,7 +163,7 @@ UQ = un.UncertaintyQuantification(model=model,
 # polynomial chaos with point collocation (by default)
 data = UQ.quantify(data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
                     figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
-                    filename="Fountain3")
+                    filename="Fount")
 
 # data = UQ.quantify(filename="Meteorological")
 
