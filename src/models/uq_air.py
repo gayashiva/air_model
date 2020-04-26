@@ -124,15 +124,15 @@ interval = 0.01
 aperture_f_dist = uniform(0.005, interval)
 height_f_dist = uniform(1.35, interval)
 
-dx_dist = cp.Uniform(0.0001, 0.01)
+dx_dist = cp.Uniform(0.0006, 0.01)
 
-# parameters = {
-#                 "ie": ie_dist,
-#                 "a_i": a_i_dist,
-#                 "a_s": a_s_dist,
-#                 "decay_t": decay_t_dist,
-#                 "dx": dx_dist
-# }
+parameters = {
+                "ie": ie_dist,
+                "a_i": a_i_dist,
+                "a_s": a_s_dist,
+                "decay_t": decay_t_dist,
+                "dx": dx_dist
+}
 
 # parameters = {
 #               "rain_temp": rain_temp_dist,
@@ -141,10 +141,22 @@ dx_dist = cp.Uniform(0.0001, 0.01)
 #               "snow_fall_density": snow_fall_density_dist
 #               }
 
-parameters = {
-              "aperture_f": aperture_f_dist,
-              "height_f": height_f_dist
-              }
+# parameters = {
+#               "aperture_f": aperture_f_dist,
+#               "height_f": height_f_dist
+#               }
+
+# parameters = {
+#                 "ie": ie_dist,
+#                 "a_i": a_i_dist,
+#                 "a_s": a_s_dist,
+#                 "decay_t": decay_t_dist,
+#                 "dx": dx_dist,
+#               "rain_temp": rain_temp_dist,
+#               "z0mi": z0mi_dist,
+#               "z0hi": z0hi_dist,
+#               "snow_fall_density": snow_fall_density_dist
+# }
 
 
 # Create the parameters
@@ -163,7 +175,7 @@ UQ = un.UncertaintyQuantification(model=model,
 # polynomial chaos with point collocation (by default)
 data = UQ.quantify(data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
                     figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
-                    filename="Fount")
+                    filename="Surf")
 
 # data = UQ.quantify(filename="Meteorological")
 

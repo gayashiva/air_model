@@ -648,6 +648,7 @@ class Icestupa: #todo create subclass
                 )
             )
 
+
         self.SRf = (
             0.5
             * self.df.loc[i, "h_ice"]
@@ -658,6 +659,7 @@ class Icestupa: #todo create subclass
             * 0.5
             * math.sin(self.df.loc[i, "SEA"])
         ) / self.df.loc[i, "SA"]
+
 
     def energy_balance(self, row):
         i = row.Index
@@ -767,7 +769,6 @@ class Icestupa: #todo create subclass
         print("Ice Mass Remaining", float(self.df["ice"].tail(1)))
         print("Meltwater", float(self.df["meltwater"].tail(1)))
         print("Ppt", self.df["ppt"].sum())
-        print("Model runtime", self.df.loc[- 1, "When"] - self.df.loc[0, "When"])
 
         # Full Output
         filename4 = self.folders["output_folder"] + "model_results.csv"
@@ -893,12 +894,15 @@ class Icestupa: #todo create subclass
 
         pp.close()
 
-    def melt_freeze(self):
+    def read_input(self):
 
         data_store = pd.HDFStore(
             "/home/surya/Programs/PycharmProjects/air_model/data/interim/schwarzsee/model_input.h5")
         self.df = data_store['df']
         data_store.close()
+
+        self.dx = 1e-03
+    def melt_freeze(self):
 
         l = [
             "T_s",  # Surface Temperature
@@ -933,9 +937,14 @@ class Icestupa: #todo create subclass
                 """Initialize"""
                 self.r_mean = self.df['r_f'].replace(0, np.NaN).mean()
                 self.df.loc[i, "r_ice"] = self.r_mean
-                self.df.loc[i, "h_ice"] = self.dx
                 self.df.loc[i, "iceV"] = self.dx * math.pi * self.df.loc[0, "r_ice"] ** 2
                 self.df.loc[i, "ice"] = self.df.loc[0, "iceV"] * self.rho_i
+                # Ice Height
+                self.df.loc[i, "h_ice"] = (
+                        3
+                        * self.df.loc[i, "iceV"]
+                        / (math.pi * self.df.loc[i, "r_ice"] ** 2)
+                )
 
             else:
 
@@ -1046,6 +1055,8 @@ if __name__ == "__main__":
     schwarzsee = Icestupa()
 
     # schwarzsee.derive_parameters()
+
+    schwarzsee.read_input()
 
     schwarzsee.melt_freeze()
 
