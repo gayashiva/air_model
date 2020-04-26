@@ -19,6 +19,8 @@ from SALib.sample import saltelli
 from SALib.analyze import sobol
 import matplotlib.colors
 
+from src.models.air import Icestupa
+
 # Create the Logger
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -44,6 +46,7 @@ console_handler.setFormatter(logger_formatter)
 # Add the Handler to the Logger
 logger.addHandler(logger_handler)
 logger.addHandler(console_handler)
+
 
 param_values = np.arange(3, 15, 0.5).tolist()
 
