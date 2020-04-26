@@ -51,11 +51,10 @@ class Discharge_Icestupa(Icestupa):
         self.df = self.df.set_index('When').resample('1H').mean().reset_index()
 
         key = experiment.get("Discharge")
-        results = self.df["ice"].values
 
-        return key, results
+        return key, self.df["SA"].values, self.df["iceV"].values, self.df["solid"].values
 
-param_values = np.arange(2, 16, 2).tolist()
+param_values = np.arange(2, 6, 2).tolist()
 
 
 experiments = pd.DataFrame(param_values,
@@ -68,10 +67,12 @@ i = 0
 
 with Pool(8) as executor:
 
-    for key, entry in executor.map(model.run, experiments.to_dict('records')):
+    for key, SA, ice, solid in executor.map(model.run, experiments.to_dict('records')):
         # data = pd.DataFrame({str(key): entry})
         # df_out = df_out.append(data)
-        df_out[str(key)] = entry
+        df_out[str(key) + "_SA"] = SA
+        df_out[str(key)+ "_iceV"] = iceV
+        df_out[str(key)+ "_solid"] = solid
 
     filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/discharge.csv"
     df_out.to_csv(filename2, sep=",")
