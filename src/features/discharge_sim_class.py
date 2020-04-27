@@ -34,6 +34,7 @@ class Discharge_Icestupa(Icestupa):
                 v_f = experiment.get("Discharge") / (60 * 1000 * Area)
                 self.df.loc[row.Index, "r_f"] = self.projectile_xy(v_f)
 
+
         self.print_input(filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/")
 
         self.melt_freeze()
@@ -42,10 +43,15 @@ class Discharge_Icestupa(Icestupa):
 
         Max_IceV = self.df["iceV"].max()
         Efficiency = float(
-            self.df["water"].tail(1)
-            / (self.df["Discharge"].sum() * self.time_steps / 60)
+            (self.df["meltwater"].tail(1) + self.df["ice"].tail(1))
+            / (
+                    self.df["Discharge"].sum() * self.time_steps / 60
+                    + self.df["ppt"].sum()
+                    + self.df["deposition"].sum()
+            )
             * 100
         )
+
         Duration = self.df.index[-1] * 5 /(60 * 24)
 
         print("\nIce Volume Max", float(self.df["iceV"].max()))
@@ -67,7 +73,7 @@ class Discharge_Icestupa(Icestupa):
 
         return key, self.df["SA"].values, self.df["iceV"].values, self.df["solid"].values, self.df["Discharge"].values, result
 
-param_values = np.arange(15, 25, 1).tolist()
+param_values = np.arange(1, 25, 1).tolist()
 
 
 experiments = pd.DataFrame(param_values,
@@ -89,9 +95,9 @@ with Pool(8) as executor:
         columns={0: 'Discharge', 1: 'Max_IceV', 2: 'Efficiency', 3 : 'Duration'})
 
     print(results)
-    filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/results_2.csv"
+    filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/results.csv"
     results.to_csv(filename, sep=",")
 
-    filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/discharge_2.csv"
+    filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/discharge.csv"
     df_out.to_csv(filename2, sep=",")
 

@@ -48,7 +48,7 @@ logger.addHandler(logger_handler)
 logger.addHandler(console_handler)
 
 
-param_values = np.arange(3, 15, 0.5).tolist()
+param_values = np.arange(9, 15, 0.5).tolist()
 
 dfx = pd.DataFrame({'MaxV': []})
 
