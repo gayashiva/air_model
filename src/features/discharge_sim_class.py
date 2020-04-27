@@ -34,27 +34,40 @@ class Discharge_Icestupa(Icestupa):
                 v_f = experiment.get("Discharge") / (60 * 1000 * Area)
                 self.df.loc[row.Index, "r_f"] = self.projectile_xy(v_f)
 
+        self.print_input(filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/")
+
         self.melt_freeze()
 
+        self.print_output(filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/discharge_output.pdf")
+
+        Max_IceV = self.df["iceV"].max()
         Efficiency = float(
-            (self.df["meltwater"].tail(1) + self.df["ice"].tail(1))
-            / (self.df["Discharge"].sum() * self.time_steps / 60 + self.df["ppt"].sum() + self.df["deposition"].sum())
+            self.df["water"].tail(1)
+            / (self.df["Discharge"].sum() * self.time_steps / 60)
             * 100
         )
+        Duration = self.df.index[-1] * 5 /(60 * 24)
 
         print("\nIce Volume Max", float(self.df["iceV"].max()))
         print("Fountain efficiency", Efficiency)
         print("Ice Mass Remaining", float(self.df["ice"].tail(1)))
         print("Meltwater", float(self.df["meltwater"].tail(1)))
         print("Ppt", self.df["ppt"].sum())
+        print("Deposition", self.df["deposition"].sum() )
 
-        self.df = self.df.set_index('When').resample('1H').mean().reset_index()
+        result = pd.Series([experiment.get("Discharge"),
+                             Max_IceV,
+                             Efficiency,
+                            Duration]
+                            )
+
+        self.df = self.df.set_index('When').resample("H").mean().reset_index()
 
         key = experiment.get("Discharge")
 
-        return key, self.df["SA"].values, self.df["iceV"].values, self.df["solid"].values
+        return key, self.df["SA"].values, self.df["iceV"].values, self.df["solid"].values, self.df["Discharge"].values, result
 
-param_values = np.arange(2, 6, 2).tolist()
+param_values = np.arange(15, 25, 1).tolist()
 
 
 experiments = pd.DataFrame(param_values,
@@ -63,16 +76,22 @@ experiments = pd.DataFrame(param_values,
 model = Discharge_Icestupa()
 
 df_out = pd.DataFrame()
-i = 0
-
+results = []
 with Pool(8) as executor:
 
-    for key, SA, ice, solid in executor.map(model.run, experiments.to_dict('records')):
-        # data = pd.DataFrame({str(key): entry})
-        # df_out = df_out.append(data)
-        df_out[str(key) + "_SA"] = SA
-        df_out[str(key)+ "_iceV"] = iceV
-        df_out[str(key)+ "_solid"] = solid
+    for key, SA, iceV, solid, Discharge, result in executor.map(model.run, experiments.to_dict('records')):
+        data = pd.DataFrame({str(key) + "_SA":SA, str(key)+ "_iceV": iceV, str(key)+ "_solid":solid, str(key)+ "_Discharge": Discharge})
+        df_out = pd.concat([df_out, data], axis=1)
+        results.append(result)
 
-    filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/discharge.csv"
+    results = pd.DataFrame(results)
+    results = results.rename(
+        columns={0: 'Discharge', 1: 'Max_IceV', 2: 'Efficiency', 3 : 'Duration'})
+
+    print(results)
+    filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/results_2.csv"
+    results.to_csv(filename, sep=",")
+
+    filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/discharge_2.csv"
     df_out.to_csv(filename2, sep=",")
+

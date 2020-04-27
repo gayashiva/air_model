@@ -300,9 +300,13 @@ class Icestupa: #todo create subclass
 
         self.print_input()
 
-    def print_input(self):
+    def print_input(self, filename = "derived_parameters.pdf"):
+        if filename == "derived_parameters.pdf":
+            filename = self.folders["input_folder"]
 
-        pp = PdfPages(self.folders["input_folder"] + "derived_parameters.pdf")
+        filename = filename + "derived_parameters.pdf"
+
+        pp = PdfPages(filename)
 
         x = self.df.When
 
@@ -376,7 +380,9 @@ class Icestupa: #todo create subclass
 
         """Input Plots"""
 
-        pp = PdfPages(self.folders["input_folder"] +"data.pdf")
+        filename = filename +"data.pdf"
+
+        pp = PdfPages(filename)
 
         fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
             nrows=6, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
@@ -775,7 +781,10 @@ class Icestupa: #todo create subclass
 
         self.print_output()
 
-    def print_output(self):
+    def print_output(self, filename = "model_results.pdf"):
+        #
+        # if filename == "model_results.pdf":
+        #     filename = self.folders["output_folder"] + "model_results.pdf"
 
         self.df = self.df.rename(
             {
@@ -789,7 +798,7 @@ class Icestupa: #todo create subclass
         )
 
         # Plots
-        pp = PdfPages(self.folders["output_folder"] + "model_results.pdf")
+        pp = PdfPages(filename)
 
         x = self.df.When
         y1 = self.df.iceV
