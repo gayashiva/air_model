@@ -747,9 +747,9 @@ class Icestupa: #todo create subclass
         self.print_output()
 
     def print_output(self, filename = "model_results.pdf"):
-        #
-        # if filename == "model_results.pdf":
-        #     filename = self.folders["output_folder"] + "model_results.pdf"
+
+        if filename == "model_results.pdf":
+            filename = self.folders["output_folder"] + "model_results.pdf"
 
         self.df = self.df.rename(
             {
@@ -767,14 +767,11 @@ class Icestupa: #todo create subclass
 
         x = self.df.When
         y1 = self.df.iceV
-
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Ice Volume [$m^3$]")
         ax1.set_xlabel("Days")
-
-        #  format the ticks
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -784,14 +781,11 @@ class Icestupa: #todo create subclass
         plt.clf()
 
         y1 = self.df.SA
-
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Surface Area [$m^2$]")
         ax1.set_xlabel("Days")
-
-        #  format the ticks
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -802,20 +796,16 @@ class Icestupa: #todo create subclass
 
         y1 = self.df.h_ice
         y2 = self.df.r_ice
-
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Ice Cone Height [$m$]")
         ax1.set_xlabel("Days")
-
         ax2 = ax1.twinx()
         ax2.plot(x, y2, "b-", linewidth=0.5)
         ax2.set_ylabel("Ice Radius", color="b")
         for tl in ax2.get_yticklabels():
             tl.set_color("b")
-
-        #  format the ticks
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -826,20 +816,16 @@ class Icestupa: #todo create subclass
 
         y1 = self.df.iceV
         y2 = self.df["TotalE"] + self.df["$Q_L$"]
-
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Ice Volume [$m^3$]")
         ax1.set_xlabel("Days")
-
         ax2 = ax1.twinx()
         ax2.plot(x, y2, "b-", linewidth=0.5)
         ax2.set_ylabel("Energy [$W\,m^{-2}$]", color="b")
         for tl in ax2.get_yticklabels():
             tl.set_color("b")
-
-        #  format the ticks
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -849,20 +835,32 @@ class Icestupa: #todo create subclass
         plt.clf()
 
         y1 = self.df.T_s
-
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-", linewidth=0.5)
         ax1.set_ylabel("Surface Temperature [$\degree C$]")
         ax1.set_xlabel("Days")
-
-        #  format the ticks
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
         ax1.grid()
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
+
+        y1 = self.df.thickness * 1000
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x, y1, "k-", linewidth=0.5)
+        ax1.set_ylabel("Thickness [$mm$]")
+        ax1.set_xlabel("Days")
+        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        ax1.grid()
+        fig.autofmt_xdate()
+        pp.savefig(bbox_inches="tight")
+
+
         plt.close("all")
 
         pp.close()
@@ -870,7 +868,7 @@ class Icestupa: #todo create subclass
     def read_input(self):
 
         data_store = pd.HDFStore(
-            "/home/surya/Programs/PycharmProjects/air_model/data/interim/schwarzsee/model_input_icemax.h5")
+            "/home/surya/Programs/PycharmProjects/air_model/data/interim/schwarzsee/model_input.h5")
         self.df = data_store['df']
         data_store.close()
 
@@ -882,6 +880,7 @@ class Icestupa: #todo create subclass
             "iceV",
             "solid",
             "vapour",
+            "melted",
             "unfrozen_water",
             "TotalE",
             "SW",
@@ -899,13 +898,16 @@ class Icestupa: #todo create subclass
         for col in l:
             self.df[col] = 0
 
-        self.delta_T_s, self.liquid, self.gas, self.melted, self.SRf, self.vp_ice, self.EJoules = (
-            [0] * 7
+        self.delta_T_s, self.liquid, self.gas, self.SRf, self.vp_ice, self.EJoules = (
+            [0] * 6
         )
+
+
 
         """Initialize"""
         self.r_mean = self.df['r_f'].replace(0, np.NaN).mean()
         self.df.loc[0, "r_ice"] = self.r_mean
+        # self.dx = self.df['Discharge'].replace(0, np.NaN).mean() * 5 / (1000 * math.pi * self.df.loc[0, "r_ice"] ** 2)  # todo check
         self.df.loc[0, "iceV"] = self.dx * math.pi * self.df.loc[0, "r_ice"] ** 2
         self.df.loc[0, "ice"] = self.df.loc[0, "iceV"] * self.rho_i
         self.df.loc[0, "deposition"] = self.df.loc[0, "iceV"] * self.rho_i
@@ -957,6 +959,8 @@ class Icestupa: #todo create subclass
                     else:
                         self.df.loc[i , "solid"] += (-self.EJoules) / (self.L_f)
 
+
+
                 else:
                     """ When fountain off and energy negative """
                     # Cooling Ice
@@ -979,14 +983,12 @@ class Icestupa: #todo create subclass
                         / (-self.L_f)
                     )
 
-                    self.melted += (
+
+
+                    self.df.loc[i , "melted"] += (
                         (self.rho_i * self.dx * self.c_s * self.df.loc[i, "SA"])
                         * (-(self.df.loc[i - 1, "T_s"] + self.delta_T_s))
                         / (-self.L_f)
-                    )
-
-                    self.df.loc[i, "thickness"] = self.melted / (
-                        self.df.loc[i, "SA"] * self.rho_i
                     )
 
                     self.df.loc[i - 1, "T_s"] = 0
@@ -994,7 +996,7 @@ class Icestupa: #todo create subclass
 
             """ Quantities of all phases """
             self.df.loc[i, "T_s"] = self.df.loc[i - 1, "T_s"] + self.delta_T_s
-            self.df.loc[i, "meltwater"] = self.df.loc[i - 1, "meltwater"] + self.melted
+            self.df.loc[i, "meltwater"] = self.df.loc[i - 1, "meltwater"] + self.df.loc[i , "melted"]
             self.df.loc[i, "ice"] = (
                 self.df.loc[i - 1, "ice"]
                 + self.df.loc[i , "solid"]
@@ -1004,20 +1006,14 @@ class Icestupa: #todo create subclass
             self.df.loc[i, "vapour"] = self.df.loc[i - 1, "vapour"] + self.gas
             self.df.loc[i, "unfrozen_water"] = self.df.loc[i - 1, "unfrozen_water"] + self.liquid
             self.df.loc[i, "iceV"] = self.df.loc[i, "ice"] / self.rho_i
-
-            self.delta_T_s, self.liquid, self.gas, self.melted, self.SRf, self.vp_ice, self.EJoules = (
-                [0] * 7
+            self.df.loc[i, "thickness"] = self.df.loc[i, "solid"] / (
+                    self.df.loc[i, "SA"] * self.rho_i
             )
 
-            self.df.loc[i,"input"] = self.df.Discharge[:i+1].sum() * self.time_steps / 60 + self.df.ppt[:i+1].sum() + self.df.deposition[:i+1].sum()
-            self.df.loc[i,"output"] = self.df.ice[i] + self.df.meltwater[i] + self.df.vapour[i] + self.df.unfrozen_water[i]
-
-        print(self.df.loc[i-1, "ice"] + self.df.loc[i-1, "meltwater"]+ self.df.loc[i-1, "vapour"] + self.df.loc[i-1, "unfrozen_water"])
-        print(
-                    self.df["Discharge"].sum() * self.time_steps / 60
-                    + self.df["ppt"].sum()
-                    + self.df["deposition"].sum()
+            self.delta_T_s, self.liquid, self.gas, self.SRf, self.vp_ice, self.EJoules = (
+                [0] * 6
             )
+
 
 
 

@@ -53,6 +53,7 @@ class Discharge_Icestupa(Icestupa):
         )
 
         Duration = self.df.index[-1] * 5 /(60 * 24)
+        h_r = self.df.h_ice.max()/self.df.r_ice.max()
 
         print("\nIce Volume Max", float(self.df["iceV"].max()))
         print("Fountain efficiency", Efficiency)
@@ -64,16 +65,17 @@ class Discharge_Icestupa(Icestupa):
         result = pd.Series([experiment.get("Discharge"),
                              Max_IceV,
                              Efficiency,
-                            Duration]
+                            Duration,
+                            h_r]
                             )
 
         self.df = self.df.set_index('When').resample("H").mean().reset_index()
 
         key = experiment.get("Discharge")
 
-        return key, self.df["SA"].values, self.df["iceV"].values, self.df["solid"].values, self.df["Discharge"].values, result
+        return key, self.df["When"].values, self.df["SA"].values, self.df["iceV"].values, self.df["solid"].values, self.df["thickness"].values, self.df["Discharge"].values, result
 
-param_values = np.arange(1, 25, 1).tolist()
+param_values = np.arange(5, 7, 1).tolist()
 
 
 experiments = pd.DataFrame(param_values,
@@ -81,13 +83,23 @@ experiments = pd.DataFrame(param_values,
 
 model = Discharge_Icestupa()
 
-df_out = pd.DataFrame()
-results = []
-with Pool(8) as executor:
+variables = ["When", 'SA', 'iceV', 'solid', 'thickness', 'Discharge', 'result']
 
-    for key, SA, iceV, solid, Discharge, result in executor.map(model.run, experiments.to_dict('records')):
-        data = pd.DataFrame({str(key) + "_SA":SA, str(key)+ "_iceV": iceV, str(key)+ "_solid":solid, str(key)+ "_Discharge": Discharge})
-        df_out = pd.concat([df_out, data], axis=1)
+iterables = [param_values, variables]
+index = pd.MultiIndex.from_product(iterables, names=['discharge_rate', 'variables'])
+
+data = pd.DataFrame(columns=index)
+
+results = []
+with Pool(7) as executor:
+
+    for key, When, SA, iceV, solid, thickness, Discharge, result in executor.map(model.run, experiments.to_dict('records')):
+
+        data.append({ (key, "When"):When, (key, "SA"):SA, (key, "iceV"): iceV, (key, "solid"):solid, (key, "thickness"):thickness, (key, "Discharge"): Discharge}, ignore_index=True)
+        # data = pd.DataFrame({"discharge_rate":,"When":When, "SA":SA, "iceV": iceV, "solid":solid, "thickness":thickness, "Discharge": Discharge}, columns = index)
+        print(data.head())
+        # df_out = pd.concat([df_out, data], axis = 1, levels=0).sort_index(axis=1)
+        # print(df_out.head())
         results.append(result)
 
     results = pd.DataFrame(results)
