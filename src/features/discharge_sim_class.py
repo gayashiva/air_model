@@ -73,9 +73,9 @@ class Discharge_Icestupa(Icestupa):
 
         key = experiment.get("Discharge")
 
-        return key, self.df["When"].values, self.df["SA"].values, self.df["iceV"].values, self.df["solid"].values, self.df["thickness"].values, self.df["Discharge"].values, result
+        return key, self.df["When"].values, self.df["SA"].values, self.df["iceV"].values, self.df["solid"].values, self.df["thickness"].values, self.df["Discharge"].values, self.df["input"].values, self.df["unfrozen_water"].values, result
 
-param_values = np.arange(5, 7, 1).tolist()
+param_values = np.arange(3, 18, 1).tolist()
 
 
 experiments = pd.DataFrame(param_values,
@@ -83,33 +83,32 @@ experiments = pd.DataFrame(param_values,
 
 model = Discharge_Icestupa()
 
-variables = ["When", 'SA', 'iceV', 'solid', 'thickness', 'Discharge', 'result']
+variables = ["When", 'SA', 'iceV', 'solid', 'thickness', 'Discharge', 'input', 'unfrozen_water']
 
-iterables = [param_values, variables]
-index = pd.MultiIndex.from_product(iterables, names=['discharge_rate', 'variables'])
-
-data = pd.DataFrame(columns=index)
+df_out = pd.DataFrame()
 
 results = []
-with Pool(7) as executor:
 
-    for key, When, SA, iceV, solid, thickness, Discharge, result in executor.map(model.run, experiments.to_dict('records')):
+if __name__ == "__main__":
+    with Pool(7) as executor:
 
-        data.append({ (key, "When"):When, (key, "SA"):SA, (key, "iceV"): iceV, (key, "solid"):solid, (key, "thickness"):thickness, (key, "Discharge"): Discharge}, ignore_index=True)
-        # data = pd.DataFrame({"discharge_rate":,"When":When, "SA":SA, "iceV": iceV, "solid":solid, "thickness":thickness, "Discharge": Discharge}, columns = index)
-        print(data.head())
-        # df_out = pd.concat([df_out, data], axis = 1, levels=0).sort_index(axis=1)
-        # print(df_out.head())
-        results.append(result)
+        for key, When, SA, iceV, solid, thickness, Discharge, input, unfrozen_water, result in executor.map(model.run, experiments.to_dict('records')):
+            iterables = [[key], variables]
+            index = pd.MultiIndex.from_product(iterables, names=['discharge_rate', 'variables'])
+            data = pd.DataFrame({ (key, "When"):When, (key, "SA"):SA, (key, "iceV"): iceV, (key, "solid"):solid, (key, "thickness"):thickness, (key, "Discharge"): Discharge, (key, "input"): input, (key, "unfrozen_water"): unfrozen_water}, columns = index)
+            df_out = pd.concat([df_out, data], axis=1, join='outer', ignore_index=False)
+            results.append(result)
 
-    results = pd.DataFrame(results)
-    results = results.rename(
-        columns={0: 'Discharge', 1: 'Max_IceV', 2: 'Efficiency', 3 : 'Duration'})
+        results = pd.DataFrame(results)
+        results = results.rename(
+            columns={0: 'Discharge', 1: 'Max_IceV', 2: 'Efficiency', 3 : 'Duration', 4:'h_r'})
 
-    print(results)
-    filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/results.csv"
-    results.to_csv(filename, sep=",")
+        print(results)
+        filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/results.csv"
+        results.to_csv(filename, sep=",")
 
-    filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/discharge.csv"
-    df_out.to_csv(filename2, sep=",")
+        filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/discharge.h5"
+        data_store = pd.HDFStore(filename2)
+        data_store["dfd"] = df_out
+        data_store.close()
 

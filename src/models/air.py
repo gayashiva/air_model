@@ -907,10 +907,10 @@ class Icestupa: #todo create subclass
         """Initialize"""
         self.r_mean = self.df['r_f'].replace(0, np.NaN).mean()
         self.df.loc[0, "r_ice"] = self.r_mean
-        # self.dx = self.df['Discharge'].replace(0, np.NaN).mean() * 5 / (1000 * math.pi * self.df.loc[0, "r_ice"] ** 2)  # todo check
+        # self.dx = self.df['Discharge'].replace(0, np.NaN).mean() * 5 / (1000 * math.pi * self.df.loc[0, "r_ice"] ** 2)  # todo variable ice thickness
         self.df.loc[0, "iceV"] = self.dx * math.pi * self.df.loc[0, "r_ice"] ** 2
         self.df.loc[0, "ice"] = self.df.loc[0, "iceV"] * self.rho_i
-        self.df.loc[0, "deposition"] = self.df.loc[0, "iceV"] * self.rho_i
+        self.df.loc[0, "input"] = self.df.loc[0, "iceV"] * self.rho_i
 
         for row in self.df[1:].itertuples():
             i = row.Index
@@ -1006,6 +1006,7 @@ class Icestupa: #todo create subclass
             self.df.loc[i, "vapour"] = self.df.loc[i - 1, "vapour"] + self.gas
             self.df.loc[i, "unfrozen_water"] = self.df.loc[i - 1, "unfrozen_water"] + self.liquid
             self.df.loc[i, "iceV"] = self.df.loc[i, "ice"] / self.rho_i
+            self.df.loc[i, "input"] = self.df.loc[i-1, "input"] + self.df.loc[i, "ppt"] + self.df.loc[i, "deposition"] + self.df.loc[i, "Discharge"] * 5
             self.df.loc[i, "thickness"] = self.df.loc[i, "solid"] / (
                     self.df.loc[i, "SA"] * self.rho_i
             )
