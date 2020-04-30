@@ -66,9 +66,12 @@ class Icestupa: #todo create subclass
     h_aws = 3  # m height of AWS
     theta_f = 45  # Fountain aperture diameter
 
+
     def __init__(self, site="schwarzsee"):
 
         self.site = site
+
+        self.r_mean = 0
 
         self.folders = dict(
             input_folder=os.path.join(self.dirname, "data/interim/" + site + "/"),
@@ -163,8 +166,11 @@ class Icestupa: #todo create subclass
 
         return math.radians(SEA)
 
-    def projectile_xy(self, v):
-        hs = self.h_f
+    def projectile_xy(self, v, h = 0):
+        if h==0:
+            hs = self.h_f
+        else:
+            hs = h
         g = 9.81
         data_xy = []
         t = 0.0
@@ -210,17 +216,36 @@ class Icestupa: #todo create subclass
 
         return s, f
 
+    def spray_radius(self, r_mean = 0, aperture_f_new = 0):
+
+        Area_old = math.pi * math.pow(self.aperture_f, 2) / 4
+        v_old = self.df['Discharge'].replace(0, np.NaN).mean() / (60 * 1000 * Area_old)
+        print(v_old)
+
+        if r_mean != 0:
+            self.r_mean = r_mean
+
+        else:
+            if aperture_f_new != 0:
+                v_new = (math.pi * self.aperture_f ** 2 * v_old / (aperture_f_new ** 2 * math.pi))
+                h_new = h_old - (v_new ** 2 - v_old ** 2) / (2 * 9.81)
+                self.r_mean = self.projectile_xy(v=v_new, h=h_new)
+            else:
+                self.r_mean = self.projectile_xy(v=v_old)
+
+        print(self.r_mean)
+        return self.r_mean
+
     def derive_parameters(self):
 
-        missing = ["a", "cld", "SEA", "e_a", "vp_a", "r_f", "LW_in"]
+        missing = ["a", "cld", "SEA", "e_a", "vp_a", "LW_in"]
         for col in missing:
             if col in list(self.df.columns):
                 missing = missing.remove(col)
             else:
                 self.df[col] = 0
 
-        """ Fountain Spray radius """
-        Area = math.pi * math.pow(self.aperture_f, 2) / 4
+        self.spray_radius()
 
         """Albedo Decay"""
         self.decay_t = (
@@ -284,10 +309,6 @@ class Icestupa: #todo create subclass
                     * math.pow(row.T_a + 273.15, 4)
                 )
 
-            """ Fountain Spray radius """
-            v_f = row.Discharge / (60 * 1000 * Area)
-            self.df.loc[row.Index, "r_f"] = self.projectile_xy(v_f)
-
             s, f = self.albedo(row, s, f)
 
         self.df = self.df.round(5)
@@ -324,7 +345,6 @@ class Icestupa: #todo create subclass
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        fig = plt.figure()
         ax1 = fig.add_subplot(111)
         y1 = self.df.r_f
         ax1.plot(x, y1, "k-", linewidth=0.5)
@@ -338,7 +358,6 @@ class Icestupa: #todo create subclass
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        fig = plt.figure()
         ax1 = fig.add_subplot(111)
         y1 = self.df.vp_a
         ax1.plot(x, y1, "k-", linewidth=0.5)
@@ -352,7 +371,6 @@ class Icestupa: #todo create subclass
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        fig = plt.figure()
         ax1 = fig.add_subplot(111)
         y1 = self.df.a
         ax1.plot(x, y1, "k-", linewidth=0.5)
@@ -434,7 +452,6 @@ class Icestupa: #todo create subclass
 
         plt.clf()
 
-        fig = plt.figure()
         ax1 = fig.add_subplot(111)
         y1 = self.df.T_a
         ax1.plot(x, y1, "k-", linewidth=0.5)
@@ -448,7 +465,6 @@ class Icestupa: #todo create subclass
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        fig = plt.figure()
         ax1 = fig.add_subplot(111)
 
         y2 = self.df.Discharge
@@ -463,7 +479,6 @@ class Icestupa: #todo create subclass
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        fig = plt.figure()
         ax1 = fig.add_subplot(111)
         y3 = self.df.SW_direct
         ax1.plot(x, y3, "k-", linewidth=0.5)
@@ -477,7 +492,6 @@ class Icestupa: #todo create subclass
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        fig = plt.figure()
         ax1 = fig.add_subplot(111)
         y31 = self.df.SW_diffuse
         ax1.plot(x, y31, "k-", linewidth=0.5)
@@ -491,7 +505,6 @@ class Icestupa: #todo create subclass
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        fig = plt.figure()
         ax1 = fig.add_subplot(111)
         y4 = self.df.Prec * 1000
         ax1.plot(x, y4, "k-", linewidth=0.5)
@@ -505,7 +518,6 @@ class Icestupa: #todo create subclass
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        fig = plt.figure()
         ax1 = fig.add_subplot(111)
         y5 = self.df.p_a
         ax1.plot(x, y5, "k-", linewidth=0.5)
@@ -519,7 +531,6 @@ class Icestupa: #todo create subclass
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        fig = plt.figure()
         ax1 = fig.add_subplot(111)
         y6 = self.df.v_a
         ax1.plot(x, y6, "k-", linewidth=0.5)
@@ -532,7 +543,7 @@ class Icestupa: #todo create subclass
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
-
+        plt.close("all")
         pp.close()
 
     def cylinder_surface_area(self, i):
@@ -781,7 +792,6 @@ class Icestupa: #todo create subclass
         plt.clf()
 
         y1 = self.df.SA
-        fig = plt.figure()
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Surface Area [$m^2$]")
@@ -796,7 +806,6 @@ class Icestupa: #todo create subclass
 
         y1 = self.df.h_ice
         y2 = self.df.r_ice
-        fig = plt.figure()
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Ice Cone Height [$m$]")
@@ -816,7 +825,6 @@ class Icestupa: #todo create subclass
 
         y1 = self.df.iceV
         y2 = self.df["TotalE"] + self.df["$Q_L$"]
-        fig = plt.figure()
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Ice Volume [$m^3$]")
@@ -835,7 +843,6 @@ class Icestupa: #todo create subclass
         plt.clf()
 
         y1 = self.df.T_s
-        fig = plt.figure()
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-", linewidth=0.5)
         ax1.set_ylabel("Surface Temperature [$\degree C$]")
@@ -848,7 +855,6 @@ class Icestupa: #todo create subclass
         pp.savefig(bbox_inches="tight")
 
         y1 = self.df.thickness * 1000
-        fig = plt.figure()
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-", linewidth=0.5)
         ax1.set_ylabel("Thickness [$mm$]")
@@ -902,10 +908,9 @@ class Icestupa: #todo create subclass
             [0] * 6
         )
 
-
-
         """Initialize"""
-        self.r_mean = self.df['r_f'].replace(0, np.NaN).mean()
+        if self.r_mean == 0:
+            self.r_mean = self.df['r_f'].replace(0, np.NaN).mean()
         self.df.loc[0, "r_ice"] = self.r_mean
         # self.dx = self.df['Discharge'].replace(0, np.NaN).mean() * 5 / (1000 * math.pi * self.df.loc[0, "r_ice"] ** 2)  # todo variable ice thickness
         self.df.loc[0, "iceV"] = self.dx * math.pi * self.df.loc[0, "r_ice"] ** 2
@@ -1026,9 +1031,9 @@ if __name__ == "__main__":
 
     schwarzsee = Icestupa()
 
-    # schwarzsee.derive_parameters()
+    schwarzsee.derive_parameters()
 
-    schwarzsee.read_input()
+    # schwarzsee.read_input()
 
     schwarzsee.melt_freeze()
 

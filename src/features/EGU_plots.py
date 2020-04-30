@@ -15,20 +15,20 @@ mpl.rc('xtick', labelsize=5)
 plt.gca().spines['top'].set_visible(False)
 plt.gca().spines['right'].set_visible(False)
 
-filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/results.csv"
+filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/spray_radius_results.csv"
 df = pd.read_csv(filename, sep=",")
 
-filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/discharge.h5"
+filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/spray_radius.h5"
 data_store = pd.HDFStore(filename2)
 dfd = data_store['dfd']
 data_store.close()
 
-figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/"
+figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/spray_radius_"
 
 """Equate column lengths"""
 for i in param_values:
     iterables = [[i], variables]
-    index = pd.MultiIndex.from_product(iterables, names=['discharge_rate', 'variables'])
+    index = pd.MultiIndex.from_product(iterables, names=['spray_radius', 'variables'])
 
     days = pd.date_range(start=dfd.loc[0,(param_values[0], "When")], end=dfd.loc[len(dfd[param_values[0]])-1,(param_values[0], "When")], freq="H")
 
@@ -52,38 +52,31 @@ sm.set_array([])
 pp = PdfPages(figures + "showing_why_11.pdf")
 x = dfd.index.values / 24
 for i in param_values:
-    dfd.loc[0,(i, "solid")] = 0
-    # y1 = dfd[(i, "Discharge")].cumsum(axis = 0) * 60
-    y1 = dfd[(i, "input")].cumsum(axis = 0) * 12
+    y1 = dfd[(i, "input")]
     y2 = dfd[(i, "iceV")]*916
-    # dfd["solid"] = dfd[(i, "solid")].abs()
-    # y3 = y2 + dfd["solid"].cumsum(axis = 0)
     fig, ax = plt.subplots()
     ax.plot(x, y1, color = 'xkcd:blue')
     ax.plot(x, y2, color= 'k' )
-    # ax.plot(x, y3, color= None )
-    # ax.plot(x, y3, color= cmap(norm(i)) )
     ax.fill_between(x, y1, y2, alpha = 0.5, color = 'xkcd:lightish blue')
-    # ax.fill_between(x, y2, y3, alpha = 0.5, color = 'xkcd:lightish blue')
-    # ax.fill_between(x, y2, 0, alpha = 0.5, color='white')
     ax.axhline(color = 'k')
     ax.set_ylim(0)
     ax.set_ylabel("Mass ($litres$)")
+
     fig.subplots_adjust(right=0.8)
     cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
     cbar = fig.colorbar(sm, cax=cbar_ax)
-    cbar.set_label("Fountain Discharge" +str(i)+ "($l/min$)")
+    cbar.set_label("Fountain Spray Radius: " +str(i)+ "($m$)")
     pp.savefig(bbox_inches="tight")
     plt.clf()
 
-x = df["Discharge"]
+x = df["spray_radius"]
 y1 = df["Max_IceV"]
 y2 = df.Efficiency
 y4 = df["h_r"]
 
 fig, ax = plt.subplots()
 # ax.scatter(x, y1, color = "k")
-ax.scatter(x='Discharge', y='Max_IceV', s="Efficiency", data=df, color = "k", alpha=0.3)
+ax.scatter(x='spray_radius', y='Max_IceV', s="Efficiency", data=df, color = "k", alpha=0.3)
 ax.set_ylabel("Max_IceV")
 ax.grid()
 
@@ -120,7 +113,7 @@ ax1.set_ylabel("Ice Volume ($m^3$)")
 fig.subplots_adjust(right=0.8)
 cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
 cbar = fig.colorbar(sm, cax=cbar_ax)
-cbar.set_label("Fountain Discharge ($l/min$)")
+cbar.set_label("Fountain Spray Radius: " +str(i)+ "($m$)")
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
@@ -133,7 +126,7 @@ ax1.set_ylabel("Surface Area ($m^2$)")
 fig.subplots_adjust(right=0.8)
 cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
 cbar = fig.colorbar(sm, cax=cbar_ax)
-cbar.set_label("Fountain Discharge ($l/min$)")
+cbar.set_label("Fountain Spray Radius: " +str(i)+ "($m$)")
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
@@ -148,7 +141,7 @@ ax1.set_ylabel("Average Freeze Rate ($l/min$)")
 fig.subplots_adjust(right=0.8)
 cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
 cbar = fig.colorbar(sm, cax=cbar_ax)
-cbar.set_label("Fountain Discharge ($l/min$)")
+cbar.set_label("Fountain Spray Radius: " +str(i)+ "($m$)")
 pp.savefig(bbox_inches="tight")
 plt.clf()
 pp.close()
