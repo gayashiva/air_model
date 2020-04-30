@@ -16,3 +16,4 @@ tqdm
 uncertainpy
 chaospy
 tables
+celluloid

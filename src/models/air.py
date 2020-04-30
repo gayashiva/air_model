@@ -220,20 +220,18 @@ class Icestupa: #todo create subclass
 
         Area_old = math.pi * math.pow(self.aperture_f, 2) / 4
         v_old = self.df['Discharge'].replace(0, np.NaN).mean() / (60 * 1000 * Area_old)
-        print(v_old)
 
         if r_mean != 0:
             self.r_mean = r_mean
-
         else:
             if aperture_f_new != 0:
+                """Keeping Discharge constant"""
                 v_new = (math.pi * self.aperture_f ** 2 * v_old / (aperture_f_new ** 2 * math.pi))
                 h_new = h_old - (v_new ** 2 - v_old ** 2) / (2 * 9.81)
-                self.r_mean = self.projectile_xy(v=v_new, h=h_new)
+                self.r_mean = self.projectile_xy(v=v_new, h=h_new) #todo implement other options
             else:
                 self.r_mean = self.projectile_xy(v=v_old)
 
-        print(self.r_mean)
         return self.r_mean
 
     def derive_parameters(self):
@@ -244,8 +242,6 @@ class Icestupa: #todo create subclass
                 missing = missing.remove(col)
             else:
                 self.df[col] = 0
-
-        self.spray_radius()
 
         """Albedo Decay"""
         self.decay_t = (
@@ -336,19 +332,6 @@ class Icestupa: #todo create subclass
         y1 = self.df.Discharge
         ax1.plot(x, y1, "k-", linewidth=0.5)
         ax1.set_ylabel("Discharge [$l\, min^{-1}$]")
-        ax1.grid()
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        ax1 = fig.add_subplot(111)
-        y1 = self.df.r_f
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Spray Radius [$m$]")
         ax1.grid()
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -735,27 +718,24 @@ class Icestupa: #todo create subclass
         self.EJoules = self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]
 
     def summary(self):
-        Efficiency = float(
-            (self.df["meltwater"].tail(1) + self.df["ice"].tail(1))
-            / (
-                self.df["Discharge"].sum() * self.time_steps / 60
-                + self.df["ppt"].sum()
-                + self.df["deposition"].sum()
-            )
-            * 100
-        )
+        Efficiency = (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1]) / self.df["input"].iloc[-1] * 100
 
         print("\nIce Volume Max", float(self.df["iceV"].max()))
         print("Fountain efficiency", Efficiency)
-        print("Ice Mass Remaining", float(self.df["ice"].tail(1)))
-        print("Meltwater", float(self.df["meltwater"].tail(1)))
+        print("Ice Mass Remaining", self.df["ice"].iloc[-1])
+        print("Meltwater", self.df["meltwater"].iloc[-1])
         print("Ppt", self.df["ppt"].sum())
 
         # Full Output
         filename4 = self.folders["output_folder"] + "model_results.csv"
         self.df.to_csv(filename4, sep=",")
 
+        data_store = pd.HDFStore("/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/model_output1.h5")
+        data_store["df_out"] = self.df
+        data_store.close()
+
         self.print_output()
+
 
     def print_output(self, filename = "model_results.pdf"):
 
@@ -853,6 +833,7 @@ class Icestupa: #todo create subclass
         ax1.grid()
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
+        plt.clf()
 
         y1 = self.df.thickness * 1000
         ax1 = fig.add_subplot(111)
@@ -865,10 +846,92 @@ class Icestupa: #todo create subclass
         ax1.grid()
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
-
-
+        plt.clf()
         plt.close("all")
 
+        pp.close()
+
+    def print_EGU(self):
+
+        filename = self.folders["output_folder"] + "EGU.pdf"
+
+        pp = PdfPages(filename)
+
+        x = self.df.When
+        y1 = self.df.iceV
+
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x, y1, "b-", lw=1)
+        ax1.set_ylabel("Ice Volume [$m^3$]")
+        ax1.set_xlabel("Days")
+
+        # Include Validation line segment 1
+        ax1.plot(
+            [datetime(2019, 2, 14, 16), datetime(2019, 2, 14, 16)],
+            [0.67115, 1.042],
+            color="green",
+            lw=1,
+        )
+        ax1.scatter(datetime(2019, 2, 14, 16), 0.856575, color="green", marker="o")
+
+        # Include Validation line segment 2
+        ax1.plot(
+            [datetime(2019, 3, 10, 18), datetime(2019, 3, 10, 18)],
+            [0.037, 0.222],
+            color="green",
+            lw=1,
+        )
+        ax1.scatter(datetime(2019, 3, 10, 18), 0.1295, color="green", marker="o")
+
+        #  format the ticks
+        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        ax1.grid()
+        fig.autofmt_xdate()
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        ax = fig.add_subplot(111)
+        x = self.df.index * 5/ (24*60)
+        y2 = self.df["meltwater"]
+        y3 = self.df["ice"]
+        fig.suptitle("Fountain Spray Radius :", fontsize=16)
+        ax.set_title('1.7' + " $m$", fontsize=16)
+        plt.gca().spines['top'].set_visible(False)
+        plt.gca().spines['right'].set_visible(False)
+        ax.plot(x, y2 + y3, color='xkcd:blue')
+        ax.plot(x, y3, color='k')
+        ax.fill_between(x, y2 + y3, y3, alpha=0.5, color='xkcd:lightish blue')
+        ax.fill_between(x, y3, 0, alpha=0.5, color='white')
+        ax.set_ylabel("Mass ($litres$)")
+        ax.grid(axis="x", color="black", alpha=.3, linewidth=.5, which="major")
+        ax.set_xlabel("Day Number")
+        ax.axhline(color='k')
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        ax = fig.add_subplot(111)
+        x = self.df.index * 5 / (24 * 60)
+        y1 = self.df["input"]
+        y2 = self.df["meltwater"]
+        y3 = self.df["ice"]
+        fig.suptitle("Fountain Spray Radius :", fontsize=16)
+        ax.set_title('1.7' + " $m$", fontsize=16)
+        plt.gca().spines['top'].set_visible(False)
+        plt.gca().spines['right'].set_visible(False)
+        ax.plot(x, y1, color='xkcd:royal blue')
+        ax.plot(x, y2 + y3, color='xkcd:blue')
+        ax.plot(x, y3, color='k')
+        ax.fill_between(x, y1, y2 + y3, alpha=0.5, color='xkcd:royal blue')
+        ax.fill_between(x, y2 + y3, y3, alpha=0.5, color='xkcd:lightish blue')
+        ax.fill_between(x, y3, 0, alpha=0.5, color='white')
+        ax.set_ylabel("Mass ($litres$)")
+        ax.grid(axis="x", color="black", alpha=.3, linewidth=.5, which="major")
+        ax.set_xlabel("Day Number")
+        ax.axhline(color='k')
+        pp.savefig(bbox_inches="tight")
         pp.close()
 
     def read_input(self):
@@ -877,6 +940,16 @@ class Icestupa: #todo create subclass
             "/home/surya/Programs/PycharmProjects/air_model/data/interim/schwarzsee/model_input.h5")
         self.df = data_store['df']
         data_store.close()
+
+    def read_output(self): #todo Fix
+
+        data_store = pd.HDFStore(
+            "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/model_output1.h5")
+        self.df = data_store['df_out']
+        data_store.close()
+
+        self.df = pd.read_csv("/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/model_output.csv", sep=",")
+        self.df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
 
     def melt_freeze(self):
 
@@ -910,9 +983,9 @@ class Icestupa: #todo create subclass
 
         """Initialize"""
         if self.r_mean == 0:
-            self.r_mean = self.df['r_f'].replace(0, np.NaN).mean()
-        self.df.loc[0, "r_ice"] = self.r_mean
-        # self.dx = self.df['Discharge'].replace(0, np.NaN).mean() * 5 / (1000 * math.pi * self.df.loc[0, "r_ice"] ** 2)  # todo variable ice thickness
+            self.df.loc[0, "r_ice"] = self.spray_radius()
+        else:
+            self.df.loc[0, "r_ice"] = self.r_mean
         self.df.loc[0, "iceV"] = self.dx * math.pi * self.df.loc[0, "r_ice"] ** 2
         self.df.loc[0, "ice"] = self.df.loc[0, "iceV"] * self.rho_i
         self.df.loc[0, "input"] = self.df.loc[0, "iceV"] * self.rho_i
@@ -1031,13 +1104,17 @@ if __name__ == "__main__":
 
     schwarzsee = Icestupa()
 
-    schwarzsee.derive_parameters()
+    # schwarzsee.derive_parameters()
 
-    # schwarzsee.read_input()
+    schwarzsee.read_input()
 
     schwarzsee.melt_freeze()
 
     schwarzsee.summary()
+
+    # schwarzsee.read_output()
+
+    schwarzsee.print_EGU()
 
     total = time.time() - start
 
