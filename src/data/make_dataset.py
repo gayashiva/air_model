@@ -410,6 +410,9 @@ if __name__ == '__main__':
 
         df["Discharge"] = df["Discharge"] * df["Fountain"]
 
+        # """Remove precipitation for simulations"""
+        # df[df["When"]>datetime(2019, 3, 20, 18)]["Prec"] = 0
+
         df_out = df[
             ["When", "T_a", "RH", "v_a", "Discharge", "SW_direct", "SW_diffuse", "Prec", "p_a"]
         ]

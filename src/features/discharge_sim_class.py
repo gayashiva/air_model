@@ -64,7 +64,7 @@ class Discharge_Icestupa(Icestupa):
 
         return key, self.df["When"].values, self.df["SA"].values, self.df["iceV"].values, self.df["solid"].values, self.df["thickness"].values, self.df["Discharge"].values, self.df["input"].values, self.df["meltwater"].values, result
 
-param_values = np.arange(2, 12, 2).tolist()
+param_values = np.arange(1, 15, 0.5).tolist()
 
 
 experiments = pd.DataFrame(param_values,
@@ -79,19 +79,21 @@ df_out = pd.DataFrame()
 results = []
 
 if __name__ == "__main__":
-    with Pool(8) as executor:
+    with Pool(7) as executor:
 
         for key, When, SA, iceV, solid, thickness, Discharge, input, meltwater, result in executor.map(model.run, experiments.to_dict('records')):
             iterables = [[key], variables]
             index = pd.MultiIndex.from_product(iterables, names=['discharge_rate', 'variables'])
             data = pd.DataFrame({ (key, "When"):When, (key, "SA"):SA, (key, "iceV"): iceV, (key, "solid"):solid, (key, "thickness"):thickness, (key, "Discharge"): Discharge, (key, "input"): input, (key, "meltwater"): meltwater}, columns = index)
             df_out = pd.concat([df_out, data], axis=1, join='outer', ignore_index=False)
-            print(result)
+
             results.append(result)
 
         results = pd.DataFrame(results)
         results = results.rename(
             columns={0: 'spray_radius', 1: 'Max_IceV', 2: 'Efficiency', 3 : 'Duration', 4:'h_r', 5:'water_stored', 6:'water_lost', 7:'unfrozen_water'})
+
+        print(results)
 
         filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/spray_radius_results.csv"
         results.to_csv(filename, sep=",")
