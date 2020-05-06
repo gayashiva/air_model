@@ -44,7 +44,7 @@ class Icestupa: #todo create subclass
     a_i = 0.35  # Albedo of Ice a_i
     a_s = 0.85  # Albedo of Fresh Snow a_s
     decay_t = 10  # Albedo decay rate decay_t_d
-    dx = 1e-02  # Ice layer thickness
+    dx = 9e-03  # Ice layer thickness
 
     """Meteorological"""
     z0mi = 0.0017  # Ice Momentum roughness length
@@ -911,7 +911,6 @@ class Icestupa: #todo create subclass
         ax1 = fig.add_subplot(111)
         y1 = self.df.r_ice
         y2 = self.df.h_ice
-        ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Ice Radius($m$)", color="b")
         ax1.set_xlabel("Days")
@@ -1071,6 +1070,10 @@ class Icestupa: #todo create subclass
         self.df = pd.read_csv("/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/model_results.csv", sep=",")
         self.df["When"] = pd.to_datetime(self.df["When"], format="%Y.%m.%d %H:%M:%S")
 
+        self.dx = round(self.df["TotalE"].mean() * 5 * 60/ self.L_f,3)
+
+        print(f"Ice thickness is {self.dx * 1000} mm!")
+
     def melt_freeze(self):
 
         l = [
@@ -1227,15 +1230,15 @@ if __name__ == "__main__":
 
     schwarzsee = Icestupa()
 
-    schwarzsee.derive_parameters()
+    # schwarzsee.derive_parameters()
 
     # schwarzsee.read_input()
 
-    schwarzsee.melt_freeze()
+    # schwarzsee.melt_freeze()
 
-    # schwarzsee.read_output()
+    schwarzsee.read_output()
 
-    schwarzsee.print_EGU()
+    # schwarzsee.print_EGU()
 
     schwarzsee.summary()
 
