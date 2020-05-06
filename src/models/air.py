@@ -167,26 +167,29 @@ class Icestupa: #todo create subclass
         return math.radians(SEA)
 
     def projectile_xy(self, v, h = 0):
-        if h==0:
-            hs = self.h_f
+        if h >= 0:
+            if h==0:
+                hs = self.h_f
+            else:
+                hs = h
+            g = 9.81
+            data_xy = []
+            t = 0.0
+            theta_f = math.radians(self.theta_f)
+            while True:
+                # now calculate the height y
+                y = hs + (t * v * math.sin(theta_f)) - (g * t * t) / 2
+                # projectile has hit ground level
+                if y < 0:
+                    break
+                # calculate the distance x
+                x = v * math.cos(theta_f) * t
+                # append the (x, y) tuple to the list
+                data_xy.append((x, y))
+                # use the time in increments of 0.1 seconds
+                t += 0.01
         else:
-            hs = h
-        g = 9.81
-        data_xy = []
-        t = 0.0
-        theta_f = math.radians(self.theta_f)
-        while True:
-            # now calculate the height y
-            y = hs + (t * v * math.sin(theta_f)) - (g * t * t) / 2
-            # projectile has hit ground level
-            if y < 0:
-                break
-            # calculate the distance x
-            x = v * math.cos(theta_f) * t
-            # append the (x, y) tuple to the list
-            data_xy.append((x, y))
-            # use the time in increments of 0.1 seconds
-            t += 0.01
+            x=h
         return x
 
     def albedo(self, row, s=0, f=0):
@@ -1150,6 +1153,9 @@ class Icestupa: #todo create subclass
                     if self.liquid < 0:
                         self.liquid += (self.EJoules) / (-self.L_f)
                         self.df.loc[i , "solid"] += self.liquid
+                        # (self.EJoules) - self.liquid * self.L_f
+
+
                         self.liquid = 0
                     else:
                         self.df.loc[i , "solid"] += (-self.EJoules) / (self.L_f)
