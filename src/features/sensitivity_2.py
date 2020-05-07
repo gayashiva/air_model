@@ -12,13 +12,6 @@ from SALib.sample import saltelli
 
 
 def run_simulation(experiment):
-    '''run a netlogo model
-
-    Parameters
-    ----------
-    experiments : dict
-
-    '''
 
     #Set the input parameters
     # Set the input parameters

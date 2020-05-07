@@ -11,7 +11,7 @@ import math
 
 schwarzsee = Icestupa()
 
-discharge = 3.34
+discharge = 10
 
 # aperture_f_old = 5e-03
 # h_old = 1.35
@@ -26,6 +26,8 @@ discharge = 3.34
 aperture_f_old = 5e-03
 v_old = discharge / (60 * 1000 * aperture_f_old**2/4 * math.pi)
 h_old = 1.35
+
+r_old = schwarzsee.projectile_xy(v=v_old, h=h_old)
 
 
 results = []

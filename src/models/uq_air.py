@@ -76,16 +76,12 @@ class UQ_Icestupa(un.Model, Icestupa):
 
         self.melt_freeze()
 
-        Efficiency = float(
-            (self.df["meltwater"].tail(1) + self.df["ice"].tail(1))
-            / (self.df["Discharge"].sum() * self.time_steps / 60 + self.df["ppt"].sum() + self.df["deposition"].sum())
-            * 100
-        )
+        Efficiency = (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1]) / self.df["input"].iloc[-1] * 100
 
         print("\nIce Volume Max", float(self.df["iceV"].max()))
         print("Fountain efficiency", Efficiency)
-        print("Ice Mass Remaining", float(self.df["ice"].tail(1)))
-        print("Meltwater", float(self.df["meltwater"].tail(1)))
+        print("Ice Mass Remaining", self.df["ice"].iloc[-1])
+        print("Meltwater", self.df["meltwater"].iloc[-1])
         print("Ppt", self.df["ppt"].sum())
 
         self.df = self.df.set_index('When').resample('1H').mean().reset_index()
@@ -115,8 +111,7 @@ a_s_dist = uniform(a_s, interval)
 decay_t_dist = uniform(decay_t, interval)
 
 rain_temp_dist = cp.Uniform(0, 2)
-z0mi_dist = cp.Uniform(0.0007, 0.0027)
-z0hi_dist = cp.Uniform(0.0007, 0.0027)
+z0i_dist = cp.Uniform(0.0007, 0.0027)
 snow_fall_density_dist = cp.Uniform(200, 300)
 
 interval = 0.01
@@ -124,20 +119,22 @@ interval = 0.01
 aperture_f_dist = uniform(0.005, interval)
 height_f_dist = uniform(1.35, interval)
 
-dx_dist = cp.Uniform(0.0006, 0.01)
+dx_dist = cp.Uniform(0.001, 0.01)
 
 parameters = {
-                "ie": ie_dist,
-                "a_i": a_i_dist,
-                "a_s": a_s_dist,
-                "decay_t": decay_t_dist,
                 "dx": dx_dist
 }
 
 # parameters = {
+#                 "ie": ie_dist,
+#                 "a_i": a_i_dist,
+#                 "a_s": a_s_dist,
+#                 "decay_t": decay_t_dist
+# }
+
+# parameters = {
 #               "rain_temp": rain_temp_dist,
-#               "z0mi": z0mi_dist,
-#               "z0hi": z0hi_dist,
+#               "z0i": z0i_dist,
 #               "snow_fall_density": snow_fall_density_dist
 #               }
 
@@ -146,17 +143,15 @@ parameters = {
 #               "height_f": height_f_dist
 #               }
 
-# parameters = {
-#                 "ie": ie_dist,
-#                 "a_i": a_i_dist,
-#                 "a_s": a_s_dist,
-#                 "decay_t": decay_t_dist,
-#                 "dx": dx_dist,
-#               "rain_temp": rain_temp_dist,
-#               "z0mi": z0mi_dist,
-#               "z0hi": z0hi_dist,
-#               "snow_fall_density": snow_fall_density_dist
-# }
+parameters = {
+                "ie": ie_dist,
+                "a_i": a_i_dist,
+                "a_s": a_s_dist,
+                "decay_t": decay_t_dist,
+              "rain_temp": rain_temp_dist,
+              "z0i": z0i_dist,
+              "snow_fall_density": snow_fall_density_dist
+}
 
 
 # Create the parameters
@@ -175,7 +170,7 @@ UQ = un.UncertaintyQuantification(model=model,
 # polynomial chaos with point collocation (by default)
 data = UQ.quantify(data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
                     figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
-                    filename="Surf")
+                    filename="Full")
 
 # data = UQ.quantify(filename="Meteorological")
 

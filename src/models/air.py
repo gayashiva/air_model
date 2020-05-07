@@ -47,8 +47,7 @@ class Icestupa: #todo create subclass
     dx = 9e-03  # Ice layer thickness
 
     """Meteorological"""
-    z0mi = 0.0017  # Ice Momentum roughness length
-    z0hi = 0.0017  # Ice Scalar roughness length
+    z0i = 0.0017  # Ice Momentum and Scalar roughness length
     snow_fall_density = 250  # Snowfall density
     rain_temp = 1  # Temperature condition for liquid precipitation
 
@@ -65,13 +64,12 @@ class Icestupa: #todo create subclass
     ftl = 0  # Fountain flight time loss ftl,
     h_aws = 3  # m height of AWS
     theta_f = 45  # Fountain aperture diameter
+    r_mean = 0 # Mean Fountain Spray Radius
 
 
     def __init__(self, site="schwarzsee"):
 
         self.site = site
-
-        self.r_mean = 0
 
         self.folders = dict(
             input_folder=os.path.join(self.dirname, "data/interim/" + site + "/"),
@@ -654,7 +652,7 @@ class Icestupa: #todo create subclass
             * math.pow(self.k, 2)
             * self.df.loc[i, "v_a"]
             * (row.vp_a - self.df.loc[i, "vp_s"])
-            / (np.log(self.h_aws / self.z0mi) * np.log(self.h_aws / self.z0hi))
+            / (np.log(self.h_aws / self.z0i) * np.log(self.h_aws / self.z0i))
         )
 
         if self.df.loc[i, "Ql"] < 0:
@@ -687,7 +685,7 @@ class Icestupa: #todo create subclass
             * math.pow(self.k, 2)
             * self.df.loc[i, "v_a"]
             * (self.df.loc[i, "T_a"] - self.df.loc[i - 1, "T_s"])
-            / (np.log(self.h_aws / self.z0mi) * np.log(self.h_aws / self.z0hi))
+            / (np.log(self.h_aws / self.z0i) * np.log(self.h_aws / self.z0i))
         )
 
         # Short Wave Radiation SW
@@ -698,13 +696,13 @@ class Icestupa: #todo create subclass
             self.df.loc[i - 1, "T_s"] + 273.15, 4
         )
 
-        # Conduction Freezing
+        # Warm ice Layer to 0 C for fountain run
         if (self.liquid > 0) & (self.df.loc[i - 1, "T_s"] < 0):
             self.df.loc[i, "Qc"] = (
                 self.rho_i
                 * self.dx
                 * self.c_i
-                * (-self.df.loc[i - 1, "T_s"])
+                * (self.df.loc[i - 1, "T_s"])
                 / self.time_steps
             )
             self.delta_T_s = -self.df.loc[i - 1, "T_s"]
@@ -717,6 +715,8 @@ class Icestupa: #todo create subclass
             + self.df.loc[i, "Qc"]
         )
 
+        if self.df.loc[i, "TotalE"] > 300 :
+            print(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qc {self.df.Qc[i]}")
         # Total Energy Joules
         self.EJoules = self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]
 
@@ -1230,13 +1230,14 @@ if __name__ == "__main__":
 
     schwarzsee = Icestupa()
 
+
     # schwarzsee.derive_parameters()
 
-    # schwarzsee.read_input()
+    schwarzsee.read_input()
 
-    # schwarzsee.melt_freeze()
+    schwarzsee.melt_freeze()
 
-    schwarzsee.read_output()
+    # schwarzsee.read_output()
 
     # schwarzsee.print_EGU()
 
