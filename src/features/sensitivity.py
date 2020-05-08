@@ -52,7 +52,7 @@ def icestupa_sim(index, X, df_in, q):
     # surface['ie'] = X[0]
     # surface['a_i'] = X[1]
     # surface['a_s'] = X[2]
-    # surface['decay_t'] = X[3]
+    # surface['t_decay'] = X[3]
     surface['dx'] = X[0]
 
     # #  read files
@@ -75,8 +75,8 @@ def icestupa_sim(index, X, df_in, q):
     # df_in["Fountain"], df_in["Discharge"] = discharge_rate(df_in, fountain)
     #
     # """Albedo Decay"""
-    # surface["decay_t"] = (
-    #         surface["decay_t"] * 24 * 60 / 5
+    # surface["t_decay"] = (
+    #         surface["t_decay"] * 24 * 60 / 5
     # )  # convert to 5 minute time steps
     # s = 0
     # f = 0
@@ -88,7 +88,7 @@ def icestupa_sim(index, X, df_in, q):
     #
     #     if option == "schwarzsee":
     #
-    #         ti = surface["decay_t"]
+    #         ti = surface["t_decay"]
     #         a_min = surface["a_i"]
     #
     #         # Precipitation
@@ -134,7 +134,7 @@ def icestupa_sim(index, X, df_in, q):
 if __name__ == '__main__':
 
     # problem = {"num_vars": 5, "names": ["ie", "a_i", "   Paleblue1.
-    # a_s", "decay_t", "dx"],
+    # a_s", "t_decay", "dx"],
     #            "bounds": [[0.9025, 0.9975], [0.3325, 0.36175], [0.8075, 0.8925], [9.5, 10.5], [.00095, 0.00105]]}
 
     problem = {"num_vars": 1, "names": ["dx"],
@@ -145,7 +145,7 @@ if __name__ == '__main__':
     print(param_values)
 
     # Output file Initialise
-    columns = ["ie", "a_i", "a_s", "decay_t", "dx", "Max_IceV", "Efficiency"]
+    columns = ["ie", "a_i", "a_s", "t_decay", "dx", "Max_IceV", "Efficiency"]
     index = range(0, param_values.shape[0])
     dfo = pd.DataFrame(index=index, columns=columns)
     dfo = dfo.fillna(0)
@@ -170,8 +170,8 @@ if __name__ == '__main__':
     df_in["Fountain"], df_in["Discharge"] = discharge_rate(df_in, fountain)
 
     """Albedo Decay"""
-    surface["decay_t"] = (
-            surface["decay_t"] * 24 * 60 / 5
+    surface["t_decay"] = (
+            surface["t_decay"] * 24 * 60 / 5
     )  # convert to 5 minute time steps
     s = 0
     f = 0
@@ -183,7 +183,7 @@ if __name__ == '__main__':
 
         if option == "schwarzsee":
 
-            ti = surface["decay_t"]
+            ti = surface["t_decay"]
             a_min = surface["a_i"]
 
             # Precipitation
@@ -241,7 +241,7 @@ if __name__ == '__main__':
         # dfo.loc[j, "ie"] = param_values[j][0]
         # dfo.loc[j, "a_i"] = param_values[j][1]
         # dfo.loc[j, "a_s"] = param_values[j][2]
-        # dfo.loc[j, "decay_t"] = param_values[j][3]
+        # dfo.loc[j, "t_decay"] = param_values[j][3]
         dfo.loc[j, "dx"] = param_values[j][0] * 1000
         dfo.loc[j, "Max_IceV"] = Y[j]
         dfo.loc[j, "Efficiency"] = Z[j] * 100

@@ -77,8 +77,8 @@ for i, X in enumerate(param_values):
     df_in["Discharge"] = fountain["discharge"] * df_in["Fountain"]
 
     """Albedo Decay"""
-    surface["decay_t"] = (
-            surface["decay_t"] * 24 * 60 / 5
+    surface["t_decay"] = (
+            surface["t_decay"] * 24 * 60 / 5
     )  # convert to 5 minute time steps
     s = 0
     f = 0
@@ -90,7 +90,7 @@ for i, X in enumerate(param_values):
 
         if option == "schwarzsee":
 
-            ti = surface["decay_t"]
+            ti = surface["t_decay"]
             a_min = surface["a_i"]
 
             # Precipitation

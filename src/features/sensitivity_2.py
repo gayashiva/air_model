@@ -46,7 +46,7 @@ if __name__ == '__main__':
     param_values = saltelli.sample(problem, 4, calc_second_order=False)
 
     # Output file Initialise
-    columns = ["ie", "a_i", "a_s", "decay_t", "dx", "Max_IceV", "Efficiency"]
+    columns = ["ie", "a_i", "a_s", "t_decay", "dx", "Max_IceV", "Efficiency"]
     index = range(0, param_values.shape[0])
     dfo = pd.DataFrame(index=index, columns=columns)
     dfo = dfo.fillna(0)
@@ -72,8 +72,8 @@ if __name__ == '__main__':
     df_in["Fountain"], df_in["Discharge"] = discharge_rate(df_in, fountain)
 
     """Albedo Decay"""
-    surface["decay_t"] = (
-            surface["decay_t"] * 24 * 60 / 5
+    surface["t_decay"] = (
+            surface["t_decay"] * 24 * 60 / 5
     )  # convert to 5 minute time steps
     s = 0
     f = 0
@@ -85,7 +85,7 @@ if __name__ == '__main__':
 
         if option == "schwarzsee":
 
-            ti = surface["decay_t"]
+            ti = surface["t_decay"]
             a_min = surface["a_i"]
 
             # Precipitation

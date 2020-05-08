@@ -1,10 +1,3 @@
-import logging
-import os
-import time
-from datetime import datetime
-from pandas.plotting import register_matplotlib_converters
-register_matplotlib_converters()
-import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -14,11 +7,19 @@ import matplotlib.colors
 import uncertainpy as un
 import statistics as st
 
+def draw_plot(data, edge_color, fill_color, labels):
+    bp = ax.boxplot(data, patch_artist=True, labels = labels)
+
+    for element in ['boxes', 'whiskers', 'fliers', 'means', 'medians', 'caps']:
+        plt.setp(bp[element], color=edge_color)
+
+    for patch in bp['boxes']:
+        patch.set(facecolor=fill_color)
 
 input = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/"
 figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/"
 
-names = ["Fount", "Surface", "Meteo"]
+names = ["ie", "dx", "a_i", "a_s", "t_decay", "rain_temp", "z0i", "snow_fall_density", "aperture_f", "h_aws", "h_f"]
 variance = []
 mean = []
 evaluations = []
@@ -31,32 +32,41 @@ evaluations = []
 #     data.model_name = name
 #     data.save(filename2)
 
+
 for name in names:
     data = un.Data()
     filename1 = input + name + ".h5"
     data.load(filename1)
     variance.append(data["max_volume"].variance)
     mean.append(data["max_volume"].mean)
-    evaluations.extend(data["max_volume"].evaluations)
+    evaluations.append(data["max_volume"].evaluations)
+
+
+
 
     # plot1 = un.plotting.PlotUncertainty(filename1)
     # plot1.prediction_interval_1d(show = True)
 
-    if len(data.uncertain_parameters) > 1:
-        plt.bar(data.uncertain_parameters, data["max_volume"].sobol_first * 100)
-        plt.ylabel("Sensitivity of variance(%)")
-        plt.savefig(figures + name + "_sobol_first.jpg", bbox_inches="tight", dpi=300)
-        plt.clf()
+    # if len(data.uncertain_parameters) > 1:
+    #     plt.bar(data.uncertain_parameters, data["max_volume"].sobol_first * 100)
+    #     plt.ylabel("Sensitivity of variance(%)")
+    #     plt.savefig(figures + name + "_sobol_first.jpg", bbox_inches="tight", dpi=300)
+    #     plt.clf()
 
 # print(st.mean(evaluations))
 # print(st.variance(evaluations))
 # print(2*st.stdev(evaluations))
 
+names = ["$\epsilon_i$", "$dx$", "$a_i$", "$a_s$", "$t_{decay}$", "$T_{rain}$", "$r_i$", "$d_{ppt}$", "$dia_{f}$", "$h_{AWS}$", "$h_f$"]
+
 fig, ax = plt.subplots()
-ax.bar(names, variance)
-ax.set_xlabel("Type")
-ax.set_ylabel("Variance")
-plt.savefig(figures + "error_type.jpg", bbox_inches="tight", dpi=300)
+draw_plot(evaluations, 'k', 'xkcd:grey', names)
+ax.set_xlabel("Parameter")
+ax.set_ylabel("Sensitivity of Maximum Ice Volume ($m^3$)")
+ax.grid(axis = "y")
+plt.savefig(figures + "barplot.jpg", bbox_inches="tight", dpi=300)
+
+
 
 # data = un.Data()
 # filename1 = input + name + ".h5"

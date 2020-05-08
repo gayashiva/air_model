@@ -40,6 +40,12 @@ def max_volume(time, values):
     # Return the feature times and values.
     return None, icev_max #todo include efficiency
 
+def storage_efficiency(time, values):
+    # Calculate the feature using time, values and info.
+    storage_efficiency = values.max()
+    # Return the feature times and values.
+    return None, storage_efficiency #todo include efficiency
+
 class UQ_Icestupa(un.Model, Icestupa):
 
     def __init__(self):
@@ -55,13 +61,13 @@ class UQ_Icestupa(un.Model, Icestupa):
         self.set_parameters(**parameters)
         print(parameters.values())
 
-        if 'aperture_f' in parameters.keys():  # todo change to general
+        if 'aperture_f' or 'h_f' in parameters.keys():  # todo change to general
             """ Fountain Spray radius """
             Area = math.pi * math.pow(self.aperture_f, 2) / 4
 
             for row in self.df[1:].itertuples():
                 v_f = row.Discharge / (60 * 1000 * Area)
-                self.df.loc[row.Index, "r_f"] = self.projectile_xy(v_f)
+                self.df.loc[row.Index, "r_f"] = self.projectile_xy(v_f, self.h_f)
 
         if 'a_i' or 'rain_temp' in parameters.keys():
             """Albedo Decay"""
@@ -101,57 +107,60 @@ features = un.Features(new_features=list_of_feature_functions,
 ie = 0.95
 a_i =0.35
 a_s = 0.85
-decay_t = 10
+decay_t = 5
 
 interval = 0.05
 
 ie_dist = uniform(ie, interval)
 a_i_dist = uniform(a_i, interval)
 a_s_dist = uniform(a_s, interval)
-decay_t_dist = uniform(decay_t, interval)
+t_decay_dist = cp.Uniform(1, 10)
 
 rain_temp_dist = cp.Uniform(0, 2)
-z0i_dist = cp.Uniform(0.0007, 0.0027)
+r_ice_dist = cp.Uniform(0.0007, 0.0027)
 snow_fall_density_dist = cp.Uniform(200, 300)
 
 interval = 0.01
 
 aperture_f_dist = uniform(0.005, interval)
-height_f_dist = uniform(1.35, interval)
+h_f_dist = uniform(1.35, interval)
+h_aws_dist = uniform(3, interval)
 
 dx_dist = cp.Uniform(0.001, 0.01)
 
 parameters = {
-                "dx": dx_dist
+                "h_f": h_f_dist
 }
 
 # parameters = {
 #                 "ie": ie_dist,
 #                 "a_i": a_i_dist,
 #                 "a_s": a_s_dist,
-#                 "decay_t": decay_t_dist
+#                 "t_decay": decay_t_dist
 # }
 
 # parameters = {
 #               "rain_temp": rain_temp_dist,
-#               "z0i": z0i_dist,
+#               "r_ice": z0i_dist,
 #               "snow_fall_density": snow_fall_density_dist
 #               }
 
 # parameters = {
 #               "aperture_f": aperture_f_dist,
-#               "height_f": height_f_dist
+#               "h_f": height_f_dist,
+#               "h_AWS": h_AWS_dist,
+
 #               }
 
-parameters = {
-                "ie": ie_dist,
-                "a_i": a_i_dist,
-                "a_s": a_s_dist,
-                "decay_t": decay_t_dist,
-              "rain_temp": rain_temp_dist,
-              "z0i": z0i_dist,
-              "snow_fall_density": snow_fall_density_dist
-}
+# parameters = {
+#                 "ie": ie_dist,
+#                 "a_i": a_i_dist,
+#                 "a_s": a_s_dist,
+#                 "t_decay": decay_t_dist,
+#               "rain_temp": rain_temp_dist,
+#               "r_ice": r_ice_dist,
+#               "snow_fall_density": snow_fall_density_dist
+# }
 
 
 # Create the parameters
@@ -170,7 +179,7 @@ UQ = un.UncertaintyQuantification(model=model,
 # polynomial chaos with point collocation (by default)
 data = UQ.quantify(data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
                     figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
-                    filename="Full")
+                    filename="h_f")
 
 # data = UQ.quantify(filename="Meteorological")
 

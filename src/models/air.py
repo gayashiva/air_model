@@ -43,11 +43,11 @@ class Icestupa: #todo create subclass
     ie = 0.95  # Ice Emissivity ie
     a_i = 0.35  # Albedo of Ice a_i
     a_s = 0.85  # Albedo of Fresh Snow a_s
-    decay_t = 10  # Albedo decay rate decay_t_d
-    dx = 9e-03  # Ice layer thickness
+    t_decay = 5  # Albedo decay rate decay_t_d
+    dx = 5e-03  # Ice layer thickness
 
     """Meteorological"""
-    z0i = 0.0017  # Ice Momentum and Scalar roughness length
+    r_ice = 0.0017  # Ice Momentum and Scalar roughness length
     snow_fall_density = 250  # Snowfall density
     rain_temp = 1  # Temperature condition for liquid precipitation
 
@@ -165,29 +165,26 @@ class Icestupa: #todo create subclass
         return math.radians(SEA)
 
     def projectile_xy(self, v, h = 0):
-        if h >= 0:
-            if h==0:
-                hs = self.h_f
-            else:
-                hs = h
-            g = 9.81
-            data_xy = []
-            t = 0.0
-            theta_f = math.radians(self.theta_f)
-            while True:
-                # now calculate the height y
-                y = hs + (t * v * math.sin(theta_f)) - (g * t * t) / 2
-                # projectile has hit ground level
-                if y < 0:
-                    break
-                # calculate the distance x
-                x = v * math.cos(theta_f) * t
-                # append the (x, y) tuple to the list
-                data_xy.append((x, y))
-                # use the time in increments of 0.1 seconds
-                t += 0.01
+        if h==0:
+            hs = self.h_f
         else:
-            x=h
+            hs = h
+        g = 9.81
+        data_xy = []
+        t = 0.0
+        theta_f = math.radians(self.theta_f)
+        while True:
+            # now calculate the height y
+            y = hs + (t * v * math.sin(theta_f)) - (g * t * t) / 2
+            # projectile has hit ground level
+            if y < 0:
+                break
+            # calculate the distance x
+            x = v * math.cos(theta_f) * t
+            # append the (x, y) tuple to the list
+            data_xy.append((x, y))
+            # use the time in increments of 0.1 seconds
+            t += 0.01
         return x
 
     def albedo(self, row, s=0, f=0):
@@ -209,7 +206,7 @@ class Icestupa: #todo create subclass
 
         if f == 0:  # last snowed
             self.df.loc[i, "a"] = self.a_i + (self.a_s - self.a_i) * math.exp(
-                -s / self.decay_t
+                -s / self.t_decay
             )
             s = s + 1
         else:  # last sprayed
@@ -245,8 +242,8 @@ class Icestupa: #todo create subclass
                 self.df[col] = 0
 
         """Albedo Decay"""
-        self.decay_t = (
-            self.decay_t * 24 * 60 * 60 / self.time_steps
+        self.t_decay = (
+                self.t_decay * 24 * 60 * 60 / self.time_steps
         )  # convert to 5 minute time steps
         s = 0
         f = 0
@@ -652,7 +649,7 @@ class Icestupa: #todo create subclass
             * math.pow(self.k, 2)
             * self.df.loc[i, "v_a"]
             * (row.vp_a - self.df.loc[i, "vp_s"])
-            / (np.log(self.h_aws / self.z0i) * np.log(self.h_aws / self.z0i))
+            / ((np.log(self.h_aws / self.r_ice)) ** 2)
         )
 
         if self.df.loc[i, "Ql"] < 0:
@@ -685,7 +682,7 @@ class Icestupa: #todo create subclass
             * math.pow(self.k, 2)
             * self.df.loc[i, "v_a"]
             * (self.df.loc[i, "T_a"] - self.df.loc[i - 1, "T_s"])
-            / (np.log(self.h_aws / self.z0i) * np.log(self.h_aws / self.z0i))
+            / ((np.log(self.h_aws / self.r_ice)) ** 2)
         )
 
         # Short Wave Radiation SW
@@ -715,8 +712,8 @@ class Icestupa: #todo create subclass
             + self.df.loc[i, "Qc"]
         )
 
-        if self.df.loc[i, "TotalE"] > 300 :
-            print(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qc {self.df.Qc[i]}")
+        # if self.df.loc[i, "TotalE"] > 300 :
+            # print(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qc {self.df.Qc[i]}")
         # Total Energy Joules
         self.EJoules = self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]
 
@@ -1060,7 +1057,7 @@ class Icestupa: #todo create subclass
         self.df = data_store['df']
         data_store.close()
 
-    def read_output(self): #todo Fix
+    def read_output(self): #todo Fix output
 
         # data_store = pd.HDFStore(
         #     "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/model_output1.h5")
@@ -1070,7 +1067,8 @@ class Icestupa: #todo create subclass
         self.df = pd.read_csv("/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/model_results.csv", sep=",")
         self.df["When"] = pd.to_datetime(self.df["When"], format="%Y.%m.%d %H:%M:%S")
 
-        self.dx = round(self.df["TotalE"].mean() * 5 * 60/ self.L_f,3)
+        self.dx = round(self.df[self.df["TotalE"] > 0]["TotalE"].mean() * 5 * 60/ self.L_f,3)
+
 
         print(f"Ice thickness is {self.dx * 1000} mm!")
 
@@ -1221,17 +1219,13 @@ class Icestupa: #todo create subclass
 
 
 
-
-
-
 if __name__ == "__main__":
 
     start = time.time()
 
     schwarzsee = Icestupa()
 
-
-    # schwarzsee.derive_parameters()
+    schwarzsee.derive_parameters()
 
     schwarzsee.read_input()
 
@@ -1239,7 +1233,7 @@ if __name__ == "__main__":
 
     # schwarzsee.read_output()
 
-    # schwarzsee.print_EGU()
+    schwarzsee.print_EGU()
 
     schwarzsee.summary()
 
