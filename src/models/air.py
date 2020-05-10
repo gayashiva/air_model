@@ -43,16 +43,16 @@ class Icestupa: #todo create subclass
     ie = 0.95  # Ice Emissivity ie
     a_i = 0.35  # Albedo of Ice a_i
     a_s = 0.85  # Albedo of Fresh Snow a_s
-    t_decay = 5  # Albedo decay rate decay_t_d
+    t_decay = 10  # Albedo decay rate decay_t_d
     dx = 5e-03  # Ice layer thickness
 
     """Meteorological"""
     r_ice = 0.0017  # Ice Momentum and Scalar roughness length
-    snow_fall_density = 250  # Snowfall density
-    rain_temp = 1  # Temperature condition for liquid precipitation
+    d_ppt = 250  # Snowfall density
+    T_rain = 1  # Temperature condition for liquid precipitation
 
     """Fountain"""
-    aperture_f = 0.005  # Fountain aperture diameter
+    dia_f = 0.005  # Fountain aperture diameter
     h_f = 1.35  # Fountain steps h_f
 
     """Site constants"""
@@ -196,7 +196,7 @@ class Icestupa: #todo create subclass
         """Albedo"""
         # Precipitation
         if (row.Discharge == 0) & (row.Prec > 0):
-            if row.T_a < self.rain_temp:  # Snow
+            if row.T_a < self.T_rain:  # Snow
                 s = 0
                 f = 0
 
@@ -216,7 +216,7 @@ class Icestupa: #todo create subclass
 
     def spray_radius(self, r_mean = 0, aperture_f_new = 0):
 
-        Area_old = math.pi * math.pow(self.aperture_f, 2) / 4
+        Area_old = math.pi * math.pow(self.dia_f, 2) / 4
         v_old = self.df['Discharge'].replace(0, np.NaN).mean() / (60 * 1000 * Area_old)
 
         if r_mean != 0:
@@ -224,7 +224,7 @@ class Icestupa: #todo create subclass
         else:
             if aperture_f_new != 0:
                 """Keeping Discharge constant"""
-                v_new = (math.pi * self.aperture_f ** 2 * v_old / (aperture_f_new ** 2 * math.pi))
+                v_new = (math.pi * self.dia_f ** 2 * v_old / (aperture_f_new ** 2 * math.pi))
                 h_new = h_old - (v_new ** 2 - v_old ** 2) / (2 * 9.81)
                 self.r_mean = self.projectile_xy(v=v_new, h=h_new) #todo implement other options
             else:
@@ -334,7 +334,6 @@ class Icestupa: #todo create subclass
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
@@ -347,7 +346,6 @@ class Icestupa: #todo create subclass
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
@@ -360,7 +358,6 @@ class Icestupa: #todo create subclass
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
@@ -631,7 +628,7 @@ class Icestupa: #todo create subclass
         )
 
         # Water Boundary
-        if (row.Discharge > 0) or (row.T_a > self.rain_temp and row.Prec > 0):
+        if (row.Discharge > 0) or (row.T_a > self.T_rain and row.Prec > 0):
             self.df.loc[i, "vp_s"] = self.vp_w
             self.L = self.L_e
             self.c_s = self.c_w
@@ -712,8 +709,8 @@ class Icestupa: #todo create subclass
             + self.df.loc[i, "Qc"]
         )
 
-        # if self.df.loc[i, "TotalE"] > 300 :
-            # print(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qc {self.df.Qc[i]}")
+        # if self.df.loc[i, "TotalE"] > 400 :
+        #     print(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qc {self.df.Qc[i]}")
         # Total Energy Joules
         self.EJoules = self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]
 
@@ -762,7 +759,7 @@ class Icestupa: #todo create subclass
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Ice Volume [$m^3$]")
-        ax1.set_xlabel("Days")
+        # ax1.set_xlabel("Days")
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -775,7 +772,7 @@ class Icestupa: #todo create subclass
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Surface Area [$m^2$]")
-        ax1.set_xlabel("Days")
+        # ax1.set_xlabel("Days")
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -789,7 +786,7 @@ class Icestupa: #todo create subclass
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Ice Cone Height [$m$]")
-        ax1.set_xlabel("Days")
+        # ax1.set_xlabel("Days")
         ax2 = ax1.twinx()
         ax2.plot(x, y2, "b-", linewidth=0.5)
         ax2.set_ylabel("Ice Radius", color="b")
@@ -808,7 +805,7 @@ class Icestupa: #todo create subclass
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Ice Volume [$m^3$]")
-        ax1.set_xlabel("Days")
+        # ax1.set_xlabel("Days")
         ax2 = ax1.twinx()
         ax2.plot(x, y2, "b-", linewidth=0.5)
         ax2.set_ylabel("Energy [$W\,m^{-2}$]", color="b")
@@ -839,7 +836,7 @@ class Icestupa: #todo create subclass
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-", linewidth=0.5)
         ax1.set_ylabel("Thickness [$mm$]")
-        ax1.set_xlabel("Days")
+        # ax1.set_xlabel("Days")
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -847,7 +844,33 @@ class Icestupa: #todo create subclass
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
-        plt.close("all")
+
+        dfd = self.df.set_index("When").resample("D").mean().reset_index()
+        dfd["Discharge"] = dfd["Discharge"] == 0
+        dfd["Discharge"] = dfd["Discharge"].astype(int)
+        dfd["Discharge"] = dfd["Discharge"].astype(str)
+        dfd['When'] = dfd['When'].dt.strftime("%b %d")
+
+        dfd["label"] = ' '
+        labels = ["Jan 30", "Feb 05", "Feb 12", "Feb 19", "Feb 26", "Mar 05", "Mar 12", "Mar 19"]
+        for i in range(0, dfd.shape[0]):
+            for item in labels:
+                if dfd.When[i] == item:
+                    dfd.loc[i, 'label'] = dfd.When[i]
+
+        dfd = dfd.set_index("label")
+
+        z = dfd[['$SW_{net}$', '$LW_{net}$', '$Q_S$', '$Q_L$', '$Q_C$']]
+        ax = z.plot.bar(stacked=True, edgecolor=dfd["Discharge"], linewidth=0.5)
+        ax.xaxis.set_label_text("")
+        plt.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
+        # plt.xlabel('Date')
+        plt.ylabel('Energy [$W\,m^{-2}$]')
+        plt.legend(loc='upper left')
+        plt.ylim(-250, 250)
+        plt.xticks(rotation=45)
+        pp.savefig(bbox_inches="tight")
+        plt.close('all')
 
         pp.close()
 
@@ -1128,10 +1151,10 @@ class Icestupa: #todo create subclass
             self.surface_area(i)
 
             # Precipitation to ice quantity
-            if row.T_a < self.rain_temp and row.Prec > 0:
+            if row.T_a < self.T_rain and row.Prec > 0:
 
                 self.df.loc[i, "ppt"] = (
-                    self.snow_fall_density
+                    self.d_ppt
                     * row.Prec
                     * math.pi
                     * math.pow(self.df.loc[i, "r_ice"], 2)
@@ -1225,15 +1248,16 @@ if __name__ == "__main__":
 
     schwarzsee = Icestupa()
 
-    schwarzsee.derive_parameters()
+    # schwarzsee.derive_parameters()
 
     schwarzsee.read_input()
 
     schwarzsee.melt_freeze()
 
     # schwarzsee.read_output()
+    # schwarzsee.print_output()
 
-    schwarzsee.print_EGU()
+    # schwarzsee.print_EGU()
 
     schwarzsee.summary()
 

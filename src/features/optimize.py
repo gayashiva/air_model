@@ -101,7 +101,7 @@ def icestupa(optimize):
 
 
     """ Estimating Fountain Spray radius """
-    Area = math.pi * math.pow(fountain["aperture_f"], 2) / 4
+    Area = math.pi * math.pow(fountain["dia_f"], 2) / 4
 
     for j in range(1, df.shape[0]):
         if option != "schwarzsee":
@@ -209,9 +209,9 @@ def icestupa(optimize):
 
 
             # Precipitation to ice quantity
-            if df.loc[i, "T_a"] < surface["rain_temp"]:
+            if df.loc[i, "T_a"] < surface["T_rain"]:
                 df.loc[i, "ppt"] = (
-                    surface["snow_fall_density"]
+                    surface["d_ppt"]
                     * df.loc[i, "Prec"]
                     * math.pi
                     * math.pow(df.loc[i, "r_ice"], 2)

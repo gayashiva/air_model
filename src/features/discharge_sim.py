@@ -84,7 +84,7 @@ for i, X in enumerate(param_values):
     f = 0
 
     """ Fountain Spray radius """
-    Area = math.pi * math.pow(fountain["aperture_f"], 2) / 4
+    Area = math.pi * math.pow(fountain["dia_f"], 2) / 4
 
     for i in range(1, df_in.shape[0]):
 
@@ -95,7 +95,7 @@ for i, X in enumerate(param_values):
 
             # Precipitation
             if (df_in.loc[i, "Fountain"] == 0) & (df_in.loc[i, "Prec"] > 0):
-                if df_in.loc[i, "T_a"] < surface["rain_temp"]:  # Snow
+                if df_in.loc[i, "T_a"] < surface["T_rain"]:  # Snow
                     s = 0
                     f = 0
 

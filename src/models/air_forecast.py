@@ -175,18 +175,18 @@ def icestupa(df, fountain, surface):
             )
 
             # Precipitation to ice quantity
-            if (df.loc[i, "T_a"] < surface["rain_temp"]) and df.loc[i, "Prec"] > 0:
+            if (df.loc[i, "T_a"] < surface["T_rain"]) and df.loc[i, "Prec"] > 0:
 
                 if df.loc[i, 'When']<= dates['fountain_off_date']:
                     df.loc[i, "ppt"] = (
-                            surface["snow_fall_density"]
+                            surface["d_ppt"]
                             * df.loc[i, "Prec"]
                             * math.pi
                             * R_f**2)
                 else:
 
                     df.loc[i, "ppt"] = (
-                        surface["snow_fall_density"]
+                        surface["d_ppt"]
                         * df.loc[i, "Prec"]
                         * math.pi
                         * math.pow(df.loc[i, "r_ice"], 2)
@@ -390,7 +390,7 @@ def icestupa(df, fountain, surface):
             df.loc[i, "water"] = df.loc[i - 1, "water"] + df.loc[i, "liquid"]
             df.loc[i, "iceV"] = (df.loc[i, "ice"] - df.loc[i, "ppt"]) / rho_i + df.loc[
                 i, "ppt"
-            ] / surface["snow_fall_density"]
+            ] / surface["d_ppt"]
 
             logger.debug(
                 "Ice volume is %s and meltwater is %s at %s",
