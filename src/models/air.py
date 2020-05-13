@@ -13,18 +13,20 @@ from matplotlib.offsetbox import AnchoredText
 import math
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
+from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import scipy.stats as stats
 
 
-class Icestupa: #todo create subclass
+class Icestupa:
 
     """Physical Constants"""
 
     L_s = 2848 * 1000  # J/kg Sublimation
     L_e = 2514 * 1000  # J/kg Evaporation
     L_f = 334 * 1000  # J/kg Fusion
+    c_a = 1.01 * 1000  # J/kgC Specific heat water
     c_w = 4.186 * 1000  # J/kgC Specific heat water
     c_i = 2.108 * 1000  # J/kgC Specific heat ice
     rho_w = 1000  # Density of water
@@ -307,7 +309,7 @@ class Icestupa: #todo create subclass
 
         self.df = self.df.round(5)
 
-        self.df = self.df.drop(["e_a", "cld", "Unnamed: 0"], axis=1)
+        self.df = self.df.drop(["cld", "Unnamed: 0"], axis=1)
 
         data_store = pd.HDFStore(self.folders["input_folder"] + "model_input.h5")
         data_store["df"] = self.df
@@ -366,7 +368,7 @@ class Icestupa: #todo create subclass
 
         """Input Plots"""
 
-        filename = filename +"data.pdf"
+        filename = self.folders["input_folder"] + "data.pdf"
 
         pp = PdfPages(filename)
 
@@ -398,13 +400,13 @@ class Icestupa: #todo create subclass
 
         y3 = self.df.SW_direct + self.df.SW_diffuse
         ax3.plot(x, y3, "k-", linewidth=0.5)
-        ax3.set_ylabel("Global [$W\,m^{-2}$]")
+        ax3.set_ylabel("Global Radiation[$W\,m^{-2}$]")
         ax3.grid()
 
         ax3t = ax3.twinx()
         ax3t.plot(x, self.df.SW_diffuse, "b-", linewidth=0.5)
         ax3t.set_ylim(ax3.get_ylim())
-        ax3t.set_ylabel("Diffuse [$W\,m^{-2}$]", color="b")
+        ax3t.set_ylabel("Diffuse Radiation[$W\,m^{-2}$]", color="b")
         for tl in ax3t.get_yticklabels():
             tl.set_color("b")
 
@@ -541,7 +543,7 @@ class Icestupa: #todo create subclass
                 + math.pi * self.df.loc[i, "r_ice"] * self.df.loc[i, "h_ice"]
         )
 
-        self.SRf = (
+        self.df.loc[i, "SRf"] = (
                            self.df.loc[i, "h_ice"]
                            * 2 * self.df.loc[i, "r_ice"]
                            * math.cos(self.df.loc[i, "SEA"])
@@ -609,7 +611,7 @@ class Icestupa: #todo create subclass
             )
 
 
-        self.SRf = (
+        self.df.loc[i, "SRf"] = (
             0.5
             * self.df.loc[i, "h_ice"]
             * self.df.loc[i, "r_ice"]
@@ -631,12 +633,10 @@ class Icestupa: #todo create subclass
         if (row.Discharge > 0) or (row.T_a > self.T_rain and row.Prec > 0):
             self.df.loc[i, "vp_s"] = self.vp_w
             self.L = self.L_e
-            self.c_s = self.c_w
 
         else:
             self.df.loc[i, "vp_s"] = self.vp_ice
             self.L = self.L_s
-            self.c_s = self.c_i
 
         self.df.loc[i, "Ql"] = (
             0.623
@@ -661,7 +661,7 @@ class Icestupa: #todo create subclass
 
             # Ice Temperature
             self.delta_T_s += (self.df.loc[i, "Ql"] * self.time_steps) / (
-                self.rho_i * self.dx * self.c_s
+                self.rho_i * self.dx * self.c_i
             )
 
         else:  # Deposition
@@ -672,7 +672,7 @@ class Icestupa: #todo create subclass
 
         # Sensible Heat Qs
         self.df.loc[i, "Qs"] = (
-            self.c_s
+            self.c_a
             * self.rho_a
             * row.p_a
             / self.p0
@@ -683,7 +683,7 @@ class Icestupa: #todo create subclass
         )
 
         # Short Wave Radiation SW
-        self.df.loc[i, "SW"] = (1 - row.a) * (row.SW_direct * self.SRf + row.SW_diffuse)
+        self.df.loc[i, "SW"] = (1 - row.a) * (row.SW_direct * self.df.loc[i, "SRf"] + row.SW_diffuse)
 
         # Long Wave Radiation LW
         self.df.loc[i, "LW"] = row.LW_in - self.ie * self.bc * math.pow(
@@ -692,25 +692,27 @@ class Icestupa: #todo create subclass
 
         # Warm ice Layer to 0 C for fountain run
         if (self.liquid > 0) & (self.df.loc[i - 1, "T_s"] < 0):
-            self.df.loc[i, "Qc"] = (
+            self.df.loc[i, "Qf"] = (
                 self.rho_i
                 * self.dx
                 * self.c_i
                 * (self.df.loc[i - 1, "T_s"])
                 / self.time_steps
             )
-            self.delta_T_s = -self.df.loc[i - 1, "T_s"]
+
+            print(self.df.loc[i, "When"], self.df.loc[i, "Qf"], self.df.loc[i - 1, "T_s"])
 
         # Total Energy W/m2
         self.df.loc[i, "TotalE"] = (
             self.df.loc[i, "SW"]
             + self.df.loc[i, "LW"]
             + self.df.loc[i, "Qs"]
-            + self.df.loc[i, "Qc"]
+            + self.df.loc[i, "Qf"]
         )
 
         # if self.df.loc[i, "TotalE"] > 400 :
-        #     print(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qc {self.df.Qc[i]}")
+        #     print(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}")
+
         # Total Energy Joules
         self.EJoules = self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]
 
@@ -727,11 +729,11 @@ class Icestupa: #todo create subclass
         filename4 = self.folders["output_folder"] + "model_results.csv"
         self.df.to_csv(filename4, sep=",")
 
-        data_store = pd.HDFStore("/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/model_output1.h5")
-        data_store["df_out"] = self.df
-        data_store.close()
+        # data_store = pd.HDFStore("/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/model_output.h5")
+        # data_store["df_out"] = self.df
+        # data_store.close()
 
-        self.print_output()
+        # self.print_output()
 
 
     def print_output(self, filename = "model_results.pdf"):
@@ -745,7 +747,7 @@ class Icestupa: #todo create subclass
                 "LW": "$LW_{net}$",
                 "Qs": "$Q_S$",
                 "Ql": "$Q_L$",
-                "Qc": "$Q_C$",
+                "Qf": "$Q_{F_w}$",
             },
             axis=1,
         )
@@ -753,13 +755,36 @@ class Icestupa: #todo create subclass
         # Plots
         pp = PdfPages(filename)
 
+        fig = plt.figure()
         x = self.df.When
         y1 = self.df.iceV
-        fig = plt.figure()
+
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Ice Volume [$m^3$]")
         # ax1.set_xlabel("Days")
+
+        # Include Validation line segment 1
+        ax1.plot(
+            [datetime(2019, 2, 14, 16), datetime(2019, 2, 14, 16)],
+            [0.67115, 1.042],
+            color="green",
+            lw=1,
+        )
+        ax1.scatter(datetime(2019, 2, 14, 16), 0.856575, color="green", marker="o")
+
+        # Include Validation line segment 2
+        ax1.plot(
+            [datetime(2019, 3, 10, 18), datetime(2019, 3, 10, 18)],
+            [0.037, 0.222],
+            color="green",
+            lw=1,
+        )
+        ax1.scatter(datetime(2019, 3, 10, 18), 0.1295, color="green", marker="o")
+
+        #  format the ticks
+        # plt.gca().spines['top'].set_visible(False)
+        # plt.gca().spines['right'].set_visible(False)
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -800,15 +825,15 @@ class Icestupa: #todo create subclass
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        y1 = self.df.iceV
-        y2 = self.df["TotalE"] + self.df["$Q_L$"]
+        y1 = self.df.a
+        y2 = self.df.SRf
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Ice Volume [$m^3$]")
+        ax1.set_ylabel("Albedo")
         # ax1.set_xlabel("Days")
         ax2 = ax1.twinx()
         ax2.plot(x, y2, "b-", linewidth=0.5)
-        ax2.set_ylabel("Energy [$W\,m^{-2}$]", color="b")
+        ax2.set_ylabel("Solar Radiation area Fraction", color="b")
         for tl in ax2.get_yticklabels():
             tl.set_color("b")
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -818,6 +843,25 @@ class Icestupa: #todo create subclass
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
+
+        # y1 = self.df.iceV
+        # y2 = self.df["TotalE"] + self.df["$Q_L$"]
+        # ax1 = fig.add_subplot(111)
+        # ax1.plot(x, y1, "k-")
+        # ax1.set_ylabel("Ice Volume [$m^3$]")
+        # # ax1.set_xlabel("Days")
+        # ax2 = ax1.twinx()
+        # ax2.plot(x, y2, "b-", linewidth=0.5)
+        # ax2.set_ylabel("Energy [$W\,m^{-2}$]", color="b")
+        # for tl in ax2.get_yticklabels():
+        #     tl.set_color("b")
+        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        # ax1.grid()
+        # fig.autofmt_xdate()
+        # pp.savefig(bbox_inches="tight")
+        # plt.clf()
 
         y1 = self.df.T_s
         ax1 = fig.add_subplot(111)
@@ -860,7 +904,7 @@ class Icestupa: #todo create subclass
 
         dfd = dfd.set_index("label")
 
-        z = dfd[['$SW_{net}$', '$LW_{net}$', '$Q_S$', '$Q_L$', '$Q_C$']]
+        z = dfd[['$SW_{net}$', '$LW_{net}$', '$Q_S$', '$Q_L$', '$Q_{F_w}$']]
         ax = z.plot.bar(stacked=True, edgecolor=dfd["Discharge"], linewidth=0.5)
         ax.xaxis.set_label_text("")
         plt.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
@@ -872,11 +916,62 @@ class Icestupa: #todo create subclass
         pp.savefig(bbox_inches="tight")
         plt.close('all')
 
+        fig = plt.figure()
+        dfds = self.df[["When", "thickness", "SA"]]
+        dfds["When"] = pd.to_datetime(dfds["When"], format="%Y.%m.%d %H:%M:%S")
+
+
+        for row in dfds.itertuples():
+            if dfds.loc[row.Index, "thickness"] < 0:
+                dfds.loc[row.Index, "negative"] = dfds.loc[row.Index, "thickness"]
+            else:
+                dfds.loc[row.Index, "positive"] = dfds.loc[row.Index, "thickness"]
+
+        dfds1 = dfds.set_index("When").resample("D").sum().reset_index()
+        dfds2 = dfds.set_index("When").resample("D").mean().reset_index()
+
+        dfds2['When'] = dfds2['When'].dt.strftime("%b %d")
+        dfds2["label"] = ' '
+        labels = ["Jan 30", "Feb 05", "Feb 12", "Feb 19", "Feb 26", "Mar 05", "Mar 12", "Mar 19"]
+        for i in range(0, dfds2.shape[0]):
+            for item in labels:
+                if dfds2.When[i] == item:
+                    dfds2.loc[i, 'label'] = dfds2.When[i]
+
+        dfds2 = dfds2.set_index("label")
+
+        dfds1 = dfds1.rename(columns={"positive": "Ice thickness", 'negative': 'Meltwater thickness'})
+        y1 = dfds1[["Ice thickness", 'Meltwater thickness']]
+        y3 = dfds2["SA"]
+
+        ax1 = fig.add_subplot(2, 1, 1)
+        y1.plot(kind='bar', stacked=True, edgecolor='black', linewidth=0.5, color=['#D9E9FA', '#0C70DE'], ax=ax1)
+        plt.ylabel('Thickness ($m$)')
+        plt.xticks(rotation=45)
+        # plt.legend(loc='upper right')
+        ax1.set_ylim(-0.025, 0.025)
+        ax1.yaxis.set_minor_locator(AutoMinorLocator())
+        ax1.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
+        x_axis = ax1.axes.get_xaxis()
+        x_axis.set_visible(False)
+
+        ax3 = fig.add_subplot(2, 1, 2)
+        ax = y3.plot.bar(y='SA', linewidth=0.5, edgecolor='black', color='xkcd:grey', ax=ax3)
+        ax.xaxis.set_label_text("")
+        ax3.set_ylabel("Surface Area ($m^2$)")
+        ax3.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
+        plt.xticks(rotation=45)
+        plt.savefig(self.folders["output_folder"] + "thickness.pdf")
+        # pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        plt.close('all')
+
         pp.close()
 
     def print_EGU(self):
 
-        self.df = self.df.rename({'SW': '$SW_{net}$', 'LW': '$LW_{net}$', 'Qs': '$Q_S$', 'Ql': '$Q_L$', 'Qc': '$Q_C$'}, axis=1)
+        self.df = self.df.rename({'SW': '$SW_{net}$', 'LW': '$LW_{net}$', 'Qs': '$Q_S$', 'Ql': '$Q_L$', 'Qf': '$Q_C$'}, axis=1)
 
         filename = self.folders["output_folder"] + "EGU.pdf"
 
@@ -884,20 +979,6 @@ class Icestupa: #todo create subclass
 
         fig = plt.figure()
         x = self.df.When
-
-        ax1 = fig.add_subplot(111)
-        y1 = self.df.T_a
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Temperature [$\degree C$]")
-        plt.gca().spines['top'].set_visible(False)
-        plt.gca().spines['right'].set_visible(False)
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
 
         ax1 = fig.add_subplot(111)
         y1 = self.df.T_a
@@ -989,9 +1070,8 @@ class Icestupa: #todo create subclass
         plt.ylim(-200, 200)
         plt.xticks(rotation=45)
         pp.savefig(bbox_inches="tight")
-        plt.close('all')
+        plt.clf()
 
-        fig = plt.figure()
         x = self.df.When
         y1 = self.df.ice
 
@@ -1030,24 +1110,6 @@ class Icestupa: #todo create subclass
         plt.clf()
 
         ax = fig.add_subplot(111)
-        x = self.df.index * 5/ (24*60)
-        y2 = self.df["meltwater"]
-        y3 = self.df["ice"]
-        plt.gca().spines['top'].set_visible(False)
-        plt.gca().spines['right'].set_visible(False)
-        ax.plot(x, y2 + y3, color='xkcd:blue', label='Water Stored')
-        ax.plot(x, y3, color='k', label = 'Ice')
-        ax.fill_between(x, y2 + y3, y3, alpha=0.5, color='xkcd:lightish blue')
-        ax.fill_between(x, y3, 0, alpha=0.5, color='white')
-        ax.set_ylabel("Mass ($litres$)")
-        ax.grid(axis="x", color="black", alpha=.3, linewidth=.5, which="major")
-        ax.legend()
-        ax.set_xlabel("Day Number")
-        ax.axhline(color='k')
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        ax = fig.add_subplot(111)
         x = self.df.index * 5 / (24 * 60)
         y1 = self.df["input"]
         y2 = self.df["meltwater"]
@@ -1070,7 +1132,7 @@ class Icestupa: #todo create subclass
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-
+        plt.close('all')
         pp.close()
 
     def read_input(self):
@@ -1090,15 +1152,21 @@ class Icestupa: #todo create subclass
         self.df = pd.read_csv("/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/model_results.csv", sep=",")
         self.df["When"] = pd.to_datetime(self.df["When"], format="%Y.%m.%d %H:%M:%S")
 
-        self.dx = round(self.df[self.df["TotalE"] > 0]["TotalE"].mean() * 5 * 60/ self.L_f,3)
-
-
-        print(f"Ice thickness is {self.dx * 1000} mm!")
+        print(f"Mean of SW {self.df.SW.mean()}, LW {self.df.LW.mean()}, Qs {self.df.Qs.mean()}, Ql {self.df.Ql.mean()}, Qf {self.df.Qf.mean()}")
+        print(f"Sum of SW {self.df.SW.sum()/self.df.TotalE.sum() }, LW {self.df.LW.sum()/self.df.TotalE.sum()}, Qs {self.df.Qs.sum()/self.df.TotalE.sum()}, Qf {self.df.Qf.sum()/self.df.TotalE.sum()}")
+        print(f"Range of SW {self.df.SW.min()}-{self.df.SW.max()}, LW {self.df.LW.min()}-{self.df.LW.max()}, Qs {self.df.Qs.min()}-{self.df.Qs.max()}, Ql {self.df.Ql.min()}-{self.df.Ql.max()}, Qf {self.df.Qf.min()}-{self.df.Qf.max()}")
+        print(f"Mean of SRf {self.df.SRf.mean()}, Range of SRf {self.df.SRf.min()}-{self.df.SRf.max()}")
+        print(f"Mean of emissivity {self.df.e_a.mean()}, Range of SRf {self.df.e_a.min()}-{self.df.e_a.max()}")
+        print(f"Max SA {self.df.SA.max()}")
+        print(f"M_input {self.df.input.iloc[-1]}, M_R {self.df.ppt.sum()}, M_D {self.df.deposition.sum()}, M_F {self.df.Discharge.sum() * 5}, rest {self.df.iceV.iloc[0]*self.rho_i}")
+        print(f"M_U {self.df.unfrozen_water.iloc[-1]}, M_solid {self.df.ice.iloc[-1]}, M_gas {self.df.vapour.iloc[-1]}, M_liquid {self.df.meltwater.iloc[-1]}")
+        print(f"Max_growth {self.df.solid.max()/5}, average_discharge {self.df.Discharge.replace(0, np.NaN).mean() }")
 
     def melt_freeze(self):
 
         l = [
             "T_s",  # Surface Temperature
+            "SRf",
             "ice",
             "iceV",
             "solid",
@@ -1110,7 +1178,7 @@ class Icestupa: #todo create subclass
             "LW",
             "Qs",
             "Ql",
-            "Qc",
+            "Qf",
             "meltwater",
             "SA",
             "h_ice",
@@ -1121,8 +1189,8 @@ class Icestupa: #todo create subclass
         for col in l:
             self.df[col] = 0
 
-        self.delta_T_s, self.liquid, self.gas, self.SRf, self.vp_ice, self.EJoules = (
-            [0] * 6
+        self.delta_T_s, self.liquid, self.gas, self.vp_ice, self.EJoules = (
+            [0] * 5
         )
 
         """Initialize"""
@@ -1173,6 +1241,7 @@ class Icestupa: #todo create subclass
                     """Freezing water"""
 
                     self.liquid -= (self.EJoules) / (-self.L_f)
+                    self.delta_T_s = -self.df.loc[i - 1, "T_s"]
 
                     if self.liquid < 0:
                         self.liquid += (self.EJoules) / (-self.L_f)
@@ -1190,28 +1259,27 @@ class Icestupa: #todo create subclass
                     """ When fountain off and energy negative """
                     # Cooling Ice
                     self.delta_T_s += (self.df.loc[i, "TotalE"] * self.time_steps) / (
-                        self.rho_i * self.dx * self.c_s
+                        self.rho_i * self.dx * self.c_i
                     )
 
             else:
                 # Heating Ice
                 self.delta_T_s += (self.df.loc[i, "TotalE"] * self.time_steps) / (
-                    self.rho_i * self.dx * self.c_s
+                    self.rho_i * self.dx * self.c_i
                 )
 
                 """Hot Ice"""
                 if (self.df.loc[i - 1, "T_s"] + self.delta_T_s) > 0:
+
                     # Melting Ice by Temperature
                     self.df.loc[i , "solid"] -= (
-                        (self.rho_i * self.dx * self.c_s * self.df.loc[i, "SA"])
+                        (self.rho_i * self.dx * self.c_i * self.df.loc[i, "SA"])
                         * (-(self.df.loc[i - 1, "T_s"] + self.delta_T_s))
                         / (-self.L_f)
                     )
 
-
-
                     self.df.loc[i , "melted"] += (
-                        (self.rho_i * self.dx * self.c_s * self.df.loc[i, "SA"])
+                        (self.rho_i * self.dx * self.c_i * self.df.loc[i, "SA"])
                         * (-(self.df.loc[i - 1, "T_s"] + self.delta_T_s))
                         / (-self.L_f)
                     )
@@ -1236,8 +1304,8 @@ class Icestupa: #todo create subclass
                     self.df.loc[i, "SA"] * self.rho_i
             )
 
-            self.delta_T_s, self.liquid, self.gas, self.SRf, self.vp_ice, self.EJoules = (
-                [0] * 6
+            self.delta_T_s, self.liquid, self.gas, self.vp_ice, self.EJoules = (
+                [0] * 5
             )
 
 
@@ -1252,14 +1320,17 @@ if __name__ == "__main__":
 
     schwarzsee.read_input()
 
+    # schwarzsee.print_input()
+
     schwarzsee.melt_freeze()
 
     # schwarzsee.read_output()
-    # schwarzsee.print_output()
 
     # schwarzsee.print_EGU()
 
     schwarzsee.summary()
+
+    schwarzsee.print_output()
 
     total = time.time() - start
 

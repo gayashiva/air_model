@@ -14,7 +14,7 @@ plt.rcParams["figure.figsize"] = (10,7)
 plt.gca().spines['top'].set_visible(False)
 plt.gca().spines['right'].set_visible(False)
 
-filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/spray_radius_results.csv"
+filename = "/data/processed/schwarzsee/simulations/spray_radius_results.csv"
 df = pd.read_csv(filename, sep=",")
 
 # df = df[:param_values[-1]]

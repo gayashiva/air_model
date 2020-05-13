@@ -19,7 +19,7 @@ def draw_plot(data, edge_color, fill_color, labels):
 input = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/"
 figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/"
 
-names = ["r_i", "T_rain", "d_ppt", "ie", "a_i", "a_s", "t_decay",   "dia_f",  "h_f", "h_aws", "dx" ]
+names = ["r_i", "T_rain", "d_ppt", "ie", "a_i", "a_s", "t_decay",   "dia_f",  "h_f", "h_aws", "dx"]
 variance = []
 mean = []
 evaluations = []
@@ -31,8 +31,6 @@ evaluations = []
 #     data.load(filename1)
 #     data.model_name = name
 #     data.save(filename2)
-
-
 for name in names:
     data = un.Data()
     filename1 = input + name + ".h5"
@@ -42,7 +40,8 @@ for name in names:
     evaluations.append(data["max_volume"].evaluations)
 
     eval = data["max_volume"].evaluations
-    print(f"Variance caused by {name} is {round(2 * st.variance(eval),2)}")
+
+    print(f"95 percent confidence interval caused by {name} is {round(2 * st.stdev(eval),2)}")
 
     # plot1 = un.plotting.PlotUncertainty(filename1)
     # plot1.prediction_interval_1d(show = True)
@@ -53,21 +52,15 @@ for name in names:
     #     plt.savefig(figures + name + "_sobol_first.jpg", bbox_inches="tight", dpi=300)
     #     plt.clf()
 
-# print(st.mean(evaluations))
-# print(st.variance(evaluations))
-# print(2*st.stdev(evaluations))
 
-# names = ["r_i", "T_rain", "d_ppt", "ie", "a_i", "a_s", "t_decay",   "dia_f",  "h_f", "h_aws", "dx" ]
-
-
-names = ["$r_i$", "$T_{rain}$", "$d_{ppt}$", "$\epsilon_i$", "$a_i$", "$a_s$", "$t_{decay}$",  "$dia_{f}$",  "$h_f$", "$h_{AWS}$",  "$dx$"]
+names = ["$z_i$", "$T_{rain}$", "$d_{ppt}$", "$\epsilon_i$", "$a_i$", "$a_s$", "$t_{decay}$",  "$dia_{F}$",  "$h_F$", "$h_{AWS}$",  "$\Delta x$"]
 
 fig, ax = plt.subplots()
 draw_plot(evaluations, 'k', 'xkcd:grey', names)
 ax.set_xlabel("Parameter")
 ax.set_ylabel("Sensitivity of Maximum Ice Volume ($m^3$)")
 ax.grid(axis = "y")
-plt.savefig(figures + "barplot2.jpg", bbox_inches="tight", dpi=300)
+plt.savefig(figures + "sensitivities.jpg", bbox_inches="tight", dpi=300)
 
 
 

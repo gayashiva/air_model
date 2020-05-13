@@ -40,17 +40,11 @@ def max_volume(time, values):
     # Return the feature times and values.
     return None, icev_max #todo include efficiency
 
-def storage_efficiency(time, values):
-    # Calculate the feature using time, values and info.
-    storage_efficiency = values.max()
-    # Return the feature times and values.
-    return None, storage_efficiency #todo include efficiency
-
 class UQ_Icestupa(un.Model, Icestupa):
 
     def __init__(self):
 
-        super(UQ_Icestupa, self).__init__(labels=["Time (days)", "Ice Volume (m3)"], interpolate=True)
+        super(UQ_Icestupa, self).__init__(labels=["Time (days)", "Ice Volume ($m^3$)"], interpolate=True)
 
         data_store = pd.HDFStore("/home/surya/Programs/PycharmProjects/air_model/data/interim/schwarzsee/model_input.h5")
         self.df = data_store['df']
@@ -111,12 +105,12 @@ t_decay = 10
 
 interval = 0.05
 
-# ie_dist = uniform(ie, interval)
-ie_dist = cp.Normal(mu=ie, sigma=interval/3)
-# a_i_dist = uniform(a_i, interval)
-a_i_dist = cp.Normal(mu=a_i, sigma=interval/3)
-# a_s_dist = uniform(a_s, interval)
-a_s_dist = cp.Normal(mu=a_s, sigma=interval/3)
+ie_dist = uniform(ie, interval)
+# ie_dist = cp.Normal(mu=ie, sigma=interval/3)
+a_i_dist = uniform(a_i, interval)
+# a_i_dist = cp.Normal(mu=a_i, sigma=interval/3)
+a_s_dist = uniform(a_s, interval)
+# a_s_dist = cp.Normal(mu=a_s, sigma=interval/3)
 
 
 t_decay_dist = cp.Uniform(1, 22)
@@ -131,17 +125,18 @@ h_aws = 3
 
 interval = 0.01
 
-# dia_f_dist = uniform(0.005, interval)
-dia_f_dist = cp.Normal(mu=dia_f, sigma=interval/3)
-# h_f_dist = uniform(1.35, interval)
-h_f_dist = cp.Normal(mu=h_f, sigma=interval/3)
-# h_aws_dist = uniform(3, interval)
-h_aws_dist = cp.Normal(mu=h_aws, sigma=interval/3)
+dia_f_dist = uniform(0.005, interval)
+# dia_f_dist = cp.Normal(mu=dia_f, sigma=interval/3)
+h_f_dist = uniform(1.35, interval)
+# h_f_dist = cp.Normal(mu=h_f, sigma=interval/3)
+h_aws_dist = uniform(3, interval)
+# h_aws_dist = cp.Normal(mu=h_aws, sigma=interval/3)
 
 dx_dist = cp.Uniform(0.001, 0.01)
 
 parameters = {
-                "d_ppt": d_ppt_dist
+                "ie": ie_dist,
+                "T_rain": T_rain_dist
 }
 
 # parameters = {
@@ -191,7 +186,7 @@ UQ = un.UncertaintyQuantification(model=model,
 # polynomial chaos with point collocation (by default)
 data = UQ.quantify(data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
                     figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
-                    filename="d_ppt2")
+                    filename="full")
 
 # data = UQ.quantify(filename="Meteorological")
 

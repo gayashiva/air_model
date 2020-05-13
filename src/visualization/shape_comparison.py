@@ -28,7 +28,6 @@ df_cone['When'] = pd.to_datetime(df_cone['When'])
 df=pd.merge(df_cone,df_cyl, how='outer', on = 'When')
 
 df = df.set_index('When').resample('1H').mean().reset_index()
-print(df.head())
 
 pp = PdfPages(filename + "shape_results.pdf")
 
@@ -39,7 +38,7 @@ fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-")
 ax1.set_ylabel("Cone Ice Volume [$m^3$]")
-ax1.set_xlabel("Days")
+# ax1.set_xlabel("Days")
 
 ax2 = ax1.twinx()
 ax2.plot(x, y2, "b-", linewidth=0.5)
@@ -64,7 +63,7 @@ fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(x, y1, "k-")
 ax1.set_ylabel("Cone Area [$m^2$]")
-ax1.set_xlabel("Days")
+# ax1.set_xlabel("Days")
 
 ax2 = ax1.twinx()
 ax2.plot(x, y2, "b-", linewidth=0.5)
