@@ -630,12 +630,9 @@ class Icestupa:
         )
 
         # Water Boundary
-        if (row.Discharge > 0) or (row.T_a > self.T_rain and row.Prec > 0):
-            self.df.loc[i, "vp_s"] = self.vp_w
+        if row.Discharge > 0:
             self.L = self.L_e
-
         else:
-            self.df.loc[i, "vp_s"] = self.vp_ice
             self.L = self.L_s
 
         self.df.loc[i, "Ql"] = (
@@ -645,7 +642,7 @@ class Icestupa:
             / self.p0
             * math.pow(self.k, 2)
             * self.df.loc[i, "v_a"]
-            * (row.vp_a - self.df.loc[i, "vp_s"])
+            * (row.vp_a - self.vp_ice)
             / ((np.log(self.h_aws / self.r_ice)) ** 2)
         )
 
