@@ -554,7 +554,7 @@ class Icestupa:
 
     def surface_area(self, i):
 
-        if (self.df.Discharge[i] > 0) & (self.df.loc[i - 1, "r_ice"] >= self.r_mean):
+        if (self.df.solid[i-1] > 0) & (self.df.loc[i - 1, "r_ice"] >= self.r_mean):
             # Ice Radius
             self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"]
 
@@ -1028,9 +1028,14 @@ class Icestupa:
             self.df.loc[0, "r_ice"] = self.spray_radius()
         else:
             self.df.loc[0, "r_ice"] = self.r_mean
-        self.df.loc[0, "iceV"] = self.dx * math.pi * self.df.loc[0, "r_ice"] ** 2
+
+        self.df.loc[0, "h_ice"] = self.dx
+        self.df.loc[0, "iceV"] = math.pi/3 * self.df.loc[0, "r_ice"] ** 2 * self.dx
         self.df.loc[0, "ice"] = self.df.loc[0, "iceV"] * self.rho_i
         self.df.loc[0, "input"] = self.df.loc[0, "iceV"] * self.rho_i
+        self.df.loc[0, "h_r"] = (
+                self.df.loc[0, "h_ice"] / self.df.loc[0, "r_ice"]
+        )
 
         for row in self.df[1:].itertuples():
             i = row.Index
