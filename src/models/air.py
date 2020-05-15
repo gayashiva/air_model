@@ -22,6 +22,7 @@ import scipy.stats as stats
 class Icestupa:
 
     """Physical Constants"""
+
     L_s = 2848 * 1000  # J/kg Sublimation
     L_e = 2514 * 1000  # J/kg Evaporation
     L_f = 334 * 1000  # J/kg Fusion
@@ -62,7 +63,7 @@ class Icestupa:
     utc_offset = 1
 
     """Miscellaneous"""
-    ftl = 0  # Fountain flight time loss ftl
+    ftl = 0  # Fountain flight time loss ftl,
     h_aws = 3  # m height of AWS
     theta_f = 45  # Fountain aperture diameter
     r_mean = 0 # Mean Fountain Spray Radius
@@ -399,13 +400,13 @@ class Icestupa:
 
         y3 = self.df.SW_direct + self.df.SW_diffuse
         ax3.plot(x, y3, "k-", linewidth=0.5)
-        ax3.set_ylabel("Global Rad.[$W\,m^{-2}$]")
+        ax3.set_ylabel("Global Radiation[$W\,m^{-2}$]")
         ax3.grid()
 
         ax3t = ax3.twinx()
         ax3t.plot(x, self.df.SW_diffuse, "b-", linewidth=0.5)
         ax3t.set_ylim(ax3.get_ylim())
-        ax3t.set_ylabel("Diffuse Rad.[$W\,m^{-2}$]", color="b")
+        ax3t.set_ylabel("Diffuse Radiation[$W\,m^{-2}$]", color="b")
         for tl in ax3t.get_yticklabels():
             tl.set_color("b")
 
@@ -553,7 +554,7 @@ class Icestupa:
 
     def surface_area(self, i):
 
-        if (self.df.solid[i-1] > 0) & (self.df.loc[i - 1, "r_ice"] >= self.r_mean):
+        if (self.df.Discharge[i] > 0) & (self.df.loc[i - 1, "r_ice"] >= self.r_mean):
             # Ice Radius
             self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"]
 
@@ -624,7 +625,7 @@ class Icestupa:
     def energy_balance(self, row):
         i = row.Index
 
-        self.df.loc[i, "vp_i"] = 6.112 * np.exp(
+        self.df.loc[i, "vp_ice"] = 6.112 * np.exp(
             22.46 * (self.df.loc[i - 1, "T_s"]) / ((self.df.loc[i - 1, "T_s"]) + 272.62)
         )
 
@@ -641,7 +642,7 @@ class Icestupa:
             / self.p0
             * math.pow(self.k, 2)
             * self.df.loc[i, "v_a"]
-            * (row.vp_a - self.df.loc[i, "vp_i"])
+            * (row.vp_a - self.df.loc[i, "vp_ice"])
             / ((np.log(self.h_aws / self.z_i)) ** 2)
         )
 
@@ -662,11 +663,9 @@ class Icestupa:
 
         else:  # Deposition
 
-            self.df.loc[i, "dpt"] += (
+            self.df.loc[i, "deposition"] += (
                 self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.time_steps
             ) / self.L
-
-            self.df.loc[i, "solid"] += self.df.loc[i, "dpt"]
 
         # Sensible Heat Qs
         self.df.loc[i, "Qs"] = (
@@ -836,7 +835,6 @@ class Icestupa:
         pp.savefig(bbox_inches="tight")
         plt.close('all')
 
-
         fig, (ax1, ax2, ax3, ax4) = plt.subplots(
             nrows=4, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
         )
@@ -859,7 +857,6 @@ class Icestupa:
             tl.set_color("b")
         ax1.grid()
 
-
         y1 = self.df.e_a
         y2 = self.df.cld
         ax2.plot(x, y1, "k-")
@@ -871,7 +868,6 @@ class Icestupa:
         for tl in ax2t.get_yticklabels():
             tl.set_color("b")
         ax2.grid()
-
 
         y3 = self.df.vp_a - self.df.vp_i
         ax3.plot(x, y3, "k-", linewidth=0.5)
@@ -889,8 +885,6 @@ class Icestupa:
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.close('all')
-
-
 
         dfd = self.df.set_index("When").resample("D").mean().reset_index()
         dfd["Discharge"] = dfd["Discharge"] == 0
@@ -919,11 +913,9 @@ class Icestupa:
         pp.savefig(bbox_inches="tight")
         plt.close('all')
 
-
         fig = plt.figure()
         dfds = self.df[["When", "thickness", "SA"]]
         dfds["When"] = pd.to_datetime(dfds["When"], format="%Y.%m.%d %H:%M:%S")
-
 
         for row in dfds.itertuples():
             if dfds.loc[row.Index, "thickness"] < 0:
@@ -1157,10 +1149,12 @@ class Icestupa:
         self.df["When"] = pd.to_datetime(self.df["When"], format="%Y.%m.%d %H:%M:%S")
 
         print(f"Mean of SW {self.df.SW.mean()}, LW {self.df.LW.mean()}, Qs {self.df.Qs.mean()}, Ql {self.df.Ql.mean()}, Qf {self.df.Qf.mean()}")
+        print(f"Sum of SW {self.df.SW.sum()/self.df.TotalE.sum() }, LW {self.df.LW.sum()/self.df.TotalE.sum()}, Qs {self.df.Qs.sum()/self.df.TotalE.sum()}, Qf {self.df.Qf.sum()/self.df.TotalE.sum()}")
         print(f"Range of SW {self.df.SW.min()}-{self.df.SW.max()}, LW {self.df.LW.min()}-{self.df.LW.max()}, Qs {self.df.Qs.min()}-{self.df.Qs.max()}, Ql {self.df.Ql.min()}-{self.df.Ql.max()}, Qf {self.df.Qf.min()}-{self.df.Qf.max()}")
+        print(f"Mean of SRf {self.df.SRf.mean()}, Range of SRf {self.df.SRf.min()}-{self.df.SRf.max()}")
         print(f"Mean of emissivity {self.df.e_a.mean()}, Range of SRf {self.df.e_a.min()}-{self.df.e_a.max()}")
         print(f"Max SA {self.df.SA.max()}")
-        print(f"M_input {self.df.input.iloc[-1]}, M_R {self.df.ppt.sum()}, M_D {self.df.dpt.sum()}, M_F {self.df.Discharge.sum() * 5 + self.df.iceV.iloc[0]*self.rho_i}")
+        print(f"M_input {self.df.input.iloc[-1]}, M_R {self.df.ppt.sum()}, M_D {self.df.dpt.sum()}, M_F {self.df.Discharge.sum() * 5}, rest {self.df.iceV.iloc[0]*self.rho_i}")
         print(f"M_U {self.df.unfrozen_water.iloc[-1]}, M_solid {self.df.ice.iloc[-1]}, M_gas {self.df.vapour.iloc[-1]}, M_liquid {self.df.meltwater.iloc[-1]}")
         print(f"Max_growth {self.df.solid.max()/5}, average_discharge {self.df.Discharge.replace(0, np.NaN).mean() }")
 
@@ -1184,8 +1178,7 @@ class Icestupa:
             "meltwater",
             "SA",
             "h_ice",
-            "vp_i",
-            "z_i",
+            "r_ice",
             "ppt",
             "dpt",
         ]
@@ -1202,25 +1195,24 @@ class Icestupa:
         else:
             self.df.loc[0, "r_ice"] = self.r_mean
         self.df.loc[0, "iceV"] = self.dx * math.pi * self.df.loc[0, "r_ice"] ** 2
-        self.df.loc[0, "solid"] = self.df.loc[0, "iceV"] * self.rho_i
+        self.df.loc[0, "ice"] = self.df.loc[0, "iceV"] * self.rho_i
         self.df.loc[0, "input"] = self.df.loc[0, "iceV"] * self.rho_i
 
         for row in self.df[1:].itertuples():
             i = row.Index
 
-            if i == 1:
+            # Ice Melted
+            if self.df.loc[i - 1, "iceV"] <= 0:
+                self.df.loc[i - 1, "solid"] = 0
+                self.df.loc[i - 1, "ice"] = 0
+                self.df.loc[i - 1, "iceV"] = 0
+                if self.df.Discharge[i:].sum() == 0:  # If ice melted after fountain run
+                    self.df = self.df[:i]
+                    break
+                else:  # If ice melted in between fountain run
+                    self.state = 0
 
-                # Ice Radius
-                self.df.loc[i, "r_ice"] = self.r_mean
-
-                # Ice Height
-                self.df.loc[i, "h_ice"] = self.dx
-
-                self.df.loc[i, "iceV"] = math.pi * self.df.loc[i, "r_ice"] ** 2 * self.df.loc[i, "h_ice"]
-
-                self.df.loc[i, "ice"] = self.df.loc[0, "iceV"] * self.rho_i
-            else:
-                self.surface_area(i)
+            self.surface_area(i)
 
             # Precipitation to ice quantity
             if row.T_a < self.T_rain and row.Prec > 0:
@@ -1231,8 +1223,6 @@ class Icestupa:
                     * math.pi
                     * math.pow(self.df.loc[i, "r_ice"], 2)
                 )
-
-                self.df.loc[i, "solid"] += self.df.loc[i, "ppt"]
 
             # Fountain water output
             self.liquid = row.Discharge * (1 - self.ftl) * self.time_steps / 60
@@ -1299,6 +1289,8 @@ class Icestupa:
             self.df.loc[i, "ice"] = (
                 self.df.loc[i - 1, "ice"]
                 + self.df.loc[i , "solid"]
+                + self.df.loc[i, "ppt"]
+                + self.df.loc[i, "dpt"]
             )
             self.df.loc[i, "vapour"] = self.df.loc[i - 1, "vapour"] + self.gas
             self.df.loc[i, "unfrozen_water"] = self.df.loc[i - 1, "unfrozen_water"] + self.liquid
@@ -1312,17 +1304,6 @@ class Icestupa:
                 [0] * 4
             )
 
-            # Ice Melted
-            if self.df.loc[i, "iceV"] <= 0:
-                self.df.loc[i, "solid"] = 0
-                self.df.loc[i, "ice"] = 0
-                self.df.loc[i, "iceV"] = 0
-                if self.df.Discharge[i:].sum() == 0:  # If ice melted after fountain run
-                    self.df = self.df[:i]
-                    break
-                else:  # If ice melted in between fountain run
-                    self.state = 0
-
 
 
 if __name__ == "__main__":
@@ -1331,11 +1312,11 @@ if __name__ == "__main__":
 
     schwarzsee = Icestupa()
 
-    # schwarzsee.derive_parameters()
+    schwarzsee.derive_parameters()
 
     schwarzsee.read_input()
 
-    # schwarzsee.print_input()
+    schwarzsee.print_input()
 
     schwarzsee.melt_freeze()
 
