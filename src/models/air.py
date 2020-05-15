@@ -663,9 +663,11 @@ class Icestupa:
 
         else:  # Deposition
 
-            self.df.loc[i, "deposition"] += (
+            self.df.loc[i, "dpt"] += (
                 self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.time_steps
             ) / self.L
+
+            self.df.loc[i, "solid"] += self.df.loc[i, "dpt"]
 
         # Sensible Heat Qs
         self.df.loc[i, "Qs"] = (
@@ -869,7 +871,7 @@ class Icestupa:
             tl.set_color("b")
         ax2.grid()
 
-        y3 = self.df.vp_a - self.df.vp_i
+        y3 = self.df.vp_a - self.df.vp_ice
         ax3.plot(x, y3, "k-", linewidth=0.5)
         ax3.set_ylabel("Vapour gradient [$hPa$]")
         ax3.grid()
@@ -965,172 +967,6 @@ class Icestupa:
 
         pp.close()
 
-    def print_EGU(self):
-
-        self.df = self.df.rename({'SW': '$SW_{net}$', 'LW': '$LW_{net}$', 'Qs': '$Q_S$', 'Ql': '$Q_L$', 'Qf': '$Q_C$'}, axis=1)
-
-        filename = self.folders["output_folder"] + "EGU.pdf"
-
-        pp = PdfPages(filename)
-
-        fig = plt.figure()
-        x = self.df.When
-
-        ax1 = fig.add_subplot(111)
-        y1 = self.df.T_a
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Temperature [$\degree C$]")
-        plt.gca().spines['top'].set_visible(False)
-        plt.gca().spines['right'].set_visible(False)
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
-        ax1.axhline(y = -5, color = 'xkcd:royal blue')
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        ax1 = fig.add_subplot(111)
-        y1 = self.df.Discharge
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Discharge [$l\, min^{-1}$]")
-        plt.gca().spines['top'].set_visible(False)
-        plt.gca().spines['right'].set_visible(False)
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        ax1 = fig.add_subplot(111)
-        y1 = self.df.r_ice
-        y2 = self.df.h_ice
-        ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Ice Radius($m$)", color="b")
-        ax1.set_xlabel("Days")
-
-        ax2 = ax1.twinx()
-        ax2.plot(x, y2, "b-", linewidth=0.5)
-        ax2.set_ylabel("Ice Cone Height ($m$)", color = 'b')
-        for tl in ax2.get_yticklabels():
-            tl.set_color("b")
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.set_ylim(0,2)
-        ax2.set_ylim(ax1.get_ylim())
-        ax1.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        ax1 = fig.add_subplot(111)
-        y1 = self.df.SA
-        ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Surface Area [$m^{2}$]")
-        plt.gca().spines['top'].set_visible(False)
-        plt.gca().spines['right'].set_visible(False)
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-
-        dfd = self.df.set_index("When").resample("D").mean().reset_index()
-        dfd["Discharge"] = dfd["Discharge"] == 0
-        dfd["Discharge"] = dfd["Discharge"].astype(int)
-        dfd["Discharge"] = dfd["Discharge"].astype(str)
-        dfd['When'] = dfd['When'].dt.strftime("%b %d")
-
-        dfd["label"] = ' '
-        labels = ["Jan 30", "Feb 05", "Feb 12", "Feb 19", "Feb 26", "Mar 05", "Mar 12", "Mar 19"]
-        for i in range(0, dfd.shape[0]):
-            for item in labels:
-                if dfd.When[i] == item:
-                    dfd.loc[i, 'label'] = dfd.When[i]
-
-        dfd = dfd.set_index("label")
-
-        z = dfd[['$SW_{net}$', '$LW_{net}$', '$Q_S$', '$Q_L$', '$Q_C$']]
-        z.plot.bar(stacked=True, edgecolor=dfd["Discharge"], linewidth=0.5)
-        plt.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
-        plt.xlabel('Date')
-        plt.ylabel('Energy [$W\,m^{-2}$]')
-        plt.legend(loc='upper left')
-        plt.ylim(-200, 200)
-        plt.xticks(rotation=45)
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        x = self.df.When
-        y1 = self.df.ice
-
-        ax1 = fig.add_subplot(111)
-        ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Ice Mass [$litres$]")
-        ax1.set_xlabel("Days")
-
-        # Include Validation line segment 1
-        ax1.plot(
-            [datetime(2019, 2, 14, 16), datetime(2019, 2, 14, 16)],
-            [0.67115*self.rho_i, 1.042*self.rho_i],
-            color="green",
-            lw=1,
-        )
-        ax1.scatter(datetime(2019, 2, 14, 16), 0.856575*self.rho_i, color="green", marker="o")
-
-        # Include Validation line segment 2
-        ax1.plot(
-            [datetime(2019, 3, 10, 18), datetime(2019, 3, 10, 18)],
-            [0.037*self.rho_i, 0.222*self.rho_i],
-            color="green",
-            lw=1,
-        )
-        ax1.scatter(datetime(2019, 3, 10, 18), 0.1295*self.rho_i, color="green", marker="o")
-
-        #  format the ticks
-        plt.gca().spines['top'].set_visible(False)
-        plt.gca().spines['right'].set_visible(False)
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        # ax1.grid()
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        ax = fig.add_subplot(111)
-        x = self.df.index * 5 / (24 * 60)
-        y1 = self.df["input"]
-        y2 = self.df["meltwater"]
-        y3 = self.df["ice"]
-        # fig.suptitle("Fountain Spray Radius :", fontsize=16)
-        # ax.set_title('1.7' + " $m$", fontsize=16)
-        plt.gca().spines['top'].set_visible(False)
-        plt.gca().spines['right'].set_visible(False)
-        ax.plot(x, y1, color='xkcd:royal blue', label= 'Water Sprayed')
-        ax.plot(x, y2 + y3, color='xkcd:blue', label= 'Water Stored')
-        ax.plot(x, y3, color='k',  label= 'Ice')
-        ax.legend()
-        ax.fill_between(x, y1, y2 + y3, alpha=0.5, color='xkcd:royal blue')
-        ax.fill_between(x, y2 + y3, y3, alpha=0.5, color='xkcd:lightish blue')
-        ax.fill_between(x, y3, 0, alpha=0.5, color='white')
-        ax.set_ylabel("Mass ($litres$)")
-        ax.grid(axis="x", color="black", alpha=.3, linewidth=.5, which="major")
-        ax.set_xlabel("Day Number")
-        ax.axhline(color='k')
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        plt.close('all')
-        pp.close()
-
     def read_input(self):
 
         data_store = pd.HDFStore(
@@ -1140,23 +976,21 @@ class Icestupa:
 
     def read_output(self): #todo Fix output
 
-        # data_store = pd.HDFStore(
-        #     "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/model_output1.h5")
-        # self.df = data_store['df_out']
-        # data_store.close()
-
-        self.df = pd.read_csv("/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/model_results.csv", sep=",")
+        self.df = pd.read_csv(
+            "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/model_results.csv", sep=",")
         self.df["When"] = pd.to_datetime(self.df["When"], format="%Y.%m.%d %H:%M:%S")
 
-        print(f"Mean of SW {self.df.SW.mean()}, LW {self.df.LW.mean()}, Qs {self.df.Qs.mean()}, Ql {self.df.Ql.mean()}, Qf {self.df.Qf.mean()}")
-        print(f"Sum of SW {self.df.SW.sum()/self.df.TotalE.sum() }, LW {self.df.LW.sum()/self.df.TotalE.sum()}, Qs {self.df.Qs.sum()/self.df.TotalE.sum()}, Qf {self.df.Qf.sum()/self.df.TotalE.sum()}")
-        print(f"Range of SW {self.df.SW.min()}-{self.df.SW.max()}, LW {self.df.LW.min()}-{self.df.LW.max()}, Qs {self.df.Qs.min()}-{self.df.Qs.max()}, Ql {self.df.Ql.min()}-{self.df.Ql.max()}, Qf {self.df.Qf.min()}-{self.df.Qf.max()}")
-        print(f"Mean of SRf {self.df.SRf.mean()}, Range of SRf {self.df.SRf.min()}-{self.df.SRf.max()}")
+        print(
+            f"Mean of SW {self.df.SW.mean()}, LW {self.df.LW.mean()}, Qs {self.df.Qs.mean()}, Ql {self.df.Ql.mean()}, Qf {self.df.Qf.mean()}")
+        print(
+            f"Range of SW {self.df.SW.min()}-{self.df.SW.max()}, LW {self.df.LW.min()}-{self.df.LW.max()}, Qs {self.df.Qs.min()}-{self.df.Qs.max()}, Ql {self.df.Ql.min()}-{self.df.Ql.max()}, Qf {self.df.Qf.min()}-{self.df.Qf.max()}")
         print(f"Mean of emissivity {self.df.e_a.mean()}, Range of SRf {self.df.e_a.min()}-{self.df.e_a.max()}")
         print(f"Max SA {self.df.SA.max()}")
-        print(f"M_input {self.df.input.iloc[-1]}, M_R {self.df.ppt.sum()}, M_D {self.df.dpt.sum()}, M_F {self.df.Discharge.sum() * 5}, rest {self.df.iceV.iloc[0]*self.rho_i}")
-        print(f"M_U {self.df.unfrozen_water.iloc[-1]}, M_solid {self.df.ice.iloc[-1]}, M_gas {self.df.vapour.iloc[-1]}, M_liquid {self.df.meltwater.iloc[-1]}")
-        print(f"Max_growth {self.df.solid.max()/5}, average_discharge {self.df.Discharge.replace(0, np.NaN).mean() }")
+        print(
+            f"M_input {self.df.input.iloc[-1]}, M_R {self.df.ppt.sum()}, M_D {self.df.dpt.sum()}, M_F {self.df.Discharge.sum() * 5 + self.df.iceV.iloc[0] * self.rho_i}")
+        print(
+            f"M_U {self.df.unfrozen_water.iloc[-1]}, M_solid {self.df.ice.iloc[-1]}, M_gas {self.df.vapour.iloc[-1]}, M_liquid {self.df.meltwater.iloc[-1]}")
+        print(f"Max_growth {self.df.solid.max() / 5}, average_discharge {self.df.Discharge.replace(0, np.NaN).mean()}")
 
     def melt_freeze(self):
 
@@ -1224,6 +1058,8 @@ class Icestupa:
                     * math.pow(self.df.loc[i, "r_ice"], 2)
                 )
 
+                self.df.loc[i, "solid"] += self.df.loc[i, "ppt"]
+
             # Fountain water output
             self.liquid = row.Discharge * (1 - self.ftl) * self.time_steps / 60
 
@@ -1289,8 +1125,6 @@ class Icestupa:
             self.df.loc[i, "ice"] = (
                 self.df.loc[i - 1, "ice"]
                 + self.df.loc[i , "solid"]
-                + self.df.loc[i, "ppt"]
-                + self.df.loc[i, "dpt"]
             )
             self.df.loc[i, "vapour"] = self.df.loc[i - 1, "vapour"] + self.gas
             self.df.loc[i, "unfrozen_water"] = self.df.loc[i - 1, "unfrozen_water"] + self.liquid
@@ -1312,11 +1146,11 @@ if __name__ == "__main__":
 
     schwarzsee = Icestupa()
 
-    schwarzsee.derive_parameters()
+    # schwarzsee.derive_parameters()
 
     schwarzsee.read_input()
 
-    schwarzsee.print_input()
+    # schwarzsee.print_input()
 
     schwarzsee.melt_freeze()
 
