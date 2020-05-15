@@ -115,7 +115,7 @@ a_s_dist = uniform(a_s, interval)
 
 t_decay_dist = cp.Uniform(1, 22)
 T_rain_dist = cp.Uniform(0, 2)
-r_i_dist = cp.Uniform(0.0007, 0.0027)
+z_i_dist = cp.Uniform(0.0007, 0.0027)
 d_ppt_dist = cp.Uniform(200, 300)
 
 dia_f = 0.005
@@ -135,8 +135,7 @@ h_aws_dist = uniform(3, interval)
 dx_dist = cp.Uniform(0.001, 0.01)
 
 parameters = {
-                "ie": ie_dist,
-                "T_rain": T_rain_dist
+                "dx": dx_dist
 }
 
 # parameters = {
@@ -148,7 +147,7 @@ parameters = {
 
 # parameters = {
 #               "T_rain": rain_temp_dist,
-#               "r_i": r_i_dist,
+#               "z_i": r_i_dist,
 #               "d_ppt": snow_fall_density_dist
 #               }
 
@@ -165,7 +164,7 @@ parameters = {
 #                 "a_s": a_s_dist,
 #                 "t_decay": decay_t_dist,
 #               "T_rain": rain_temp_dist,
-#               "r_i": r_i_dist,
+#               "z_i": r_i_dist,
 #               "d_ppt": snow_fall_density_dist
 # }
 
@@ -186,7 +185,7 @@ UQ = un.UncertaintyQuantification(model=model,
 # polynomial chaos with point collocation (by default)
 data = UQ.quantify(data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
                     figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
-                    filename="full")
+                    filename="dx")
 
 # data = UQ.quantify(filename="Meteorological")
 

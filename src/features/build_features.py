@@ -91,7 +91,7 @@ else:
 
 # # Output for manim
 # filename2 = os.path.join(folders["output_folder"], site + "_model_gif.csv")
-# cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
+# cols = ["When", "h_ice", "h_f", "z_i", "ice", "T_a", "Discharge"]
 # df[cols].to_csv(filename2, sep=",")
 
 
@@ -154,7 +154,7 @@ pp.savefig(bbox_inches="tight")
 plt.clf()
 
 y1 = df.h_ice
-y2 = df.r_ice
+y2 = df.z_i
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)

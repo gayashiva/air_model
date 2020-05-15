@@ -55,7 +55,7 @@ def icestupa(df, fountain, surface):
         "meltwater",
         "SA",
         "h_ice",
-        "r_ice",
+        "z_i",
         "SRf",
         "vp_ice",
         "ppt",
@@ -86,9 +86,9 @@ def icestupa(df, fountain, surface):
         if (df.loc[i, "Discharge"] > 0) & (state == 0):
             state = 1
             start = i - 1  # Set Model start time
-            df.loc[i - 1, "r_ice"] = R_f
+            df.loc[i - 1, "z_i"] = R_f
             df.loc[i - 1, "h_ice"] = surface["dx"]
-            df.loc[i - 1, "iceV"] = surface["dx"] * math.pi * df.loc[i - 1, "r_ice"] ** 2
+            df.loc[i - 1, "iceV"] = surface["dx"] * math.pi * df.loc[i - 1, "z_i"] ** 2
 
             logger.debug(
                 "Ice layer initialised %s thick at %s",
@@ -98,25 +98,25 @@ def icestupa(df, fountain, surface):
 
         if state == 1:
 
-            if (df.Discharge[i] > 0) & (df.loc[i - 1, "r_ice"] >= R_f):
+            if (df.Discharge[i] > 0) & (df.loc[i - 1, "z_i"] >= R_f):
                 # Ice Radius
-                df.loc[i, "r_ice"] = df.loc[i-1, "r_ice"]
+                df.loc[i, "z_i"] = df.loc[i-1, "z_i"]
 
                 # Ice Height
                 df.loc[i, "h_ice"] = (
-                    3 * df.loc[i - 1, "iceV"] / (math.pi * df.loc[i, "r_ice"] ** 2)
+                    3 * df.loc[i - 1, "iceV"] / (math.pi * df.loc[i, "z_i"] ** 2)
                 )
 
                 # Height by Radius ratio
-                df.loc[i, "h_r"] = df.loc[i - 1, "h_ice"] / df.loc[i - 1, "r_ice"]
+                df.loc[i, "h_r"] = df.loc[i - 1, "h_ice"] / df.loc[i - 1, "z_i"]
 
                 # Area of Conical Ice Surface
                 df.loc[i, "SA"] = (
                     math.pi
-                    * df.loc[i, "r_ice"]
+                    * df.loc[i, "z_i"]
                     * math.pow(
                         (
-                            math.pow(df.loc[i, "r_ice"], 2)
+                            math.pow(df.loc[i, "z_i"], 2)
                             + math.pow((df.loc[i, "h_ice"]), 2)
                         ),
                         1 / 2,
@@ -129,21 +129,21 @@ def icestupa(df, fountain, surface):
                 df.loc[i, "h_r"] = df.loc[i - 1, "h_r"]
 
                 # Ice Radius
-                df.loc[i, "r_ice"] = math.pow(
+                df.loc[i, "z_i"] = math.pow(
                     df.loc[i - 1, "iceV"] / math.pi * (3 / df.loc[i, "h_r"]), 1 / 3
                 )
 
                 # Ice Height
-                df.loc[i, "h_ice"] = df.loc[i, "h_r"] * df.loc[i, "r_ice"]
+                df.loc[i, "h_ice"] = df.loc[i, "h_r"] * df.loc[i, "z_i"]
 
                 # Area of Conical Ice Surface
                 df.loc[i, "SA"] = (
                     math.pi
-                    * df.loc[i, "r_ice"]
+                    * df.loc[i, "z_i"]
                     * math.pow(
                         (
-                            math.pow(df.loc[i, "r_ice"], 2)
-                            + math.pow(df.loc[i, "r_ice"] * df.loc[i, "h_r"], 2)
+                            math.pow(df.loc[i, "z_i"], 2)
+                            + math.pow(df.loc[i, "z_i"] * df.loc[i, "h_r"], 2)
                         ),
                         1 / 2,
                     )
@@ -152,24 +152,24 @@ def icestupa(df, fountain, surface):
             df.loc[i, "SRf"] = (
                 0.5
                 * df.loc[i, "h_ice"]
-                * df.loc[i, "r_ice"]
+                * df.loc[i, "z_i"]
                 * math.cos(df.loc[i, "SEA"])
                 + math.pi
-                * math.pow(df.loc[i, "r_ice"], 2)
+                * math.pow(df.loc[i, "z_i"], 2)
                 * 0.5
                 * math.sin(df.loc[i, "SEA"])
             ) / (
                 math.pi
                 * math.pow(
-                    (math.pow(df.loc[i, "h_ice"], 2) + math.pow(df.loc[i, "r_ice"], 2)),
+                    (math.pow(df.loc[i, "h_ice"], 2) + math.pow(df.loc[i, "z_i"], 2)),
                     1 / 2,
                 )
-                * df.loc[i, "r_ice"]
+                * df.loc[i, "z_i"]
             )
 
             logger.debug(
                 "Ice radius is %s and ice is %s at %s",
-                df.loc[i, "r_ice"],
+                df.loc[i, "z_i"],
                 df.loc[i, "h_ice"],
                 df.loc[i, "When"],
             )
@@ -189,7 +189,7 @@ def icestupa(df, fountain, surface):
                         surface["d_ppt"]
                         * df.loc[i, "Prec"]
                         * math.pi
-                        * math.pow(df.loc[i, "r_ice"], 2)
+                        * math.pow(df.loc[i, "z_i"], 2)
                     )
 
             # Fountain water output

@@ -19,7 +19,7 @@ def draw_plot(data, edge_color, fill_color, labels):
 input = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/"
 figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/"
 
-names = ["r_i", "T_rain", "d_ppt", "ie", "a_i", "a_s", "t_decay",   "dia_f",  "h_f", "h_aws", "dx"]
+names = ["z_i", "T_rain", "d_ppt", "ie", "a_i", "a_s", "t_decay",  "dia_f",  "h_f", "h_aws", "dx"]
 variance = []
 mean = []
 evaluations = []

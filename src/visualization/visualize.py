@@ -75,7 +75,7 @@ class Forecast(Scene):
             date.next_to(text0, DOWN)
 
             dimensions = TexMobject(
-                str(df2.loc[i, "r_ice"] * 2)
+                str(df2.loc[i, "z_i"] * 2)
                 + "  m"
                 + " \\cross"
                 + str(df2.loc[i, "h_ice"] * 2)
@@ -87,8 +87,8 @@ class Forecast(Scene):
 
             triangle = Polygon(
                 np.array([0, 1 * df2.loc[i, "h_ice"], 0]),
-                np.array([1 * df2.loc[i, "r_ice"], 0, 0]),
-                np.array([-1 * df2.loc[i, "r_ice"], 0, 0]),
+                np.array([1 * df2.loc[i, "z_i"], 0, 0]),
+                np.array([-1 * df2.loc[i, "z_i"], 0, 0]),
             )
             triangle.set_fill(WHITE, opacity=1)
             triangle.scale(h_f / scale_factor)

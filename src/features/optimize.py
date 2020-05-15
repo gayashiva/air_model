@@ -77,7 +77,7 @@ def icestupa(optimize):
         "meltwater",
         "SA",
         "h_ice",
-        "r_ice",
+        "z_i",
         "SRf",
         "t_droplet",
         "vpa",
@@ -136,33 +136,33 @@ def icestupa(optimize):
         if (df.loc[i, "Discharge"] > 0) & (start == 0):
             state = 1
             start = i - 1  # Set Model start time
-            df.loc[i - 1, "r_ice"] = R_f
+            df.loc[i - 1, "z_i"] = R_f
             df.loc[i - 1, "h_ice"] = 0
 
         if state == 1:
 
-            """ Keeping r_ice constant to determine SA """
-            if (df.Discharge[i] > 0) & (df.loc[i - 1, "r_ice"] >= R_f):
+            """ Keeping z_i constant to determine SA """
+            if (df.Discharge[i] > 0) & (df.loc[i - 1, "z_i"] >= R_f):
                 # Ice Radius
-                df.loc[i, "r_ice"] = df.loc[
-                    i - 1, "r_ice"
+                df.loc[i, "z_i"] = df.loc[
+                    i - 1, "z_i"
                 ]  # Ice radius same as Initial Fountain Spray Radius
 
                 # Ice Height
                 df.loc[i, "h_ice"] = (
-                    3 * df.loc[i - 1, "iceV"] / (math.pi * df.loc[i, "r_ice"] ** 2)
+                    3 * df.loc[i - 1, "iceV"] / (math.pi * df.loc[i, "z_i"] ** 2)
                 )
 
                 # Height by Radius ratio
-                df.loc[i, "h_r"] = df.loc[i - 1, "h_ice"] / df.loc[i - 1, "r_ice"]
+                df.loc[i, "h_r"] = df.loc[i - 1, "h_ice"] / df.loc[i - 1, "z_i"]
 
                 # Area of Conical Ice Surface
                 df.loc[i, "SA"] = (
                     math.pi
-                    * df.loc[i, "r_ice"]
+                    * df.loc[i, "z_i"]
                     * math.pow(
                         (
-                            math.pow(df.loc[i, "r_ice"], 2)
+                            math.pow(df.loc[i, "z_i"], 2)
                             + math.pow((df.loc[i, "h_ice"]), 2)
                         ),
                         1 / 2,
@@ -176,21 +176,21 @@ def icestupa(optimize):
                 df.loc[i, "h_r"] = df.loc[i - 1, "h_r"]
 
                 # Ice Radius
-                df.loc[i, "r_ice"] = math.pow(
+                df.loc[i, "z_i"] = math.pow(
                     df.loc[i - 1, "iceV"] / math.pi * (3 / df.loc[i, "h_r"]), 1 / 3
                 )
 
                 # Ice Height
-                df.loc[i, "h_ice"] = df.loc[i, "h_r"] * df.loc[i, "r_ice"]
+                df.loc[i, "h_ice"] = df.loc[i, "h_r"] * df.loc[i, "z_i"]
 
                 # Area of Conical Ice Surface
                 df.loc[i, "SA"] = (
                     math.pi
-                    * df.loc[i, "r_ice"]
+                    * df.loc[i, "z_i"]
                     * math.pow(
                         (
-                            math.pow(df.loc[i, "r_ice"], 2)
-                            + math.pow(df.loc[i, "r_ice"] * df.loc[i, "h_r"], 2)
+                            math.pow(df.loc[i, "z_i"], 2)
+                            + math.pow(df.loc[i, "z_i"] * df.loc[i, "h_r"], 2)
                         ),
                         1 / 2,
                     )
@@ -214,7 +214,7 @@ def icestupa(optimize):
                     surface["d_ppt"]
                     * df.loc[i, "Prec"]
                     * math.pi
-                    * math.pow(df.loc[i, "r_ice"], 2)
+                    * math.pow(df.loc[i, "z_i"], 2)
                 )
                 df.loc[i, "solid"] = df.loc[i, "solid"] + df.loc[i, "ppt"]
 
@@ -313,19 +313,19 @@ def icestupa(optimize):
             df.loc[i, "SRf"] = (
                 0.5
                 * df.loc[i, "h_ice"]
-                * df.loc[i, "r_ice"]
+                * df.loc[i, "z_i"]
                 * math.cos(math.radians(df.loc[i, "theta_s"]))
                 + math.pi
-                * math.pow(df.loc[i, "r_ice"], 2)
+                * math.pow(df.loc[i, "z_i"], 2)
                 * 0.5
                 * math.sin(math.radians(df.loc[i, "theta_s"]))
             ) / (
                 math.pi
                 * math.pow(
-                    (math.pow(df.loc[i, "h_ice"], 2) + math.pow(df.loc[i, "r_ice"], 2)),
+                    (math.pow(df.loc[i, "h_ice"], 2) + math.pow(df.loc[i, "z_i"], 2)),
                     1 / 2,
                 )
-                * df.loc[i, "r_ice"]
+                * df.loc[i, "z_i"]
             )
 
             # Short Wave Radiation SW

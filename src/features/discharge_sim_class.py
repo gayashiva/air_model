@@ -38,7 +38,7 @@ class Discharge_Icestupa(Icestupa):
         Max_IceV = self.df["iceV"].max()
         Efficiency = (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1]) / self.df["input"].iloc[-1] * 100
         Duration = self.df.index[-1] * 5 /(60 * 24)
-        h_r = self.df.h_ice.max()/self.df.r_ice.max()
+        h_r = self.df.h_ice.max()/self.df.z_i.max()
         water_stored = (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1])
         water_lost = self.df["vapour"].iloc[-1]
         unfrozen_water = self.df["unfrozen_water"].iloc[-1]
