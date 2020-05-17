@@ -629,15 +629,9 @@ class Icestupa:
             22.46 * (self.df.loc[i - 1, "T_s"]) / ((self.df.loc[i - 1, "T_s"]) + 272.62)
         )
 
-        # Water Boundary
-        if row.Discharge > 0:
-            self.L = self.L_e
-        else:
-            self.L = self.L_s
-
         self.df.loc[i, "Ql"] = (
             0.623
-            * self.L
+            * self.L_s
             * self.rho_a
             / self.p0
             * math.pow(self.k, 2)
@@ -649,12 +643,12 @@ class Icestupa:
         if self.df.loc[i, "Ql"] < 0:
             self.gas -= (
                 self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.time_steps
-            ) / self.L
+            ) / self.L_s
 
             # Removing gas quantity generated from previous ice
             self.df.loc[i , "solid"] += (
                 self.df.loc[i, "Ql"] * (self.df.loc[i, "SA"]) * self.time_steps
-            ) / self.L
+            ) / self.L_s
 
             # Ice Temperature
             self.delta_T_s += (self.df.loc[i, "Ql"] * self.time_steps) / (
@@ -665,7 +659,7 @@ class Icestupa:
 
             self.df.loc[i, "dpt"] += (
                 self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.time_steps
-            ) / self.L
+            ) / self.L_s
 
             self.df.loc[i, "solid"] += self.df.loc[i, "dpt"]
 
@@ -698,6 +692,7 @@ class Icestupa:
                 * (self.df.loc[i - 1, "T_s"])
                 / self.time_steps
             )
+            self.delta_T_s = -self.df.loc[i - 1, "T_s"]
 
         # Total Energy W/m2
         self.df.loc[i, "TotalE"] = (
@@ -1078,13 +1073,11 @@ class Icestupa:
                     """Freezing water"""
 
                     self.liquid -= (self.EJoules) / (-self.L_f)
-                    self.delta_T_s = -self.df.loc[i - 1, "T_s"]
 
                     if self.liquid < 0:
                         self.liquid += (self.EJoules) / (-self.L_f)
                         self.df.loc[i , "solid"] += self.liquid
                         # (self.EJoules) - self.liquid * self.L_f
-
 
                         self.liquid = 0
                     else:
