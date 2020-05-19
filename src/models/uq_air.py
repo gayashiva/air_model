@@ -135,7 +135,8 @@ h_aws_dist = uniform(3, interval)
 dx_dist = cp.Uniform(0.001, 0.01)
 
 parameters = {
-                "dx": dx_dist
+                "ie": ie_dist,
+                "T_rain": T_rain_dist
 }
 
 # parameters = {
@@ -179,13 +180,14 @@ model = UQ_Icestupa()
 UQ = un.UncertaintyQuantification(model=model,
                                   parameters=parameters,
                                   features=features,
+                                  CPUs=6,
                                   )
 
 # Perform the uncertainty quantification using
 # polynomial chaos with point collocation (by default)
 data = UQ.quantify(data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
                     figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
-                    filename="dx")
+                    filename="full")
 
 # data = UQ.quantify(filename="Meteorological")
 

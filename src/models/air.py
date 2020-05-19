@@ -17,7 +17,7 @@ from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import scipy.stats as stats
-
+import seaborn as sns
 
 class Icestupa:
 
@@ -400,13 +400,13 @@ class Icestupa:
 
         y3 = self.df.SW_direct + self.df.SW_diffuse
         ax3.plot(x, y3, "k-", linewidth=0.5)
-        ax3.set_ylabel("Global Radiation[$W\,m^{-2}$]")
+        ax3.set_ylabel("Global Rad.[$W\,m^{-2}$]")
         ax3.grid()
 
         ax3t = ax3.twinx()
         ax3t.plot(x, self.df.SW_diffuse, "b-", linewidth=0.5)
         ax3t.set_ylim(ax3.get_ylim())
-        ax3t.set_ylabel("Diffuse Radiation[$W\,m^{-2}$]", color="b")
+        ax3t.set_ylabel("Diffuse Rad.[$W\,m^{-2}$]", color="b")
         for tl in ax3t.get_yticklabels():
             tl.set_color("b")
 
@@ -651,7 +651,7 @@ class Icestupa:
             ) / self.L_s
 
             # Ice Temperature
-            self.delta_T_s += (self.df.loc[i, "Ql"] * self.time_steps) / (
+            self.df.loc[i , "delta_T_s"] += (self.df.loc[i, "Ql"] * self.time_steps) / (
                 self.rho_i * self.dx * self.c_i
             )
 
@@ -692,7 +692,7 @@ class Icestupa:
                 * (self.df.loc[i - 1, "T_s"])
                 / self.time_steps
             )
-            self.delta_T_s = -self.df.loc[i - 1, "T_s"]
+            self.df.loc[i , "delta_T_s"] = -self.df.loc[i - 1, "T_s"]
 
         # Total Energy W/m2
         self.df.loc[i, "TotalE"] = (
@@ -734,11 +734,11 @@ class Icestupa:
 
         self.df = self.df.rename(
             {
-                "SW": "$SW_{net}$",
-                "LW": "$LW_{net}$",
-                "Qs": "$Q_S$",
-                "Ql": "$Q_L$",
-                "Qf": "$Q_{F_w}$",
+                "SW": "$q_{SW}$",
+                "LW": "$q_{LW}$",
+                "Qs": "$q_S$",
+                "Ql": "$q_L$",
+                "Qf": "$q_{F_c}$",
             },
             axis=1,
         )
@@ -805,6 +805,13 @@ class Icestupa:
         ax2.set_ylabel("Ice Radius[$m$]", color="b")
         for tl in ax2.get_yticklabels():
             tl.set_color("b")
+
+        # Include Validation line segment 1
+
+        ax1.scatter(datetime(2019, 2, 14, 16), 0.7, color="black", marker="o")
+
+        ax2.scatter(datetime(2019, 2, 14, 16), 1.15, color="blue", marker="o")
+
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -898,7 +905,7 @@ class Icestupa:
 
         dfd = dfd.set_index("label")
 
-        z = dfd[['$SW_{net}$', '$LW_{net}$', '$Q_S$', '$Q_L$', '$Q_{F_w}$']]
+        z = dfd[['$q_{SW}$', '$q_{LW}$', '$q_S$', '$q_L$', '$q_{F_c}$']]
         ax = z.plot.bar(stacked=True, edgecolor=dfd["Discharge"], linewidth=0.5)
         ax.xaxis.set_label_text("")
         plt.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
@@ -962,6 +969,52 @@ class Icestupa:
 
         pp.close()
 
+    def corr_plot(self):
+
+
+        data = self.df
+
+        data = data[data.columns.drop(list(data.filter(regex='Unnamed')))]
+
+        data["$q_{net}$"] = data["TotalE"] + data["Ql"]
+
+        data["$\Delta M_{input}$"] = data["Discharge"] * 5 + data["dpt"] + data["ppt"]
+
+        data["$SW_{in}$"] = data["SW_direct"] + data["SW_diffuse"]
+
+        # data = data.drop(["When", "input", "ppt", "ice", "T_s", "vapour", "Discharge", "TotalE", "T_a", "SEA", "SW_direct", "a", "cld", "SEA", "e_a", "vp_a", "LW_in", "vp_ice", "SRf", "SW_diffuse", "h_r", "RH", "iceV", "melted", "Qf", "SW", "LW", "Qs", "Ql", "dpt", "p_a", "thickness", "h_ice", "r_ice", "Prec", "v_a", "unfrozen_water", "meltwater"], axis=1)
+
+
+        data = data.rename(
+            {
+                "solid": "$\Delta M_{ice}$",
+                "delta_T_s": "$\Delta T_{ice}$",
+                "SA": "A",
+                "T_a": "$T_a$",
+                "v_a": "$v_a$",
+                "p_a": "$p_a$",
+            },
+            axis=1,
+        )
+
+        data = data[['$q_{net}$', '$T_a$', '$v_a$', '$p_a$', 'RH', "$SW_{in}$"]]
+
+        print(data.drop("$q_{net}$", axis=1).apply(lambda x: x.corr(data["$q_{net}$"])))
+
+        corr = data.corr()
+        ax = sns.heatmap(
+            corr,
+            vmin=-1, vmax=1, center=0,
+            cmap=sns.diverging_palette(20, 220, n=200),
+            square=True
+        )
+        ax.set_xticklabels(
+            ax.get_xticklabels(),
+            rotation=45,
+            horizontalalignment='right'
+        )
+        plt.show()
+
     def read_input(self):
 
         data_store = pd.HDFStore(
@@ -987,6 +1040,19 @@ class Icestupa:
             f"M_U {self.df.unfrozen_water.iloc[-1]}, M_solid {self.df.ice.iloc[-1]}, M_gas {self.df.vapour.iloc[-1]}, M_liquid {self.df.meltwater.iloc[-1]}")
         print(f"Max_growth {self.df.solid.max() / 5}, average_discharge {self.df.Discharge.replace(0, np.NaN).mean()}")
 
+        column_1 = self.df["TotalE"] + self.df["Ql"]
+        column_2 = self.df["solid"]
+        column_3 = self.df["SA"]
+        print(column_3.head())
+        correlation = column_2.corr(column_1)
+        print(correlation)
+        correlation = column_2.corr(column_3)
+        print(correlation)
+        correlation = column_3.corr(column_1)
+        print(correlation)
+
+        # self.corr_plot()
+
     def melt_freeze(self):
 
         l = [
@@ -997,6 +1063,7 @@ class Icestupa:
             "solid",
             "vapour",
             "melted",
+            "delta_T_s",
             "unfrozen_water",
             "TotalE",
             "SW",
@@ -1014,8 +1081,8 @@ class Icestupa:
         for col in l:
             self.df[col] = 0
 
-        self.delta_T_s, self.liquid, self.gas, self.EJoules = (
-            [0] * 4
+        self.liquid, self.gas, self.EJoules = (
+            [0] * 3
         )
 
         """Initialize"""
@@ -1088,37 +1155,37 @@ class Icestupa:
                 else:
                     """ When fountain off and energy negative """
                     # Cooling Ice
-                    self.delta_T_s += (self.df.loc[i, "TotalE"] * self.time_steps) / (
+                    self.df.loc[i , "delta_T_s"] += (self.df.loc[i, "TotalE"] * self.time_steps) / (
                         self.rho_i * self.dx * self.c_i
                     )
 
             else:
                 # Heating Ice
-                self.delta_T_s += (self.df.loc[i, "TotalE"] * self.time_steps) / (
+                self.df.loc[i , "delta_T_s"] += (self.df.loc[i, "TotalE"] * self.time_steps) / (
                     self.rho_i * self.dx * self.c_i
                 )
 
                 """Hot Ice"""
-                if (self.df.loc[i - 1, "T_s"] + self.delta_T_s) > 0:
+                if (self.df.loc[i - 1, "T_s"] + self.df.loc[i , "delta_T_s"]) > 0:
 
                     # Melting Ice by Temperature
                     self.df.loc[i , "solid"] -= (
                         (self.rho_i * self.dx * self.c_i * self.df.loc[i, "SA"])
-                        * (-(self.df.loc[i - 1, "T_s"] + self.delta_T_s))
+                        * (-(self.df.loc[i - 1, "T_s"] + self.df.loc[i , "delta_T_s"]))
                         / (-self.L_f)
                     )
 
                     self.df.loc[i , "melted"] += (
                         (self.rho_i * self.dx * self.c_i * self.df.loc[i, "SA"])
-                        * (-(self.df.loc[i - 1, "T_s"] + self.delta_T_s))
+                        * (-(self.df.loc[i - 1, "T_s"] + self.df.loc[i , "delta_T_s"]))
                         / (-self.L_f)
                     )
 
                     self.df.loc[i - 1, "T_s"] = 0
-                    self.delta_T_s = 0
+                    self.df.loc[i , "delta_T_s"] = 0
 
             """ Quantities of all phases """
-            self.df.loc[i, "T_s"] = self.df.loc[i - 1, "T_s"] + self.delta_T_s
+            self.df.loc[i, "T_s"] = self.df.loc[i - 1, "T_s"] + self.df.loc[i , "delta_T_s"]
             self.df.loc[i, "meltwater"] = self.df.loc[i - 1, "meltwater"] + self.df.loc[i , "melted"]
             self.df.loc[i, "ice"] = (
                 self.df.loc[i - 1, "ice"]
@@ -1132,8 +1199,8 @@ class Icestupa:
                     self.df.loc[i, "SA"] * self.rho_i
             )
 
-            self.delta_T_s, self.liquid, self.gas, self.EJoules = (
-                [0] * 4
+            self.liquid, self.gas, self.EJoules = (
+                [0] * 3
             )
 
 
@@ -1158,7 +1225,7 @@ if __name__ == "__main__":
 
     schwarzsee.summary()
 
-    schwarzsee.print_output()
+    # schwarzsee.print_output()
 
     total = time.time() - start
 
