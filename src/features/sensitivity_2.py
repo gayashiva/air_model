@@ -5,7 +5,6 @@ import pandas as pd
 import math
 
 from src.data.config import site, option, folders, fountain, surface
-from src.models.air_forecast import icestupa
 from src.data.make_dataset import projectile_xy, discharge_rate
 
 from SALib.sample import saltelli
