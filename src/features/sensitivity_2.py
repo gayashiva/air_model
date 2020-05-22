@@ -7,8 +7,6 @@ import math
 from src.data.config import site, option, folders, fountain, surface
 from src.data.make_dataset import projectile_xy, discharge_rate
 
-from SALib.sample import saltelli
-
 
 def run_simulation(experiment):
 

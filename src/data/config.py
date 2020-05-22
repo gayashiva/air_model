@@ -6,7 +6,7 @@ dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 # site = input("Input the Field Site Name: ") or "guttannen"
 
-site = "schwarzsee"
+site = "schwarzsee_2020"
 option = "schwarzsee"
 
 print("Site is", site)
@@ -73,6 +73,30 @@ if site == "schwarzsee":
         aperture_f=0.005,  # Fountain aperture diameter
         theta_f=45,  # Fountain aperture diameter
         h_f=1.35,  # Fountain steps h_f
+        discharge=3.58,  # Fountain on discharge
+        crit_temp=-5,  # Fountain runtime temperature
+        latitude = 46.693723,
+        longitude = 7.297543,
+        utc_offset = 1,
+    )
+
+if site == "schwarzsee_2020":
+    folders = dict(
+        dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
+        input_folder=os.path.join(dir, "data/interim/schwarzsee_2020/"),
+        output_folder=os.path.join(dir, "data/processed/schwarzsee_2020/"),
+        sim_folder=os.path.join(dir, "data/processed/schwarzsee_2020/simulations/"),
+        data=os.path.join(dir, "data/raw/CardConvert/"),
+    )
+
+    dates = dict(
+        start_date=datetime(2019, 12, 28),
+        end_date=datetime(2020, 1, 6),
+        fountain_off_date=datetime(2020, 2, 10),
+    )
+    fountain = dict(
+        aperture_f=0.005,  # Fountain aperture diameter
+        h_f=4,  # Fountain steps h_f
         discharge=3.58,  # Fountain on discharge
         crit_temp=-5,  # Fountain runtime temperature
         latitude = 46.693723,
