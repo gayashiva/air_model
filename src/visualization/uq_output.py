@@ -53,7 +53,7 @@ for name in names:
     #     plt.clf()
 
 
-names = ["$z_i$", "$T_{rain}$", "$d_{ppt}$", "$\epsilon_i$", "$a_i$", "$a_s$", "$t_{decay}$",  "$dia_{F}$",  "$h_F$", "$h_{AWS}$",  "$\Delta x$"]
+names = ["$z_{ice}$", "$T_{rain}$", r'$\rho_{ppt}$', "$\epsilon_{ice}$", r'$\alpha_{ice}$', r'$\alpha_{snow}$', "$t_{decay}$",  "$dia_{F}$",  "$h_F$", "$h_{AWS}$",  "$\Delta x$"]
 
 fig, ax = plt.subplots()
 draw_plot(evaluations, 'k', 'xkcd:grey', names)

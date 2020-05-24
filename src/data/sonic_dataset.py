@@ -187,8 +187,9 @@ if __name__ == '__main__':
                 / ((np.log(3 / 0.0017)) ** 2)
         )
 
-    print(df["amb_press_Avg"].head(), df["T_probe_Avg"].head(), df["WS"].head(), df["HC"].head() )
+    # print(df["amb_press_Avg"].head(), df["T_probe_Avg"].head(), df["WS"].head(), df["HC"].head() )
 
+    dfd = df.set_index("TIMESTAMP").resample("12H").mean().reset_index()
 
     """Input Plots"""
 
@@ -253,11 +254,20 @@ if __name__ == '__main__':
 
     ax1 = fig.add_subplot(111)
 
-    y31 = df.H
-    ax1.plot(x, y31, "k-", linewidth=0.5)
+    x1 = dfd.TIMESTAMP
+    y31 = -dfd.H
+    ax1.plot(x1, y31, "k-", linewidth=0.5)
     ax1.set_ylabel("Sensible Heat A [$W\,m^{-2}$]")
     ax1.grid()
 
+    # ax1t = ax1.twinx()
+    # ax1t.plot(x1, dfd.HC, "b-", linewidth=0.5)
+    # ax1t.set_ylabel("Sensible Heat C [$W\,m^{-2}$]", color="b")
+    # for tl in ax1t.get_yticklabels():
+    #     tl.set_color("b")
+
+    ax1.set_ylim([-100,100])
+    # ax1t.set_ylim([-100,100])
     # format the ticks
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -269,11 +279,13 @@ if __name__ == '__main__':
 
     ax1 = fig.add_subplot(111)
 
-    y31 = df.HB
-    ax1.plot(x, y31, "k-", linewidth=0.5)
+    y31 = -dfd.HB
+    ax1.plot(x1, y31, "k-", linewidth=0.5)
     ax1.set_ylabel("Sensible Heat B [$W\,m^{-2}$]")
     ax1.grid()
 
+    ax1.set_ylim([-100,100])
+
     # format the ticks
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -284,10 +296,12 @@ if __name__ == '__main__':
     plt.clf()
 
     ax1 = fig.add_subplot(111)
-    y31 = df.HC
-    ax1.plot(x, y31, "k-", linewidth=0.5)
+    y31 = dfd.HC
+    ax1.plot(x1, y31, "k-", linewidth=0.5)
     ax1.set_ylabel("Sensible Heat C [$W\,m^{-2}$]")
     ax1.grid()
+
+    ax1.set_ylim([-100,100])
 
     # format the ticks
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())

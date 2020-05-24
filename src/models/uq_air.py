@@ -7,25 +7,7 @@ import math
 from src.models.air import Icestupa
 
 def uniform(parameter, interval):
-    """
-    A closure that creates a function that takes a `parameter` as input and
-    returns a uniform distribution with `interval` around `parameter`.
-    Parameters
-    ----------
-    interval : int, float
-        The interval of the uniform distribution around `parameter`.
-    Returns
-    -------
-    distribution : function
-        A function that takes `parameter` as input and returns a
-        uniform distribution with `interval` around this `parameter`.
-    Notes
-    -----
-    This function ultimately calculates:
-    .. code-block:: Python
-        cp.Uniform(parameter - abs(interval/2.*parameter),
-                   parameter + abs(interval/2.*parameter)).
-    """
+
     if parameter == 0:
         raise ValueError("Creating a percentage distribution around 0 does not work")
 

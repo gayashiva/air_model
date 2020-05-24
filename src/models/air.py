@@ -57,11 +57,6 @@ class Icestupa:
     dia_f = 0.005  # Fountain aperture diameter
     h_f = 1.35  # Fountain steps h_f
 
-    """Site constants"""
-    latitude = 46.693723
-    longitude = 7.297543
-    utc_offset = 1
-
     """Miscellaneous"""
     ftl = 0  # Fountain flight time loss ftl,
     h_aws = 3  # m height of AWS
@@ -72,6 +67,11 @@ class Icestupa:
     def __init__(self, site="schwarzsee"):
 
         self.site = site
+
+        """Site constants"""
+        self.latitude = 46.693723
+        self.longitude = 7.297543
+        self.utc_offset = 1
 
         self.folders = dict(
             input_folder=os.path.join(self.dirname, "data/interim/" + site + "/"),
@@ -738,7 +738,7 @@ class Icestupa:
                 "LW": "$q_{LW}$",
                 "Qs": "$q_S$",
                 "Ql": "$q_L$",
-                "Qf": "$q_{F_c}$",
+                "Qf": "$q_{F}$",
             },
             axis=1,
         )
@@ -905,7 +905,7 @@ class Icestupa:
 
         dfd = dfd.set_index("label")
 
-        z = dfd[['$q_{SW}$', '$q_{LW}$', '$q_S$', '$q_L$', '$q_{F_c}$']]
+        z = dfd[['$q_{SW}$', '$q_{LW}$', '$q_S$', '$q_L$', '$q_{F}$']]
         ax = z.plot.bar(stacked=True, edgecolor=dfd["Discharge"], linewidth=0.5)
         ax.xaxis.set_label_text("")
         plt.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
@@ -918,6 +918,7 @@ class Icestupa:
         plt.close('all')
 
         fig = plt.figure()
+
         dfds = self.df[["When", "thickness", "SA"]]
         dfds["When"] = pd.to_datetime(dfds["When"], format="%Y.%m.%d %H:%M:%S")
 
@@ -946,7 +947,7 @@ class Icestupa:
 
         ax1 = fig.add_subplot(2, 1, 1)
         y1.plot(kind='bar', stacked=True, edgecolor='black', linewidth=0.5, color=['#D9E9FA', '#0C70DE'], ax=ax1)
-        plt.ylabel('Thickness ($m$)')
+        plt.ylabel('Thickness ($m$ w. e.)')
         plt.xticks(rotation=45)
         # plt.legend(loc='upper right')
         ax1.set_ylim(-0.025, 0.025)
@@ -1225,7 +1226,7 @@ if __name__ == "__main__":
 
     schwarzsee.summary()
 
-    # schwarzsee.print_output()
+    schwarzsee.print_output()
 
     total = time.time() - start
 
