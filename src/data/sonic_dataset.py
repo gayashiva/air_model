@@ -260,14 +260,14 @@ if __name__ == '__main__':
     ax1.set_ylabel("Sensible Heat A [$W\,m^{-2}$]")
     ax1.grid()
 
-    # ax1t = ax1.twinx()
-    # ax1t.plot(x1, dfd.HC, "b-", linewidth=0.5)
-    # ax1t.set_ylabel("Sensible Heat C [$W\,m^{-2}$]", color="b")
-    # for tl in ax1t.get_yticklabels():
-    #     tl.set_color("b")
+    ax1t = ax1.twinx()
+    ax1t.plot(x1, dfd.HC, "b-", linewidth=0.5)
+    ax1t.set_ylabel("Sensible Heat C [$W\,m^{-2}$]", color="b")
+    for tl in ax1t.get_yticklabels():
+        tl.set_color("b")
 
     ax1.set_ylim([-100,100])
-    # ax1t.set_ylim([-100,100])
+    ax1t.set_ylim([-100,100])
     # format the ticks
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
