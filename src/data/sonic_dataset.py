@@ -154,10 +154,12 @@ if __name__ == '__main__':
     df["e_probe"] = pd.to_numeric(df["e_probe"], errors="coerce")
     df["NETRAD"] = pd.to_numeric(df["NETRAD"], errors="coerce")
     df["T_probe_Avg"] = pd.to_numeric(df["T_probe_Avg"], errors="coerce")
+    df["T_SONIC"] = pd.to_numeric(df["T_SONIC"], errors="coerce")
     df["RH_probe_Avg"] = pd.to_numeric(df["RH_probe_Avg"], errors="coerce")
     df["Waterpressure"] = pd.to_numeric(df["Waterpressure"], errors="coerce")
     df["WaterFlow"] = pd.to_numeric(df["WaterFlow"], errors="coerce")
     df["WS"] = pd.to_numeric(df["WS"], errors="coerce")
+    df["WS_MAX"] = pd.to_numeric(df["WS"], errors="coerce")
     df["WSB"] = pd.to_numeric(df["WSB"], errors="coerce")
     df["SnowHeight"] = pd.to_numeric(df["SnowHeight"], errors="coerce")
 
