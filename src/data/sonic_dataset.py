@@ -176,22 +176,48 @@ if __name__ == '__main__':
     df['H'] = df['H'].apply(lambda x: x if abs(x) < 500 else np.NAN)
     df['HB'] = df['HB'].apply(lambda x: x if abs(x) < 500 else np.NAN)
 
+    g = 9.81
+    h_aws = 1.2
+    z0 = 0.0017
+    c_a = 1.01 * 1000
+    rho_a = 1.29
+    p0 = 1013
+    k = 0.4
+    df['Ri_b'] = 0
+
+
+
     for i in range(0,df.shape[0]):
+
+        df.loc[i,'Ri_b'] = (
+                g
+                * (h_aws - z0)
+                * (df.loc[i, "T_SONIC"])
+                / ((df.loc[i, "T_SONIC"]+273) * df.loc[i, "WS"] ** 2))
+
         # Sensible Heat
         df.loc[i, "HC"] = (
-                1.01 * 1000
-                * 1.29
+                c_a
+                * rho_a
                 * df.loc[i, "amb_press_Avg"] * 10
-                / 1013
-                * math.pow(0.4, 2)
+                / p0
+                * math.pow(k, 2)
                 * df.loc[i, "WS"]
-                * (df.loc[i, "T_probe_Avg"])
-                / ((np.log(3 / 0.0017)) ** 2)
+                * (df.loc[i, "T_SONIC"])
+                / ((np.log(h_aws / z0)) ** 2)
         )
+
+        if df.loc[i,'Ri_b'] < 0.2:
+
+            if df.loc[i,'Ri_b'] > 0:
+                df.loc[i, "HC"] = df.loc[i, "HC"] * (1- 5 * df.loc[i,'Ri_b']) ** 2
+            else:
+                df.loc[i, "HC"] = df.loc[i, "HC"] * math.pow((1- 16 * df.loc[i,'Ri_b']), 0.75)
+
 
     # print(df["amb_press_Avg"].head(), df["T_probe_Avg"].head(), df["WS"].head(), df["HC"].head() )
 
-    dfd = df.set_index("TIMESTAMP").resample("12H").mean().reset_index()
+    dfd = df.set_index("TIMESTAMP").resample("D").mean().reset_index()
 
     """Input Plots"""
 
@@ -206,6 +232,12 @@ if __name__ == '__main__':
     ax1.plot(x, y1, "k-", linewidth=0.5)
     ax1.set_ylabel("Temperature [$\degree C$]")
     ax1.grid()
+
+    ax1t = ax1.twinx()
+    ax1t.plot(x, df.T_SONIC, "b-", linewidth=0.5)
+    ax1t.set_ylabel("Temperature Sonic [$\degree C$]", color="b")
+    for tl in ax1t.get_yticklabels():
+        tl.set_color("b")
 
     # format the ticks
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -303,7 +335,7 @@ if __name__ == '__main__':
     ax1.set_ylabel("Sensible Heat C [$W\,m^{-2}$]")
     ax1.grid()
 
-    ax1.set_ylim([-100,100])
+    # ax1.set_ylim([-100,100])
 
     # format the ticks
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -367,6 +399,23 @@ if __name__ == '__main__':
     ax1.plot(x, y7, "k-", linewidth=0.5)
     ax1.set_ylabel("Wind B [$m\,s^{-1}$]")
     ax1.grid()
+
+    # format the ticks
+    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    ax1.grid()
+    fig.autofmt_xdate()
+    pp.savefig(bbox_inches="tight")
+    plt.clf()
+
+    ax1 = fig.add_subplot(111)
+    y7 = df.Ri_b
+    ax1.plot(x, y7, "k-", linewidth=0.5)
+    ax1.set_ylabel("Ri")
+    ax1.grid()
+    # ax1.set_ylim([0,0.2])
+
 
     # format the ticks
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
