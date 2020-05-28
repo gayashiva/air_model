@@ -28,7 +28,7 @@ def projectile_xy(v, hs=0.0, g=9.8):
     theta_f = math.radians(45)
     while True:
         # now calculate the height y
-        y = hs + (t * v * math.sin(theta_f)) - (g * t * t) / 2\
+        y = hs + (t * v * math.sin(theta_f)) - (g * t * t) / 2
         # projectile has hit ground level
         if y < 0:
             break
@@ -230,12 +230,12 @@ if __name__ == '__main__':
 
     y1 = df.T_probe_Avg
     ax1.plot(x, y1, "k-", linewidth=0.5)
-    ax1.set_ylabel("Temperature [$\degree C$]")
+    ax1.set_ylabel("Temperature [$\\degree C$]")
     ax1.grid()
 
     ax1t = ax1.twinx()
     ax1t.plot(x, df.T_SONIC, "b-", linewidth=0.5)
-    ax1t.set_ylabel("Temperature Sonic [$\degree C$]", color="b")
+    ax1t.set_ylabel("Temperature Sonic [$\\degree C$]", color="b")
     for tl in ax1t.get_yticklabels():
         tl.set_color("b")
 
@@ -274,7 +274,7 @@ if __name__ == '__main__':
 
     y3 = df.NETRAD
     ax1.plot(x, y3, "k-", linewidth=0.5)
-    ax1.set_ylabel("Net Radiation [$W\,m^{-2}$]")
+    ax1.set_ylabel("Net Radiation [$W\\,m^{-2}$]")
     ax1.grid()
 
     # format the ticks
@@ -291,12 +291,12 @@ if __name__ == '__main__':
     x1 = dfd.TIMESTAMP
     y31 = -dfd.H
     ax1.plot(x1, y31, "k-", linewidth=0.5)
-    ax1.set_ylabel("Sensible Heat A [$W\,m^{-2}$]")
+    ax1.set_ylabel("Sensible Heat A [$W\\,m^{-2}$]")
     ax1.grid()
 
     ax1t = ax1.twinx()
     ax1t.plot(x1, dfd.HC, "b-", linewidth=0.5)
-    ax1t.set_ylabel("Sensible Heat C [$W\,m^{-2}$]", color="b")
+    ax1t.set_ylabel("Sensible Heat C [$W\\,m^{-2}$]", color="b")
     for tl in ax1t.get_yticklabels():
         tl.set_color("b")
 
@@ -315,7 +315,7 @@ if __name__ == '__main__':
 
     y31 = -dfd.HB
     ax1.plot(x1, y31, "k-", linewidth=0.5)
-    ax1.set_ylabel("Sensible Heat B [$W\,m^{-2}$]")
+    ax1.set_ylabel("Sensible Heat B [$W\\,m^{-2}$]")
     ax1.grid()
 
     ax1.set_ylim([-100,100])
@@ -332,7 +332,7 @@ if __name__ == '__main__':
     ax1 = fig.add_subplot(111)
     y31 = dfd.HC
     ax1.plot(x1, y31, "k-", linewidth=0.5)
-    ax1.set_ylabel("Sensible Heat C [$W\,m^{-2}$]")
+    ax1.set_ylabel("Sensible Heat C [$W\\,m^{-2}$]")
     ax1.grid()
 
     # ax1.set_ylim([-100,100])
@@ -382,7 +382,7 @@ if __name__ == '__main__':
 
     y6 = df.WS
     ax1.plot(x, y6, "k-", linewidth=0.5)
-    ax1.set_ylabel("Wind A [$m\,s^{-1}$]")
+    ax1.set_ylabel("Wind A [$m\\,s^{-1}$]")
     ax1.grid()
 
     # format the ticks
@@ -397,7 +397,7 @@ if __name__ == '__main__':
     ax1 = fig.add_subplot(111)
     y7 = df.WSB
     ax1.plot(x, y7, "k-", linewidth=0.5)
-    ax1.set_ylabel("Wind B [$m\,s^{-1}$]")
+    ax1.set_ylabel("Wind B [$m\\,s^{-1}$]")
     ax1.grid()
 
     # format the ticks
@@ -540,7 +540,7 @@ if __name__ == '__main__':
     #
     # y1 = df.Discharge
     # ax1.plot(x, y1, "k-", linewidth=0.5)
-    # ax1.set_ylabel("Discharge [$l\, min^{-1}$]")
+    # ax1.set_ylabel("Discharge [$l\\\, min^{-1}$]")
     # ax1.grid()
     #
     # # format the ticks
