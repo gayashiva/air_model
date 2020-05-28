@@ -28,7 +28,7 @@ def projectile_xy(v, hs=0.0, g=9.8):
     theta_f = math.radians(45)
     while True:
         # now calculate the height y
-        y = hs + (t * v * math.sin(theta_f)) - (g * t * t) / 2
+        y = hs + (t * v * math.sin(theta_f)) - (g * t * t) / 2\
         # projectile has hit ground level
         if y < 0:
             break
