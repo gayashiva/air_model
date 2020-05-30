@@ -159,7 +159,8 @@ if __name__ == '__main__':
     df["Waterpressure"] = pd.to_numeric(df["Waterpressure"], errors="coerce")
     df["WaterFlow"] = pd.to_numeric(df["WaterFlow"], errors="coerce")
     df["WS"] = pd.to_numeric(df["WS"], errors="coerce")
-    df["WS_MAX"] = pd.to_numeric(df["WS"], errors="coerce")
+    df["WS_RSLT"] = pd.to_numeric(df["WS_RSLT"], errors="coerce")
+    df["WS_MAX"] = pd.to_numeric(df["WS_MAX"], errors="coerce")
     df["WSB"] = pd.to_numeric(df["WSB"], errors="coerce")
     df["SnowHeight"] = pd.to_numeric(df["SnowHeight"], errors="coerce")
 
@@ -176,9 +177,10 @@ if __name__ == '__main__':
     df['H'] = df['H'].apply(lambda x: x if abs(x) < 500 else np.NAN)
     df['HB'] = df['HB'].apply(lambda x: x if abs(x) < 500 else np.NAN)
 
+    df['H'] = -df['H']
     g = 9.81
     h_aws = 1.2
-    z0 = 0.0017
+    df['z_0'] = 0.0017
     c_a = 1.01 * 1000
     rho_a = 1.29
     p0 = 1013
@@ -189,114 +191,71 @@ if __name__ == '__main__':
 
     for i in range(0,df.shape[0]):
 
-        df.loc[i,'Ri_b'] = (
-                g
-                * (h_aws - z0)
-                * (df.loc[i, "T_SONIC"])
-                / ((df.loc[i, "T_SONIC"]+273) * df.loc[i, "WS"] ** 2))
+        for j in range(0,5):
 
-        # Sensible Heat
-        df.loc[i, "HC"] = (
-                c_a
-                * rho_a
-                * df.loc[i, "amb_press_Avg"] * 10
-                / p0
-                * math.pow(k, 2)
-                * df.loc[i, "WS"]
-                * (df.loc[i, "T_SONIC"])
-                / ((np.log(h_aws / z0)) ** 2)
-        )
-
-        if df.loc[i,'Ri_b'] < 0.2:
-
-            if df.loc[i,'Ri_b'] > 0:
-                df.loc[i, "HC"] = df.loc[i, "HC"] * (1- 5 * df.loc[i,'Ri_b']) ** 2
-            else:
-                df.loc[i, "HC"] = df.loc[i, "HC"] * math.pow((1- 16 * df.loc[i,'Ri_b']), 0.75)
+            df.loc[i,'Ri_b'] = (
+            g
+            * (h_aws - df.loc[i,'z_0'])
+            * (df.loc[i, "T_SONIC"])
+            / ((df.loc[i, "T_SONIC"]+273) * df.loc[i, "WS_RSLT"] ** 2))
 
 
-    # print(df["amb_press_Avg"].head(), df["T_probe_Avg"].head(), df["WS"].head(), df["HC"].head() )
+
+            # Sensible Heat
+            df.loc[i, "HC"] = (
+                    c_a
+                    * rho_a
+                    * df.loc[i, "amb_press_Avg"] * 10
+                    / p0
+                    * math.pow(k, 2)
+                    * df.loc[i, "WS_RSLT"]
+                    * (df.loc[i, "T_SONIC"])
+                    / ((np.log(h_aws / df.loc[i,'z_0'])) ** 2)
+            )
+
+            if (df.loc[i,'Ri_b']) < 0.2:
+
+                if df.loc[i,'Ri_b'] > 0:
+                    df.loc[i, "HC"] = df.loc[i, "HC"] * (1- 5 * df.loc[i,'Ri_b']) ** 2
+                else:
+                    df.loc[i, "HC"] = df.loc[i, "HC"] * math.pow((1- 16 * df.loc[i,'Ri_b']), 0.75)
+
+
+            df.loc[i,'z_0'] = (
+                        ((np.log(h_aws / df.loc[i,'z_0'])) ** 2)
+                        * df.loc[i, "HC"]
+                        / (df.loc[i, "H"])
+                )
+            df.loc[i,'z_0'] = math.pow(abs(df.loc[i,'z_0']), 1/2)
+            df.loc[i,'z_0'] = np.log(h_aws) - df.loc[i,'z_0']
+            df.loc[i,'z_0'] = math.exp(df.loc[i,'z_0'])
+
+        
+
+    print(df['z_0'].mean())
+
+    # print(df["amb_press_Avg"].head(), df["T_SONIC"].head(), df["WS"].head(), df["HC"].head() )
 
     dfd = df.set_index("TIMESTAMP").resample("D").mean().reset_index()
 
-    """Input Plots"""
-
-    pp = PdfPages(folders["input_folder"] + site + "_data" + ".pdf")
+    pp = PdfPages(folders["input_folder"] + site + "_eddy" + ".pdf")
 
     x = df.TIMESTAMP
 
     fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-
-    y1 = df.T_probe_Avg
-    ax1.plot(x, y1, "k-", linewidth=0.5)
-    ax1.set_ylabel("Temperature [$\\degree C$]")
-    ax1.grid()
-
-    ax1t = ax1.twinx()
-    ax1t.plot(x, df.T_SONIC, "b-", linewidth=0.5)
-    ax1t.set_ylabel("Temperature Sonic [$\\degree C$]", color="b")
-    for tl in ax1t.get_yticklabels():
-        tl.set_color("b")
-
-    # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
-
-    ax1 = fig.add_subplot(111)
-
-    y2 = df.WaterFlow
-    ax1.plot(x, y2, "k-", linewidth=0.5)
-    ax1.set_ylabel("Discharge Rate ")
-    ax1.grid()
-
-    ax1t = ax1.twinx()
-    ax1t.plot(x, df.Waterpressure, "b-", linewidth=0.5)
-    ax1t.set_ylabel("Water Pressure [$Bar$]", color="b")
-    for tl in ax1t.get_yticklabels():
-        tl.set_color("b")
-
-    # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
-
-    ax1 = fig.add_subplot(111)
-
-    y3 = df.NETRAD
-    ax1.plot(x, y3, "k-", linewidth=0.5)
-    ax1.set_ylabel("Net Radiation [$W\\,m^{-2}$]")
-    ax1.grid()
-
-    # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
 
     ax1 = fig.add_subplot(111)
 
     x1 = dfd.TIMESTAMP
-    y31 = -dfd.H
+
+    y31 = dfd.H
     ax1.plot(x1, y31, "k-", linewidth=0.5)
-    ax1.set_ylabel("Sensible Heat A [$W\\,m^{-2}$]")
+    ax1.set_ylabel("Sensible Heat Sonic [$W\\,m^{-2}$]")
     ax1.grid()
 
     ax1t = ax1.twinx()
     ax1t.plot(x1, dfd.HC, "b-", linewidth=0.5)
-    ax1t.set_ylabel("Sensible Heat C [$W\\,m^{-2}$]", color="b")
+    ax1t.set_ylabel("Sensible Heat Bulk [$W\\,m^{-2}$]", color="b")
     for tl in ax1t.get_yticklabels():
         tl.set_color("b")
 
@@ -311,78 +270,54 @@ if __name__ == '__main__':
     pp.savefig(bbox_inches="tight")
     plt.clf()
 
+    # ax1 = fig.add_subplot(111)
+    # y31 = dfd.HC
+    # ax1.plot(x1, y31, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Sensible Heat Bulk [$W\\,m^{-2}$]")
+    # ax1.grid()
+
+    # # ax1.set_ylim([-100,100])
+
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    # ax1.grid()
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
+
     ax1 = fig.add_subplot(111)
-
-    y31 = -dfd.HB
-    ax1.plot(x1, y31, "k-", linewidth=0.5)
-    ax1.set_ylabel("Sensible Heat B [$W\\,m^{-2}$]")
+    ax1.scatter(dfd.H, dfd.HC)
+    ax1.set_xlabel("Sensible Heat Sonic [$W\\,m^{-2}$]")
+    ax1.set_ylabel("Sensible Heat Bulk [$W\\,m^{-2}$]")
     ax1.grid()
 
-    ax1.set_ylim([-100,100])
 
+    lims = [
+    np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+    np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+    ]
+    lims = [
+    np.min([-100, 100]),  # min of both axes
+    np.max([-100, 100]),  # max of both axes
+    ]
+
+    # now plot both limits against eachother
+    ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
+    ax1.set_aspect('equal')
+    ax1.set_xlim(lims)
+    ax1.set_ylim(lims)
     # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
     ax1.grid()
-    fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
 
-    ax1 = fig.add_subplot(111)
-    y31 = dfd.HC
-    ax1.plot(x1, y31, "k-", linewidth=0.5)
-    ax1.set_ylabel("Sensible Heat C [$W\\,m^{-2}$]")
-    ax1.grid()
-
-    # ax1.set_ylim([-100,100])
-
-    # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
 
     ax1 = fig.add_subplot(111)
-
-    y4 = df.SnowHeight
-    ax1.plot(x, y4, "k-", linewidth=0.5)
-    ax1.set_ylabel("Snow Height [$cm$]")
-    ax1.grid()
-
-    # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
-
-    ax1 = fig.add_subplot(111)
-
-    y5 = df.amb_press_Avg
-    ax1.plot(x, y5, "k-", linewidth=0.5)
-    ax1.set_ylabel("Pressure [$hPa$]")
-    ax1.grid()
-
-    # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
-
-    ax1 = fig.add_subplot(111)
-
-    y6 = df.WS
+    y6 = df.WS_RSLT
     ax1.plot(x, y6, "k-", linewidth=0.5)
-    ax1.set_ylabel("Wind A [$m\\,s^{-1}$]")
+    ax1.set_ylabel("Wind Sonic [$m\\,s^{-1}$]")
     ax1.grid()
 
     # format the ticks
@@ -395,9 +330,9 @@ if __name__ == '__main__':
     plt.clf()
 
     ax1 = fig.add_subplot(111)
-    y7 = df.WSB
-    ax1.plot(x, y7, "k-", linewidth=0.5)
-    ax1.set_ylabel("Wind B [$m\\,s^{-1}$]")
+    y6 = df.T_SONIC
+    ax1.plot(x, y6, "k-", linewidth=0.5)
+    ax1.set_ylabel("Temperature Sonic [$m\\,s^{-1}$]")
     ax1.grid()
 
     # format the ticks
@@ -414,7 +349,23 @@ if __name__ == '__main__':
     ax1.plot(x, y7, "k-", linewidth=0.5)
     ax1.set_ylabel("Ri")
     ax1.grid()
-    # ax1.set_ylim([0,0.2])
+    # ax1.set_ylim([-0.2,0.2])
+
+
+    # format the ticks
+    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    ax1.grid()
+    fig.autofmt_xdate()
+    pp.savefig(bbox_inches="tight")
+    plt.clf()
+
+    ax1 = fig.add_subplot(111)
+    y7 = df.z_0
+    ax1.plot(x, y7, "k-", linewidth=0.5)
+    ax1.set_ylabel("z_0")
+    ax1.grid()
 
 
     # format the ticks
@@ -427,6 +378,215 @@ if __name__ == '__main__':
     plt.clf()
 
     pp.close()
+
+    # """Input Plots"""
+
+    # pp = PdfPages(folders["input_folder"] + site + "_data" + ".pdf")
+
+    # x = df.TIMESTAMP
+
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(111)
+
+    # y1 = df.T_probe_Avg
+    # ax1.plot(x, y1, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Temperature [$\\degree C$]")
+    # ax1.grid()
+
+    # ax1t = ax1.twinx()
+    # ax1t.plot(x, df.T_SONIC, "b-", linewidth=0.5)
+    # ax1t.set_ylabel("Temperature Sonic [$\\degree C$]", color="b")
+    # for tl in ax1t.get_yticklabels():
+    #     tl.set_color("b")
+
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    # ax1.grid()
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
+
+    # ax1 = fig.add_subplot(111)
+
+    # y2 = df.WaterFlow
+    # ax1.plot(x, y2, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Discharge Rate ")
+    # ax1.grid()
+
+    # ax1t = ax1.twinx()
+    # ax1t.plot(x, df.Waterpressure, "b-", linewidth=0.5)
+    # ax1t.set_ylabel("Water Pressure [$Bar$]", color="b")
+    # for tl in ax1t.get_yticklabels():
+    #     tl.set_color("b")
+
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    # ax1.grid()
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
+
+    # ax1 = fig.add_subplot(111)
+
+    # y3 = df.NETRAD
+    # ax1.plot(x, y3, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Net Radiation [$W\\,m^{-2}$]")
+    # ax1.grid()
+
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    # ax1.grid()
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
+
+    # ax1 = fig.add_subplot(111)
+
+    # x1 = dfd.TIMESTAMP
+    # y31 = -dfd.H
+    # ax1.plot(x1, y31, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Sensible Heat A [$W\\,m^{-2}$]")
+    # ax1.grid()
+
+    # ax1t = ax1.twinx()
+    # ax1t.plot(x1, dfd.HC, "b-", linewidth=0.5)
+    # ax1t.set_ylabel("Sensible Heat C [$W\\,m^{-2}$]", color="b")
+    # for tl in ax1t.get_yticklabels():
+    #     tl.set_color("b")
+
+    # ax1.set_ylim([-100,100])
+    # ax1t.set_ylim([-100,100])
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    # ax1.grid()
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
+
+    # ax1 = fig.add_subplot(111)
+
+    # y31 = -dfd.HB
+    # ax1.plot(x1, y31, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Sensible Heat B [$W\\,m^{-2}$]")
+    # ax1.grid()
+
+    # ax1.set_ylim([-100,100])
+
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    # ax1.grid()
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
+
+    # ax1 = fig.add_subplot(111)
+    # y31 = dfd.HC
+    # ax1.plot(x1, y31, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Sensible Heat C [$W\\,m^{-2}$]")
+    # ax1.grid()
+
+    # # ax1.set_ylim([-100,100])
+
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    # ax1.grid()
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
+
+    # ax1 = fig.add_subplot(111)
+
+    # y4 = df.SnowHeight
+    # ax1.plot(x, y4, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Snow Height [$cm$]")
+    # ax1.grid()
+
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    # ax1.grid()
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
+
+    # ax1 = fig.add_subplot(111)
+
+    # y5 = df.amb_press_Avg
+    # ax1.plot(x, y5, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Pressure [$hPa$]")
+    # ax1.grid()
+
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    # ax1.grid()
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
+
+    # ax1 = fig.add_subplot(111)
+
+    # y6 = df.WS
+    # ax1.plot(x, y6, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Wind A [$m\\,s^{-1}$]")
+    # ax1.grid()
+
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    # ax1.grid()
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
+
+    # ax1 = fig.add_subplot(111)
+    # y7 = df.WSB
+    # ax1.plot(x, y7, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Wind B [$m\\,s^{-1}$]")
+    # ax1.grid()
+
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    # ax1.grid()
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
+
+    # ax1 = fig.add_subplot(111)
+    # y7 = df.Ri_b
+    # ax1.plot(x, y7, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Ri")
+    # ax1.grid()
+    # # ax1.set_ylim([0,0.2])
+
+
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    # ax1.grid()
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
+
+    # pp.close()
 
     # # CSV output
     # df.rename(
