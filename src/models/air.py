@@ -447,7 +447,7 @@ class Icestupa:
         # Warm ice Layer to 0 C for fountain run
 
         heating_time = self.rho_i * self.c_i / self.k_i * self.dx**2
-        
+
         if (self.liquid > 0) & (self.df.loc[i - 1, "T_s"] < 0):
 
             self.df.loc[i, "Qf"] = (
@@ -455,21 +455,15 @@ class Icestupa:
                 * self.dx
                 * self.c_i
                 * (self.df.loc[i - 1, "T_s"])
-                / heating_time
+                / self.time_steps
             )
-
-            self.df.loc[i , "delta_T_s"] = -self.df.loc[i - 1, "T_s"]
-            ice_formed = (self.df.loc[i , "Qf"] * heating_time * self.df.loc[i, "SA"])/(-self.L_f)
-            water_avl = self.liquid/self.time_steps*heating_time
-
-            print(self.df.loc[i , "When"], self.df.loc[i , "Qf"], water_avl, ice_formed)
 
         # Total Energy W/m2
         self.df.loc[i, "TotalE"] = (
             self.df.loc[i, "SW"]
             + self.df.loc[i, "LW"]
             + self.df.loc[i, "Qs"]
-            + self.df.loc[i, "Qf"] * heating_time / self.time_steps
+            + self.df.loc[i, "Qf"]
         )
 
         # if self.df.loc[i, "TotalE"] > 400 :
