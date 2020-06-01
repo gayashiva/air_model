@@ -32,7 +32,7 @@ class Icestupa:
     rho_i = 916  # Density of Ice rho_i
     rho_a = 1.29  # kg/m3 air density at mean sea level
     k = 0.4  # Van Karman constant
-    k_i = 2.123 # Waite et al. 2006
+    k_i = 2.123 # Thermal Conductivity Waite et al. 2006
     bc = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
     p0 = 1013  # Standard air pressure hPa
 
@@ -388,16 +388,18 @@ class Icestupa:
             22.46 * (self.df.loc[i - 1, "T_s"]) / ((self.df.loc[i - 1, "T_s"]) + 272.62)
         )
 
-        self.df.loc[i, "Ql"] = (
-            0.623
-            * self.L_s
-            * self.rho_a
-            / self.p0
-            * math.pow(self.k, 2)
-            * self.df.loc[i, "v_a"]
-            * (row.vp_a - self.df.loc[i, "vp_ice"])
-            / ((np.log(self.h_aws / self.z_i)) ** 2)
-        )
+        if self.liquid == 0:
+            self.df.loc[i, "Ql"] = (
+                0.623
+                * self.L_s
+                * self.rho_a
+                / self.p0
+                * math.pow(self.k, 2)
+                * self.df.loc[i, "v_a"]
+                * (row.vp_a - self.df.loc[i, "vp_ice"])
+                / ((np.log(self.h_aws / self.z_i)) ** 2)
+            )
+
 
         if self.df.loc[i, "Ql"] < 0:
             self.gas -= (
@@ -443,22 +445,31 @@ class Icestupa:
         )
 
         # Warm ice Layer to 0 C for fountain run
+
+        heating_time = self.rho_i * self.c_i / self.k_i * self.dx**2
+        
         if (self.liquid > 0) & (self.df.loc[i - 1, "T_s"] < 0):
+
             self.df.loc[i, "Qf"] = (
                 self.rho_i
                 * self.dx
                 * self.c_i
                 * (self.df.loc[i - 1, "T_s"])
-                / self.time_steps
+                / heating_time
             )
+
             self.df.loc[i , "delta_T_s"] = -self.df.loc[i - 1, "T_s"]
+            ice_formed = (self.df.loc[i , "Qf"] * heating_time * self.df.loc[i, "SA"])/(-self.L_f)
+            water_avl = self.liquid/self.time_steps*heating_time
+
+            print(self.df.loc[i , "When"], self.df.loc[i , "Qf"], water_avl, ice_formed)
 
         # Total Energy W/m2
         self.df.loc[i, "TotalE"] = (
             self.df.loc[i, "SW"]
             + self.df.loc[i, "LW"]
             + self.df.loc[i, "Qs"]
-            + self.df.loc[i, "Qf"]
+            + self.df.loc[i, "Qf"] * heating_time / self.time_steps
         )
 
         # if self.df.loc[i, "TotalE"] > 400 :
@@ -610,7 +621,6 @@ class Icestupa:
                     if self.liquid < 0:
                         self.liquid += (self.EJoules) / (-self.L_f)
                         self.df.loc[i , "solid"] += self.liquid
-                        # (self.EJoules) - self.liquid * self.L_f
 
                         self.liquid = 0
                     else:
@@ -1202,7 +1212,7 @@ if __name__ == "__main__":
 
     start = time.time()
 
-    schwarzsee = Icestupa()
+    schwarzsee = PDF()
 
     # schwarzsee.derive_parameters()
 
