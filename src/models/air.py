@@ -32,6 +32,7 @@ class Icestupa:
     rho_i = 916  # Density of Ice rho_i
     rho_a = 1.29  # kg/m3 air density at mean sea level
     k = 0.4  # Van Karman constant
+    k_i = 2.123 # Waite et al. 2006
     bc = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
     p0 = 1013  # Standard air pressure hPa
 
