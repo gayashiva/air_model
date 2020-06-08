@@ -144,7 +144,8 @@ if __name__ == '__main__':
     df_B = df_B.sort_values(by='TIMESTAMP')
 
     df = pd.merge(df_A, df_B, how='inner', left_index=True, on='TIMESTAMP')
-    print(df.info())
+
+    
 
     df["H"] = pd.to_numeric(df["H"], errors="coerce")
     df["HB"] = pd.to_numeric(df["HB"], errors="coerce")
@@ -168,8 +169,13 @@ if __name__ == '__main__':
     #     col = 'Tice_Avg(' + str(i) + ')'
     #     df[col] = pd.to_numeric(df[col], errors="coerce")
 
-
     df.to_csv(folders["input_folder"] + "raw_output.csv")
+
+    
+
+    mask = (df["TIMESTAMP"] <= dates["end_date"])
+    df = df.loc[mask]
+    df = df.reset_index()
 
     # Errors
     df['H'] = df['H'] / 1000
@@ -177,15 +183,25 @@ if __name__ == '__main__':
     df['H'] = df['H'].apply(lambda x: x if abs(x) < 500 else np.NAN)
     df['HB'] = df['HB'].apply(lambda x: x if abs(x) < 500 else np.NAN)
 
+    print(df.info())
+
+    df = df.fillna(method='ffill')
+
+    df = df.dropna()
+
     df['H'] = -df['H']
     g = 9.81
-    h_aws = 1.2
-    df['z_0'] = 0.0017
+    
+    df['z_0_A'] = 0.0017
     c_a = 1.01 * 1000
     rho_a = 1.29
     p0 = 1013
     k = 0.4
-    df['Ri_b'] = 0
+    df['Ri_A'] = 0
+
+    h_aws_A = 1.2
+    h_aws_B = 3
+
 
 
 
@@ -193,11 +209,17 @@ if __name__ == '__main__':
 
         for j in range(0,5):
 
-            df.loc[i,'Ri_b'] = (
+            df.loc[i,'Ri_A'] = (
             g
-            * (h_aws - df.loc[i,'z_0'])
+            * (h_aws_A - df.loc[i,'z_0_A'])
             * (df.loc[i, "T_SONIC"])
             / ((df.loc[i, "T_SONIC"]+273) * df.loc[i, "WS_RSLT"] ** 2))
+
+            # df.loc[i,'Ri_A'] = (
+            # g
+            # * (h_aws_A_A - df.loc[i,'z_0_A'])
+            # * (df.loc[i, "T_SONIC"])
+            # / ((df.loc[i, "T_SONIC"]+273) * df.loc[i, "WSB_RSLT"] ** 2))
 
 
 
@@ -210,33 +232,50 @@ if __name__ == '__main__':
                     * math.pow(k, 2)
                     * df.loc[i, "WS_RSLT"]
                     * (df.loc[i, "T_SONIC"])
-                    / ((np.log(h_aws / df.loc[i,'z_0'])) ** 2)
+                    / ((np.log(h_aws_A / df.loc[i,'z_0_A'])) ** 2)
             )
 
-            if (df.loc[i,'Ri_b']) < 0.2:
 
-                if df.loc[i,'Ri_b'] > 0:
-                    df.loc[i, "HC"] = df.loc[i, "HC"] * (1- 5 * df.loc[i,'Ri_b']) ** 2
+
+            if (df.loc[i,'Ri_A']) < 0.2:
+
+                if df.loc[i,'Ri_A'] > 0:
+                    df.loc[i, "HC"] = df.loc[i, "HC"] * (1- 5 * df.loc[i,'Ri_A']) ** 2
                 else:
-                    df.loc[i, "HC"] = df.loc[i, "HC"] * math.pow((1- 16 * df.loc[i,'Ri_b']), 0.75)
+                    df.loc[i, "HC"] = df.loc[i, "HC"] * math.pow((1- 16 * df.loc[i,'Ri_A']), 0.75)
 
 
-            df.loc[i,'z_0'] = (
-                        ((np.log(h_aws / df.loc[i,'z_0'])) ** 2)
+
+            df.loc[i,'z_0_A'] = (
+                        ((np.log(h_aws_A / df.loc[i,'z_0_A'])) ** 2)
                         * df.loc[i, "HC"]
                         / (df.loc[i, "H"])
                 )
-            df.loc[i,'z_0'] = math.pow(abs(df.loc[i,'z_0']), 1/2)
-            df.loc[i,'z_0'] = np.log(h_aws) - df.loc[i,'z_0']
-            df.loc[i,'z_0'] = math.exp(df.loc[i,'z_0'])
+            
 
-        
+            df.loc[i,'z_0_A'] = math.pow(abs(df.loc[i,'z_0_A']), 1/2)
 
-    print(df['z_0'].mean())
+
+
+            df.loc[i,'z_0_A'] = np.log(h_aws_A) - df.loc[i,'z_0_A']
+            
+            
+
+            df.loc[i,'z_0_A'] = math.exp(df.loc[i,'z_0_A'])
+            # if np.isnan(df.loc[i,'z_0_A']):
+            #     print(df.loc[i, "TIMESTAMP"], df.loc[i, "T_SONIC"], df.loc[i, "WS_RSLT"], df.loc[i,'z_0_A'])
+
+    
+
+    print(df['z_0_A'].mean())
 
     # print(df["amb_press_Avg"].head(), df["T_SONIC"].head(), df["WS"].head(), df["HC"].head() )
 
     dfd = df.set_index("TIMESTAMP").resample("D").mean().reset_index()
+
+    for i in range(0,df.shape[0]):
+        if df.loc[i, "HC"] > 80:
+                    print(df.loc[i, "TIMESTAMP"], df.loc[i, "T_SONIC"], df.loc[i, "WS_RSLT"], df.loc[i,'z_0_A'])
 
     pp = PdfPages(folders["input_folder"] + site + "_eddy" + ".pdf")
 
@@ -246,15 +285,15 @@ if __name__ == '__main__':
 
     ax1 = fig.add_subplot(111)
 
-    x1 = dfd.TIMESTAMP
+    x1 = df.TIMESTAMP
 
-    y31 = dfd.H
+    y31 = df.H
     ax1.plot(x1, y31, "k-", linewidth=0.5)
     ax1.set_ylabel("Sensible Heat Sonic [$W\\,m^{-2}$]")
     ax1.grid()
 
     ax1t = ax1.twinx()
-    ax1t.plot(x1, dfd.HC, "b-", linewidth=0.5)
+    ax1t.plot(x1, df.HC, "b-", linewidth=0.5)
     ax1t.set_ylabel("Sensible Heat Bulk [$W\\,m^{-2}$]", color="b")
     for tl in ax1t.get_yticklabels():
         tl.set_color("b")
@@ -332,7 +371,7 @@ if __name__ == '__main__':
     ax1 = fig.add_subplot(111)
     y6 = df.T_SONIC
     ax1.plot(x, y6, "k-", linewidth=0.5)
-    ax1.set_ylabel("Temperature Sonic [$m\\,s^{-1}$]")
+    ax1.set_ylabel("Temperature Sonic")
     ax1.grid()
 
     # format the ticks
@@ -345,7 +384,7 @@ if __name__ == '__main__':
     plt.clf()
 
     ax1 = fig.add_subplot(111)
-    y7 = df.Ri_b
+    y7 = df.Ri_A
     ax1.plot(x, y7, "k-", linewidth=0.5)
     ax1.set_ylabel("Ri")
     ax1.grid()
@@ -362,9 +401,9 @@ if __name__ == '__main__':
     plt.clf()
 
     ax1 = fig.add_subplot(111)
-    y7 = df.z_0
+    y7 = df.z_0_A
     ax1.plot(x, y7, "k-", linewidth=0.5)
-    ax1.set_ylabel("z_0")
+    ax1.set_ylabel("z_0_A")
     ax1.grid()
 
 
@@ -570,7 +609,7 @@ if __name__ == '__main__':
     # plt.clf()
 
     # ax1 = fig.add_subplot(111)
-    # y7 = df.Ri_b
+    # y7 = df.Ri_A
     # ax1.plot(x, y7, "k-", linewidth=0.5)
     # ax1.set_ylabel("Ri")
     # ax1.grid()
