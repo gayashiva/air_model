@@ -165,6 +165,8 @@ if __name__ == '__main__':
     df["WS"] = pd.to_numeric(df["WS"], errors="coerce")
     df["WS_RSLT"] = pd.to_numeric(df["WS_RSLT"], errors="coerce")
     df["WSB_RSLT"] = pd.to_numeric(df["WSB_RSLT"], errors="coerce")
+    df["e_probe"] = pd.to_numeric(df["e_probe"], errors="coerce")
+    
 
     df["WS_MAX"] = pd.to_numeric(df["WS_MAX"], errors="coerce")
     df["WSB"] = pd.to_numeric(df["WSB"], errors="coerce")
@@ -181,16 +183,21 @@ if __name__ == '__main__':
     # Errors
     df['H'] = df['H'] / 1000
     df['HB'] = df['HB'] / 1000
-    df['H'] = df['H'].apply(lambda x: x if abs(x) < 500 else np.NAN)
-    df['HB'] = df['HB'].apply(lambda x: x if abs(x) < 500 else np.NAN)
+    df['H'] = df['H'].apply(lambda x: x if abs(x) < 250 else np.NAN)
+    df['HB'] = df['HB'].apply(lambda x: x if abs(x) < 250 else np.NAN)
     
 
     df.to_csv(folders["input_folder"] + "raw_output.csv")
 
+    mask = (df["TIMESTAMP"] >= dates["start_date"]) & (df["TIMESTAMP"] <= dates["end_date"])
+    df = df.loc[mask]
+    df = df.reset_index()
 
     df = df.fillna(method='ffill')
 
 
+    dfd = df.set_index("TIMESTAMP").resample("D").mean().reset_index()
+    print(df['H'].corr(df['HB']))
 
     """Input Plots"""
 
@@ -210,7 +217,6 @@ if __name__ == '__main__':
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
@@ -232,7 +238,6 @@ if __name__ == '__main__':
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
@@ -248,7 +253,6 @@ if __name__ == '__main__':
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
@@ -263,7 +267,6 @@ if __name__ == '__main__':
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
@@ -279,7 +282,6 @@ if __name__ == '__main__':
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
@@ -299,7 +301,6 @@ if __name__ == '__main__':
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
@@ -315,7 +316,6 @@ if __name__ == '__main__':
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
@@ -331,7 +331,6 @@ if __name__ == '__main__':
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
@@ -347,7 +346,6 @@ if __name__ == '__main__':
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
@@ -362,8 +360,32 @@ if __name__ == '__main__':
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    ax1.grid()
     fig.autofmt_xdate()
+    pp.savefig(bbox_inches="tight")
+    plt.clf()
+
+    ax1 = fig.add_subplot(111)
+    ax1.scatter(dfd.H, dfd.HB, s=2)
+    ax1.set_xlabel("Sonic A Sensible Heat [$W\\,m^{-2}$]")
+    ax1.set_ylabel("Sonic B Sensible Heat [$W\\,m^{-2}$]")
+    ax1.grid()
+
+
+    lims = [
+    np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+    np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+    ]
+    lims = [
+    np.min([-100, 100]),  # min of both axes
+    np.max([-100, 100]),  # max of both axes
+    ]
+
+    # now plot both limits against eachother
+    ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
+    ax1.set_aspect('equal')
+    ax1.set_xlim(lims)
+    ax1.set_ylim(lims)
+    
     pp.savefig(bbox_inches="tight")
     plt.clf()
 
