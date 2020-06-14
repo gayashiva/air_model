@@ -55,10 +55,6 @@ df['Ri_B'] = 0
 df["h_aws_A"] = 1.2 - df["SnowHeight"]/100
 df["h_aws_B"] = 3 - df["SnowHeight"]/100
 
-
-# df["h_aws_A"] = 1.2
-# df["h_aws_B"] = 3
-
 option = "Roughness_constant_time"
 predict = "True"
 j=0
@@ -120,19 +116,19 @@ if option == "Roughness_constant_time":
 
 
 
-		    if (df.loc[i,'Ri_A']) < 0.2:
+		    # if abs(df.loc[i,'Ri_A']) < 0.2:
 
-		        if df.loc[i,'Ri_A'] > 0:
-		            df.loc[i, "HC"] = df.loc[i, "HC"] * (1- 5 * df.loc[i,'Ri_A']) ** 2
-		        else:
-		            df.loc[i, "HC"] = df.loc[i, "HC"] * math.pow((1- 16 * df.loc[i,'Ri_A']), 0.75)
+		    #     if df.loc[i,'Ri_A'] > 0:
+		    #         df.loc[i, "HC"] = df.loc[i, "HC"] * (1- 5 * df.loc[i,'Ri_A']) ** 2
+		    #     else:
+		    #         df.loc[i, "HC"] = df.loc[i, "HC"] * math.pow((1- 16 * df.loc[i,'Ri_A']), 0.75)
 
-		    if (df.loc[i,'Ri_B']) < 0.2:
+		    # if abs(df.loc[i,'Ri_B']) < 0.2:
 
-		        if df.loc[i,'Ri_B'] > 0:
-		            df.loc[i, "HD"] = df.loc[i, "HD"] * (1- 5 * df.loc[i,'Ri_B']) ** 2
-		        else:
-		            df.loc[i, "HD"] = df.loc[i, "HD"] * math.pow((1- 16 * df.loc[i,'Ri_B']), 0.75)
+		    #     if df.loc[i,'Ri_B'] > 0:
+		    #         df.loc[i, "HD"] = df.loc[i, "HD"] * (1- 5 * df.loc[i,'Ri_B']) ** 2
+		    #     else:
+		    #         df.loc[i, "HD"] = df.loc[i, "HD"] * math.pow((1- 16 * df.loc[i,'Ri_B']), 0.75)
 
 
 		    df.loc[i,'z_0_A'] = (
@@ -215,14 +211,14 @@ if option == "Roughness_constant_sonic":
 
 
 
-		    if (df.loc[i,'Ri_A']) < 0.2:
+		    if abs(df.loc[i,'Ri_A']) < 0.2:
 
 		        if df.loc[i,'Ri_A'] > 0:
 		            df.loc[i, "HC"] = df.loc[i, "HC"] * (1- 5 * df.loc[i,'Ri_A']) ** 2
 		        else:
 		            df.loc[i, "HC"] = df.loc[i, "HC"] * math.pow((1- 16 * df.loc[i,'Ri_A']), 0.75)
 
-		    if (df.loc[i,'Ri_B']) < 0.2:
+		    if abs(df.loc[i,'Ri_B']) < 0.2:
 
 		        if df.loc[i,'Ri_B'] > 0:
 		            df.loc[i, "HD"] = df.loc[i, "HD"] * (1- 5 * df.loc[i,'Ri_B']) ** 2
@@ -279,12 +275,12 @@ if predict == "True":
 		            / ((np.log(df.loc[i, "h_aws_B"] / z_0_A)) ** 2)
 		    )
 
-		    if (df.loc[i,'Ri_B']) < 0.2:
+		    # if abs(df.loc[i,'Ri_B']) < 0.2:
 
-		        if df.loc[i,'Ri_B'] > 0:
-		            df.loc[i, "HD"] = df.loc[i, "HD"] * (1- 5 * df.loc[i,'Ri_B']) ** 2
-		        else:
-		            df.loc[i, "HD"] = df.loc[i, "HD"] * math.pow((1- 16 * df.loc[i,'Ri_B']), 0.75)
+		    #     if df.loc[i,'Ri_B'] > 0:
+		    #         df.loc[i, "HD"] = df.loc[i, "HD"] * (1- 5 * df.loc[i,'Ri_B']) ** 2
+		    #     else:
+		    #         df.loc[i, "HD"] = df.loc[i, "HD"] * math.pow((1- 16 * df.loc[i,'Ri_B']), 0.75)
 
 
 
@@ -326,8 +322,8 @@ ax1t.set_ylabel("Bulk Sensible Heat [$W\\,m^{-2}$]", color="b")
 for tl in ax1t.get_yticklabels():
     tl.set_color("b")
 
-ax1.set_ylim([-100,100])
-ax1t.set_ylim([-100,100])
+ax1.set_ylim([-150,150])
+ax1t.set_ylim([-150,150])
 # format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
 ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -404,10 +400,6 @@ lims = [
 np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
 np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
 ]
-lims = [
-np.min([-100, 100]),  # min of both axes
-np.max([-100, 100]),  # max of both axes
-]
 
 # now plot both limits against eachother
 ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
@@ -430,10 +422,10 @@ lims = [
 np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
 np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
 ]
-lims = [
-np.min([0, 0.25]),  # min of both axes
-np.max([0, 0.25]),  # max of both axes
-]
+# lims = [
+# np.min([0, 0.25]),  # min of both axes
+# np.max([0, 0.25]),  # max of both axes
+# ]
 
 # now plot both limits against eachother
 ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
@@ -548,8 +540,8 @@ ax1t.set_ylabel("Bulk Sensible Heat [$W\\,m^{-2}$]", color="b")
 for tl in ax1t.get_yticklabels():
     tl.set_color("b")
 
-ax1.set_ylim([-100,100])
-ax1t.set_ylim([-100,100])
+ax1.set_ylim([-150,150])
+ax1t.set_ylim([-150,150])
 # format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
 ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -584,10 +576,10 @@ lims = [
 np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
 np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
 ]
-lims = [
-np.min([-100, 100]),  # min of both axes
-np.max([-100, 100]),  # max of both axes
-]
+# lims = [
+# np.min([-100, 100]),  # min of both axes
+# np.max([-100, 100]),  # max of both axes
+# ]
 
 # now plot both limits against eachother
 ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)

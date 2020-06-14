@@ -35,7 +35,7 @@ L_e = 2514 * 1000  # J/kg Evaporation
 
 
 
-z_0_A = 0.06536
+z_0_A = 0.05320543621007756
 
 df["h_aws"] = 2 - df["SnowHeight"]/100
 
@@ -62,12 +62,12 @@ for i in range(0,df.shape[0]):
 	)
 
 
-	if abs(df.loc[i,'Ri_A']) < 0.2:
+	# if abs(df.loc[i,'Ri_A']) < 0.2:
 
-	    if df.loc[i,'Ri_A'] > 0:
-	        df.loc[i, "LE"] = df.loc[i, "LE"] * (1- 5 * df.loc[i,'Ri_A']) ** 2
-	    else:
-	        df.loc[i, "LE"] = df.loc[i, "LE"] * math.pow((1- 16 * df.loc[i,'Ri_A']), 0.75)
+	#     if df.loc[i,'Ri_A'] > 0:
+	#         df.loc[i, "LE"] = df.loc[i, "LE"] * (1- 5 * df.loc[i,'Ri_A']) ** 2
+	#     else:
+	#         df.loc[i, "LE"] = df.loc[i, "LE"] * math.pow((1- 16 * df.loc[i,'Ri_A']), 0.75)
 
 
 df["F_surf"] = df["NETRAD"] - df["H"] + df["LE"]
@@ -91,7 +91,7 @@ ax1.grid()
 
 ax1t = ax1.twinx()
 ax1t.plot(x, df.T_surface, "b-", linewidth=0.5)
-ax1t.set_ylabel("Temperature surface", color="b")
+ax1t.set_ylabel("Ground Temperature[$\\degree C$]", color="b")
 for tl in ax1t.get_yticklabels():
     tl.set_color("b")
 
@@ -120,7 +120,7 @@ plt.clf()
 ax1 = fig.add_subplot(111)
 y1 = df["e_probe"] * 10 - df["e_surface"]
 ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("e_probe [$W\\,m^{-2}$]")
+ax1.set_ylabel("Vapour Gradient [$hPa$]")
 ax1.grid()
 
 # format the ticks
@@ -131,31 +131,13 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
-ax1 = fig.add_subplot(111)
-y1 = df.T_probe_Avg
-ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("T_probe_Avg [$W\\,m^{-2}$]")
-ax1.grid()
-
-# format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
 
 ax1 = fig.add_subplot(111)
-y1 = df.Ri_A
-ax1.plot(x, y1, "k-", linewidth=0.5)
-ax1.set_ylabel("Ri_A [$W\\,m^{-2}$]")
+ax1.scatter(dfd.F_surf, dfd.T_surface, s=2)
+ax1.set_xlabel("Surface Energy Flux [$W\\,m^{-2}$]")
+ax1.set_ylabel("Ground Temperature [$\\degree C$]")
 ax1.grid()
 
-# format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
