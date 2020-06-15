@@ -35,19 +35,17 @@ L_e = 2514 * 1000  # J/kg Evaporation
 
 
 
-z_0_A = 0.05320543621007756
+z_0_A = 0.05425139382036343
+z_0_B = 0.13479331561263208
+
+
+z = (z_0_A + z_0_B)/2
 
 df["h_aws"] = 2 - df["SnowHeight"]/100
 
 df["e_surface"] = 6.112
 
 for i in range(0,df.shape[0]):
-			
-	df.loc[i,'Ri_A'] = (
-	g
-	* (df.loc[i, "h_aws"] - z_0_A)
-	* (df.loc[i, "T_probe_Avg"])
-	/ ((df.loc[i, "T_probe_Avg"]+273) * df.loc[i, "WS_RSLT"] ** 2))
 
 	# Sensible Heat
 	df.loc[i, "LE"] = (
@@ -58,16 +56,8 @@ for i in range(0,df.shape[0]):
 	        * math.pow(k, 2)
 	        * df.loc[i, "WS_RSLT"]
 	        * (df.loc[i, "e_probe"] * 10-df.loc[i, "e_surface"])
-	        / ((np.log(df.loc[i, "h_aws"] / z_0_A)) ** 2)
+	        / ((np.log(df.loc[i, "h_aws"] / z)) ** 2)
 	)
-
-
-	# if abs(df.loc[i,'Ri_A']) < 0.2:
-
-	#     if df.loc[i,'Ri_A'] > 0:
-	#         df.loc[i, "LE"] = df.loc[i, "LE"] * (1- 5 * df.loc[i,'Ri_A']) ** 2
-	#     else:
-	#         df.loc[i, "LE"] = df.loc[i, "LE"] * math.pow((1- 16 * df.loc[i,'Ri_A']), 0.75)
 
 
 df["F_surf"] = df["NETRAD"] - df["H"] + df["LE"]

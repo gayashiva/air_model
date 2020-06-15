@@ -18,16 +18,7 @@ mask = (df["TIMESTAMP"] >= dates["start_date"]) & (df["TIMESTAMP"] <= dates["end
 df = df.loc[mask]
 df = df.reset_index()
 
-# df.rename(
-#     columns={
-#         'Tice_Avg(' + str(2) + ')': "T_surface",
-#     },
-#     inplace=True,
-# )
-
 df["T_surface"] = 0
-
-# df["e_surface"] = 6.112 * np.exp(22.46 * (self.df.loc[i, "T_surface"]) / ((self.df.loc[i, "T_surface"]) + 272.62))
 
 # Errors
 df['HB'] = -df['HB']
@@ -52,252 +43,135 @@ k = 0.4
 df['Ri_A'] = 0
 df['Ri_B'] = 0
 
-df["h_aws_A"] = 1.2 - df["SnowHeight"]/100
+df["h_aws_A"] = 1 - df["SnowHeight"]/100
 df["h_aws_B"] = 3 - df["SnowHeight"]/100
 
-option = "Roughness_constant_time"
-predict = "True"
+predict = "False"
 j=0
 
-if option == "Roughness_constant_time":
+z=[]
+z_B=[]
 
-	z=[]
-	z_B=[]
+df["TB_probe_Avg"] = df["T_probe_Avg"] + df["TB_SONIC"] - df["T_SONIC"]
 
-	while j < 5:
-		j+=1
-		z_0_A = df['z_0_A'].mean()
-		df['z_0_A'] = z_0_A
-		z.append(z_0_A)
-		print("Iteration", j, z_0_A, df['HC'].corr(df['H']))
+df['day'] = df.SW_IN > 10
+df['night'] = df.SW_IN <= 10
 
-		z_0_B = df['z_0_B'].mean()
-		df['z_0_B'] = z_0_B
-		z_B.append(z_0_B)
-		print("Iteration", j, z_0_B, df['HD'].corr(df['HB']))
+print(df[df.day].TIMESTAMP)
+print(df[df.night].TIMESTAMP)
 
-		for i in range(0,df.shape[0]):
-			
-		    df.loc[i,'Ri_A'] = (
-		    g
-		    * (df.loc[i, "h_aws_A"] - z_0_A)
-		    * (df.loc[i, "T_SONIC"]-df.loc[i, "T_surface"])
-		    / ((df.loc[i, "T_SONIC"]+273) * df.loc[i, "WS_RSLT"] ** 2))
-
-		    df.loc[i,'Ri_B'] = (
-		    g
-		    * (df.loc[i, "h_aws_B"] - z_0_B)
-		    * (df.loc[i, "TB_SONIC"]-df.loc[i, "T_surface"])
-		    / ((df.loc[i, "TB_SONIC"]+273) * df.loc[i, "WSB_RSLT"] ** 2))
-
-		    # Sensible Heat
-		    df.loc[i, "HC"] = (
-		            c_a
-		            * rho_a
-		            * df.loc[i, "amb_press_Avg"] * 10
-		            / p0
-		            * math.pow(k, 2)
-		            * df.loc[i, "WS_RSLT"]
-		            * (df.loc[i, "T_SONIC"]-df.loc[i, "T_surface"])
-		            / ((np.log(df.loc[i, "h_aws_A"] / z_0_A)) ** 2)
-		    )
-
-		    # Sensible Heat
-		    df.loc[i, "HD"] = (
-		            c_a
-		            * rho_a
-		            * df.loc[i, "amb_press_Avg"] * 10
-		            / p0
-		            * math.pow(k, 2)
-		            * df.loc[i, "WSB_RSLT"]
-		            * (df.loc[i, "TB_SONIC"]-df.loc[i, "T_surface"])
-		            / ((np.log(df.loc[i, "h_aws_B"] / z_0_B)) ** 2)
-		    )
+print(df.TIMESTAMP)
 
 
 
-		    # if abs(df.loc[i,'Ri_A']) < 0.2:
+while j < 5:
+	j+=1
+	z_0_A = df['z_0_A'].mean()
+	df['z_0_A'] = z_0_A
+	z.append(z_0_A)
+	print("Iteration", j, z_0_A, df['HC'].corr(df['H']))
 
-		    #     if df.loc[i,'Ri_A'] > 0:
-		    #         df.loc[i, "HC"] = df.loc[i, "HC"] * (1- 5 * df.loc[i,'Ri_A']) ** 2
-		    #     else:
-		    #         df.loc[i, "HC"] = df.loc[i, "HC"] * math.pow((1- 16 * df.loc[i,'Ri_A']), 0.75)
+	z_0_B = df['z_0_B'].mean()
+	df['z_0_B'] = z_0_B
+	z_B.append(z_0_B)
+	print("Iteration", j, z_0_B, df['HD'].corr(df['HB']))
 
-		    # if abs(df.loc[i,'Ri_B']) < 0.2:
+	for i in range(0,df.shape[0]):
+		
+	    df.loc[i,'Ri_A'] = (
+	    g
+	    * (df.loc[i, "h_aws_A"] - z_0_A)
+	    * (df.loc[i, "T_probe_Avg"]-df.loc[i, "T_surface"])
+	    / ((df.loc[i, "T_probe_Avg"]+273) * df.loc[i, "WS_RSLT"] ** 2))
 
-		    #     if df.loc[i,'Ri_B'] > 0:
-		    #         df.loc[i, "HD"] = df.loc[i, "HD"] * (1- 5 * df.loc[i,'Ri_B']) ** 2
-		    #     else:
-		    #         df.loc[i, "HD"] = df.loc[i, "HD"] * math.pow((1- 16 * df.loc[i,'Ri_B']), 0.75)
+	    df.loc[i,'Ri_B'] = (
+	    g
+	    * (df.loc[i, "h_aws_B"] - z_0_B)
+	    * (df.loc[i, "TB_probe_Avg"]-df.loc[i, "T_surface"])
+	    / ((df.loc[i, "TB_probe_Avg"]+273) * df.loc[i, "WSB_RSLT"] ** 2))
 
+	    # Sensible Heat
+	    df.loc[i, "HC"] = (
+	            c_a
+	            * rho_a
+	            * df.loc[i, "amb_press_Avg"] * 10
+	            / p0
+	            * math.pow(k, 2)
+	            * df.loc[i, "WS_RSLT"]
+	            * (df.loc[i, "T_probe_Avg"]-df.loc[i, "T_surface"])
+	            / ((np.log(df.loc[i, "h_aws_A"] / z_0_A)) ** 2)
+	    )
 
-		    df.loc[i,'z_0_A'] = (
-		                ((np.log(df.loc[i, "h_aws_A"] / df.loc[i,'z_0_A'])) ** 2)
-		                * df.loc[i, "HC"]
-		                / (df.loc[i, "H"])
-		        )
-
-		    df.loc[i,'z_0_B'] = (
-		                ((np.log(df.loc[i, "h_aws_B"] / df.loc[i,'z_0_B'])) ** 2)
-		                * df.loc[i, "HD"]
-		                / (df.loc[i, "HB"])
-		        )
-		    
-
-		    df.loc[i,'z_0_A'] = math.pow(abs(df.loc[i,'z_0_A']), 1/2)
-		    df.loc[i,'z_0_B'] = math.pow(abs(df.loc[i,'z_0_B']), 1/2)
-
-
-		    df.loc[i,'z_0_A'] = np.log(df.loc[i, "h_aws_A"]) - df.loc[i,'z_0_A']
-		    df.loc[i,'z_0_B'] = np.log(df.loc[i, "h_aws_B"]) - df.loc[i,'z_0_B']
-		    
-
-		    df.loc[i,'z_0_A'] = math.exp(df.loc[i,'z_0_A'])
-		    df.loc[i,'z_0_B'] = math.exp(df.loc[i,'z_0_B'])
-
-
-if option == "Roughness_constant_sonic":
-	while j < 10:
-		j+=1
-		print(df['z_0_A'].mean())
-
-		# z_0_A = df['z_0_A'].mean()
-		# df['z_0_A'] = z_0_A
-		# z.append(z_0_A)
-		# print("Iteration", j, z_0_A, df['HC'].corr(df['H']))
-
-		# z_0_B = df['z_0_B'].mean()
-		# df['z_0_B'] = z_0_B
-		# z_B.append(z_0_B)
-		# print("Iteration", j, z_0_B, df['HD'].corr(df['HB']))
-
-		for i in range(0,df.shape[0]):
-			
-		    df.loc[i,'Ri_A'] = (
-		    g
-		    * (df.loc[i, "h_aws_A"] - df.loc[i,'z_0_A'])
-		    * (df.loc[i, "T_SONIC"]-df.loc[i, "T_surface"])
-		    / ((df.loc[i, "T_SONIC"]+273) * df.loc[i, "WS_RSLT"] ** 2))
-
-		    df.loc[i,'Ri_B'] = (
-		    g
-		    * (df.loc[i, "h_aws_B"] - df.loc[i,'z_0_B'])
-		    * (df.loc[i, "TB_SONIC"]-df.loc[i, "T_surface"])
-		    / ((df.loc[i, "TB_SONIC"]+273) * df.loc[i, "WSB_RSLT"] ** 2))
-
-		    # Sensible Heat
-		    df.loc[i, "HC"] = (
-		            c_a
-		            * rho_a
-		            * df.loc[i, "amb_press_Avg"] * 10
-		            / p0
-		            * math.pow(k, 2)
-		            * df.loc[i, "WS_RSLT"]
-		            * (df.loc[i, "T_SONIC"]-df.loc[i, "T_surface"])
-		            / ((np.log(df.loc[i, "h_aws_A"] / df.loc[i,'z_0_A'])) ** 2)
-		    )
-
-		    # Sensible Heat
-		    df.loc[i, "HD"] = (
-		            c_a
-		            * rho_a
-		            * df.loc[i, "amb_press_Avg"] * 10
-		            / p0
-		            * math.pow(k, 2)
-		            * df.loc[i, "WSB_RSLT"]
-		            * (df.loc[i, "TB_SONIC"]-df.loc[i, "T_surface"])
-		            / ((np.log(df.loc[i, "h_aws_B"] / df.loc[i,'z_0_B'])) ** 2)
-		    )
+	    # Sensible Heat
+	    df.loc[i, "HD"] = (
+	            c_a
+	            * rho_a
+	            * df.loc[i, "amb_press_Avg"] * 10
+	            / p0
+	            * math.pow(k, 2)
+	            * df.loc[i, "WSB_RSLT"]
+	            * (df.loc[i, "TB_probe_Avg"]-df.loc[i, "T_surface"])
+	            / ((np.log(df.loc[i, "h_aws_B"] / z_0_B)) ** 2)
+	    )
 
 
+	    df.loc[i,'z_0_A'] = (
+	                ((np.log(df.loc[i, "h_aws_A"] / df.loc[i,'z_0_A'])) ** 2)
+	                * df.loc[i, "HC"]
+	                / (df.loc[i, "H"])
+	        )
 
-		    if abs(df.loc[i,'Ri_A']) < 0.2:
+	    df.loc[i,'z_0_B'] = (
+	                ((np.log(df.loc[i, "h_aws_B"] / df.loc[i,'z_0_B'])) ** 2)
+	                * df.loc[i, "HD"]
+	                / (df.loc[i, "HB"])
+	        )
+	    
 
-		        if df.loc[i,'Ri_A'] > 0:
-		            df.loc[i, "HC"] = df.loc[i, "HC"] * (1- 5 * df.loc[i,'Ri_A']) ** 2
-		        else:
-		            df.loc[i, "HC"] = df.loc[i, "HC"] * math.pow((1- 16 * df.loc[i,'Ri_A']), 0.75)
-
-		    if abs(df.loc[i,'Ri_B']) < 0.2:
-
-		        if df.loc[i,'Ri_B'] > 0:
-		            df.loc[i, "HD"] = df.loc[i, "HD"] * (1- 5 * df.loc[i,'Ri_B']) ** 2
-		        else:
-		            df.loc[i, "HD"] = df.loc[i, "HD"] * math.pow((1- 16 * df.loc[i,'Ri_B']), 0.75)
-
-
-		    df.loc[i,'z_0_A'] = (
-		                ((np.log(df.loc[i, "h_aws_A"] / df.loc[i,'z_0_A'])) ** 2)
-		                * df.loc[i, "HC"]
-		                / (df.loc[i, "H"])
-		        )
-
-		    df.loc[i,'z_0_B'] = (
-		                ((np.log(df.loc[i, "h_aws_B"] / df.loc[i,'z_0_B'])) ** 2)
-		                * df.loc[i, "HD"]
-		                / (df.loc[i, "HB"])
-		        )
-		    
-
-		    df.loc[i,'z_0_A'] = math.pow(abs(df.loc[i,'z_0_A']), 1/2)
-		    df.loc[i,'z_0_B'] = math.pow(abs(df.loc[i,'z_0_B']), 1/2)
+	    df.loc[i,'z_0_A'] = math.pow(abs(df.loc[i,'z_0_A']), 1/2)
+	    df.loc[i,'z_0_B'] = math.pow(abs(df.loc[i,'z_0_B']), 1/2)
 
 
-		    df.loc[i,'z_0_A'] = np.log(df.loc[i, "h_aws_A"]) - df.loc[i,'z_0_A']
-		    df.loc[i,'z_0_B'] = np.log(df.loc[i, "h_aws_B"]) - df.loc[i,'z_0_B']
-		    
+	    df.loc[i,'z_0_A'] = np.log(df.loc[i, "h_aws_A"]) - df.loc[i,'z_0_A']
+	    df.loc[i,'z_0_B'] = np.log(df.loc[i, "h_aws_B"]) - df.loc[i,'z_0_B']
+	    
 
-		    df.loc[i,'z_0_A'] = math.exp(df.loc[i,'z_0_A'])
-		    df.loc[i,'z_0_B'] = math.exp(df.loc[i,'z_0_B'])
-
-
+	    df.loc[i,'z_0_A'] = math.exp(df.loc[i,'z_0_A'])
+	    df.loc[i,'z_0_B'] = math.exp(df.loc[i,'z_0_B'])
 
 
 if predict == "True":
 
 	for i in range(0,df.shape[0]):
 
-		    df.loc[i,'Ri_B'] = (
-		    g
-		    * (df.loc[i, "h_aws_B"] - z_0_A)
-		    * (df.loc[i, "TB_SONIC"]-df.loc[i, "T_surface"])
-		    / ((df.loc[i, "TB_SONIC"]+273) * df.loc[i, "WSB_RSLT"] ** 2))
-
 		    # Sensible Heat
-		    df.loc[i, "HD"] = (
+		    df.loc[i, "HC"] = (
 		            c_a
 		            * rho_a
 		            * df.loc[i, "amb_press_Avg"] * 10
 		            / p0
 		            * math.pow(k, 2)
-		            * df.loc[i, "WSB_RSLT"]
-		            * (df.loc[i, "TB_SONIC"]-df.loc[i, "T_surface"])
-		            / ((np.log(df.loc[i, "h_aws_B"] / z_0_A)) ** 2)
+		            * df.loc[i, "WS_RSLT"]
+		            * (df.loc[i, "T_probe_Avg"]-df.loc[i, "T_surface"])
+		            / ((np.log(df.loc[i, "h_aws_B"] / z_0_B)) ** 2)
 		    )
 
-		    # if abs(df.loc[i,'Ri_B']) < 0.2:
 
-		    #     if df.loc[i,'Ri_B'] > 0:
-		    #         df.loc[i, "HD"] = df.loc[i, "HD"] * (1- 5 * df.loc[i,'Ri_B']) ** 2
-		    #     else:
-		    #         df.loc[i, "HD"] = df.loc[i, "HD"] * math.pow((1- 16 * df.loc[i,'Ri_B']), 0.75)
-
-
-
-
-
-print(df['z_0_A'].mean())
-print(df['HC'].corr(df['H']))
+print(df['z_0_A'].mean(), df['z_0_B'].mean())
+print(df['H'].corr(df['HC']))
 print(df['HB'].corr(df['HD']))
 
 
 
+dfd = df[df.day].set_index("TIMESTAMP").resample("D").mean().reset_index()
+dfn = df[df.night].set_index("TIMESTAMP").resample("D").mean().reset_index()
 
-dfd = df.set_index("TIMESTAMP").resample("D").mean().reset_index()
+print(dfd.TIMESTAMP, dfd.H)
+print(dfn.TIMESTAMP, dfn.H)
 
 for i in range(0,df.shape[0]):
     if abs(df.loc[i, "HC"] - df.loc[i, "H"]) > 1000:
-                print(df.loc[i, "TIMESTAMP"], (df.loc[i, "T_SONIC"] - df.loc[i, "T_surface"]), df.loc[i, "WS_RSLT"], df.loc[i, "HC"]/(c_a*rho_a*math.pow(k, 2)))
+                print(df.loc[i, "TIMESTAMP"], (df.loc[i, "T_probe_Avg"] - df.loc[i, "T_surface"]), df.loc[i, "WS_RSLT"], df.loc[i, "HC"]/(c_a*rho_a*math.pow(k, 2)))
                 # df.loc[i, "HC"] = df.loc[i, "H"]
 
 
@@ -305,12 +179,15 @@ pp = PdfPages(folders["input_folder"] + site + "_eddy" + ".pdf")
 
 x = df.TIMESTAMP
 
-fig = plt.figure()
-
-ax1 = fig.add_subplot(111)
-
 x1 = dfd.TIMESTAMP
 
+x2 = dfn.TIMESTAMP
+
+
+fig = plt.figure()
+
+
+ax1 = fig.add_subplot(111)
 y31 = dfd.H
 ax1.plot(x1, y31, "k-", linewidth=0.5)
 ax1.set_ylabel("Sonic A Sensible Heat [$W\\,m^{-2}$]")
@@ -322,8 +199,8 @@ ax1t.set_ylabel("Bulk Sensible Heat [$W\\,m^{-2}$]", color="b")
 for tl in ax1t.get_yticklabels():
     tl.set_color("b")
 
-ax1.set_ylim([-150,150])
-ax1t.set_ylim([-150,150])
+ax1.set_ylim([-100,200])
+ax1t.set_ylim([-100,200])
 # format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
 ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -333,8 +210,28 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
+# ax1 = fig.add_subplot(111)
+# y6 = dfd.H
+# ax1.scatter(dfd.TIMESTAMP, y6, "k-", linewidth=0.5)
+# ax1.set_ylabel("Day Sonic")
+# ax1.grid()
+
+# ax1t = ax1.twinx()
+# ax1.scatter(dfn.TIMESTAMP, dfn.H, "k-", linewidth=0.5)
+# ax1t.set_ylabel("Night Sonic", color="b")
+# for tl in ax1t.get_yticklabels():
+#     tl.set_color("b")
+
+# # format the ticks
+# ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+# ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+# ax1.xaxis.set_minor_locator(mdates.DayLocator())
+# fig.autofmt_xdate()
+# pp.savefig(bbox_inches="tight")
+# plt.clf()
+
 ax1 = fig.add_subplot(111)
-y6 = df.T_SONIC
+y6 = df.T_probe_Avg
 ax1.plot(x, y6, "k-", linewidth=0.5)
 ax1.set_ylabel("Temperature Sonic")
 ax1.grid()
@@ -354,27 +251,6 @@ pp.savefig(bbox_inches="tight")
 plt.clf()
 
 ax1 = fig.add_subplot(111)
-y6 = df.T_SONIC - df.T_surface
-ax1.plot(x, y6, "k-", linewidth=0.5)
-ax1.set_ylabel("Temperature Diff")
-ax1.grid()
-
-# ax1t = ax1.twinx()
-# ax1t.plot(x, df.T_SONIC, "b-", linewidth=0.5)
-# ax1t.set_ylabel("Temperature surface", color="b")
-# for tl in ax1t.get_yticklabels():
-#     tl.set_color("b")
-
-# format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
-
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-ax1 = fig.add_subplot(111)
 ax1.plot(x, df.HC, "k-", linewidth=0.5)
 ax1.set_ylabel("Bulk Sensible Heat [$W\\,m^{-2}$]")
 ax1.grid()
@@ -388,12 +264,37 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
+ax1 = fig.add_subplot(111)
+ax1.scatter(dfd.H, dfn.H, s=2)
+ax1.set_xlabel("Day Sensible Heat [$W\\,m^{-2}$]")
+ax1.set_ylabel("Night Sensible Heat [$W\\,m^{-2}$]")
+ax1.grid()
+
+
+lims = [
+np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+]
+
+# now plot both limits against eachother
+ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
+ax1.set_aspect('equal')
+ax1.set_xlim(lims)
+ax1.set_ylim(lims)
+# format the ticks
+
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
 
 ax1 = fig.add_subplot(111)
-ax1.scatter(dfd.H, dfd.HC, s=2)
+ax1.scatter(dfd.H, dfd.HC, s=2, color = "blue", label ="day")
+ax1.scatter(dfn.H, dfn.HC, s=2, color = "orange", label ="night")
 ax1.set_xlabel("Sonic A Sensible Heat [$W\\,m^{-2}$]")
 ax1.set_ylabel("Bulk Sensible Heat [$W\\,m^{-2}$]")
 ax1.grid()
+ax1.legend()
+
 
 
 lims = [
@@ -422,10 +323,6 @@ lims = [
 np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
 np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
 ]
-# lims = [
-# np.min([0, 0.25]),  # min of both axes
-# np.max([0, 0.25]),  # max of both axes
-# ]
 
 # now plot both limits against eachother
 ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
@@ -474,7 +371,6 @@ y7 = df.Ri_A
 ax1.plot(x, y7, "k-", linewidth=0.5)
 ax1.set_ylabel("Ri")
 ax1.grid()
-# ax1.set_ylim([-0.2,0.2])
 
 
 # format the ticks
@@ -491,7 +387,6 @@ y7 = df.z_0_A
 ax1.plot(x, y7, "k-", linewidth=0.5)
 ax1.set_ylabel("Roughness A")
 ax1.grid()
-# ax1.set_ylim([-0.2,0.2])
 
 
 # format the ticks
@@ -503,16 +398,16 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
-# ax1 = fig.add_subplot(111)
+ax1 = fig.add_subplot(111)
 
-# ax1.scatter(range(0,j),z, s = 2)
-# ax1.set_ylabel("z_0_A")
-# ax1.set_xlabel("Iteration")
+ax1.scatter(range(0,j),z, s = 2)
+ax1.set_ylabel("z_0_A")
+ax1.set_xlabel("Iteration")
 
-# ax1.grid()
+ax1.grid()
 
-# pp.savefig(bbox_inches="tight")
-# plt.clf()
+pp.savefig(bbox_inches="tight")
+plt.clf()
 
 pp.close()
 
@@ -540,8 +435,8 @@ ax1t.set_ylabel("Bulk Sensible Heat [$W\\,m^{-2}$]", color="b")
 for tl in ax1t.get_yticklabels():
     tl.set_color("b")
 
-ax1.set_ylim([-150,150])
-ax1t.set_ylim([-150,150])
+ax1.set_ylim([-100,200])
+ax1t.set_ylim([-100,200])
 # format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
 ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -593,9 +488,9 @@ plt.clf()
 
 
 ax1 = fig.add_subplot(111)
-y6 = df.WSB_RSLT
+y6 = df.WSB_RSLT - df.WS_RSLT
 ax1.plot(x, y6, "k-", linewidth=0.5)
-ax1.set_ylabel("Wind Sonic [$m\\,s^{-1}$]")
+ax1.set_ylabel("Wind Diff Sonic (B-A) [$m\\,s^{-1}$]")
 ax1.grid()
 
 # format the ticks
@@ -610,7 +505,7 @@ plt.clf()
 ax1 = fig.add_subplot(111)
 y6 = df.h_aws_B
 ax1.plot(x, y6, "k-", linewidth=0.5)
-ax1.set_ylabel("Sonic B height above snow [$m$]")
+ax1.set_ylabel("Sonic B height [$m$]")
 ax1.grid()
 
 # format the ticks
@@ -623,16 +518,10 @@ pp.savefig(bbox_inches="tight")
 plt.clf()
 
 ax1 = fig.add_subplot(111)
-y6 = df.TB_SONIC
+y6 = df.TB_probe_Avg - df.T_probe_Avg
 ax1.plot(x, y6, "k-", linewidth=0.5)
-ax1.set_ylabel("Temperature Sonic")
+ax1.set_ylabel("Temperature Diff Sonic (B-A)")
 ax1.grid()
-
-ax1t = ax1.twinx()
-ax1t.plot(x, df.T_surface, "b-", linewidth=0.5)
-ax1t.set_ylabel("Temperature surface", color="b")
-for tl in ax1t.get_yticklabels():
-    tl.set_color("b")
 
 # format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -660,15 +549,15 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
-# ax1 = fig.add_subplot(111)
+ax1 = fig.add_subplot(111)
 
-# ax1.scatter(range(0,j),z_B, s = 2)
-# ax1.set_ylabel("z_0_B")
-# ax1.set_xlabel("Iteration")
+ax1.scatter(range(0,j),z_B, s = 2)
+ax1.set_ylabel("z_0_B")
+ax1.set_xlabel("Iteration")
 
-# ax1.grid()
+ax1.grid()
 
-# pp.savefig(bbox_inches="tight")
-# plt.clf()
+pp.savefig(bbox_inches="tight")
+plt.clf()
 
 pp.close()
