@@ -458,12 +458,26 @@ class Icestupa:
                 / self.time_steps
             )
 
+        self.df.loc[i, "Qg"] =  self.k_i * (self.df.loc[i - 1, "T_bulk"] - self.df.loc[i - 1, "T_s"])/self.df.loc[i - 1, "r_ice"]
+
+        # self.df.loc[i, "T_bulk"] = self.df.loc[i - 1, "T_bulk"] + self.df.loc[i, "Qg"] * self.time_steps * self.df.loc[i, "SA"]/(self.df.loc[i - 1, "ice"] * self.c_i)
+
+
+        if self.df.loc[i-1, "solid"] < 0:
+            self.df.loc[i, "T_bulk"] = self.df.loc[i-1, "T_bulk"]
+        else:
+            self.sum = self.sum + self.df.loc[i - 1, "T_s"] * self.df.loc[i, "SA"]
+            self.df.loc[i, "T_bulk"] = self.sum/self.df.SA.sum()
+
+        print(self.df.loc[i-1, "T_s"], self.df.loc[i-1, "T_bulk"], self.df.loc[i, "Qg"])
+
         # Total Energy W/m2
         self.df.loc[i, "TotalE"] = (
             self.df.loc[i, "SW"]
             + self.df.loc[i, "LW"]
             + self.df.loc[i, "Qs"]
             + self.df.loc[i, "Qf"]
+            + self.df.loc[i, "Qg"]
         )
 
         # if self.df.loc[i, "TotalE"] > 400 :
@@ -531,6 +545,7 @@ class Icestupa:
 
         l = [
             "T_s",  # Surface Temperature
+            "T_bulk",  # Bulk Temperature
             "SRf",
             "ice",
             "iceV",
@@ -558,6 +573,8 @@ class Icestupa:
         self.liquid, self.gas, self.EJoules = (
             [0] * 3
         )
+
+        self.sum = 0 #weighted_sums
 
         """Initialize"""
         self.df.loc[0, "r_ice"] = self.spray_radius()
