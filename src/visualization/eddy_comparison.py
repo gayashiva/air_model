@@ -57,11 +57,6 @@ df["TB_probe_Avg"] = df["T_probe_Avg"] + df["TB_SONIC"] - df["T_SONIC"]
 df['day'] = df.SW_IN > 10
 df['night'] = df.SW_IN <= 10
 
-print(df[df.day].TIMESTAMP)
-print(df[df.night].TIMESTAMP)
-
-print(df.TIMESTAMP)
-
 
 
 while j < 5:
@@ -162,12 +157,9 @@ print(df['H'].corr(df['HC']))
 print(df['HB'].corr(df['HD']))
 
 
-
-dfd = df[df.day].set_index("TIMESTAMP").resample("D").mean().reset_index()
-dfn = df[df.night].set_index("TIMESTAMP").resample("D").mean().reset_index()
-
-print(dfd.TIMESTAMP, dfd.H)
-print(dfn.TIMESTAMP, dfn.H)
+dfd = df.set_index("TIMESTAMP").resample("D").mean().reset_index()
+dfday = df[df.day].set_index("TIMESTAMP").resample("D").mean().reset_index()
+dfnight = df[df.night].set_index("TIMESTAMP").resample("D").mean().reset_index()
 
 for i in range(0,df.shape[0]):
     if abs(df.loc[i, "HC"] - df.loc[i, "H"]) > 1000:
@@ -179,9 +171,9 @@ pp = PdfPages(folders["input_folder"] + site + "_eddy" + ".pdf")
 
 x = df.TIMESTAMP
 
-x1 = dfd.TIMESTAMP
+x1 = dfday.TIMESTAMP
 
-x2 = dfn.TIMESTAMP
+x2 = dfnight.TIMESTAMP
 
 
 fig = plt.figure()
@@ -189,12 +181,12 @@ fig = plt.figure()
 
 ax1 = fig.add_subplot(111)
 y31 = dfd.H
-ax1.plot(x1, y31, "k-", linewidth=0.5)
+ax1.plot(dfd.TIMESTAMP, y31, "k-", linewidth=0.5)
 ax1.set_ylabel("Sonic A Sensible Heat [$W\\,m^{-2}$]")
 ax1.grid()
 
 ax1t = ax1.twinx()
-ax1t.plot(x1, dfd.HC, "b-", linewidth=0.5)
+ax1t.plot(dfd.TIMESTAMP, dfd.HC, "b-", linewidth=0.5)
 ax1t.set_ylabel("Bulk Sensible Heat [$W\\,m^{-2}$]", color="b")
 for tl in ax1t.get_yticklabels():
     tl.set_color("b")
@@ -265,37 +257,12 @@ pp.savefig(bbox_inches="tight")
 plt.clf()
 
 ax1 = fig.add_subplot(111)
-ax1.scatter(dfd.H, dfn.H, s=2)
-ax1.set_xlabel("Day Sensible Heat [$W\\,m^{-2}$]")
-ax1.set_ylabel("Night Sensible Heat [$W\\,m^{-2}$]")
-ax1.grid()
-
-
-lims = [
-np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-]
-
-# now plot both limits against eachother
-ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
-ax1.set_aspect('equal')
-ax1.set_xlim(lims)
-ax1.set_ylim(lims)
-# format the ticks
-
-pp.savefig(bbox_inches="tight")
-plt.clf()
-
-
-ax1 = fig.add_subplot(111)
-ax1.scatter(dfd.H, dfd.HC, s=2, color = "blue", label ="day")
-ax1.scatter(dfn.H, dfn.HC, s=2, color = "orange", label ="night")
+ax1.scatter(dfday.H, dfday.HC, s=2, color = "blue", label ="day")
+ax1.scatter(dfnight.H, dfnight.HC, s=2, color = "orange", label ="night")
 ax1.set_xlabel("Sonic A Sensible Heat [$W\\,m^{-2}$]")
 ax1.set_ylabel("Bulk Sensible Heat [$W\\,m^{-2}$]")
 ax1.grid()
 ax1.legend()
-
-
 
 lims = [
 np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
@@ -425,12 +392,12 @@ x1 = dfd.TIMESTAMP
 
 y31 = dfd.HB
 
-ax1.plot(x1, y31, "k-", linewidth=0.5)
+ax1.plot(dfd.TIMESTAMP, y31, "k-", linewidth=0.5)
 ax1.set_ylabel("Sonic B Sensible Heat [$W\\,m^{-2}$]")
 ax1.grid()
 
 ax1t = ax1.twinx()
-ax1t.plot(x1, dfd.HD, "b-", linewidth=0.5)
+ax1t.plot(dfd.TIMESTAMP, dfd.HD, "b-", linewidth=0.5)
 ax1t.set_ylabel("Bulk Sensible Heat [$W\\,m^{-2}$]", color="b")
 for tl in ax1t.get_yticklabels():
     tl.set_color("b")
@@ -461,20 +428,17 @@ pp.savefig(bbox_inches="tight")
 plt.clf()
 
 ax1 = fig.add_subplot(111)
-ax1.scatter(dfd.HB, dfd.HD, s=2)
+ax1.scatter(dfday.HB, dfday.HD, s=2, color = "blue", label ="day")
+ax1.scatter(dfnight.HB, dfnight.HD, s=2, color = "orange", label ="night")
 ax1.set_xlabel("Sonic B Sensible Heat [$W\\,m^{-2}$]")
 ax1.set_ylabel("Bulk Sensible Heat [$W\\,m^{-2}$]")
 ax1.grid()
-
+ax1.legend()
 
 lims = [
 np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
 np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
 ]
-# lims = [
-# np.min([-100, 100]),  # min of both axes
-# np.max([-100, 100]),  # max of both axes
-# ]
 
 # now plot both limits against eachother
 ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
@@ -517,37 +481,37 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
-ax1 = fig.add_subplot(111)
-y6 = df.TB_probe_Avg - df.T_probe_Avg
-ax1.plot(x, y6, "k-", linewidth=0.5)
-ax1.set_ylabel("Temperature Diff Sonic (B-A)")
-ax1.grid()
+# ax1 = fig.add_subplot(111)
+# y6 = df.TB_probe_Avg - df.T_probe_Avg
+# ax1.plot(x, y6, "k-", linewidth=0.5)
+# ax1.set_ylabel("Temperature Diff Sonic (B-A)")
+# ax1.grid()
 
-# format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
+# # format the ticks
+# ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+# ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+# ax1.xaxis.set_minor_locator(mdates.DayLocator())
 
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
+# fig.autofmt_xdate()
+# pp.savefig(bbox_inches="tight")
+# plt.clf()
 
-ax1 = fig.add_subplot(111)
-y7 = df.Ri_B
-ax1.plot(x, y7, "k-", linewidth=0.5)
-ax1.set_ylabel("Ri")
-ax1.grid()
-# ax1.set_ylim([-0.2,0.2])
+# ax1 = fig.add_subplot(111)
+# y7 = df.Ri_B
+# ax1.plot(x, y7, "k-", linewidth=0.5)
+# ax1.set_ylabel("Ri")
+# ax1.grid()
+# # ax1.set_ylim([-0.2,0.2])
 
 
-# format the ticks
-ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax1.xaxis.set_minor_locator(mdates.DayLocator())
+# # format the ticks
+# ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+# ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+# ax1.xaxis.set_minor_locator(mdates.DayLocator())
 
-fig.autofmt_xdate()
-pp.savefig(bbox_inches="tight")
-plt.clf()
+# fig.autofmt_xdate()
+# pp.savefig(bbox_inches="tight")
+# plt.clf()
 
 ax1 = fig.add_subplot(111)
 

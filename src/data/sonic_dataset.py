@@ -198,6 +198,11 @@ if __name__ == '__main__':
     df = df.fillna(method='ffill')
 
 
+    df['day'] = df.SW_IN > 10
+    df['night'] = df.SW_IN <= 10
+    dfday = df[df.day].set_index("TIMESTAMP").resample("D").mean().reset_index()
+    dfnight = df[df.night].set_index("TIMESTAMP").resample("D").mean().reset_index()  
+
     dfd = df.set_index("TIMESTAMP").resample("D").mean().reset_index()
 
     print(df['H'].corr(df['HB']))
@@ -209,8 +214,8 @@ if __name__ == '__main__':
     x = df.TIMESTAMP
 
     fig = plt.figure()
-    ax1 = fig.add_subplot(111)
 
+    ax1 = fig.add_subplot(111)
     y1 = df.T_probe_Avg
     ax1.plot(x, y1, "k-", linewidth=0.5)
     ax1.set_ylabel("Temperature [$\\degree C$]")
@@ -290,6 +295,28 @@ if __name__ == '__main__':
     plt.clf()
 
     ax1 = fig.add_subplot(111)
+    ax1.scatter(dfday.H, dfnight.H, s=2)
+    ax1.set_xlabel("Day Sensible Heat A[$W\\,m^{-2}$]")
+    ax1.set_ylabel("Night Sensible Heat A [$W\\,m^{-2}$]")
+    ax1.grid()
+
+
+    lims = [
+    np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+    np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+    ]
+
+    # now plot both limits against eachother
+    ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
+    ax1.set_aspect('equal')
+    ax1.set_xlim(lims)
+    ax1.set_ylim(lims)
+    # format the ticks
+
+    pp.savefig(bbox_inches="tight")
+    plt.clf()
+
+    ax1 = fig.add_subplot(111)
 
     y31 = -df.HB
     ax1.plot(x, y31, "k-", linewidth=0.5)
@@ -301,6 +328,28 @@ if __name__ == '__main__':
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
     fig.autofmt_xdate()
+    pp.savefig(bbox_inches="tight")
+    plt.clf()
+
+    ax1 = fig.add_subplot(111)
+    ax1.scatter(dfday.HB, dfnight.HB, s=2)
+    ax1.set_xlabel("Day Sensible Heat B [$W\\,m^{-2}$]")
+    ax1.set_ylabel("Night Sensible Heat B [$W\\,m^{-2}$]")
+    ax1.grid()
+
+
+    lims = [
+    np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+    np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+    ]
+
+    # now plot both limits against eachother
+    ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
+    ax1.set_aspect('equal')
+    ax1.set_xlim(lims)
+    ax1.set_ylim(lims)
+    # format the ticks
+
     pp.savefig(bbox_inches="tight")
     plt.clf()
 
@@ -383,10 +432,13 @@ if __name__ == '__main__':
     plt.clf()
 
     ax1 = fig.add_subplot(111)
-    ax1.scatter(df.H, df.HB, s=2)
+    ax1.scatter(dfday.H, dfday.HB, s=2, color ="blue", label = "Day")
+    ax1.scatter(dfnight.H, dfnight.HB, s=2, color="orange", label = "Night")
+
     ax1.set_xlabel("Sonic A Sensible Heat [$W\\,m^{-2}$]")
     ax1.set_ylabel("Sonic B Sensible Heat [$W\\,m^{-2}$]")
     ax1.grid()
+    ax1.legend()
 
 
     lims = [
