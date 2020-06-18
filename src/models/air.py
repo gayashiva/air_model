@@ -446,7 +446,7 @@ class Icestupa:
 
         # Warm ice Layer to 0 C for fountain run
 
-        heating_time = self.rho_i * self.c_i / self.k_i * self.dx**2
+        # heating_time = self.rho_i * self.c_i / self.k_i * self.dx**2
 
         if (self.liquid > 0) & (self.df.loc[i - 1, "T_s"] < 0):
 
@@ -455,21 +455,24 @@ class Icestupa:
                 * self.dx
                 * self.c_i
                 * (self.df.loc[i - 1, "T_s"])
-                / self.time_steps
+                / (self.time_steps)
             )
 
-        self.df.loc[i, "Qg"] =  self.k_i * (self.df.loc[i - 1, "T_bulk"] - self.df.loc[i - 1, "T_s"])/self.df.loc[i - 1, "r_ice"]
+            self.df.loc[i , "delta_T_s"] = -self.df.loc[i - 1, "T_s"]
 
-        # self.df.loc[i, "T_bulk"] = self.df.loc[i - 1, "T_bulk"] + self.df.loc[i, "Qg"] * self.time_steps * self.df.loc[i, "SA"]/(self.df.loc[i - 1, "ice"] * self.c_i)
+        self.df.loc[i, "Qg"] =  self.k_i * (self.df.loc[i - 1, "T_bulk"] - self.df.loc[i - 1, "T_s"])/(self.df.loc[i - 1, "r_ice"]/2)
 
-
+        # Bulk Temperature
         if self.df.loc[i-1, "solid"] < 0:
-            self.df.loc[i, "T_bulk"] = self.df.loc[i-1, "T_bulk"]
+            self.sum_T_s = self.sum_T_s - self.df.loc[i - 2, "T_s"] * self.df.loc[i-1, "SA"]
+            self.sum_SA = self.sum_SA - self.df.loc[i-1, "SA"]
         else:
-            self.sum = self.sum + self.df.loc[i - 1, "T_s"] * self.df.loc[i, "SA"]
-            self.df.loc[i, "T_bulk"] = self.sum/self.df.SA.sum()
+            self.sum_T_s = self.sum_T_s + self.df.loc[i - 1, "T_s"] * self.df.loc[i, "SA"]
+            self.sum_SA = self.sum_SA + self.df.loc[i, "SA"]
+        
+        self.df.loc[i, "T_bulk"] = self.sum_T_s/self.sum_SA
 
-        print(self.df.loc[i-1, "T_s"], self.df.loc[i-1, "T_bulk"], self.df.loc[i, "Qg"])
+        # print(self.df.loc[i-1, "T_s"], self.df.loc[i-1, "T_bulk"], self.df.loc[i, "Qg"])
 
         # Total Energy W/m2
         self.df.loc[i, "TotalE"] = (
@@ -510,7 +513,7 @@ class Icestupa:
         self.df = data_store['df']
         data_store.close()
 
-    def read_output(self): #todo Fix output
+    def read_output(self):
 
         self.df = pd.read_csv(
             "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/model_results.csv", sep=",")
@@ -574,7 +577,8 @@ class Icestupa:
             [0] * 3
         )
 
-        self.sum = 0 #weighted_sums
+        self.sum_T_s = 0 #weighted_sums
+        self.sum_SA = 0 #weighted_sums
 
         """Initialize"""
         self.df.loc[0, "r_ice"] = self.spray_radius()
@@ -706,7 +710,7 @@ class PDF(Icestupa):
         ax1 = fig.add_subplot(111)
         y1 = self.df.Discharge
         ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Discharge [$l\, min^{-1}$]")
+        ax1.set_ylabel("Discharge [$l\\, min^{-1}$]")
         ax1.grid()
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -751,15 +755,11 @@ class PDF(Icestupa):
             nrows=6, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
         )
 
-        # fig.suptitle("Field Data", fontsize=14)
-        # Remove horizontal space between axes
-        # fig.subplots_adjust(hspace=0)
-
         x = self.df.When
 
         y1 = self.df.Discharge
         ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Discharge [$l\, min^{-1}$]")
+        ax1.set_ylabel("Discharge [$l\\, min^{-1}$]")
         ax1.grid()
 
         ax1t = ax1.twinx()
@@ -770,24 +770,24 @@ class PDF(Icestupa):
 
         y2 = self.df.T_a
         ax2.plot(x, y2, "k-", linewidth=0.5)
-        ax2.set_ylabel("Temperature [$\degree C$]")
+        ax2.set_ylabel("Temperature [$\\degree C$]")
         ax2.grid()
 
         y3 = self.df.SW_direct + self.df.SW_diffuse
         ax3.plot(x, y3, "k-", linewidth=0.5)
-        ax3.set_ylabel("Global Rad.[$W\,m^{-2}$]")
+        ax3.set_ylabel("Global Rad.[$W\\,m^{-2}$]")
         ax3.grid()
 
         ax3t = ax3.twinx()
         ax3t.plot(x, self.df.SW_diffuse, "b-", linewidth=0.5)
         ax3t.set_ylim(ax3.get_ylim())
-        ax3t.set_ylabel("Diffuse Rad.[$W\,m^{-2}$]", color="b")
+        ax3t.set_ylabel("Diffuse Rad.[$W\\,m^{-2}$]", color="b")
         for tl in ax3t.get_yticklabels():
             tl.set_color("b")
 
         y4 = self.df.RH
         ax4.plot(x, y4, "k-", linewidth=0.5)
-        ax4.set_ylabel("Humidity [$\%$]")
+        ax4.set_ylabel("Humidity [$\\%$]")
         ax4.grid()
 
         y5 = self.df.p_a
@@ -797,7 +797,7 @@ class PDF(Icestupa):
 
         y6 = self.df.v_a
         ax6.plot(x, y6, "k-", linewidth=0.5)
-        ax6.set_ylabel("Wind [$m\,s^{-1}$]")
+        ax6.set_ylabel("Wind [$m\\,s^{-1}$]")
         ax6.grid()
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -810,12 +810,12 @@ class PDF(Icestupa):
         ax1 = fig.add_subplot(111)
         y1 = self.df.T_a
         ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Temperature [$\degree C$]")
+        ax1.set_ylabel("Temperature [$\\degree C$]")
         ax1.grid()
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
+        
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
@@ -829,7 +829,7 @@ class PDF(Icestupa):
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
+        
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
@@ -837,12 +837,12 @@ class PDF(Icestupa):
         ax1 = fig.add_subplot(111)
         y3 = self.df.SW_direct
         ax1.plot(x, y3, "k-", linewidth=0.5)
-        ax1.set_ylabel("Direct SWR [$W\,m^{-2}$]")
+        ax1.set_ylabel("Direct SWR [$W\\,m^{-2}$]")
         ax1.grid()
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
+        
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
@@ -850,12 +850,12 @@ class PDF(Icestupa):
         ax1 = fig.add_subplot(111)
         y31 = self.df.SW_diffuse
         ax1.plot(x, y31, "k-", linewidth=0.5)
-        ax1.set_ylabel("Diffuse SWR [$W\,m^{-2}$]")
+        ax1.set_ylabel("Diffuse SWR [$W\\,m^{-2}$]")
         ax1.grid()
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
+        
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
@@ -868,7 +868,7 @@ class PDF(Icestupa):
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
+        
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
@@ -881,7 +881,6 @@ class PDF(Icestupa):
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
@@ -889,12 +888,12 @@ class PDF(Icestupa):
         ax1 = fig.add_subplot(111)
         y6 = self.df.v_a
         ax1.plot(x, y6, "k-", linewidth=0.5)
-        ax1.set_ylabel("Wind [$m\,s^{-1}$]")
-        ax1.grid()
+        ax1.set_ylabel("Wind [$m\\,s^{-1}$]")
+        
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
+        
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
@@ -913,6 +912,7 @@ class PDF(Icestupa):
                 "Qs": "$q_S$",
                 "Ql": "$q_L$",
                 "Qf": "$q_{F}$",
+                "Qg": "$q_{G}$",
             },
             axis=1,
         )
@@ -950,7 +950,7 @@ class PDF(Icestupa):
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
+        
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
@@ -963,7 +963,6 @@ class PDF(Icestupa):
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
@@ -983,13 +982,12 @@ class PDF(Icestupa):
         # Include Validation line segment 1
 
         ax1.scatter(datetime(2019, 2, 14, 16), 0.7, color="black", marker="o")
-
         ax2.scatter(datetime(2019, 2, 14, 16), 1.15, color="blue", marker="o")
 
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
+        
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
@@ -1008,7 +1006,26 @@ class PDF(Icestupa):
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.grid()
+        
+        fig.autofmt_xdate()
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        y1 = self.df.T_s
+        y2 = self.df.T_bulk
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x, y1, "k-", linewidth=0.5)
+        ax1.set_ylabel("Surface Temperature")
+        # ax1.set_xlabel("Days")
+        ax2 = ax1.twinx()
+        ax2.plot(x, y2, "b-", linewidth=0.5)
+        ax2.set_ylabel("Bulk Temperature", color="b")
+        for tl in ax2.get_yticklabels():
+            tl.set_color("b")
+        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.close('all')
@@ -1054,7 +1071,7 @@ class PDF(Icestupa):
 
         y4 = self.df.T_a - self.df.T_s
         ax4.plot(x, y4, "k-", linewidth=0.5)
-        ax4.set_ylabel("Temperature gradient [$\degree C$]")
+        ax4.set_ylabel("Temperature gradient [$\\degree C$]")
         ax4.grid()
 
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -1079,28 +1096,25 @@ class PDF(Icestupa):
 
         dfd = dfd.set_index("label")
 
-        z = dfd[['$q_{SW}$', '$q_{LW}$', '$q_S$', '$q_L$', '$q_{F}$']]
+        z = dfd[['$q_{SW}$', '$q_{LW}$', '$q_S$', '$q_L$', '$q_{F}$', '$q_{G}$']]
         ax = z.plot.bar(stacked=True, edgecolor=dfd["Discharge"], linewidth=0.5)
         ax.xaxis.set_label_text("")
         plt.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
         # plt.xlabel('Date')
-        plt.ylabel('Energy Flux Density [$W\,m^{-2}$]')
+        plt.ylabel('Energy Flux Density [$W\\,m^{-2}$]')
         plt.legend(loc='lower right')
         # plt.ylim(-150, 150)
         plt.xticks(rotation=45)
         pp.savefig(bbox_inches="tight")
         plt.close('all')
 
-        fig = plt.figure()
+        
 
         dfds = self.df[["When", "thickness", "SA"]]
-        dfds["When"] = pd.to_datetime(dfds["When"], format="%Y.%m.%d %H:%M:%S")
-
-        for row in dfds.itertuples():
-            if dfds.loc[row.Index, "thickness"] < 0:
-                dfds.loc[row.Index, "negative"] = dfds.loc[row.Index, "thickness"]
-            else:
-                dfds.loc[row.Index, "positive"] = dfds.loc[row.Index, "thickness"]
+        
+        with pd.option_context('mode.chained_assignment', None):
+            dfds["negative"] = dfds.loc[dfds.thickness< 0, "thickness"]
+            dfds["positive"] = dfds.loc[dfds.thickness>= 0, "thickness"]
 
         dfds1 = dfds.set_index("When").resample("D").sum().reset_index()
         dfds2 = dfds.set_index("When").resample("D").mean().reset_index()
@@ -1119,6 +1133,7 @@ class PDF(Icestupa):
         y1 = dfds1[["Ice thickness", 'Meltwater thickness']]
         y3 = dfds2["SA"]
 
+        fig = plt.figure()
         ax1 = fig.add_subplot(2, 1, 1)
         y1.plot(kind='bar', stacked=True, edgecolor='black', linewidth=0.5, color=['#D9E9FA', '#0C70DE'], ax=ax1)
         plt.ylabel('Thickness ($m$ w. e.)')
@@ -1136,8 +1151,8 @@ class PDF(Icestupa):
         ax3.set_ylabel("Surface Area ($m^2$)")
         ax3.grid(axis="y", color="black", alpha=.3, linewidth=.5, which="major")
         plt.xticks(rotation=45)
-        plt.savefig(self.folders["output_folder"] + "thickness.pdf")
-        # pp.savefig(bbox_inches="tight")
+        # plt.savefig(self.folders["output_folder"] + "thickness.pdf")
+        pp.savefig(bbox_inches="tight")
         plt.clf()
 
         plt.close('all')
@@ -1153,7 +1168,7 @@ class PDF(Icestupa):
 
         data["$q_{net}$"] = data["TotalE"] + data["Ql"]
 
-        data["$\Delta M_{input}$"] = data["Discharge"] * 5 + data["dpt"] + data["ppt"]
+        data["$\\Delta M_{input}$"] = data["Discharge"] * 5 + data["dpt"] + data["ppt"]
 
         data["$SW_{in}$"] = data["SW_direct"] + data["SW_diffuse"]
 
@@ -1162,8 +1177,8 @@ class PDF(Icestupa):
 
         data = data.rename(
             {
-                "solid": "$\Delta M_{ice}$",
-                "delta_T_s": "$\Delta T_{ice}$",
+                "solid": "$\\Delta M_{ice}$",
+                "delta_T_s": "$\\Delta T_{ice}$",
                 "SA": "A",
                 "T_a": "$T_a$",
                 "v_a": "$v_a$",
@@ -1227,17 +1242,17 @@ if __name__ == "__main__":
 
     # schwarzsee.derive_parameters()
 
-    schwarzsee.read_input()
+    # schwarzsee.read_input()
 
     # schwarzsee.print_input()
 
-    schwarzsee.melt_freeze()
+    # schwarzsee.melt_freeze()
 
-    # schwarzsee.read_output()
+    schwarzsee.read_output()
 
     # schwarzsee.print_EGU()
 
-    schwarzsee.summary()
+    # schwarzsee.summary()
 
     schwarzsee.print_output()
 
