@@ -467,17 +467,9 @@ class Icestupa:
         self.df.loc[i, "Qg"] =  self.k_i * (self.df.loc[i - 1, "T_bulk"] - self.df.loc[i - 1, "T_s"])/(math.sqrt(self.df.loc[i, "r_ice"]**2+self.df.loc[i, "h_ice"]**2)/2)
 
         # Bulk Temperature
-        if self.df.loc[i-1, "solid"] > 0:
-            self.sum_T_s = self.sum_T_s + self.df.loc[i - 1, "T_s"] * self.df.loc[i, "SA"]
-            self.sum_SA = self.sum_SA + self.df.loc[i, "SA"]
-            self.df.loc[i, "T_bulk"] = self.sum_T_s/self.sum_SA
-        else:
-            self.df.loc[i, "T_bulk"] = self.df.loc[i - 1, "T_bulk"] + self.df.loc[i, "Qg"] * self.time_steps * self.df.loc[i, "SA"]/(self.df.loc[i - 1, "ice"] * self.c_i)
-            
-            if self.df.loc[i, "T_bulk"] > 0:
-                self.df.loc[i, "T_bulk"] = 0
 
-        # print(self.df.loc[i-1, "T_s"], self.df.loc[i-1, "T_bulk"], self.df.loc[i, "Qg"])
+        self.df.loc[i, "T_bulk"] = self.df.loc[i - 1, "T_bulk"] - self.df.loc[i, "Qg"] * self.time_steps * self.df.loc[i, "SA"]/(self.df.loc[i - 1, "ice"] * self.c_i)
+    
 
         # Total Energy W/m2
         self.df.loc[i, "TotalE"] = (
