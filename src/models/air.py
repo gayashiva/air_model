@@ -401,28 +401,33 @@ class Icestupa:
             )
 
 
-        if self.df.loc[i, "Ql"] < 0:
-            self.gas -= (
-                self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.time_steps
-            ) / self.L_s
+            if self.df.loc[i, "Ql"] < 0: # Sublimation
+                self.gas -= (
+                    self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.time_steps
+                ) / self.L_s
 
-            # Removing gas quantity generated from previous ice
-            self.df.loc[i , "solid"] += (
-                self.df.loc[i, "Ql"] * (self.df.loc[i, "SA"]) * self.time_steps
-            ) / self.L_s
+                # Removing gas quantity generated from previous ice
+                self.df.loc[i , "solid"] += (
+                    self.df.loc[i, "Ql"] * (self.df.loc[i, "SA"]) * self.time_steps
+                ) / self.L_s
 
-            # Ice Temperature
-            self.df.loc[i , "delta_T_s"] += (self.df.loc[i, "Ql"] * self.time_steps) / (
-                self.rho_i * self.dx * self.c_i
-            )
+                # Ice Temperature
+                self.df.loc[i , "delta_T_s"] += (self.df.loc[i, "Ql"] * self.time_steps) / (
+                    self.rho_i * self.dx * self.c_i
+                )
 
-        else:  # Deposition
+            else:  # Deposition
 
-            self.df.loc[i, "dpt"] += (
-                self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.time_steps
-            ) / self.L_s
+                self.df.loc[i, "dpt"] += (
+                    self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.time_steps
+                ) / self.L_s
 
-            self.df.loc[i, "solid"] += self.df.loc[i, "dpt"]
+                # Ice Temperature
+                self.df.loc[i , "delta_T_s"] += (self.df.loc[i, "Ql"] * self.time_steps) / (
+                    self.rho_i * self.dx * self.c_i
+                )
+
+                self.df.loc[i, "solid"] += self.df.loc[i, "dpt"]
 
         # Sensible Heat Qs
         self.df.loc[i, "Qs"] = (
@@ -444,8 +449,6 @@ class Icestupa:
             self.df.loc[i - 1, "T_s"] + 273.15, 4
         )
 
-        # Warm ice Layer to 0 C for fountain run
-
         # heating_time = self.rho_i * self.c_i / self.k_i * self.dx**2
 
         if (self.liquid > 0) & (self.df.loc[i - 1, "T_s"] < 0):
@@ -460,17 +463,19 @@ class Icestupa:
 
             self.df.loc[i , "delta_T_s"] = -self.df.loc[i - 1, "T_s"]
 
-        self.df.loc[i, "Qg"] =  self.k_i * (self.df.loc[i - 1, "T_bulk"] - self.df.loc[i - 1, "T_s"])/(self.df.loc[i - 1, "r_ice"]/2)
+
+        self.df.loc[i, "Qg"] =  self.k_i * (self.df.loc[i - 1, "T_bulk"] - self.df.loc[i - 1, "T_s"])/(math.sqrt(self.df.loc[i, "r_ice"]**2+self.df.loc[i, "h_ice"]**2)/2)
 
         # Bulk Temperature
-        if self.df.loc[i-1, "solid"] < 0:
-            self.sum_T_s = self.sum_T_s - self.df.loc[i - 2, "T_s"] * self.df.loc[i-1, "SA"]
-            self.sum_SA = self.sum_SA - self.df.loc[i-1, "SA"]
-        else:
+        if self.df.loc[i-1, "solid"] > 0:
             self.sum_T_s = self.sum_T_s + self.df.loc[i - 1, "T_s"] * self.df.loc[i, "SA"]
             self.sum_SA = self.sum_SA + self.df.loc[i, "SA"]
-        
-        self.df.loc[i, "T_bulk"] = self.sum_T_s/self.sum_SA
+            self.df.loc[i, "T_bulk"] = self.sum_T_s/self.sum_SA
+        else:
+            self.df.loc[i, "T_bulk"] = self.df.loc[i - 1, "T_bulk"] + self.df.loc[i, "Qg"] * self.time_steps * self.df.loc[i, "SA"]/(self.df.loc[i - 1, "ice"] * self.c_i)
+            
+            if self.df.loc[i, "T_bulk"] > 0:
+                self.df.loc[i, "T_bulk"] = 0
 
         # print(self.df.loc[i-1, "T_s"], self.df.loc[i-1, "T_bulk"], self.df.loc[i, "Qg"])
 
@@ -563,6 +568,7 @@ class Icestupa:
             "Qs",
             "Ql",
             "Qf",
+            "Qg",
             "meltwater",
             "SA",
             "h_ice",
@@ -649,6 +655,25 @@ class Icestupa:
                     self.df.loc[i , "delta_T_s"] += (self.df.loc[i, "TotalE"] * self.time_steps) / (
                         self.rho_i * self.dx * self.c_i
                     )
+
+                    """Hot Ice"""
+                    if (self.df.loc[i - 1, "T_s"] + self.df.loc[i , "delta_T_s"]) > 0:
+
+                        # Melting Ice by Temperature
+                        self.df.loc[i , "solid"] -= (
+                            (self.rho_i * self.dx * self.c_i * self.df.loc[i, "SA"])
+                            * (-(self.df.loc[i - 1, "T_s"] + self.df.loc[i , "delta_T_s"]))
+                            / (-self.L_f)
+                        )
+
+                        self.df.loc[i , "melted"] += (
+                            (self.rho_i * self.dx * self.c_i * self.df.loc[i, "SA"])
+                            * (-(self.df.loc[i - 1, "T_s"] + self.df.loc[i , "delta_T_s"]))
+                            / (-self.L_f)
+                        )
+
+                        self.df.loc[i - 1, "T_s"] = 0
+                        self.df.loc[i , "delta_T_s"] = 0
 
             else:
                 # Heating Ice
@@ -1025,7 +1050,8 @@ class PDF(Icestupa):
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        
+        ax1.set_ylim([-20,1])
+        ax2.set_ylim([-20,1])
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.close('all')
@@ -1033,10 +1059,6 @@ class PDF(Icestupa):
         fig, (ax1, ax2, ax3, ax4) = plt.subplots(
             nrows=4, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
         )
-
-        # fig.suptitle("Field Data", fontsize=14)
-        # Remove horizontal space between axes
-        # fig.subplots_adjust(hspace=0)
 
         x = self.df.When
 
@@ -1111,7 +1133,7 @@ class PDF(Icestupa):
         
 
         dfds = self.df[["When", "thickness", "SA"]]
-        
+
         with pd.option_context('mode.chained_assignment', None):
             dfds["negative"] = dfds.loc[dfds.thickness< 0, "thickness"]
             dfds["positive"] = dfds.loc[dfds.thickness>= 0, "thickness"]
@@ -1242,17 +1264,17 @@ if __name__ == "__main__":
 
     # schwarzsee.derive_parameters()
 
-    # schwarzsee.read_input()
+    schwarzsee.read_input()
 
     # schwarzsee.print_input()
 
-    # schwarzsee.melt_freeze()
+    schwarzsee.melt_freeze()
 
-    schwarzsee.read_output()
+    # schwarzsee.read_output()
 
     # schwarzsee.print_EGU()
 
-    # schwarzsee.summary()
+    schwarzsee.summary()
 
     schwarzsee.print_output()
 
