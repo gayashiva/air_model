@@ -55,6 +55,7 @@ class Icestupa:
     h_f = 1.35  # Fountain steps h_f
     theta_f = 45  # Fountain aperture diameter
     ftl = 0  # Fountain flight time loss ftl
+    T_w = 5 # Fountain Water temperature
 
     """Miscellaneous"""
     h_aws = 3  # m height of AWS
@@ -449,19 +450,26 @@ class Icestupa:
             self.df.loc[i - 1, "T_s"] + 273.15, 4
         )
 
-        # heating_time = self.rho_i * self.c_i / self.k_i * self.dx**2
+        if (self.liquid > 0):
 
-        if (self.liquid > 0) & (self.df.loc[i - 1, "T_s"] < 0):
+            if (self.df.loc[i - 1, "T_s"] < 0):
 
-            self.df.loc[i, "Qf"] = (
-                self.rho_i
-                * self.dx
-                * self.c_i
-                * (self.df.loc[i - 1, "T_s"])
-                / (self.time_steps)
-            )
+                self.df.loc[i, "Qf"] = (
+                    self.rho_i
+                    * self.dx
+                    * self.c_i
+                    * (self.df.loc[i - 1, "T_s"])
+                    / (self.time_steps)
+                )
 
-            self.df.loc[i , "delta_T_s"] = -self.df.loc[i - 1, "T_s"]
+                self.df.loc[i , "delta_T_s"] = -self.df.loc[i - 1, "T_s"]
+
+            self.df.loc[i, "Qf"] += (
+                    (self.df.loc[i-1 , "solid"] - self.df.loc[i-1 , "ppt"] - self.df.loc[i-1 , "dpt"])
+                    * self.c_w
+                    * self. T_w
+                    / (self.time_steps * self.df.loc[i, "SA"])
+                )
 
 
         self.df.loc[i, "Qg"] =  self.k_i * (self.df.loc[i - 1, "T_bulk"] - self.df.loc[i - 1, "T_s"])/(math.sqrt(self.df.loc[i, "r_ice"]**2+self.df.loc[i, "h_ice"]**2)/2)
@@ -695,10 +703,7 @@ class Icestupa:
             """ Quantities of all phases """
             self.df.loc[i, "T_s"] = self.df.loc[i - 1, "T_s"] + self.df.loc[i , "delta_T_s"]
             self.df.loc[i, "meltwater"] = self.df.loc[i - 1, "meltwater"] + self.df.loc[i , "melted"]
-            self.df.loc[i, "ice"] = (
-                self.df.loc[i - 1, "ice"]
-                + self.df.loc[i , "solid"]
-            )
+            self.df.loc[i, "ice"] = self.df.loc[i - 1, "ice"] + self.df.loc[i , "solid"]
             self.df.loc[i, "vapour"] = self.df.loc[i - 1, "vapour"] + self.gas
             self.df.loc[i, "unfrozen_water"] = self.df.loc[i - 1, "unfrozen_water"] + self.liquid
             self.df.loc[i, "iceV"] = self.df.loc[i, "ice"] / self.rho_i
