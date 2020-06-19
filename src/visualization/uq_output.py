@@ -19,7 +19,7 @@ def draw_plot(data, edge_color, fill_color, labels):
 input = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/"
 figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/"
 
-names = ["z_i", "T_rain", "d_ppt", "ie", "a_i", "a_s", "t_decay",  "dia_f",  "h_f", "h_aws", "dx"]
+names = ["T_rain", "d_ppt", "ie", "a_i", "a_s", "t_decay",  "dia_f",  "h_f", "h_aws", "dx"]
 variance = []
 mean = []
 evaluations = []
@@ -53,7 +53,7 @@ for name in names:
     #     plt.clf()
 
 
-names = ["$z_{ice}$", "$T_{rain}$", r'$\rho_{ppt}$', "$\epsilon_{ice}$", r'$\alpha_{ice}$', r'$\alpha_{snow}$', "$t_{decay}$",  "$dia_{F}$",  "$h_F$", "$h_{AWS}$",  "$\Delta x$"]
+names = ["$T_{rain}$", r'$\rho_{ppt}$', "$\\epsilon_{ice}$", r'$\alpha_{ice}$', r'$\alpha_{snow}$', "$t_{decay}$",  "$dia_{F}$",  "$h_F$", "$h_{AWS}$",  "$\Delta x$"]
 
 fig, ax = plt.subplots()
 draw_plot(evaluations, 'k', 'xkcd:grey', names)

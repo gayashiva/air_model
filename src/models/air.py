@@ -451,31 +451,34 @@ class Icestupa:
         )
 
         if (self.liquid > 0):
+            # self.df.loc[i, "Qf"] += (
+            #     (self.df.loc[i-1 , "solid"] - self.df.loc[i-1 , "ppt"] - self.df.loc[i-1 , "dpt"])
+            #     * (self.c_w * self.T_w + self.L_f - self.c_i * self.df.loc[i - 1, "T_s"])
+            #     / (self.time_steps * self.df.loc[i, "SA"])
+            #     )
 
-            if (self.df.loc[i - 1, "T_s"] < 0):
-
-                self.df.loc[i, "Qf"] = (
-                    self.rho_i
-                    * self.dx
-                    * self.c_i
-                    * (self.df.loc[i - 1, "T_s"])
-                    / (self.time_steps)
-                )
-
-                self.df.loc[i , "delta_T_s"] = -self.df.loc[i - 1, "T_s"]
-
-            self.df.loc[i, "Qf"] += (
+            self.df.loc[i, "Qf"] = (
                     (self.df.loc[i-1 , "solid"] - self.df.loc[i-1 , "ppt"] - self.df.loc[i-1 , "dpt"])
                     * self.c_w
                     * self. T_w
                     / (self.time_steps * self.df.loc[i, "SA"])
                 )
 
+            self.df.loc[i, "Qf"] += (
+                self.rho_i
+                * self.dx
+                * self.c_i
+                * (self.df.loc[i - 1, "T_s"])
+                / (self.time_steps)
+            )
 
+            self.df.loc[i , "delta_T_s"] = -self.df.loc[i - 1, "T_s"]
+
+            
         self.df.loc[i, "Qg"] =  self.k_i * (self.df.loc[i - 1, "T_bulk"] - self.df.loc[i - 1, "T_s"])/(math.sqrt(self.df.loc[i, "r_ice"]**2+self.df.loc[i, "h_ice"]**2)/2)
 
+        
         # Bulk Temperature
-
         self.df.loc[i, "T_bulk"] = self.df.loc[i - 1, "T_bulk"] - self.df.loc[i, "Qg"] * self.time_steps * self.df.loc[i, "SA"]/(self.df.loc[i - 1, "ice"] * self.c_i)
     
 
