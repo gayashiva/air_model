@@ -41,6 +41,8 @@ z_0_B = 0.12350865748490422
 
 z = (z_0_A + z_0_B)/2
 
+print(z)
+
 df["h_aws"] = 2 - df["SnowHeight"]/100
 
 df["e_surface"] = 6.112

@@ -33,8 +33,8 @@ df = df.fillna(method='ffill')
 
 g = 9.81
 
-df['z_0_A'] = 0.0017 
-df['z_0_B'] = 0.0017
+df['z_0_A'] = 0.01
+df['z_0_B'] = 0.01
 
 c_a = 1.01 * 1000
 rho_a = 1.29
@@ -201,26 +201,6 @@ ax1.xaxis.set_minor_locator(mdates.DayLocator())
 fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
-
-# ax1 = fig.add_subplot(111)
-# y6 = dfd.H
-# ax1.scatter(dfd.TIMESTAMP, y6, "k-", linewidth=0.5)
-# ax1.set_ylabel("Day Sonic")
-# ax1.grid()
-
-# ax1t = ax1.twinx()
-# ax1.scatter(dfn.TIMESTAMP, dfn.H, "k-", linewidth=0.5)
-# ax1t.set_ylabel("Night Sonic", color="b")
-# for tl in ax1t.get_yticklabels():
-#     tl.set_color("b")
-
-# # format the ticks
-# ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-# ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-# ax1.xaxis.set_minor_locator(mdates.DayLocator())
-# fig.autofmt_xdate()
-# pp.savefig(bbox_inches="tight")
-# plt.clf()
 
 ax1 = fig.add_subplot(111)
 y6 = df.T_probe_Avg

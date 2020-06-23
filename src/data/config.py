@@ -26,35 +26,6 @@ surface = dict(
     h_aws = 3,  # m height of AWS
 )
 
-# if max :
-#     surface = dict(
-#         ie=0.9975,  # Ice Emissivity ie
-#         a_i=0.36175,  # Albedo of Ice a_i
-#         a_s=0.8925,  # Albedo of Fresh Snow a_s
-#         t_decay=10.5,  # Albedo dry decay rate decay_t_d
-#         dx=0.0015,  # Ice layer thickness
-#         z0mi=0.0017,  # Ice Momentum roughness length
-#         z0hi=0.0017,  # Ice Scalar roughness length
-#         d_ppt=250,  # Snowfall density
-#         T_rain=1,  # Temperature condition for liquid precipitation
-#         h_aws=3,  # m height of AWS
-#
-#     )
-#
-# else :
-#     surface = dict(
-#         ie=0.9025,  # Ice Emissivity ie
-#         a_i=0.3325,  # Albedo of Ice a_i
-#         a_s=0.8075,  # Albedo of Fresh Snow a_s
-#         t_decay=9.5,  # Albedo dry decay rate decay_t_d
-#         dx=0.0005,  # Ice layer thickness
-#         z0mi=0.0017,  # Ice Momentum roughness length
-#         z0hi=0.0017,  # Ice Scalar roughness length
-#         d_ppt=250,  # Snowfall density
-#         T_rain=1,  # Temperature condition for liquid precipitation
-#         h_aws=3,  # m height of AWS
-#     )
-
 if site == "schwarzsee":
     folders = dict(
         dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),

@@ -521,6 +521,9 @@ class Icestupa:
         self.df = data_store['df']
         data_store.close()
 
+        self.df["Total"] = self.df["SW_direct"] + self.df["SW_diffuse"]
+        # print(self.df.Total.max())
+
     def read_output(self):
 
         self.df = pd.read_csv(
@@ -528,9 +531,9 @@ class Icestupa:
         self.df["When"] = pd.to_datetime(self.df["When"], format="%Y.%m.%d %H:%M:%S")
 
         print(
-            f"Mean of SW {self.df.SW.mean()}, LW {self.df.LW.mean()}, Qs {self.df.Qs.mean()}, Ql {self.df.Ql.mean()}, Qf {self.df.Qf.mean()}")
+            f"Mean of SW {self.df.SW.mean()}, LW {self.df.LW.mean()}, Qs {self.df.Qs.mean()}, Ql {self.df.Ql.mean()}, Qf {self.df.Qf.mean()}, Qg {self.df.Qg.mean()}")
         print(
-            f"Range of SW {self.df.SW.min()}-{self.df.SW.max()}, LW {self.df.LW.min()}-{self.df.LW.max()}, Qs {self.df.Qs.min()}-{self.df.Qs.max()}, Ql {self.df.Ql.min()}-{self.df.Ql.max()}, Qf {self.df.Qf.min()}-{self.df.Qf.max()}")
+            f"Range of SW {self.df.SW.min()}-{self.df.SW.max()}, LW {self.df.LW.min()}-{self.df.LW.max()}, Qs {self.df.Qs.min()}-{self.df.Qs.max()}, Ql {self.df.Ql.min()}-{self.df.Ql.max()}, Qf {self.df.Qf.min()}-{self.df.Qf.max()}, Qg {self.df.Qg.min()}-{self.df.Qg.max()}")
         print(f"Mean of emissivity {self.df.e_a.mean()}, Range of SRf {self.df.e_a.min()}-{self.df.e_a.max()}")
         print(f"Max SA {self.df.SA.max()}")
         print(
@@ -539,16 +542,6 @@ class Icestupa:
             f"M_U {self.df.unfrozen_water.iloc[-1]}, M_solid {self.df.ice.iloc[-1]}, M_gas {self.df.vapour.iloc[-1]}, M_liquid {self.df.meltwater.iloc[-1]}")
         print(f"Max_growth {self.df.solid.max() / 5}, average_discharge {self.df.Discharge.replace(0, np.NaN).mean()}")
 
-        column_1 = self.df["TotalE"] + self.df["Ql"]
-        column_2 = self.df["solid"]
-        column_3 = self.df["SA"]
-        print(column_3.head())
-        correlation = column_2.corr(column_1)
-        print(correlation)
-        correlation = column_2.corr(column_3)
-        print(correlation)
-        correlation = column_3.corr(column_1)
-        print(correlation)
 
         # self.corr_plot()
 
@@ -652,31 +645,31 @@ class Icestupa:
 
 
 
-                else:
-                    """ When fountain off and energy negative """
-                    # Cooling Ice
-                    self.df.loc[i , "delta_T_s"] += (self.df.loc[i, "TotalE"] * self.time_steps) / (
-                        self.rho_i * self.dx * self.c_i
-                    )
+                # else:
+                #     """ When fountain off and energy negative """
+                #     # Cooling Ice
+                #     self.df.loc[i , "delta_T_s"] += (self.df.loc[i, "TotalE"] * self.time_steps) / (
+                #         self.rho_i * self.dx * self.c_i
+                #     )
 
-                    """Hot Ice"""
-                    if (self.df.loc[i - 1, "T_s"] + self.df.loc[i , "delta_T_s"]) > 0:
+                #     """Hot Ice"""
+                #     if (self.df.loc[i - 1, "T_s"] + self.df.loc[i , "delta_T_s"]) > 0:
 
-                        # Melting Ice by Temperature
-                        self.df.loc[i , "solid"] -= (
-                            (self.rho_i * self.dx * self.c_i * self.df.loc[i, "SA"])
-                            * (-(self.df.loc[i - 1, "T_s"] + self.df.loc[i , "delta_T_s"]))
-                            / (-self.L_f)
-                        )
+                #         # Melting Ice by Temperature
+                #         self.df.loc[i , "solid"] -= (
+                #             (self.rho_i * self.dx * self.c_i * self.df.loc[i, "SA"])
+                #             * (-(self.df.loc[i - 1, "T_s"] + self.df.loc[i , "delta_T_s"]))
+                #             / (-self.L_f)
+                #         )
 
-                        self.df.loc[i , "melted"] += (
-                            (self.rho_i * self.dx * self.c_i * self.df.loc[i, "SA"])
-                            * (-(self.df.loc[i - 1, "T_s"] + self.df.loc[i , "delta_T_s"]))
-                            / (-self.L_f)
-                        )
+                #         self.df.loc[i , "melted"] += (
+                #             (self.rho_i * self.dx * self.c_i * self.df.loc[i, "SA"])
+                #             * (-(self.df.loc[i - 1, "T_s"] + self.df.loc[i , "delta_T_s"]))
+                #             / (-self.L_f)
+                #         )
 
-                        self.df.loc[i - 1, "T_s"] = 0
-                        self.df.loc[i , "delta_T_s"] = 0
+                #         self.df.loc[i - 1, "T_s"] = 0
+                #         self.df.loc[i , "delta_T_s"] = 0
 
             else:
                 # Heating Ice
@@ -971,11 +964,10 @@ class PDF(Icestupa):
             lw=1,
         )
         ax1.scatter(datetime(2019, 3, 10, 18), 0.1295, color="green", marker="o")
-
+        ax1.grid()
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
@@ -984,7 +976,7 @@ class PDF(Icestupa):
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Surface Area [$m^2$]")
-        # ax1.set_xlabel("Days")
+        ax1.grid()
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -997,7 +989,7 @@ class PDF(Icestupa):
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Ice Cone Height [$m$]")
-        # ax1.set_xlabel("Days")
+        ax1.grid()
         ax2 = ax1.twinx()
         ax2.plot(x, y2, "b-", linewidth=0.5)
         ax2.set_ylabel("Ice Radius[$m$]", color="b")
@@ -1022,7 +1014,7 @@ class PDF(Icestupa):
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Albedo")
-        # ax1.set_xlabel("Days")
+        ax1.grid()
         ax2 = ax1.twinx()
         ax2.plot(x, y2, "b-", linewidth=0.5)
         ax2.set_ylabel("$f_{cone}$", color="b")
@@ -1041,7 +1033,7 @@ class PDF(Icestupa):
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-", linewidth=0.5)
         ax1.set_ylabel("Surface Temperature")
-        # ax1.set_xlabel("Days")
+        ax1.grid()
         ax2 = ax1.twinx()
         ax2.plot(x, y2, "b-", linewidth=0.5)
         ax2.set_ylabel("Bulk Temperature", color="b")
