@@ -514,8 +514,6 @@ if __name__ == '__main__':
         df_4 = df_4.reindex(df_4.index.drop(0)).reset_index(drop=True)
         df = df.append(df_4, ignore_index=True)
 
-
-
         # Error Correction
         df["gre000z0"] = df["gre000z0"].replace(np.NaN, 0)
         df["Prec"] = df["Prec"].replace(np.NaN, 0)
@@ -569,9 +567,7 @@ if __name__ == '__main__':
 
         print(df_out.tail())
 
-        filename = folders["input_folder"] + site
-
-        df_out.to_csv(filename + "_raw_input.csv")
+        df_out.to_csv(folders["input_folder"] + "raw_input.csv")
 
         # fig, ax = plt.subplots()
         # ax.plot(df.When, df.v_a)

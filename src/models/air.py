@@ -62,14 +62,16 @@ class Icestupa:
     """Miscellaneous"""
     h_aws = 3  # m height of AWS
 
-    def __init__(self, site="schwarzsee"):
+    state = 0
+    utc_offset = 1
+
+    def __init__(self, site="schwarzsee", latitude = 46.693723, longitude = 7.297543):
 
         self.site = site
 
         """Site constants"""
-        self.latitude = 46.693723
-        self.longitude = 7.297543
-        self.utc_offset = 1
+        self.latitude = latitude
+        self.longitude = longitude
 
         self.folders = dict(
             input_folder=os.path.join(self.dirname, "data/interim/" + site + "/"),
@@ -82,29 +84,6 @@ class Icestupa:
         input_file = self.folders["input_folder"] + "raw_input.csv"
 
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
-
-        self.state = 0
-
-        # i = 0
-        # start = 0
-        # while self.df.loc[i, "Discharge"] == 0:
-        #     start = i
-        #     i += 1
-
-        # i = start
-        
-        # fountain_off = 0
-        # while self.df.Discharge[i:].any() > 0:
-        #     fountain_off = i
-        #     i += 1
-
-        # self.dates = dict(
-        #     start_date=self.df.loc[start, "When"],
-        #     fountain_off_date=self.df.loc[fountain_off, "When"],
-        # )
-
-        # self.df = self.df[start:]
-        # self.df = self.df.reset_index(drop=True)
 
     def SEA(self, date):
 
@@ -243,7 +222,7 @@ class Icestupa:
         missing = ["a", "cld", "SEA", "e_a", "vp_a", "LW_in"]
         for col in missing:
             if col in list(self.df.columns):
-                missing = missing.remove(col)
+                missing.remove(col)
             else:
                 self.df[col] = 0
 
@@ -534,7 +513,7 @@ class Icestupa:
         self.df.to_csv(filename4, sep=",")
 
         data_store = pd.HDFStore(
-            "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/model_output.h5"
+            self.folders["output_folder"] + "model_output.h5"
         )
         data_store["df_out"] = self.df
         data_store.close()
@@ -542,7 +521,7 @@ class Icestupa:
     def read_input(self):
 
         data_store = pd.HDFStore(
-            "/home/surya/Programs/PycharmProjects/air_model/data/interim/schwarzsee/model_input.h5"
+            self.folders["input_folder"] + "model_input.h5"
         )
         self.df = data_store["df"]
         data_store.close()
@@ -550,7 +529,7 @@ class Icestupa:
     def read_output(self):
 
         self.df = pd.read_csv(
-            "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/model_results.csv",
+            self.folders["output_folder"] + "model_results.csv",
             sep=",",
         )
         self.df["When"] = pd.to_datetime(self.df["When"], format="%Y.%m.%d %H:%M:%S")
@@ -1219,6 +1198,266 @@ class PDF(Icestupa):
 
         pp.close()
 
+    def print_output_guttannen(self, filename="model_results.pdf"):
+
+        if filename == "model_results.pdf":
+            filename = self.folders["output_folder"] + "model_results.pdf"
+
+        self.df = self.df.rename(
+            {
+                "SW": "$q_{SW}$",
+                "LW": "$q_{LW}$",
+                "Qs": "$q_S$",
+                "Ql": "$q_L$",
+                "Qf": "$q_{F}$",
+                "Qg": "$q_{G}$",
+            },
+            axis=1,
+        )
+
+        # Plots
+        pp = PdfPages(filename)
+
+        fig = plt.figure()
+        x = self.df.When
+        y1 = self.df.iceV
+
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x, y1, "k-")
+        ax1.set_ylabel("Ice Volume [$m^3$]")
+        
+        ax1.grid()
+        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        fig.autofmt_xdate()
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        y1 = self.df.SA
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x, y1, "k-")
+        ax1.set_ylabel("Surface Area [$m^2$]")
+        ax1.grid()
+        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        fig.autofmt_xdate()
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        y1 = self.df.h_ice
+        y2 = self.df.r_ice
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x, y1, "k-")
+        ax1.set_ylabel("Ice Cone Height [$m$]")
+        ax1.grid()
+        ax2 = ax1.twinx()
+        ax2.plot(x, y2, "b-", linewidth=0.5)
+        ax2.set_ylabel("Ice Radius[$m$]", color="b")
+        for tl in ax2.get_yticklabels():
+            tl.set_color("b")
+
+        
+        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+
+        fig.autofmt_xdate()
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        y1 = self.df.a
+        y2 = self.df.SRf
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x, y1, "k-")
+        ax1.set_ylabel("Albedo")
+        ax1.grid()
+        ax2 = ax1.twinx()
+        ax2.plot(x, y2, "b-", linewidth=0.5)
+        ax2.set_ylabel("$f_{cone}$", color="b")
+        for tl in ax2.get_yticklabels():
+            tl.set_color("b")
+        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+
+        fig.autofmt_xdate()
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        y1 = self.df.T_s
+        y2 = self.df.T_bulk
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x, y1, "k-", linewidth=0.5, alpha =0.5)
+        ax1.set_ylabel("Surface Temperature")
+        # ax1.grid()
+        ax2 = ax1.twinx()
+        ax2.plot(x, y2, "b-", linewidth=0.5)
+        ax2.set_ylabel("Bulk Temperature", color="b")
+        for tl in ax2.get_yticklabels():
+            tl.set_color("b")
+        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        ax1.set_ylim([-20, 1])
+        ax2.set_ylim([-20, 1])
+        fig.autofmt_xdate()
+        pp.savefig(bbox_inches="tight")
+        plt.close("all")
+
+        fig, (ax1, ax2, ax3, ax4) = plt.subplots(
+            nrows=4, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
+        )
+
+        x = self.df.When
+
+        y1 = self.df.a
+        y2 = self.df.SRf
+        ax1.plot(x, y1, "k-")
+        ax1.set_ylabel("Albedo")
+        # ax1.set_xlabel("Days")
+        ax1t = ax1.twinx()
+        ax1t.plot(x, y2, "b-", linewidth=0.5)
+        ax1t.set_ylabel("$f_{cone}$", color="b")
+        for tl in ax1t.get_yticklabels():
+            tl.set_color("b")
+        ax1.grid()
+
+        y1 = self.df.e_a
+        y2 = self.df.cld
+        ax2.plot(x, y1, "k-")
+        ax2.set_ylabel("Atmospheric Emissivity")
+        # ax1.set_xlabel("Days")
+        ax2t = ax2.twinx()
+        ax2t.plot(x, y2, "b-", linewidth=0.5)
+        ax2t.set_ylabel("Cloudiness", color="b")
+        for tl in ax2t.get_yticklabels():
+            tl.set_color("b")
+        ax2.grid()
+
+        y3 = self.df.vp_a - self.df.vp_ice
+        ax3.plot(x, y3, "k-", linewidth=0.5)
+        ax3.set_ylabel("Vapour gradient [$hPa$]")
+        ax3.grid()
+
+        y4 = self.df.T_a - self.df.T_s
+        ax4.plot(x, y4, "k-", linewidth=0.5)
+        ax4.set_ylabel("Temperature gradient [$\\degree C$]")
+        ax4.grid()
+
+        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        fig.autofmt_xdate()
+        pp.savefig(bbox_inches="tight")
+        plt.close("all")
+
+        dfd = self.df.set_index("When").resample("D").mean().reset_index()
+        dfd["Discharge"] = dfd["Discharge"] == 0
+        dfd["Discharge"] = dfd["Discharge"].astype(int)
+        dfd["Discharge"] = dfd["Discharge"].astype(str)
+        dfd["When"] = dfd["When"].dt.strftime("%b %d")
+
+        # dfd["label"] = " "
+        # labels = [
+        #     "Jan 30",
+        #     "Feb 05",
+        #     "Feb 12",
+        #     "Feb 19",
+        #     "Feb 26",
+        #     "Mar 05",
+        #     "Mar 12",
+        #     "Mar 19",
+        # ]
+        # for i in range(0, dfd.shape[0]):
+        #     for item in labels:
+        #         if dfd.When[i] == item:
+        #             dfd.loc[i, "label"] = dfd.When[i]
+
+        dfd = dfd.set_index("When")
+
+        z = dfd[["$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
+        ax = z.plot.bar(stacked=True, edgecolor=dfd["Discharge"], linewidth=0.5)
+        ax.xaxis.set_label_text("")
+        plt.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
+        # plt.xlabel('Date')
+        plt.ylabel("Energy Flux Density [$W\\,m^{-2}$]")
+        plt.legend(loc="lower right")
+        # plt.ylim(-150, 150)
+        plt.xticks(rotation=45)
+        pp.savefig(bbox_inches="tight")
+        plt.close("all")
+
+        dfds = self.df[["When", "thickness", "SA"]]
+
+        with pd.option_context("mode.chained_assignment", None):
+            dfds["negative"] = dfds.loc[dfds.thickness < 0, "thickness"]
+            dfds["positive"] = dfds.loc[dfds.thickness >= 0, "thickness"]
+
+        dfds1 = dfds.set_index("When").resample("D").sum().reset_index()
+        dfds2 = dfds.set_index("When").resample("D").mean().reset_index()
+
+        dfds2["When"] = dfds2["When"].dt.strftime("%b %d")
+        # dfds2["label"] = " "
+        # labels = [
+        #     "Jan 30",
+        #     "Feb 05",
+        #     "Feb 12",
+        #     "Feb 19",
+        #     "Feb 26",
+        #     "Mar 05",
+        #     "Mar 12",
+        #     "Mar 19",
+        # ]
+        # for i in range(0, dfds2.shape[0]):
+        #     for item in labels:
+        #         if dfds2.When[i] == item:
+        #             dfds2.loc[i, "label"] = dfds2.When[i]
+
+        dfds2 = dfds2.set_index("When")
+
+        dfds1 = dfds1.rename(
+            columns={"positive": "Ice thickness", "negative": "Meltwater thickness"}
+        )
+        y1 = dfds1[["Ice thickness", "Meltwater thickness"]]
+        y3 = dfds2["SA"]
+
+        fig = plt.figure()
+        ax1 = fig.add_subplot(2, 1, 1)
+        y1.plot(
+            kind="bar",
+            stacked=True,
+            edgecolor="black",
+            linewidth=0.5,
+            color=["#D9E9FA", "#0C70DE"],
+            ax=ax1,
+        )
+        plt.ylabel("Thickness ($m$ w. e.)")
+        plt.xticks(rotation=45)
+        # plt.legend(loc='upper right')
+        ax1.set_ylim(-0.025, 0.025)
+        ax1.yaxis.set_minor_locator(AutoMinorLocator())
+        ax1.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
+        x_axis = ax1.axes.get_xaxis()
+        x_axis.set_visible(False)
+
+        ax3 = fig.add_subplot(2, 1, 2)
+        ax = y3.plot.bar(
+            y="SA", linewidth=0.5, edgecolor="black", color="xkcd:grey", ax=ax3
+        )
+        ax.xaxis.set_label_text("")
+        ax3.set_ylabel("Surface Area ($m^2$)")
+        ax3.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
+        plt.xticks(rotation=45)
+        # plt.savefig(self.folders["output_folder"] + "thickness.pdf")
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        plt.close("all")
+
+        pp.close()
+
     def corr_plot(self):
 
         data = self.df
@@ -1295,11 +1534,13 @@ if __name__ == "__main__":
 
     start = time.time()
 
-    schwarzsee = PDF()
+    schwarzsee = PDF(site = "guttannen")
 
-    # schwarzsee.derive_parameters()
+    schwarzsee.derive_parameters()
 
-    schwarzsee.read_input()
+    schwarzsee.print_input()
+
+    # schwarzsee.read_input()
 
     # schwarzsee.print_input()
 

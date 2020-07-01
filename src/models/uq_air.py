@@ -123,7 +123,7 @@ T_w_dist = cp.Uniform(0, 9)
 dx_dist = cp.Uniform(0.001, 0.01)
 
 parameters = {
-                "h_f": h_f_dist
+                "dx": dx_dist
 
 }
 
@@ -175,7 +175,7 @@ UQ = un.UncertaintyQuantification(model=model,
 # polynomial chaos with point collocation (by default)
 data = UQ.quantify(data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
                     figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
-                    filename="h_f")
+                    filename="dx")
 
 # data = UQ.quantify(filename="Meteorological")
 
