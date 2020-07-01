@@ -6,8 +6,7 @@ dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 # site = input("Input the Field Site Name: ") or "guttannen"
 
-site = "schwarzsee_2020"
-option = "schwarzsee"
+site = "schwarzsee"
 
 print("Site is", site)
 
@@ -101,17 +100,21 @@ if site == "guttannen":
         dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
         input_folder=os.path.join(dir, "data/interim/guttannen/"),
         output_folder=os.path.join(dir, "data/processed/guttannen/"),
-        data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
+        data_file=os.path.join(dir, "data/raw/" + site + "_2020.txt"),
     )
 
     dates = dict(
-        start_date=datetime(2018, 1, 10),
-        end_date=datetime(2018, 3, 1),
-        fountain_off_date=datetime(2018, 2, 1),
+        start_date=datetime(2019, 11, 21),
+        end_date=datetime(2020, 2, 1),
+        error_date=datetime(2020, 1, 19),
+        fountain_off_date=datetime(2020, 3, 1),
     )
     fountain = dict(
-        aperture_f=0.005,  # Fountain hole diameter
-        h_f=5,  # Fountain steps h_f
-        discharge=6,  # Fountain on discharge
-        crit_temp=-1,  # Fountain runtime temperature
+        aperture_f=0.005,  # Fountain aperture diameter
+        h_f=4,  # Fountain steps h_f
+        discharge=3.58,  # Fountain on discharge
+        crit_temp=-5,  # Fountain runtime temperature
+        latitude=46.656640,
+        longitude=8.291040,
+        utc_offset=1,
     )

@@ -81,28 +81,30 @@ class Icestupa:
 
         input_file = self.folders["input_folder"] + "raw_input.csv"
 
-        self.state = 0
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
 
-        i = 0
-        start = 0
-        while self.df.loc[i, "Discharge"] == 0:
-            start = i
-            i += 1
+        self.state = 0
 
-        i = start
-        fountain_off = 0
-        while self.df.Discharge[i:].any() > 0:
-            fountain_off = i
-            i += 1
+        # i = 0
+        # start = 0
+        # while self.df.loc[i, "Discharge"] == 0:
+        #     start = i
+        #     i += 1
 
-        self.dates = dict(
-            start_date=self.df.loc[start, "When"],
-            fountain_off_date=self.df.loc[fountain_off, "When"],
-        )
+        # i = start
+        
+        # fountain_off = 0
+        # while self.df.Discharge[i:].any() > 0:
+        #     fountain_off = i
+        #     i += 1
 
-        self.df = self.df[start:]
-        self.df = self.df.reset_index(drop=True)
+        # self.dates = dict(
+        #     start_date=self.df.loc[start, "When"],
+        #     fountain_off_date=self.df.loc[fountain_off, "When"],
+        # )
+
+        # self.df = self.df[start:]
+        # self.df = self.df.reset_index(drop=True)
 
     def SEA(self, date):
 
@@ -545,9 +547,6 @@ class Icestupa:
         self.df = data_store["df"]
         data_store.close()
 
-        self.df["Total"] = self.df["SW_direct"] + self.df["SW_diffuse"]
-        # print(self.df.Total.max())
-
     def read_output(self):
 
         self.df = pd.read_csv(
@@ -613,17 +612,27 @@ class Icestupa:
         self.sum_T_s = 0  # weighted_sums
         self.sum_SA = 0  # weighted_sums
 
-        """Initialize"""
-        self.df.loc[0, "r_ice"] = self.spray_radius()
-
-        self.df.loc[0, "h_ice"] = self.dx
-        self.df.loc[0, "iceV"] = math.pi / 3 * self.df.loc[0, "r_ice"] ** 2 * self.dx
-        self.df.loc[0, "ice"] = self.df.loc[0, "iceV"] * self.rho_i
-        self.df.loc[0, "input"] = self.df.loc[0, "iceV"] * self.rho_i
-        self.df.loc[0, "h_r"] = self.df.loc[0, "h_ice"] / self.df.loc[0, "r_ice"]
+        # """Initialize"""
+        # self.df.loc[0, "r_ice"] = self.spray_radius()
+        # self.df.loc[0, "h_ice"] = self.dx
+        # self.df.loc[0, "iceV"] = math.pi / 3 * self.df.loc[0, "r_ice"] ** 2 * self.dx
+        # self.df.loc[0, "ice"] = self.df.loc[0, "iceV"] * self.rho_i
+        # self.df.loc[0, "input"] = self.df.loc[0, "iceV"] * self.rho_i
+        # self.df.loc[0, "h_r"] = self.df.loc[0, "h_ice"] / self.df.loc[0, "r_ice"]
 
         for row in self.df[1:].itertuples():
             i = row.Index
+
+            # Initialize
+            if self.df.Discharge[i] > 0 and self.state == 0:
+                self.state = 1
+                self.df.loc[i - 1, "r_ice"] = self.spray_radius()
+                self.df.loc[i - 1, "h_ice"] = self.dx
+                self.df.loc[i - 1, "iceV"] = math.pi / 3 * self.df.loc[0, "r_ice"] ** 2 * self.dx
+                self.df.loc[i - 1, "ice"] = self.df.loc[0, "iceV"] * self.rho_i
+                self.df.loc[i - 1, "input"] = self.df.loc[0, "iceV"] * self.rho_i
+                self.df.loc[i - 1, "h_r"] = self.df.loc[0, "h_ice"] / self.df.loc[0, "r_ice"]
+                self.start = i - 1
 
             # Ice Melted
             if self.df.loc[i - 1, "iceV"] <= 0:
@@ -631,93 +640,96 @@ class Icestupa:
                 self.df.loc[i - 1, "ice"] = 0
                 self.df.loc[i - 1, "iceV"] = 0
                 if self.df.Discharge[i:].sum() == 0:  # If ice melted after fountain run
-                    self.df = self.df[:i]
+                    self.df = self.df[self.start:i]
+                    self.df = self.df.reset_index(drop=True)
                     break
                 else:  # If ice melted in between fountain run
                     self.state = 0
 
-            self.surface_area(i)
+            if self.state == 1:
 
-            # Precipitation to ice quantity
-            if row.T_a < self.T_rain and row.Prec > 0:
+                self.surface_area(i)
 
-                self.df.loc[i, "ppt"] = (
-                    self.d_ppt
-                    * row.Prec
-                    * math.pi
-                    * math.pow(self.df.loc[i, "r_ice"], 2)
+                # Precipitation to ice quantity
+                if row.T_a < self.T_rain and row.Prec > 0:
+
+                    self.df.loc[i, "ppt"] = (
+                        self.d_ppt
+                        * row.Prec
+                        * math.pi
+                        * math.pow(self.df.loc[i, "r_ice"], 2)
+                    )
+
+                    self.df.loc[i, "solid"] += self.df.loc[i, "ppt"]
+
+                # Fountain water output
+                self.liquid = row.Discharge * (1 - self.ftl) * self.time_steps / 60
+
+                self.energy_balance(row)
+
+                if self.EJoules < 0 and self.liquid > 0:
+
+                    """Freezing water"""
+
+                    self.liquid -= (self.EJoules) / (-self.L_f)
+
+                    if self.liquid < 0:
+                        self.liquid += (self.EJoules) / (-self.L_f)
+                        self.df.loc[i, "solid"] += self.liquid
+
+                        self.liquid = 0
+                    else:
+                        self.df.loc[i, "solid"] += (-self.EJoules) / (self.L_f)
+
+                else:
+                    # Heating Ice
+                    self.df.loc[i, "delta_T_s"] += (
+                        self.df.loc[i, "TotalE"] * self.time_steps
+                    ) / (self.rho_i * self.dx * self.c_i)
+
+                    """Hot Ice"""
+                    if (self.df.loc[i - 1, "T_s"] + self.df.loc[i, "delta_T_s"]) > 0:
+
+                        # Melting Ice by Temperature
+                        self.df.loc[i, "solid"] -= (
+                            (self.rho_i * self.dx * self.c_i * self.df.loc[i, "SA"])
+                            * (-(self.df.loc[i - 1, "T_s"] + self.df.loc[i, "delta_T_s"]))
+                            / (-self.L_f)
+                        )
+
+                        self.df.loc[i, "melted"] += (
+                            (self.rho_i * self.dx * self.c_i * self.df.loc[i, "SA"])
+                            * (-(self.df.loc[i - 1, "T_s"] + self.df.loc[i, "delta_T_s"]))
+                            / (-self.L_f)
+                        )
+
+                        self.df.loc[i - 1, "T_s"] = 0
+                        self.df.loc[i, "delta_T_s"] = 0
+
+                """ Quantities of all phases """
+                self.df.loc[i, "T_s"] = (
+                    self.df.loc[i - 1, "T_s"] + self.df.loc[i, "delta_T_s"]
+                )
+                self.df.loc[i, "meltwater"] = (
+                    self.df.loc[i - 1, "meltwater"] + self.df.loc[i, "melted"]
+                )
+                self.df.loc[i, "ice"] = self.df.loc[i - 1, "ice"] + self.df.loc[i, "solid"]
+                self.df.loc[i, "vapour"] = self.df.loc[i - 1, "vapour"] + self.gas
+                self.df.loc[i, "unfrozen_water"] = (
+                    self.df.loc[i - 1, "unfrozen_water"] + self.liquid
+                )
+                self.df.loc[i, "iceV"] = self.df.loc[i, "ice"] / self.rho_i
+                self.df.loc[i, "input"] = (
+                    self.df.loc[i - 1, "input"]
+                    + self.df.loc[i, "ppt"]
+                    + self.df.loc[i, "dpt"]
+                    + self.df.loc[i, "Discharge"] * 5
+                )
+                self.df.loc[i, "thickness"] = self.df.loc[i, "solid"] / (
+                    self.df.loc[i, "SA"] * self.rho_i
                 )
 
-                self.df.loc[i, "solid"] += self.df.loc[i, "ppt"]
-
-            # Fountain water output
-            self.liquid = row.Discharge * (1 - self.ftl) * self.time_steps / 60
-
-            self.energy_balance(row)
-
-            if self.EJoules < 0 and self.liquid > 0:
-
-                """Freezing water"""
-
-                self.liquid -= (self.EJoules) / (-self.L_f)
-
-                if self.liquid < 0:
-                    self.liquid += (self.EJoules) / (-self.L_f)
-                    self.df.loc[i, "solid"] += self.liquid
-
-                    self.liquid = 0
-                else:
-                    self.df.loc[i, "solid"] += (-self.EJoules) / (self.L_f)
-
-            else:
-                # Heating Ice
-                self.df.loc[i, "delta_T_s"] += (
-                    self.df.loc[i, "TotalE"] * self.time_steps
-                ) / (self.rho_i * self.dx * self.c_i)
-
-                """Hot Ice"""
-                if (self.df.loc[i - 1, "T_s"] + self.df.loc[i, "delta_T_s"]) > 0:
-
-                    # Melting Ice by Temperature
-                    self.df.loc[i, "solid"] -= (
-                        (self.rho_i * self.dx * self.c_i * self.df.loc[i, "SA"])
-                        * (-(self.df.loc[i - 1, "T_s"] + self.df.loc[i, "delta_T_s"]))
-                        / (-self.L_f)
-                    )
-
-                    self.df.loc[i, "melted"] += (
-                        (self.rho_i * self.dx * self.c_i * self.df.loc[i, "SA"])
-                        * (-(self.df.loc[i - 1, "T_s"] + self.df.loc[i, "delta_T_s"]))
-                        / (-self.L_f)
-                    )
-
-                    self.df.loc[i - 1, "T_s"] = 0
-                    self.df.loc[i, "delta_T_s"] = 0
-
-            """ Quantities of all phases """
-            self.df.loc[i, "T_s"] = (
-                self.df.loc[i - 1, "T_s"] + self.df.loc[i, "delta_T_s"]
-            )
-            self.df.loc[i, "meltwater"] = (
-                self.df.loc[i - 1, "meltwater"] + self.df.loc[i, "melted"]
-            )
-            self.df.loc[i, "ice"] = self.df.loc[i - 1, "ice"] + self.df.loc[i, "solid"]
-            self.df.loc[i, "vapour"] = self.df.loc[i - 1, "vapour"] + self.gas
-            self.df.loc[i, "unfrozen_water"] = (
-                self.df.loc[i - 1, "unfrozen_water"] + self.liquid
-            )
-            self.df.loc[i, "iceV"] = self.df.loc[i, "ice"] / self.rho_i
-            self.df.loc[i, "input"] = (
-                self.df.loc[i - 1, "input"]
-                + self.df.loc[i, "ppt"]
-                + self.df.loc[i, "dpt"]
-                + self.df.loc[i, "Discharge"] * 5
-            )
-            self.df.loc[i, "thickness"] = self.df.loc[i, "solid"] / (
-                self.df.loc[i, "SA"] * self.rho_i
-            )
-
-            self.liquid, self.gas, self.EJoules = [0] * 3
+                self.liquid, self.gas, self.EJoules = [0] * 3
 
 
 class PDF(Icestupa):
@@ -1287,13 +1299,13 @@ if __name__ == "__main__":
 
     # schwarzsee.derive_parameters()
 
-    # schwarzsee.read_input()
+    schwarzsee.read_input()
 
     # schwarzsee.print_input()
 
-    # schwarzsee.melt_freeze()
+    schwarzsee.melt_freeze()
 
-    schwarzsee.read_output()
+    # schwarzsee.read_output()
 
     schwarzsee.summary()
 

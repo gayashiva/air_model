@@ -100,7 +100,7 @@ k_i_dist = uniform(k_i, interval)
 
 t_decay_dist = cp.Uniform(1, 22)
 T_rain_dist = cp.Uniform(0, 2)
-z_i_dist = cp.Uniform(0.0007, 0.0027)
+# z_i_dist = cp.Uniform(0.0007, 0.0027)
 d_ppt_dist = cp.Uniform(200, 300)
 
 dia_f = 0.005
@@ -123,7 +123,7 @@ T_w_dist = cp.Uniform(0, 9)
 dx_dist = cp.Uniform(0.001, 0.01)
 
 parameters = {
-                "t_decay": t_decay_dist
+                "h_f": h_f_dist
 
 }
 
@@ -175,7 +175,7 @@ UQ = un.UncertaintyQuantification(model=model,
 # polynomial chaos with point collocation (by default)
 data = UQ.quantify(data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
                     figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
-                    filename="t_decay")
+                    filename="h_f")
 
 # data = UQ.quantify(filename="Meteorological")
 
