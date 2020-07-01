@@ -487,8 +487,8 @@ class Icestupa:
             self.k_i
             * (self.df.loc[i - 1, "T_bulk"] - self.df.loc[i - 1, "T_s"])
             / (
-                math.sqrt(self.df.loc[i, "r_ice"] ** 2 + self.df.loc[i, "h_ice"] ** 2)
-                / 2
+                self.df.loc[i, "r_ice"]
+
             )
         )
 
@@ -1038,9 +1038,9 @@ class PDF(Icestupa):
         y1 = self.df.T_s
         y2 = self.df.T_bulk
         ax1 = fig.add_subplot(111)
-        ax1.plot(x, y1, "k-", linewidth=0.5)
+        ax1.plot(x, y1, "k-", linewidth=0.5, alpha =0.5)
         ax1.set_ylabel("Surface Temperature")
-        ax1.grid()
+        # ax1.grid()
         ax2 = ax1.twinx()
         ax2.plot(x, y2, "b-", linewidth=0.5)
         ax2.set_ylabel("Bulk Temperature", color="b")
@@ -1287,15 +1287,13 @@ if __name__ == "__main__":
 
     # schwarzsee.derive_parameters()
 
-    schwarzsee.read_input()
+    # schwarzsee.read_input()
 
     # schwarzsee.print_input()
 
-    schwarzsee.melt_freeze()
+    # schwarzsee.melt_freeze()
 
-    # schwarzsee.read_output()
-
-    # schwarzsee.print_EGU()
+    schwarzsee.read_output()
 
     schwarzsee.summary()
 
