@@ -19,7 +19,7 @@ def draw_plot(data, edge_color, fill_color, labels):
 input = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/"
 figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/"
 
-names = ["T_rain", "k_i", "d_ppt", "ie", "a_i", "a_s", "t_decay",  "dia_f",  "h_f", "h_aws", "T_w", "dx"]
+names = ["T_rain", "k_i", "d_ppt", "ie", "a_i", "a_s", "t_decay",  "dia_f",  "h_f", "h_aws", "T_w", "dx", "full"]
 variance = []
 mean = []
 evaluations = []
@@ -41,7 +41,7 @@ for name in names:
 
     eval = data["max_volume"].evaluations
 
-    print(f"95 percent confidence interval caused by {name} is {round(2 * st.stdev(eval),2)}")
+    print(f"95 percent confidence interval caused by {name} is {round(st.mean(eval),2)} and {round(2 * st.stdev(eval),2)}")
 
     # plot1 = un.plotting.PlotUncertainty(filename1)
     # plot1.prediction_interval_1d(show = True)

@@ -436,12 +436,10 @@ class Icestupa:
             self.df.loc[i - 1, "T_s"] + 273.15, 4
         )
 
+        if np.isnan(self.df.loc[i, "LW"]) :
+            print(f"LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i-1]}")
+
         if self.liquid > 0:
-            # self.df.loc[i, "Qf"] += (
-            #     (self.df.loc[i-1 , "solid"] - self.df.loc[i-1 , "ppt"] - self.df.loc[i-1 , "dpt"])
-            #     * (self.c_w * self.T_w + self.L_f - self.c_i * self.df.loc[i - 1, "T_s"])
-            #     / (self.time_steps * self.df.loc[i, "SA"])
-            #     )
 
             self.df.loc[i, "Qf"] = (
                 (
@@ -489,8 +487,8 @@ class Icestupa:
             + self.df.loc[i, "Qg"]
         )
 
-        # if self.df.loc[i, "TotalE"] > 400 :
-        #     print(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}")
+        if np.isnan(self.df.loc[i, "TotalE"]) :
+            print(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}")
 
         # Total Energy Joules
         self.EJoules = self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]
@@ -591,26 +589,18 @@ class Icestupa:
         self.sum_T_s = 0  # weighted_sums
         self.sum_SA = 0  # weighted_sums
 
-        # """Initialize"""
-        # self.df.loc[0, "r_ice"] = self.spray_radius()
-        # self.df.loc[0, "h_ice"] = self.dx
-        # self.df.loc[0, "iceV"] = math.pi / 3 * self.df.loc[0, "r_ice"] ** 2 * self.dx
-        # self.df.loc[0, "ice"] = self.df.loc[0, "iceV"] * self.rho_i
-        # self.df.loc[0, "input"] = self.df.loc[0, "iceV"] * self.rho_i
-        # self.df.loc[0, "h_r"] = self.df.loc[0, "h_ice"] / self.df.loc[0, "r_ice"]
-
         for row in self.df[1:].itertuples():
             i = row.Index
 
             # Initialize
             if self.df.Discharge[i] > 0 and self.state == 0:
                 self.state = 1
-                self.df.loc[i - 1, "r_ice"] = self.spray_radius()
+                self.df.loc[i - 1, "r_ice"] = self.spray_radius(r_mean = 7)
                 self.df.loc[i - 1, "h_ice"] = self.dx
-                self.df.loc[i - 1, "iceV"] = math.pi / 3 * self.df.loc[0, "r_ice"] ** 2 * self.dx
-                self.df.loc[i - 1, "ice"] = self.df.loc[0, "iceV"] * self.rho_i
-                self.df.loc[i - 1, "input"] = self.df.loc[0, "iceV"] * self.rho_i
-                self.df.loc[i - 1, "h_r"] = self.df.loc[0, "h_ice"] / self.df.loc[0, "r_ice"]
+                self.df.loc[i - 1, "iceV"] = math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.dx
+                self.df.loc[i - 1, "ice"] = self.df.loc[i - 1, "iceV"] * self.rho_i
+                self.df.loc[i - 1, "input"] = self.df.loc[i - 1, "iceV"] * self.rho_i
+                self.df.loc[i - 1, "h_r"] = self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
                 self.start = i - 1
 
             # Ice Melted
@@ -709,6 +699,8 @@ class Icestupa:
                 )
 
                 self.liquid, self.gas, self.EJoules = [0] * 3
+
+                
 
 
 class PDF(Icestupa):
@@ -1536,13 +1528,11 @@ if __name__ == "__main__":
 
     schwarzsee = PDF(site = "guttannen")
 
-    schwarzsee.derive_parameters()
-
-    schwarzsee.print_input()
-
-    # schwarzsee.read_input()
+    # schwarzsee.derive_parameters()
 
     # schwarzsee.print_input()
+
+    schwarzsee.read_input()
 
     schwarzsee.melt_freeze()
 
@@ -1550,7 +1540,7 @@ if __name__ == "__main__":
 
     schwarzsee.summary()
 
-    schwarzsee.print_output()
+    schwarzsee.print_output_guttannen()
 
     total = time.time() - start
 

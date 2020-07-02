@@ -177,5 +177,4 @@ data = UQ.quantify(data_folder = "/home/surya/Programs/PycharmProjects/air_model
                     figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
                     filename="dx")
 
-# data = UQ.quantify(filename="Meteorological")
 

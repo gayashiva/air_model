@@ -515,9 +515,10 @@ if __name__ == '__main__':
         df = df.append(df_4, ignore_index=True)
 
         # Error Correction
-        df["gre000z0"] = df["gre000z0"].replace(np.NaN, 0)
-        df["Prec"] = df["Prec"].replace(np.NaN, 0)
-        df["vp_a"] = df["vp_a"].replace(np.NaN, 0)
+        df = df.fillna(method='ffill')
+        # df["gre000z0"] = df["gre000z0"].replace(np.NaN, 0)
+        # df["Prec"] = df["Prec"].replace(np.NaN, 0)
+        # df["vp_a"] = df["vp_a"].replace(np.NaN, 0)
 
         cld = 0.5
         df["Rad"] = df_in2["gre000z0"] - df_in2["gre000z0"] * cld
@@ -569,6 +570,6 @@ if __name__ == '__main__':
 
         df_out.to_csv(folders["input_folder"] + "raw_input.csv")
 
-        # fig, ax = plt.subplots()
-        # ax.plot(df.When, df.v_a)
-        # plt.show()
+        fig, ax = plt.subplots()
+        ax.plot(df.When, df.LW_in)
+        plt.show()
