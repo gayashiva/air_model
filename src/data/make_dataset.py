@@ -395,7 +395,7 @@ if __name__ == '__main__':
         """
 
         # Add Radiation data
-        df_in2 = pd.read_csv(os.path.join(folders["dirname"], "data/raw/guttannen_2020_add.txt"), encoding="latin-1", skiprows=2, sep=";")
+        df_in2 = pd.read_csv(os.path.join(folders["dirname"], "data/raw/guttannen_1.txt"), encoding="latin-1", skiprows=2, sep='\\s+')
         df_in2["When"] = pd.to_datetime(df_in2["time"], format="%Y%m%d%H%M")  # Datetime
 
         # Convert to int
@@ -408,8 +408,8 @@ if __name__ == '__main__':
         )  # Add Radiation data
 
         # Add rest of data
-        df_in3 = pd.read_csv(os.path.join(folders["dirname"], "data/raw/guttannen_2020_add_2.txt"), encoding="latin-1",
-                             skiprows=2, sep=";")
+        df_in3 = pd.read_csv(os.path.join(folders["dirname"], "data/raw/guttannen_2.txt"), encoding="latin-1",
+                             skiprows=2, sep='\\s+')
         df_in3["When"] = pd.to_datetime(df_in3["time"], format="%Y%m%d%H%M")  # Datetime
 
         df_in3["Prec"] = pd.to_numeric(

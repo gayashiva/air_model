@@ -1528,11 +1528,11 @@ if __name__ == "__main__":
 
     schwarzsee = PDF(site = "guttannen")
 
-    # schwarzsee.derive_parameters()
+    schwarzsee.derive_parameters()
 
-    # schwarzsee.print_input()
+    schwarzsee.print_input()
 
-    schwarzsee.read_input()
+    # schwarzsee.read_input()
 
     schwarzsee.melt_freeze()
 
