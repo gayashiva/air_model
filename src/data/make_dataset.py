@@ -22,7 +22,7 @@ def discharge_rate(df, fountain):
 
         df_nights = pd.read_csv(
             os.path.join(folders["dirname"], "data/raw/schwarzsee_fountain_time.txt"),
-            sep="\s+",
+            sep="\\s+",
         )
 
         df_nights["Start"] = pd.to_datetime(
@@ -421,6 +421,8 @@ if __name__ == '__main__':
         )  # Vapour pressure over air
 
         df_in3["Prec"] = df_in3["Prec"] / 1000
+
+
 
         df_in3["Temperature"] = pd.to_numeric(
             df_in3["tre200s0"], errors="coerce"

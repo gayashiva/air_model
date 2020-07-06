@@ -18,6 +18,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import scipy.stats as stats
 import seaborn as sns
+from src.data.config import dates, fountain
 
 
 class Icestupa:
@@ -176,7 +177,7 @@ class Icestupa:
 
         """Albedo"""
         # Precipitation
-        if (row.Discharge == 0) & (row.Prec > 0):
+        if (row.Discharge == 0) & (row.Prec > 0.00025):
             if row.T_a < self.T_rain:  # Snow
                 s = 0
                 f = 0
@@ -524,6 +525,10 @@ class Icestupa:
         self.df = data_store["df"]
         data_store.close()
 
+        mask = (self.df["When"] >= dates["start_date"]) & (self.df["When"] <= dates["end_date"])
+        self.df = self.df.loc[mask]
+        self.df = self.df.reset_index()
+
     def read_output(self):
 
         self.df = pd.read_csv(
@@ -595,16 +600,17 @@ class Icestupa:
             # Initialize
             if self.df.Discharge[i] > 0 and self.state == 0:
                 self.state = 1
-                self.df.loc[i - 1, "r_ice"] = self.spray_radius(r_mean = 7)
+                
+                self.df.loc[i - 1, "r_ice"] = self.spray_radius(r_mean = 4.5)
                 self.df.loc[i - 1, "h_ice"] = self.dx
-                self.df.loc[i - 1, "iceV"] = math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.dx
-                self.df.loc[i - 1, "ice"] = self.df.loc[i - 1, "iceV"] * self.rho_i
-                self.df.loc[i - 1, "input"] = self.df.loc[i - 1, "iceV"] * self.rho_i
+                self.df.loc[i - 1, "iceV"] = math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.df.loc[i - 1, "h_ice"]
+                self.df.loc[i - 1, "ice"] = math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.dx
+                self.df.loc[i - 1, "input"] = self.df.loc[i - 1, "ice"]
                 self.df.loc[i - 1, "h_r"] = self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
                 self.start = i - 1
 
             # Ice Melted
-            if self.df.loc[i - 1, "iceV"] <= 0:
+            if self.df.loc[i - 1, "ice"] <= 0:
                 self.df.loc[i - 1, "solid"] = 0
                 self.df.loc[i - 1, "ice"] = 0
                 self.df.loc[i - 1, "iceV"] = 0
@@ -687,7 +693,7 @@ class Icestupa:
                 self.df.loc[i, "unfrozen_water"] = (
                     self.df.loc[i - 1, "unfrozen_water"] + self.liquid
                 )
-                self.df.loc[i, "iceV"] = self.df.loc[i, "ice"] / self.rho_i
+                self.df.loc[i, "iceV"] = self.df.loc[i - 1, "iceV"] + self.df.loc[i, "solid"] / self.rho_i 
                 self.df.loc[i, "input"] = (
                     self.df.loc[i - 1, "input"]
                     + self.df.loc[i, "ppt"]
@@ -1212,12 +1218,14 @@ class PDF(Icestupa):
 
         fig = plt.figure()
         x = self.df.When
-        y1 = self.df.iceV
+        y1 = self.df.ice
 
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Ice Volume [$m^3$]")
+        ax1.set_ylabel("Ice Mass [$kg$]")
         
+        ax1.scatter(datetime(2020, 4, 10, 18), 0.1295 * 916, color="green", marker="o")
+
         ax1.grid()
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -1249,6 +1257,11 @@ class PDF(Icestupa):
         ax2.set_ylabel("Ice Radius[$m$]", color="b")
         for tl in ax2.get_yticklabels():
             tl.set_color("b")
+
+        # Include Validation line segment 1
+
+        ax1.scatter(datetime(2020, 1, 24, 15), 3, color="black", marker="o")
+        ax2.scatter(datetime(2020, 1, 24, 15), 4.5, color="blue", marker="o")
 
         
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -1351,23 +1364,13 @@ class PDF(Icestupa):
         dfd["Discharge"] = dfd["Discharge"].astype(str)
         dfd["When"] = dfd["When"].dt.strftime("%b %d")
 
-        # dfd["label"] = " "
-        # labels = [
-        #     "Jan 30",
-        #     "Feb 05",
-        #     "Feb 12",
-        #     "Feb 19",
-        #     "Feb 26",
-        #     "Mar 05",
-        #     "Mar 12",
-        #     "Mar 19",
-        # ]
-        # for i in range(0, dfd.shape[0]):
-        #     for item in labels:
-        #         if dfd.When[i] == item:
-        #             dfd.loc[i, "label"] = dfd.When[i]
+        dfd["label"] = " "
+        
+        for i in range(0, dfd.shape[0]):
+            if i%7 == 0:
+                dfd.loc[i, "label"] = dfd.When[i]
 
-        dfd = dfd.set_index("When")
+        dfd = dfd.set_index("label")
 
         z = dfd[["$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
         ax = z.plot.bar(stacked=True, edgecolor=dfd["Discharge"], linewidth=0.5)
@@ -1375,8 +1378,7 @@ class PDF(Icestupa):
         plt.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
         # plt.xlabel('Date')
         plt.ylabel("Energy Flux Density [$W\\,m^{-2}$]")
-        plt.legend(loc="lower right")
-        # plt.ylim(-150, 150)
+        plt.legend(loc="best")
         plt.xticks(rotation=45)
         pp.savefig(bbox_inches="tight")
         plt.close("all")
@@ -1391,23 +1393,13 @@ class PDF(Icestupa):
         dfds2 = dfds.set_index("When").resample("D").mean().reset_index()
 
         dfds2["When"] = dfds2["When"].dt.strftime("%b %d")
-        # dfds2["label"] = " "
-        # labels = [
-        #     "Jan 30",
-        #     "Feb 05",
-        #     "Feb 12",
-        #     "Feb 19",
-        #     "Feb 26",
-        #     "Mar 05",
-        #     "Mar 12",
-        #     "Mar 19",
-        # ]
-        # for i in range(0, dfds2.shape[0]):
-        #     for item in labels:
-        #         if dfds2.When[i] == item:
-        #             dfds2.loc[i, "label"] = dfds2.When[i]
+        dfds2["label"] = " "
+        
+        for i in range(0, dfd.shape[0]):
+            if i%7 == 0:
+                dfds2.loc[i, "label"] = dfd.When[i]
 
-        dfds2 = dfds2.set_index("When")
+        dfds2 = dfds2.set_index("label")
 
         dfds1 = dfds1.rename(
             columns={"positive": "Ice thickness", "negative": "Meltwater thickness"}
@@ -1495,44 +1487,17 @@ class PDF(Icestupa):
         plt.show()
 
 
-class Shape(Icestupa):
-    def cylinder_surface_area(self, i):
-        # Ice Radius
-        self.df.loc[i, "r_ice"] = self.r_mean
-
-        # Ice Height
-        self.df.loc[i, "h_ice"] = self.df.loc[i - 1, "iceV"] / (
-            math.pi * self.df.loc[i, "r_ice"] ** 2
-        )
-
-        # Area of Conical Ice Surface
-        self.df.loc[i, "SA"] = (
-            math.pi * math.pow(self.df.loc[i, "r_ice"], 2)
-            + math.pi * self.df.loc[i, "r_ice"] * self.df.loc[i, "h_ice"]
-        )
-
-        self.df.loc[i, "SRf"] = (
-            self.df.loc[i, "h_ice"]
-            * 2
-            * self.df.loc[i, "r_ice"]
-            * math.cos(self.df.loc[i, "SEA"])
-            + math.pi
-            * math.pow(self.df.loc[i, "r_ice"], 2)
-            * math.sin(self.df.loc[i, "SEA"])
-        ) / self.df.loc[i, "SA"]
-
-
 if __name__ == "__main__":
 
     start = time.time()
 
     schwarzsee = PDF(site = "guttannen")
 
-    schwarzsee.derive_parameters()
+    # schwarzsee.derive_parameters()
 
-    schwarzsee.print_input()
+    # schwarzsee.print_input()
 
-    # schwarzsee.read_input()
+    schwarzsee.read_input()
 
     schwarzsee.melt_freeze()
 
