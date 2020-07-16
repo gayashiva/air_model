@@ -10,8 +10,8 @@ import time
 from tqdm import tqdm
 import os
 import glob
-from src.data.config import site, dates, option, folders, fountain, surface
 import fnmatch
+from src.data.config import site, dates, folders, fountain, surface
 
 dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -19,22 +19,23 @@ start = time.time()
 
 if __name__ == '__main__':
 
-    path = os.path.join(dir, "data/raw/FluxNotes/")
+    path = folders["data"]
     all_files = glob.glob(
-        os.path.join(path, "TOA5__Flux*.dat"))  
-    pattern = "TOA5__FluxB*.dat"
+        os.path.join(path, "TOA5__Flux_Notes*.dat"))
+    all_files_B = glob.glob(
+        os.path.join(path, "TOA5__FluxB_Notes*.dat"))
     li = []
     li_B = []
     for filename in all_files:
+        df_in = pd.read_csv(filename, header=1)
+        df_in = df_in[2:].reset_index(drop=True)
+        li.append(df_in)
 
-        if 'B' in filename:
+    for filename in all_files_B:
             df_inB = pd.read_csv(filename, header=1)
             df_inB = df_inB[2:].reset_index(drop=True)
+            df_inB = df_inB.drop(["RECORD"], axis=1)
             li_B.append(df_inB)
-        else:
-            df_in = pd.read_csv(filename, header=1)
-            df_in = df_in[2:].reset_index(drop=True)
-            li.append(df_in)
 
     df_A = pd.concat(li, axis=0, ignore_index=True)
     df_B = pd.concat(li_B, axis=0, ignore_index=True)
@@ -50,15 +51,17 @@ if __name__ == '__main__':
 
     df = pd.merge(df_A, df_B, how='inner', left_index=True, on='TIMESTAMP')
 
-    df["MO_LENGTH"] = pd.to_numeric(df["MO_LENGTH"], errors="coerce")
+    cols = df.columns.drop('TIMESTAMP')
+
+    df[cols] = df[cols].apply(pd.to_numeric, errors='coerce')
 
     mask = (df["TIMESTAMP"] >= dates["start_date"]) & (df["TIMESTAMP"] <= dates["end_date"])
     df = df.loc[mask]
     df = df.reset_index()
 
-    df = df.fillna(method='ffill')
+    # df = df.fillna(method='ffill')
 
-    print(df.describe())
+    print(df.info())
 
     pp = PdfPages(folders["input_folder"] + site + "_notes" + ".pdf")
 
@@ -66,9 +69,9 @@ if __name__ == '__main__':
 
     x = df.TIMESTAMP
     ax1 = fig.add_subplot(111)
-    y7 = df.MO_LENGTH
-    ax1.plot(x, y7, "k-", linewidth=0.5)
-    ax1.set_ylabel("Ri")
+    y7 = df.batt_volt
+    ax1.scatter(x, y7)
+    ax1.set_ylabel("Battery Voltage")
     ax1.grid()
 
 

@@ -9,92 +9,8 @@ import time
 from tqdm import tqdm
 import os
 import glob
-from src.data.config import site, dates, option, folders, fountain, surface
+from src.data.config import site, dates, folders, fountain, surface
 import fnmatch
-
-def projectile_xy(v, hs=0.0, g=9.8):
-    """
-    calculate a list of (x, y) projectile motion data points
-    where:
-    x axis is distance (or range) in meters
-    y axis is height in meters
-    v is muzzle velocity of the projectile (meter/second)
-    theta_f is the firing angle with repsect to ground (degrees)
-    hs is starting height with respect to ground (meters)
-    g is the gravitational pull (meters/second_square)
-    """
-    data_xy = []
-    t = 0.0
-    theta_f = math.radians(45)
-    while True:
-        # now calculate the height y
-        y = hs + (t * v * math.sin(theta_f)) - (g * t * t) / 2
-        # projectile has hit ground level
-        if y < 0:
-            break
-        # calculate the distance x
-        x = v * math.cos(theta_f) * t
-        # append the (x, y) tuple to the list
-        data_xy.append((x, y))
-        # use the time in increments of 0.1 seconds
-        t += 0.01
-    return x
-
-def getSEA(date, latitude, longitude, utc_offset):
-    hour = date.hour
-    minute = date.minute
-    # Check your timezone to add the offset
-    hour_minute = (hour + minute / 60) - utc_offset
-    day_of_year = date.timetuple().tm_yday
-
-    g = (360 / 365.25) * (day_of_year + hour_minute / 24)
-
-    g_radians = math.radians(g)
-
-    declination = (
-        0.396372
-        - 22.91327 * math.cos(g_radians)
-        + 4.02543 * math.sin(g_radians)
-        - 0.387205 * math.cos(2 * g_radians)
-        + 0.051967 * math.sin(2 * g_radians)
-        - 0.154527 * math.cos(3 * g_radians)
-        + 0.084798 * math.sin(3 * g_radians)
-    )
-
-    time_correction = (
-        0.004297
-        + 0.107029 * math.cos(g_radians)
-        - 1.837877 * math.sin(g_radians)
-        - 0.837378 * math.cos(2 * g_radians)
-        - 2.340475 * math.sin(2 * g_radians)
-    )
-
-    SHA = (hour_minute - 12) * 15 + longitude + time_correction
-
-    if SHA > 180:
-        SHA_corrected = SHA - 360
-    elif SHA < -180:
-        SHA_corrected = SHA + 360
-    else:
-        SHA_corrected = SHA
-
-    lat_radians = math.radians(latitude)
-    d_radians = math.radians(declination)
-    SHA_radians = math.radians(SHA)
-
-    SZA_radians = math.acos(
-        math.sin(lat_radians) * math.sin(d_radians)
-        + math.cos(lat_radians) * math.cos(d_radians) * math.cos(SHA_radians)
-    )
-
-    SZA = math.degrees(SZA_radians)
-
-    SEA = 90 - SZA
-
-    if SEA < 0:  # Before Sunrise or after sunset
-        SEA = 0
-
-    return math.radians(SEA)
 
 
 dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -103,23 +19,23 @@ start = time.time()
 
 if __name__ == '__main__':
 
-    path = folders["data"]  # use your path
+    path = "data/raw/CR6_DATA/CardConvert/"  # use your path
     all_files = glob.glob(
-        os.path.join(path, "TOA5__Flux*.dat"))  
-    pattern = "TOA5__FluxB*.dat"
+        os.path.join(path, "TOA5__Flux_CSF*.dat"))
+    all_files_B = glob.glob(
+        os.path.join(path, "TOA5__FluxB_CSF*.dat"))
     li = []
     li_B = []
     for filename in all_files:
+        df_in = pd.read_csv(filename, header=1)
+        df_in = df_in[2:].reset_index(drop=True)
+        li.append(df_in)
 
-        if 'B' in filename:
+    for filename in all_files_B:
             df_inB = pd.read_csv(filename, header=1)
             df_inB = df_inB[2:].reset_index(drop=True)
             df_inB = df_inB.drop(["RECORD"], axis=1)
             li_B.append(df_inB)
-        else:
-            df_in = pd.read_csv(filename, header=1)
-            df_in = df_in[2:].reset_index(drop=True)
-            li.append(df_in)
 
     df_A = pd.concat(li, axis=0, ignore_index=True)
     df_B = pd.concat(li_B, axis=0, ignore_index=True)
@@ -133,61 +49,21 @@ if __name__ == '__main__':
     df_A["TIMESTAMP"] = pd.to_datetime(df_A["TIMESTAMP"], format='%Y-%m-%d %H:%M:%S')
     df_B["TIMESTAMP"] = pd.to_datetime(df_B["TIMESTAMP"], format='%Y-%m-%d %H:%M:%S')
 
-    # mask = (df_A["TIMESTAMP"] >= dates["start_date"]) & (df_A["TIMESTAMP"] <= dates["end_date"])
-    # df_A = df_A.loc[mask]
-    # df_A = df_A.reset_index()
-    # mask = (df_B["TIMESTAMP"] >= dates["start_date"]) & (df_B["TIMESTAMP"] <= dates["end_date"])
-    # df_B = df_B.loc[mask]
-    # df_B = df_B.reset_index()
-
     df_A = df_A.sort_values(by='TIMESTAMP')
     df_B = df_B.sort_values(by='TIMESTAMP')
 
     df = pd.merge(df_A, df_B, how='inner', left_index=True, on='TIMESTAMP')
 
-    df["H"] = pd.to_numeric(df["H"], errors="coerce")
-    df["HB"] = pd.to_numeric(df["HB"], errors="coerce")
-    df["SW_IN"] = pd.to_numeric(df["SW_IN"], errors="coerce")
-    df["SW_OUT"] = pd.to_numeric(df["SW_OUT"], errors="coerce")
+    cols = df.columns.drop('TIMESTAMP')
 
-    df["LW_IN"] = pd.to_numeric(df["LW_IN"], errors="coerce")
-    df["LW_OUT"] = pd.to_numeric(df["LW_OUT"], errors="coerce")
-
-    df["amb_press_Avg"] = pd.to_numeric(df["amb_press_Avg"], errors="coerce")
-    df["e_probe"] = pd.to_numeric(df["e_probe"], errors="coerce")
-    df["NETRAD"] = pd.to_numeric(df["NETRAD"], errors="coerce")
-    df["T_probe_Avg"] = pd.to_numeric(df["T_probe_Avg"], errors="coerce")
-    df["T_SONIC"] = pd.to_numeric(df["T_SONIC"], errors="coerce")
-    df["TB_SONIC"] = pd.to_numeric(df["TB_SONIC"], errors="coerce")
-    df["RH_probe_Avg"] = pd.to_numeric(df["RH_probe_Avg"], errors="coerce")
-    df["Waterpressure"] = pd.to_numeric(df["Waterpressure"], errors="coerce")
-    df["WaterFlow"] = pd.to_numeric(df["WaterFlow"], errors="coerce")
-    df["WS"] = pd.to_numeric(df["WS"], errors="coerce")
-    df["WS_RSLT"] = pd.to_numeric(df["WS_RSLT"], errors="coerce")
-    df["WSB_RSLT"] = pd.to_numeric(df["WSB_RSLT"], errors="coerce")
-    df["e_probe"] = pd.to_numeric(df["e_probe"], errors="coerce")
-
-    
-
-    df["WS_MAX"] = pd.to_numeric(df["WS_MAX"], errors="coerce")
-    df["WSB"] = pd.to_numeric(df["WSB"], errors="coerce")
-    df["SnowHeight"] = pd.to_numeric(df["SnowHeight"], errors="coerce")
-
-    col = 'Tice_Avg(' + str(1) + ')'
-    df[col] = pd.to_numeric(df[col], errors="coerce")
-
-
-    for i in range(1,9):
-        col = 'Tice_Avg(' + str(i) + ')'
-        df[col] = pd.to_numeric(df[col], errors="coerce")
-
+    df[cols] = df[cols].apply(pd.to_numeric, errors='coerce')
+            
     # Errors
     df["SnowHeight"] = df["SnowHeight"] - 10
     df['H'] = df['H'] / 1000
     df['HB'] = df['HB'] / 1000
     df['H'] = df['H'].apply(lambda x: x if abs(x) < 1000 else np.NAN)
     df['HB'] = df['HB'].apply(lambda x: x if abs(x) < 1000 else np.NAN)
-    
 
     df.to_csv(folders["input_folder"] + "raw_output.csv")
 
@@ -195,7 +71,14 @@ if __name__ == '__main__':
     df = df.loc[mask]
     df = df.reset_index()
 
-    df = df.fillna(method='ffill')
+    for i in range(0,df.shape[0]):
+        if np.isnan(df.WSB[i]):
+            print(df.loc[i-1,"TIMESTAMP"], df.loc[i-1,"WSB"])
+            # break
+
+    print(df.info())
+
+    # df = df.fillna(method='ffill')
 
 
     df['day'] = df.SW_IN > 10
@@ -250,21 +133,6 @@ if __name__ == '__main__':
     pp.savefig(bbox_inches="tight")
     plt.clf()
 
-    # ax1 = fig.add_subplot(111)
-    # y3 = df.SW_IN
-    # ax1.plot(x, y3, "k-", linewidth=0.5)
-    # ax1.set_ylabel("Net Radiation [$W\\,m^{-2}$]")
-    # ax1.set_ylim([-10,10])
-    # ax1.grid()
-
-    # # format the ticks
-    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    # fig.autofmt_xdate()
-    # pp.savefig(bbox_inches="tight")
-    # plt.clf()
-
     ax1 = fig.add_subplot(111)
 
     y3 = df.NETRAD
@@ -295,26 +163,54 @@ if __name__ == '__main__':
     plt.clf()
 
     ax1 = fig.add_subplot(111)
-    ax1.scatter(dfday.H, dfnight.H, s=2)
-    ax1.set_xlabel("Day Sensible Heat A[$W\\,m^{-2}$]")
-    ax1.set_ylabel("Night Sensible Heat A [$W\\,m^{-2}$]")
+    y3 = df.H_QC
+    ax1.plot(x, y3, "k-", linewidth=0.5)
+    ax1.set_ylabel("Sensible Heat A Quality")
     ax1.grid()
 
-
-    lims = [
-    np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-    np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-    ]
-
-    # now plot both limits against eachother
-    ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
-    ax1.set_aspect('equal')
-    ax1.set_xlim(lims)
-    ax1.set_ylim(lims)
     # format the ticks
-
+    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
+
+    ax1 = fig.add_subplot(111)
+    y3 = df.TAU_QC
+    ax1.plot(x, y3, "k-", linewidth=0.5)
+    ax1.set_ylabel("Temperature A Quality")
+    ax1.grid()
+
+    # format the ticks
+    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    fig.autofmt_xdate()
+    pp.savefig(bbox_inches="tight")
+    plt.clf()
+
+    # ax1 = fig.add_subplot(111)
+    # ax1.scatter(dfday.H, dfnight.H, s=2)
+    # ax1.set_xlabel("Day Sensible Heat A[$W\\,m^{-2}$]")
+    # ax1.set_ylabel("Night Sensible Heat A [$W\\,m^{-2}$]")
+    # ax1.grid()
+
+
+    # lims = [
+    # np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+    # np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+    # ]
+
+    # # now plot both limits against eachother
+    # ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
+    # ax1.set_aspect('equal')
+    # ax1.set_xlim(lims)
+    # ax1.set_ylim(lims)
+    # # format the ticks
+
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
 
     ax1 = fig.add_subplot(111)
 
@@ -331,27 +227,27 @@ if __name__ == '__main__':
     pp.savefig(bbox_inches="tight")
     plt.clf()
 
-    ax1 = fig.add_subplot(111)
-    ax1.scatter(dfday.HB, dfnight.HB, s=2)
-    ax1.set_xlabel("Day Sensible Heat B [$W\\,m^{-2}$]")
-    ax1.set_ylabel("Night Sensible Heat B [$W\\,m^{-2}$]")
-    ax1.grid()
+    # ax1 = fig.add_subplot(111)
+    # ax1.scatter(dfday.HB, dfnight.HB, s=2)
+    # ax1.set_xlabel("Day Sensible Heat B [$W\\,m^{-2}$]")
+    # ax1.set_ylabel("Night Sensible Heat B [$W\\,m^{-2}$]")
+    # ax1.grid()
 
 
-    lims = [
-    np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-    np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-    ]
+    # lims = [
+    # np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+    # np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+    # ]
 
-    # now plot both limits against eachother
-    ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
-    ax1.set_aspect('equal')
-    ax1.set_xlim(lims)
-    ax1.set_ylim(lims)
-    # format the ticks
+    # # now plot both limits against eachother
+    # ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
+    # ax1.set_aspect('equal')
+    # ax1.set_xlim(lims)
+    # ax1.set_ylim(lims)
+    # # format the ticks
 
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
 
     ax1 = fig.add_subplot(111)
 

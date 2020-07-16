@@ -481,9 +481,6 @@ if __name__ == '__main__':
         mask_index = df_4[mask].index
         df_4.loc[mask_index, "Discharge"] = 0
 
-        # print(df_3.tail())
-        # print(df_4.head())
-
         days = pd.date_range(start=dates["start_date"], end=dates["error_date"], freq="5T")
         days = pd.DataFrame({"When": days})
 
@@ -518,16 +515,11 @@ if __name__ == '__main__':
 
         # Error Correction
         df = df.fillna(method='ffill')
-        # df["gre000z0"] = df["gre000z0"].replace(np.NaN, 0)
-        # df["Prec"] = df["Prec"].replace(np.NaN, 0)
-        # df["vp_a"] = df["vp_a"].replace(np.NaN, 0)
 
         cld = 0.5
         df["Rad"] = df_in2["gre000z0"] - df_in2["gre000z0"] * cld
         df["DRad"] = df_in2["gre000z0"] * cld
         df["cld"] = cld
-        # df["SEA"] = 0
-        # df["e_a"] = 0
 
         # CSV output
         df.rename(
@@ -542,25 +534,6 @@ if __name__ == '__main__':
             },
             inplace=True,
         )
-        # for i in tqdm(range(1, df.shape[0])):
-
-        #     """Solar Elevation Angle"""
-        #     df.loc[i, "SEA"] = getSEA(
-        #         df.loc[i, "When"],
-        #         fountain["latitude"],
-        #         fountain["longitude"],
-        #         fountain["utc_offset"],
-        #     )
-
-        #     """ Vapour Pressure"""
-        #     if "vpa" not in list(df.columns):
-        #         df.loc[i, "vp_a"] = (6.11 * math.pow(10, 7.5 * df.loc[i - 1, "T_a"] / (df.loc[i - 1, "T_a"] + 237.3)) * df.loc[i, "RH"] / 100)
-        #     else:
-        #         df.loc[i, "vp_a"] = df.loc[i, "vpa"]
-
-        #     # atmospheric emissivity
-        #     df.loc[i, "e_a"] = ( 1.24 * math.pow(abs(df.loc[i, "vp_a"] / (df.loc[i, "T_a"] + 273.15)), 1 / 7)
-        #                        ) * (1 + 0.22 * math.pow(df.loc[i, "cld"], 2))
 
         df_out = df[
             ["When", "T_a", "RH", "v_a", "Discharge", "SW_direct", "SW_diffuse", "LW_in", "cld", "Prec", "p_a", "vp_a"]

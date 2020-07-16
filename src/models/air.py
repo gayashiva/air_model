@@ -601,8 +601,13 @@ class Icestupa:
             if self.df.Discharge[i] > 0 and self.state == 0:
                 self.state = 1
                 
-                self.df.loc[i - 1, "r_ice"] = self.spray_radius(r_mean = 4.5)
-                self.df.loc[i - 1, "h_ice"] = self.dx
+                if self.site == 'guttannen':
+                    self.df.loc[i - 1, "r_ice"] = self.spray_radius(r_mean = 4.5)
+                    self.df.loc[i - 1, "h_ice"] = fountain["tree_height"]
+                if self.site == 'schwarzsee':
+                    self.df.loc[i - 1, "r_ice"] = self.spray_radius()
+                    self.df.loc[i - 1, "h_ice"] = self.dx
+
                 self.df.loc[i - 1, "iceV"] = math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.df.loc[i - 1, "h_ice"]
                 self.df.loc[i - 1, "ice"] = math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.dx
                 self.df.loc[i - 1, "input"] = self.df.loc[i - 1, "ice"]
@@ -1224,7 +1229,7 @@ class PDF(Icestupa):
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Ice Mass [$kg$]")
         
-        ax1.scatter(datetime(2020, 4, 10, 18), 0.1295 * 916, color="green", marker="o")
+        ax1.scatter(datetime(2020, 4, 14, 18), 0, color="green", marker="o")
 
         ax1.grid()
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -1260,7 +1265,7 @@ class PDF(Icestupa):
 
         # Include Validation line segment 1
 
-        ax1.scatter(datetime(2020, 1, 24, 15), 3, color="black", marker="o")
+        ax1.scatter(datetime(2020, 1, 24, 15), 2.2, color="black", marker="o")
         ax2.scatter(datetime(2020, 1, 24, 15), 4.5, color="blue", marker="o")
 
         
@@ -1491,7 +1496,7 @@ if __name__ == "__main__":
 
     start = time.time()
 
-    schwarzsee = PDF(site = "guttannen")
+    schwarzsee = PDF(site = "schwarzsee")
 
     # schwarzsee.derive_parameters()
 
@@ -1505,7 +1510,7 @@ if __name__ == "__main__":
 
     schwarzsee.summary()
 
-    schwarzsee.print_output_guttannen()
+    schwarzsee.print_output()
 
     total = time.time() - start
 
