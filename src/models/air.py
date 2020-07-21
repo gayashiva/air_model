@@ -738,31 +738,31 @@ class PDF(Icestupa):
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        ax1 = fig.add_subplot(111)
-        y1 = self.df.vp_a
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Vapour Pressure")
-        ax1.grid()
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
+        # ax1 = fig.add_subplot(111)
+        # y1 = self.df.vp_a
+        # ax1.plot(x, y1, "k-", linewidth=0.5)
+        # ax1.set_ylabel("Vapour Pressure")
+        # ax1.grid()
+        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        # fig.autofmt_xdate()
+        # pp.savefig(bbox_inches="tight")
+        # plt.clf()
 
-        ax1 = fig.add_subplot(111)
-        y1 = self.df.a
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Albedo")
-        ax1.grid()
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
+        # ax1 = fig.add_subplot(111)
+        # y1 = self.df.a
+        # ax1.plot(x, y1, "k-", linewidth=0.5)
+        # ax1.set_ylabel("Albedo")
+        # ax1.grid()
+        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        # fig.autofmt_xdate()
+        # pp.savefig(bbox_inches="tight")
+        # plt.clf()
 
-        pp.close()
+        # pp.close()
 
         """Input Plots"""
 
@@ -822,6 +822,7 @@ class PDF(Icestupa):
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
+        plt.savefig(self.folders["output_folder"] + "data.jpg", bbox_inches="tight")
         pp.savefig(bbox_inches="tight")
 
         plt.clf()
@@ -1473,7 +1474,7 @@ class PDF(Icestupa):
             axis=1,
         )
 
-        data = data[["$q_{net}$", "$T_a$", "$v_a$", "$p_a$", "RH", "$SW_{in}$"]]
+        data = data[["$q_{net}$", "$T_a$", "$v_a$", "$p_a$", "RH", "$SW_{in}$", "$\\Delta M_{ice}$", "A"]]
 
         print(data.drop("$q_{net}$", axis=1).apply(lambda x: x.corr(data["$q_{net}$"])))
 
@@ -1500,13 +1501,15 @@ if __name__ == "__main__":
 
     # schwarzsee.derive_parameters()
 
-    # schwarzsee.print_input()
+    schwarzsee.print_input()
 
-    schwarzsee.read_input()
+    # schwarzsee.read_input()
 
-    schwarzsee.melt_freeze()
+    # schwarzsee.melt_freeze()
 
-    # schwarzsee.read_output()
+    schwarzsee.read_output()
+
+    schwarzsee.corr_plot()
 
     schwarzsee.summary()
 

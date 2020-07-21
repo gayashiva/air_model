@@ -19,7 +19,7 @@ start = time.time()
 
 if __name__ == '__main__':
 
-    path = "data/raw/CR6_DATA/CardConvert/"  # use your path
+    path = folders['data']  # use your path
     all_files = glob.glob(
         os.path.join(path, "TOA5__Flux_CSF*.dat"))
     all_files_B = glob.glob(
@@ -62,19 +62,14 @@ if __name__ == '__main__':
     df["SnowHeight"] = df["SnowHeight"] - 10
     df['H'] = df['H'] / 1000
     df['HB'] = df['HB'] / 1000
-    df['H'] = df['H'].apply(lambda x: x if abs(x) < 1000 else np.NAN)
-    df['HB'] = df['HB'].apply(lambda x: x if abs(x) < 1000 else np.NAN)
+    # df['H'] = df['H'].apply(lambda x: x if abs(x) < 1000 else np.NAN)
+    # df['HB'] = df['HB'].apply(lambda x: x if abs(x) < 1000 else np.NAN)
 
     df.to_csv(folders["input_folder"] + "raw_output.csv")
 
     mask = (df["TIMESTAMP"] >= dates["start_date"]) & (df["TIMESTAMP"] <= dates["end_date"])
     df = df.loc[mask]
     df = df.reset_index()
-
-    for i in range(0,df.shape[0]):
-        if np.isnan(df.WSB[i]):
-            print(df.loc[i-1,"TIMESTAMP"], df.loc[i-1,"WSB"])
-            # break
 
     print(df.info())
 
@@ -104,49 +99,83 @@ if __name__ == '__main__':
     ax1.set_ylabel("Temperature [$\\degree C$]")
     ax1.grid()
 
+    # Add labels to the plot
+    style = dict(size=10, color='gray', rotation=90)
+
+    ax1.text(datetime(2020, 2, 17, 13,35), 0, "Sonic Lower(A) failed", **style)
+    ax1.text(datetime(2020, 2, 16, 2,34), 0, "Sonic Upper(B) failed", **style)
+
     # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax1.xaxis.set_major_locator(mdates.DayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    ax1.xaxis.set_minor_locator(mdates.HourLocator())
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
 
-    ax1 = fig.add_subplot(111)
+    # ax1 = fig.add_subplot(111)
 
-    y2 = df.WaterFlow
-    ax1.plot(x, y2, "k-", linewidth=0.5)
-    ax1.set_ylabel("Discharge Rate ")
+    # y2 = df.WaterFlow
+    # ax1.plot(x, y2, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Discharge Rate ")
+    # ax1.grid()
+
+    # ax1t = ax1.twinx()
+    # ax1t.plot(x, df.Waterpressure, "b-", linewidth=0.5)
+    # ax1t.set_ylabel("Water Pressure [$Bar$]", color="b")
+    # for tl in ax1t.get_yticklabels():
+    #     tl.set_color("b")
+
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.DayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.HourLocator())
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
+
+    fig = plt.figure()
+
+    ax1 = fig.add_subplot(111)
+    y1 = df.RH_probe_Avg
+    ax1.plot(x, y1, "k-", linewidth=0.5)
+    ax1.set_ylabel("Relative Humidity [$\\%$]")
     ax1.grid()
 
     ax1t = ax1.twinx()
-    ax1t.plot(x, df.Waterpressure, "b-", linewidth=0.5)
-    ax1t.set_ylabel("Water Pressure [$Bar$]", color="b")
+    ax1t.plot(x, df.SnowHeight, "b-", linewidth=0.5)
+    ax1t.set_ylabel("Snow Height ", color="b")
     for tl in ax1t.get_yticklabels():
         tl.set_color("b")
 
+    # Add labels to the plot
+    style = dict(size=10, color='gray', rotation=90)
+
+    ax1.text(datetime(2020, 2, 17, 13,35), 50, "Sonic Lower(A) failed", **style)
+    ax1.text(datetime(2020, 2, 16, 2,34), 50, "Sonic Upper(B) failed", **style)
+
     # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax1.xaxis.set_major_locator(mdates.DayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    ax1.xaxis.set_minor_locator(mdates.HourLocator())
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
 
-    ax1 = fig.add_subplot(111)
+    # ax1 = fig.add_subplot(111)
 
-    y3 = df.NETRAD
-    ax1.plot(x, y3, "k-", linewidth=0.5)
-    ax1.set_ylabel("Net Radiation [$W\\,m^{-2}$]")
-    ax1.grid()
+    # y3 = df.NETRAD
+    # ax1.plot(x, y3, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Net Radiation [$W\\,m^{-2}$]")
+    # ax1.grid()
 
-    # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.DayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.HourLocator())
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
 
     ax1 = fig.add_subplot(111)
     y31 = -df.H
@@ -154,41 +183,47 @@ if __name__ == '__main__':
     ax1.set_ylabel("Sensible Heat A [$W\\,m^{-2}$]")
     ax1.grid()
 
+    ax1t = ax1.twinx()
+    ax1t.plot(x, df.H_QC, "b-", linewidth=0.5)
+    ax1t.set_ylabel("Sensible Heat A Quality ", color="b")
+    for tl in ax1t.get_yticklabels():
+        tl.set_color("b")
+
     # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax1.xaxis.set_major_locator(mdates.DayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    ax1.xaxis.set_minor_locator(mdates.HourLocator())
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
 
-    ax1 = fig.add_subplot(111)
-    y3 = df.H_QC
-    ax1.plot(x, y3, "k-", linewidth=0.5)
-    ax1.set_ylabel("Sensible Heat A Quality")
-    ax1.grid()
+    # ax1 = fig.add_subplot(111)
+    # y3 = df.H_QC
+    # ax1.plot(x, y3, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Sensible Heat A Quality")
+    # ax1.grid()
 
-    # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
 
-    ax1 = fig.add_subplot(111)
-    y3 = df.TAU_QC
-    ax1.plot(x, y3, "k-", linewidth=0.5)
-    ax1.set_ylabel("Temperature A Quality")
-    ax1.grid()
+    # ax1 = fig.add_subplot(111)
+    # y3 = df.TAU_QC
+    # ax1.plot(x, y3, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Temperature A Quality")
+    # ax1.grid()
 
-    # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
 
     # ax1 = fig.add_subplot(111)
     # ax1.scatter(dfday.H, dfnight.H, s=2)
@@ -219,10 +254,16 @@ if __name__ == '__main__':
     ax1.set_ylabel("Sensible Heat B [$W\\,m^{-2}$]")
     ax1.grid()
 
+    ax1t = ax1.twinx()
+    ax1t.plot(x, df.H_QCB, "b-", linewidth=0.5)
+    ax1t.set_ylabel("Sensible Heat B Quality ", color="b")
+    for tl in ax1t.get_yticklabels():
+        tl.set_color("b")
+
     # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax1.xaxis.set_major_locator(mdates.DayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    ax1.xaxis.set_minor_locator(mdates.HourLocator())
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
@@ -249,54 +290,54 @@ if __name__ == '__main__':
     # pp.savefig(bbox_inches="tight")
     # plt.clf()
 
-    ax1 = fig.add_subplot(111)
+    # ax1 = fig.add_subplot(111)
 
-    for i in range(1,3):
-        col = 'Tice_Avg(' + str(i) + ')'
-        plt.plot(x, df[col], label='id %s' % i)
-    plt.legend()
+    # for i in range(1,3):
+    #     col = 'Tice_Avg(' + str(i) + ')'
+    #     plt.plot(x, df[col], label='id %s' % i)
+    # plt.legend()
     
-    ax1.set_ylabel("Ice Temperatures")
-    ax1.set_ylim([-1,3])
-    ax1.grid()
+    # ax1.set_ylabel("Ice Temperatures")
+    # ax1.set_ylim([-1,3])
+    # ax1.grid()
     
-    # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
 
-    ax1 = fig.add_subplot(111)
+    # ax1 = fig.add_subplot(111)
 
-    y4 = df.SnowHeight
-    ax1.plot(x, y4, "k-", linewidth=0.5)
-    ax1.set_ylabel("Snow Height [$cm$]")
-    ax1.grid()
+    # y4 = df.SnowHeight
+    # ax1.plot(x, y4, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Snow Height [$cm$]")
+    # ax1.grid()
 
-    # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.DayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.HourLocator())
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
 
-    ax1 = fig.add_subplot(111)
+    # ax1 = fig.add_subplot(111)
 
-    y5 = df.amb_press_Avg
-    ax1.plot(x, y5, "k-", linewidth=0.5)
-    ax1.set_ylabel("Pressure [$hPa$]")
-    ax1.grid()
+    # y5 = df.amb_press_Avg
+    # ax1.plot(x, y5, "k-", linewidth=0.5)
+    # ax1.set_ylabel("Pressure [$hPa$]")
+    # ax1.grid()
 
-    # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    fig.autofmt_xdate()
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
+    # # format the ticks
+    # ax1.xaxis.set_major_locator(mdates.DayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.HourLocator())
+    # fig.autofmt_xdate()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
 
     ax1 = fig.add_subplot(111)
 
@@ -305,10 +346,19 @@ if __name__ == '__main__':
     ax1.set_ylabel("Wind A [$m\\,s^{-1}$]")
     ax1.grid()
 
+    ax1t = ax1.twinx()
+    ax1t.plot(x, df.H_QC, "b-", linewidth=0.5)
+    ax1t.set_ylabel("Sensible Heat A Quality ", color="b")
+    for tl in ax1t.get_yticklabels():
+        tl.set_color("b")
+
+    ax1.text(datetime(2020, 2, 17, 13,35), 0, "Sonic Lower(A) failed", **style)
+    ax1.text(datetime(2020, 2, 16, 2,34), 0, "Sonic Upper(B) failed", **style)
+
     # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax1.xaxis.set_major_locator(mdates.DayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    ax1.xaxis.set_minor_locator(mdates.HourLocator())
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
@@ -319,41 +369,50 @@ if __name__ == '__main__':
     ax1.set_ylabel("Wind B [$m\\,s^{-1}$]")
     ax1.grid()
 
+    ax1t = ax1.twinx()
+    ax1t.plot(x, df.H_QCB, "b-", linewidth=0.5)
+    ax1t.set_ylabel("Sensible Heat B Quality ", color="b")
+    for tl in ax1t.get_yticklabels():
+        tl.set_color("b")
+
+    ax1.text(datetime(2020, 2, 17, 13,35), 0, "Sonic Lower(A) failed", **style)
+    ax1.text(datetime(2020, 2, 16, 2,34), 0, "Sonic Upper(B) failed", **style)
+
     # format the ticks
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax1.xaxis.set_major_locator(mdates.DayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    ax1.xaxis.set_minor_locator(mdates.HourLocator())
     fig.autofmt_xdate()
     pp.savefig(bbox_inches="tight")
     plt.clf()
 
-    ax1 = fig.add_subplot(111)
-    ax1.scatter(dfday.H, dfday.HB, s=2, color ="blue", label = "Day")
-    ax1.scatter(dfnight.H, dfnight.HB, s=2, color="orange", label = "Night")
+    # ax1 = fig.add_subplot(111)
+    # ax1.scatter(dfday.H, dfday.HB, s=2, color ="blue", label = "Day")
+    # ax1.scatter(dfnight.H, dfnight.HB, s=2, color="orange", label = "Night")
 
-    ax1.set_xlabel("Sonic A Sensible Heat [$W\\,m^{-2}$]")
-    ax1.set_ylabel("Sonic B Sensible Heat [$W\\,m^{-2}$]")
-    ax1.grid()
-    ax1.legend()
+    # ax1.set_xlabel("Sonic A Sensible Heat [$W\\,m^{-2}$]")
+    # ax1.set_ylabel("Sonic B Sensible Heat [$W\\,m^{-2}$]")
+    # ax1.grid()
+    # ax1.legend()
 
 
-    lims = [
-    np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-    np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-    ]
-    lims = [
-    np.min([-100, 100]),  # min of both axes
-    np.max([-100, 100]),  # max of both axes
-    ]
+    # lims = [
+    # np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+    # np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+    # ]
+    # lims = [
+    # np.min([-100, 100]),  # min of both axes
+    # np.max([-100, 100]),  # max of both axes
+    # ]
 
-    # now plot both limits against eachother
-    ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
-    ax1.set_aspect('equal')
-    ax1.set_xlim(lims)
-    ax1.set_ylim(lims)
+    # # now plot both limits against eachother
+    # ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
+    # ax1.set_aspect('equal')
+    # ax1.set_xlim(lims)
+    # ax1.set_ylim(lims)
     
-    pp.savefig(bbox_inches="tight")
-    plt.clf()
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
 
     pp.close()
 
