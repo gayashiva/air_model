@@ -62,17 +62,26 @@ class Icestupa:
 
     """Miscellaneous"""
     h_aws = 3  # m height of AWS
+    latitude = 46.693723
+    longitude = 7.297543
 
     state = 0
     utc_offset = 1
 
-    def __init__(self, site="schwarzsee", latitude = 46.693723, longitude = 7.297543):
+    def __init__(self, site="schwarzsee"):
 
         self.site = site
 
-        """Site constants"""
-        self.latitude = latitude
-        self.longitude = longitude
+        if site == "guttannen":
+            crit_temp=1  # Fountain runtime temperature
+            self.latitude=46.649999
+            self.longitude=8.283333
+            self.tree_height=1.3
+            self.tree_radius=1.35
+            self.dia_f = 0.005  # Fountain aperture diameter
+            self.h_f = 2.5 # Fountain steps h_f
+
+        
 
         self.folders = dict(
             input_folder=os.path.join(self.dirname, "data/interim/" + site + "/"),
@@ -357,6 +366,14 @@ class Icestupa:
                 )
             )
 
+        # if self.df.Discharge[i] > 10:
+            
+        #     # Area of Conical Ice Surface
+        #     self.df.loc[i, "SA"] = (
+        #         math.pi
+        #         * self.r_mean ** 2
+        #     )
+
         self.df.loc[i, "SRf"] = (
             0.5
             * self.df.loc[i, "h_ice"]
@@ -602,16 +619,20 @@ class Icestupa:
                 self.state = 1
                 
                 if self.site == 'guttannen':
-                    self.df.loc[i - 1, "r_ice"] = self.spray_radius(r_mean = 4.5)
-                    self.df.loc[i - 1, "h_ice"] = fountain["tree_height"]
+                    # self.df.loc[i - 1, "r_ice"] = self.spray_radius()
+                    self.df.loc[i - 1, "r_ice"] = self.tree_radius
+                    self.df.loc[i - 1, "h_ice"] = self.tree_height
+                    self.df.loc[i - 1, "h_r"] = self.h_f/self.spray_radius(r_mean = 4.5)
+
                 if self.site == 'schwarzsee':
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.dx
+                    self.df.loc[i - 1, "h_r"] = self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
+                    
 
                 self.df.loc[i - 1, "iceV"] = math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.df.loc[i - 1, "h_ice"]
                 self.df.loc[i - 1, "ice"] = math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.dx
                 self.df.loc[i - 1, "input"] = self.df.loc[i - 1, "ice"]
-                self.df.loc[i - 1, "h_r"] = self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
                 self.start = i - 1
 
             # Ice Melted
@@ -1497,23 +1518,23 @@ if __name__ == "__main__":
 
     start = time.time()
 
-    schwarzsee = PDF(site = "schwarzsee")
+    schwarzsee = PDF(site = "guttannen")
 
     # schwarzsee.derive_parameters()
 
-    schwarzsee.print_input()
+    # schwarzsee.print_input()
 
-    # schwarzsee.read_input()
+    schwarzsee.read_input()
 
-    # schwarzsee.melt_freeze()
+    schwarzsee.melt_freeze()
 
-    schwarzsee.read_output()
+    # schwarzsee.read_output()
 
-    schwarzsee.corr_plot()
+    # schwarzsee.corr_plot()
 
     schwarzsee.summary()
 
-    schwarzsee.print_output()
+    schwarzsee.print_output_guttannen()
 
     total = time.time() - start
 
