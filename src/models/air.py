@@ -602,16 +602,21 @@ class Icestupa:
                 self.state = 1
                 
                 if self.site == 'guttannen':
-                    self.df.loc[i - 1, "r_ice"] = self.spray_radius(r_mean = 4.5)
-                    self.df.loc[i - 1, "h_ice"] = fountain["tree_height"]
+                    # self.df.loc[i - 1, "r_ice"] = self.spray_radius()
+                    self.r_mean = 4.5
+                    self.df.loc[i - 1, "r_ice"] = 6
+                    self.df.loc[i - 1, "h_ice"] = self.tree_height
+                    # self.df.loc[i - 1, "h_r"] = self.h_f/self.r_mean
+                    self.df.loc[i - 1, "h_r"] = self.df.loc[i - 1, "h_ice"]/self.df.loc[i - 1, "r_ice"]
                 if self.site == 'schwarzsee':
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.dx
+                    self.df.loc[i - 1, "h_r"] = self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
 
                 self.df.loc[i - 1, "iceV"] = math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.df.loc[i - 1, "h_ice"]
                 self.df.loc[i - 1, "ice"] = math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.dx
                 self.df.loc[i - 1, "input"] = self.df.loc[i - 1, "ice"]
-                self.df.loc[i - 1, "h_r"] = self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
+                
                 self.start = i - 1
 
             # Ice Melted
@@ -1497,19 +1502,19 @@ if __name__ == "__main__":
 
     start = time.time()
 
-    schwarzsee = PDF(site = "schwarzsee")
+    schwarzsee = PDF(site = "guttannen")
 
     # schwarzsee.derive_parameters()
 
     schwarzsee.print_input()
 
-    # schwarzsee.read_input()
+    schwarzsee.read_input()
 
-    # schwarzsee.melt_freeze()
+    schwarzsee.melt_freeze()
 
-    schwarzsee.read_output()
+    # schwarzsee.read_output()
 
-    schwarzsee.corr_plot()
+    # schwarzsee.corr_plot()
 
     schwarzsee.summary()
 
