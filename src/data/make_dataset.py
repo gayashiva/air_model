@@ -432,8 +432,6 @@ if __name__ == '__main__':
             df_in3["fkl010z0"], errors="coerce"
         )  # Wind speed
 
-        df_in3["Wind Speed"] = df_in3["Wind Speed"]/3.6
-
         df_in3["Humidity"] = pd.to_numeric(
             df_in3["ure200s0"], errors="coerce"
         )
@@ -546,5 +544,5 @@ if __name__ == '__main__':
         df_out.to_csv(folders["input_folder"] + "raw_input.csv")
 
         fig, ax = plt.subplots()
-        ax.plot(df.When, df.LW_in)
+        ax.plot(df.When, df.v_a)
         plt.show()

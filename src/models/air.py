@@ -340,31 +340,61 @@ class Icestupa:
             )
 
         else:
+            if (self.df.solid[i - 1] < 0):
 
-            # Height to radius ratio
-            self.df.loc[i, "h_r"] = self.df.loc[i - 1, "h_r"]
+                # Height to radius ratio
+                self.df.loc[i, "h_ice"] = self.df.loc[i - 1, "h_ice"]
 
-            # Ice Radius
-            self.df.loc[i, "r_ice"] = math.pow(
-                self.df.loc[i - 1, "iceV"] / math.pi * (3 / self.df.loc[i, "h_r"]),
-                1 / 3,
-            )
-
-            # Ice Height
-            self.df.loc[i, "h_ice"] = self.df.loc[i, "h_r"] * self.df.loc[i, "r_ice"]
-
-            # Area of Conical Ice Surface
-            self.df.loc[i, "SA"] = (
-                math.pi
-                * self.df.loc[i, "r_ice"]
-                * math.pow(
-                    (
-                        math.pow(self.df.loc[i, "r_ice"], 2)
-                        + math.pow(self.df.loc[i, "r_ice"] * self.df.loc[i, "h_r"], 2)
-                    ),
+                # Ice Radius
+                self.df.loc[i, "r_ice"] = math.pow(
+                    3 * self.df.loc[i - 1, "iceV"] / (math.pi * self.df.loc[i, "h_ice"]),
                     1 / 2,
                 )
-            )
+
+                # Height by Radius ratio
+                self.df.loc[i, "h_r"] = (
+                    self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
+                )
+
+                # Area of Conical Ice Surface
+                self.df.loc[i, "SA"] = (
+                    math.pi
+                    * self.df.loc[i, "r_ice"]
+                    * math.pow(
+                        (
+                            math.pow(self.df.loc[i, "r_ice"], 2)
+                            + math.pow((self.df.loc[i, "h_ice"]), 2)
+                        ),
+                        1 / 2,
+                    )
+                )
+
+            else:
+
+                # Height to radius ratio
+                self.df.loc[i, "h_r"] = self.h_f/self.r_mean
+
+                # Ice Radius
+                self.df.loc[i, "r_ice"] = math.pow(
+                    self.df.loc[i - 1, "iceV"] / math.pi * (3 / self.df.loc[i, "h_r"]),
+                    1 / 3,
+                )
+
+                # Ice Height
+                self.df.loc[i, "h_ice"] = self.df.loc[i, "h_r"] * self.df.loc[i, "r_ice"]
+
+                # Area of Conical Ice Surface
+                self.df.loc[i, "SA"] = (
+                    math.pi
+                    * self.df.loc[i, "r_ice"]
+                    * math.pow(
+                        (
+                            math.pow(self.df.loc[i, "r_ice"], 2)
+                            + math.pow(self.df.loc[i, "r_ice"] * self.df.loc[i, "h_r"], 2)
+                        ),
+                        1 / 2,
+                    )
+                )
 
         # if self.df.Discharge[i] > 10:
             
@@ -373,6 +403,9 @@ class Icestupa:
         #         math.pi
         #         * self.r_mean ** 2
         #     )
+
+        if np.isnan(self.df.loc[i, "SA"]) :
+            print(f"When {self.df.When[i]}, r_ice {self.df.r_ice[i]}, h_r {self.df.h_r[i]}, h_ice {self.df.h_ice[i]}")
 
         self.df.loc[i, "SRf"] = (
             0.5
@@ -505,8 +538,8 @@ class Icestupa:
             + self.df.loc[i, "Qg"]
         )
 
-        if np.isnan(self.df.loc[i, "TotalE"]) :
-            print(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}")
+        # if np.isnan(self.df.loc[i, "TotalE"]) :
+        #     print(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}, SA {self.df.SA[i]}")
 
         # Total Energy Joules
         self.EJoules = self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]
@@ -620,9 +653,9 @@ class Icestupa:
                 
                 if self.site == 'guttannen':
                     # self.df.loc[i - 1, "r_ice"] = self.spray_radius()
-                    self.df.loc[i - 1, "r_ice"] = self.tree_radius
+                    self.df.loc[i - 1, "r_ice"] = self.spray_radius(r_mean = 6)
                     self.df.loc[i - 1, "h_ice"] = self.tree_height
-                    self.df.loc[i - 1, "h_r"] = self.h_f/self.spray_radius(r_mean = 4.5)
+                    self.df.loc[i - 1, "h_r"] = self.h_f/self.r_mean
 
                 if self.site == 'schwarzsee':
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
@@ -1032,24 +1065,24 @@ class PDF(Icestupa):
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        y1 = self.df.a
-        y2 = self.df.SRf
-        ax1 = fig.add_subplot(111)
-        ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Albedo")
-        ax1.grid()
-        ax2 = ax1.twinx()
-        ax2.plot(x, y2, "b-", linewidth=0.5)
-        ax2.set_ylabel("$f_{cone}$", color="b")
-        for tl in ax2.get_yticklabels():
-            tl.set_color("b")
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        # y1 = self.df.a
+        # y2 = self.df.SRf
+        # ax1 = fig.add_subplot(111)
+        # ax1.plot(x, y1, "k-")
+        # ax1.set_ylabel("Albedo")
+        # ax1.grid()
+        # ax2 = ax1.twinx()
+        # ax2.plot(x, y2, "b-", linewidth=0.5)
+        # ax2.set_ylabel("$f_{cone}$", color="b")
+        # for tl in ax2.get_yticklabels():
+        #     tl.set_color("b")
+        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
 
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
+        # fig.autofmt_xdate()
+        # pp.savefig(bbox_inches="tight")
+        # plt.clf()
 
         y1 = self.df.T_s
         y2 = self.df.T_bulk
@@ -1252,6 +1285,9 @@ class PDF(Icestupa):
         ax1.set_ylabel("Ice Mass [$kg$]")
         
         ax1.scatter(datetime(2020, 4, 14, 18), 0, color="green", marker="o")
+        ax1.scatter(datetime(2020, 1, 3), (4.33-2.48) * self.rho_i, color="green", marker="o")
+        # ax1.scatter(datetime(2020, 1, 24), 209700, color="green", marker="o")
+        ax1.scatter(datetime(2020, 2, 15), (71.48-2.48) * self.rho_i, color="green", marker="o")
 
         ax1.grid()
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -1299,24 +1335,24 @@ class PDF(Icestupa):
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        y1 = self.df.a
-        y2 = self.df.SRf
-        ax1 = fig.add_subplot(111)
-        ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Albedo")
-        ax1.grid()
-        ax2 = ax1.twinx()
-        ax2.plot(x, y2, "b-", linewidth=0.5)
-        ax2.set_ylabel("$f_{cone}$", color="b")
-        for tl in ax2.get_yticklabels():
-            tl.set_color("b")
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        # y1 = self.df.a
+        # y2 = self.df.SRf
+        # ax1 = fig.add_subplot(111)
+        # ax1.plot(x, y1, "k-")
+        # ax1.set_ylabel("Albedo")
+        # ax1.grid()
+        # ax2 = ax1.twinx()
+        # ax2.plot(x, y2, "b-", linewidth=0.5)
+        # ax2.set_ylabel("$f_{cone}$", color="b")
+        # for tl in ax2.get_yticklabels():
+        #     tl.set_color("b")
+        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
 
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
+        # fig.autofmt_xdate()
+        # pp.savefig(bbox_inches="tight")
+        # plt.clf()
 
         y1 = self.df.T_s
         y2 = self.df.T_bulk
@@ -1520,11 +1556,11 @@ if __name__ == "__main__":
 
     schwarzsee = PDF(site = "guttannen")
 
-    # schwarzsee.derive_parameters()
+    schwarzsee.derive_parameters()
 
-    # schwarzsee.print_input()
+    schwarzsee.print_input()
 
-    schwarzsee.read_input()
+    # schwarzsee.read_input()
 
     schwarzsee.melt_freeze()
 
