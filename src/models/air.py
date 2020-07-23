@@ -18,7 +18,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import scipy.stats as stats
 import seaborn as sns
-from src.data.config import dates, fountain
+from src.data.config import dates
 
 
 class Icestupa:
@@ -73,13 +73,13 @@ class Icestupa:
         self.site = site
 
         if site == "guttannen":
-            crit_temp=1  # Fountain runtime temperature
+            crit_temp=0  # Fountain runtime temperature
             self.latitude=46.649999
             self.longitude=8.283333
             self.tree_height=1.3
             self.tree_radius=1.35
             self.dia_f = 0.005  # Fountain aperture diameter
-            self.h_f = 2.5 # Fountain steps h_f
+            self.h_f = 3.5 # Fountain steps h_f
 
         
 
@@ -339,70 +339,62 @@ class Icestupa:
                 )
             )
 
-        else:
-            if (self.df.solid[i - 1] < 0):
+        # else:
+        #     if (self.df.solid[i - 1] < 0):
 
-                # Height to radius ratio
-                self.df.loc[i, "h_ice"] = self.df.loc[i - 1, "h_ice"]
+        #         # Height constant
+        #         self.df.loc[i, "h_ice"] = self.df.loc[i - 1, "h_ice"]
 
-                # Ice Radius
-                self.df.loc[i, "r_ice"] = math.pow(
-                    3 * self.df.loc[i - 1, "iceV"] / (math.pi * self.df.loc[i, "h_ice"]),
-                    1 / 2,
-                )
+        #         # Ice Radius
+        #         self.df.loc[i, "r_ice"] = math.pow(
+        #             3 * self.df.loc[i - 1, "iceV"] / (math.pi * self.df.loc[i, "h_ice"]),
+        #             1 / 2,
+        #         )
 
-                # Height by Radius ratio
-                self.df.loc[i, "h_r"] = (
-                    self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
-                )
+        #         # Height by Radius ratio
+        #         self.df.loc[i, "h_r"] = (
+        #             self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
+        #         )
 
-                # Area of Conical Ice Surface
-                self.df.loc[i, "SA"] = (
-                    math.pi
-                    * self.df.loc[i, "r_ice"]
-                    * math.pow(
-                        (
-                            math.pow(self.df.loc[i, "r_ice"], 2)
-                            + math.pow((self.df.loc[i, "h_ice"]), 2)
-                        ),
-                        1 / 2,
-                    )
-                )
+        #         # Area of Conical Ice Surface
+        #         self.df.loc[i, "SA"] = (
+        #             math.pi
+        #             * self.df.loc[i, "r_ice"]
+        #             * math.pow(
+        #                 (
+        #                     math.pow(self.df.loc[i, "r_ice"], 2)
+        #                     + math.pow((self.df.loc[i, "h_ice"]), 2)
+        #                 ),
+        #                 1 / 2,
+        #             )
+        #         )
 
-            else:
+        #     else:
 
-                # Height to radius ratio
-                self.df.loc[i, "h_r"] = self.h_f/self.r_mean
+        # Height to radius ratio
+        self.df.loc[i, "h_r"] = self.df.loc[i-1, "h_r"]
 
-                # Ice Radius
-                self.df.loc[i, "r_ice"] = math.pow(
-                    self.df.loc[i - 1, "iceV"] / math.pi * (3 / self.df.loc[i, "h_r"]),
-                    1 / 3,
-                )
+        # Ice Radius
+        self.df.loc[i, "r_ice"] = math.pow(
+            self.df.loc[i - 1, "iceV"] / math.pi * (3 / self.df.loc[i, "h_r"]),
+            1 / 3,
+        )
 
-                # Ice Height
-                self.df.loc[i, "h_ice"] = self.df.loc[i, "h_r"] * self.df.loc[i, "r_ice"]
+        # Ice Height
+        self.df.loc[i, "h_ice"] = self.df.loc[i, "h_r"] * self.df.loc[i, "r_ice"]
 
-                # Area of Conical Ice Surface
-                self.df.loc[i, "SA"] = (
-                    math.pi
-                    * self.df.loc[i, "r_ice"]
-                    * math.pow(
-                        (
-                            math.pow(self.df.loc[i, "r_ice"], 2)
-                            + math.pow(self.df.loc[i, "r_ice"] * self.df.loc[i, "h_r"], 2)
-                        ),
-                        1 / 2,
-                    )
-                )
-
-        # if self.df.Discharge[i] > 10:
-            
-        #     # Area of Conical Ice Surface
-        #     self.df.loc[i, "SA"] = (
-        #         math.pi
-        #         * self.r_mean ** 2
-        #     )
+        # Area of Conical Ice Surface
+        self.df.loc[i, "SA"] = (
+            math.pi
+            * self.df.loc[i, "r_ice"]
+            * math.pow(
+                (
+                    math.pow(self.df.loc[i, "r_ice"], 2)
+                    + math.pow(self.df.loc[i, "r_ice"] * self.df.loc[i, "h_r"], 2)
+                ),
+                1 / 2,
+            )
+        )
 
         if np.isnan(self.df.loc[i, "SA"]) :
             print(f"When {self.df.When[i]}, r_ice {self.df.r_ice[i]}, h_r {self.df.h_r[i]}, h_ice {self.df.h_ice[i]}")
@@ -653,9 +645,11 @@ class Icestupa:
                 
                 if self.site == 'guttannen':
                     # self.df.loc[i - 1, "r_ice"] = self.spray_radius()
-                    self.df.loc[i - 1, "r_ice"] = self.spray_radius(r_mean = 6)
+                    self.r_mean = 4.5
+                    self.df.loc[i - 1, "r_ice"] = 6
                     self.df.loc[i - 1, "h_ice"] = self.tree_height
-                    self.df.loc[i - 1, "h_r"] = self.h_f/self.r_mean
+                    # self.df.loc[i - 1, "h_r"] = self.h_f/self.r_mean
+                    self.df.loc[i - 1, "h_r"] = self.df.loc[i - 1, "h_ice"]/self.df.loc[i - 1, "r_ice"]
 
                 if self.site == 'schwarzsee':
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
@@ -1556,11 +1550,11 @@ if __name__ == "__main__":
 
     schwarzsee = PDF(site = "guttannen")
 
-    schwarzsee.derive_parameters()
+    # schwarzsee.derive_parameters()
 
-    schwarzsee.print_input()
+    # schwarzsee.print_input()
 
-    # schwarzsee.read_input()
+    schwarzsee.read_input()
 
     schwarzsee.melt_freeze()
 

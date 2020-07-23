@@ -466,7 +466,7 @@ if __name__ == '__main__':
         )
         df_5 = df_in2.loc[mask]
         df_5 = df_5.reset_index()
-        df_4["Pressure"] = df_5["prestas0"]
+        df_4["Pressure"] = df_in["Pressure"].mean()
         df_4["gre000z0"] = df_5["gre000z0"]
         df_4["oli000z0"] = df_5["oli000z0"]
 
@@ -489,7 +489,6 @@ if __name__ == '__main__':
                     "When",
                     "Discharge",
                     "Temperature",
-                    "Wind Speed",
                     "Humidity",
                     "Pressure",
                 ]
@@ -502,6 +501,8 @@ if __name__ == '__main__':
         df["oli000z0"] = df_2["oli000z0"]
         df["Prec"] = df_3["Prec"]
         df["vp_a"] = df_3["vp_a"]
+        df["Wind Speed"] = df_3["Wind Speed"]
+
 
         mask = (df["When"] >= dates["start_date"]) & (df["When"] <= dates["error_date"])
         df = df.loc[mask]
@@ -544,5 +545,5 @@ if __name__ == '__main__':
         df_out.to_csv(folders["input_folder"] + "raw_input.csv")
 
         fig, ax = plt.subplots()
-        ax.plot(df.When, df.v_a)
+        ax.plot(df.When, df.p_a)
         plt.show()
