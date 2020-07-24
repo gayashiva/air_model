@@ -48,6 +48,7 @@ class Icestupa:
     ie = 0.95  # Ice Emissivity ie
     a_i = 0.35  # Albedo of Ice a_i
     a_s = 0.85  # Albedo of Fresh Snow a_s
+    a_w = 0.1   # Albedo of water a_w
     t_decay = 10  # Albedo decay rate decay_t_d
     z_i = 0.0017  # Ice Momentum and Scalar roughness length
     d_ppt = 250  # Snowfall density
@@ -182,8 +183,6 @@ class Icestupa:
 
         i = row.Index
 
-        a_min = self.a_i
-
         """Albedo"""
         # Precipitation
         if (row.Discharge == 0) & (row.Prec > 0.00025):
@@ -192,16 +191,26 @@ class Icestupa:
                 f = 0
 
         if row.Discharge > 0:
-            f = 1
-            s = 0
+
+            if not self.site == "guttannen" and row.Discharge < 8:
+
+                f = 1
+                s = 0
 
         if f == 0:  # last snowed
-            self.df.loc[i, "a"] = self.a_i + (self.a_s - self.a_i) * math.exp(
+            self.df.loc[i, "a"] = self.a_w + (self.a_s - self.a_w) * math.exp(
                 -s / self.t_decay
             )
             s = s + 1
         else:  # last sprayed
+            self.df.loc[i, "a"] = self.a_w + (self.a_i - self.a_w) * math.exp(
+                -s / self.t_decay
+            )
             self.df.loc[i, "a"] = self.a_i
+
+        # if (self.site == "guttannen") and (self.df.Discharge[i]< 8):
+        #     self.df.loc[i, "a"] = self.a_w
+
 
         return s, f
 
@@ -339,7 +348,32 @@ class Icestupa:
                 )
             )
 
-        # else:
+        else:
+
+            # Height to radius ratio
+            self.df.loc[i, "h_r"] = self.df.loc[i-1, "h_r"]
+
+            # Ice Radius
+            self.df.loc[i, "r_ice"] = math.pow(
+                self.df.loc[i - 1, "iceV"] / math.pi * (3 / self.df.loc[i, "h_r"]),
+                1 / 3,
+            )
+
+            # Ice Height
+            self.df.loc[i, "h_ice"] = self.df.loc[i, "h_r"] * self.df.loc[i, "r_ice"]
+
+            # Area of Conical Ice Surface
+            self.df.loc[i, "SA"] = (
+                math.pi
+                * self.df.loc[i, "r_ice"]
+                * math.pow(
+                    (
+                        math.pow(self.df.loc[i, "r_ice"], 2)
+                        + math.pow(self.df.loc[i, "r_ice"] * self.df.loc[i, "h_r"], 2)
+                    ),
+                    1 / 2,
+                )
+            )
         #     if (self.df.solid[i - 1] < 0):
 
         #         # Height constant
@@ -371,30 +405,7 @@ class Icestupa:
 
         #     else:
 
-        # Height to radius ratio
-        self.df.loc[i, "h_r"] = self.df.loc[i-1, "h_r"]
-
-        # Ice Radius
-        self.df.loc[i, "r_ice"] = math.pow(
-            self.df.loc[i - 1, "iceV"] / math.pi * (3 / self.df.loc[i, "h_r"]),
-            1 / 3,
-        )
-
-        # Ice Height
-        self.df.loc[i, "h_ice"] = self.df.loc[i, "h_r"] * self.df.loc[i, "r_ice"]
-
-        # Area of Conical Ice Surface
-        self.df.loc[i, "SA"] = (
-            math.pi
-            * self.df.loc[i, "r_ice"]
-            * math.pow(
-                (
-                    math.pow(self.df.loc[i, "r_ice"], 2)
-                    + math.pow(self.df.loc[i, "r_ice"] * self.df.loc[i, "h_r"], 2)
-                ),
-                1 / 2,
-            )
-        )
+            
 
         if np.isnan(self.df.loc[i, "SA"]) :
             print(f"When {self.df.When[i]}, r_ice {self.df.r_ice[i]}, h_r {self.df.h_r[i]}, h_ice {self.df.h_ice[i]}")
@@ -645,8 +656,8 @@ class Icestupa:
                 
                 if self.site == 'guttannen':
                     # self.df.loc[i - 1, "r_ice"] = self.spray_radius()
-                    self.r_mean = 4.5
-                    self.df.loc[i - 1, "r_ice"] = 6
+                    
+                    self.df.loc[i - 1, "r_ice"] = self.spray_radius(r_mean = 6)
                     self.df.loc[i - 1, "h_ice"] = self.tree_height
                     # self.df.loc[i - 1, "h_r"] = self.h_f/self.r_mean
                     self.df.loc[i - 1, "h_r"] = self.df.loc[i - 1, "h_ice"]/self.df.loc[i - 1, "r_ice"]
@@ -1272,16 +1283,17 @@ class PDF(Icestupa):
 
         fig = plt.figure()
         x = self.df.When
-        y1 = self.df.ice
+        y1 = self.df.iceV
 
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Ice Mass [$kg$]")
+        ax1.set_ylabel("Ice Volume [$m^3$]")
         
-        ax1.scatter(datetime(2020, 4, 14, 18), 0, color="green", marker="o")
-        ax1.scatter(datetime(2020, 1, 3), (4.33-2.48) * self.rho_i, color="green", marker="o")
-        # ax1.scatter(datetime(2020, 1, 24), 209700, color="green", marker="o")
-        ax1.scatter(datetime(2020, 2, 15), (71.48-2.48) * self.rho_i, color="green", marker="o")
+        
+        ax1.scatter(datetime(2020, 1, 3), (4.33), color="green", marker="o")
+        # ax1.scatter(datetime(2020, 1, 24), (209.7), color="green", marker="o")
+        ax1.scatter(datetime(2020, 2, 15), (71.48), color="green", marker="o")
+        # ax1.scatter(datetime(2020, 4, 14, 18), 0, color="green", marker="o")
 
         ax1.grid()
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -1329,24 +1341,24 @@ class PDF(Icestupa):
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        # y1 = self.df.a
-        # y2 = self.df.SRf
-        # ax1 = fig.add_subplot(111)
-        # ax1.plot(x, y1, "k-")
-        # ax1.set_ylabel("Albedo")
-        # ax1.grid()
-        # ax2 = ax1.twinx()
-        # ax2.plot(x, y2, "b-", linewidth=0.5)
-        # ax2.set_ylabel("$f_{cone}$", color="b")
-        # for tl in ax2.get_yticklabels():
-        #     tl.set_color("b")
-        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        y1 = self.df.a
+        y2 = self.df.SRf
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x, y1, "k-")
+        ax1.set_ylabel("Albedo")
+        ax1.grid()
+        ax2 = ax1.twinx()
+        ax2.plot(x, y2, "b-", linewidth=0.5)
+        ax2.set_ylabel("$f_{cone}$", color="b")
+        for tl in ax2.get_yticklabels():
+            tl.set_color("b")
+        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax1.xaxis.set_minor_locator(mdates.DayLocator())
 
-        # fig.autofmt_xdate()
-        # pp.savefig(bbox_inches="tight")
-        # plt.clf()
+        fig.autofmt_xdate()
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
 
         y1 = self.df.T_s
         y2 = self.df.T_bulk
@@ -1550,15 +1562,15 @@ if __name__ == "__main__":
 
     schwarzsee = PDF(site = "guttannen")
 
-    # schwarzsee.derive_parameters()
+    schwarzsee.derive_parameters()
 
-    # schwarzsee.print_input()
+    schwarzsee.print_input()
 
-    schwarzsee.read_input()
+    # schwarzsee.read_input()
 
     schwarzsee.melt_freeze()
 
-    # schwarzsee.read_output()
+    # schwarzsee.read_outpu t()
 
     # schwarzsee.corr_plot()
 
