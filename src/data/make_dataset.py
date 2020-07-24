@@ -534,6 +534,11 @@ if __name__ == '__main__':
             inplace=True,
         )
 
+        # Inactive spray
+        mask = df["Discharge"] < 8
+        mask_index = df[mask].index
+        df.loc[mask_index, "Discharge"] = 0
+
         df_out = df[
             ["When", "T_a", "RH", "v_a", "Discharge", "SW_direct", "SW_diffuse", "LW_in", "cld", "Prec", "p_a", "vp_a"]
         ]
@@ -545,5 +550,5 @@ if __name__ == '__main__':
         df_out.to_csv(folders["input_folder"] + "raw_input.csv")
 
         fig, ax = plt.subplots()
-        ax.plot(df.When, df.p_a)
+        ax.plot(df.When, df.Discharge)
         plt.show()

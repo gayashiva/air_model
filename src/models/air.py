@@ -191,11 +191,8 @@ class Icestupa:
                 f = 0
 
         if row.Discharge > 0:
-
-            if not self.site == "guttannen" and row.Discharge < 8:
-
-                f = 1
-                s = 0
+            f = 1
+            s = 0
 
         if f == 0:  # last snowed
             self.df.loc[i, "a"] = self.a_w + (self.a_s - self.a_w) * math.exp(
@@ -203,14 +200,13 @@ class Icestupa:
             )
             s = s + 1
         else:  # last sprayed
-            self.df.loc[i, "a"] = self.a_w + (self.a_i - self.a_w) * math.exp(
-                -s / self.t_decay
-            )
-            self.df.loc[i, "a"] = self.a_i
 
-        # if (self.site == "guttannen") and (self.df.Discharge[i]< 8):
-        #     self.df.loc[i, "a"] = self.a_w
-
+            if self.site == guttannen :
+                self.df.loc[i, "a"] = self.a_w + (self.a_i - self.a_w) * math.exp(
+                    -s / self.t_decay
+                )
+            else:
+                self.df.loc[i, "a"] = self.a_i
 
         return s, f
 
@@ -656,8 +652,8 @@ class Icestupa:
                 
                 if self.site == 'guttannen':
                     # self.df.loc[i - 1, "r_ice"] = self.spray_radius()
-                    
-                    self.df.loc[i - 1, "r_ice"] = self.spray_radius(r_mean = 6)
+                    self.spray_radius(r_mean = 6)
+                    self.df.loc[i - 1, "r_ice"] = 4.5
                     self.df.loc[i - 1, "h_ice"] = self.tree_height
                     # self.df.loc[i - 1, "h_r"] = self.h_f/self.r_mean
                     self.df.loc[i - 1, "h_r"] = self.df.loc[i - 1, "h_ice"]/self.df.loc[i - 1, "r_ice"]
