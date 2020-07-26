@@ -105,7 +105,7 @@ if site == "guttannen":
 
     dates = dict(
         start_date=datetime(2020, 1, 1,18),
-        end_date=datetime(2020, 2, 18),
+        end_date=datetime(2020, 5, 1),
         error_date=datetime(2020, 1, 19),
         fountain_off_date=datetime(2020, 3, 1),
     )

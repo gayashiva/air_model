@@ -80,7 +80,7 @@ class Icestupa:
             self.tree_height=1.3
             self.tree_radius=1.35
             self.dia_f = 0.005  # Fountain aperture diameter
-            self.h_f = 3.5 # Fountain steps h_f
+            self.h_f = 3 # Fountain steps h_f
 
         
 
@@ -195,18 +195,19 @@ class Icestupa:
             s = 0
 
         if f == 0:  # last snowed
-            self.df.loc[i, "a"] = self.a_w + (self.a_s - self.a_w) * math.exp(
+            self.df.loc[i, "a"] = self.a_i + (self.a_s - self.a_i) * math.exp(
                 -s / self.t_decay
             )
             s = s + 1
         else:  # last sprayed
 
-            if self.site == guttannen :
-                self.df.loc[i, "a"] = self.a_w + (self.a_i - self.a_w) * math.exp(
-                    -s / self.t_decay
-                )
-            else:
-                self.df.loc[i, "a"] = self.a_i
+            # if self.site == "guttannen" :
+            #     self.df.loc[i, "a"] = self.a_w + (self.a_i - self.a_w) * math.exp(
+            #         -s / self.t_decay
+            #     )
+            #     s = s + 1
+            # else:
+            self.df.loc[i, "a"] = self.a_i
 
         return s, f
 
@@ -370,6 +371,12 @@ class Icestupa:
                     1 / 2,
                 )
             )
+
+            # # Add Spray radius
+            # if (self.df.Discharge[i - 1] > 0):
+            #     self.df.loc[i, "SA"] += math.pi * ( self.r_mean **2 - self.df.loc[i, "r_ice"] ** 2)
+
+
         #     if (self.df.solid[i - 1] < 0):
 
         #         # Height constant
@@ -402,9 +409,6 @@ class Icestupa:
         #     else:
 
             
-
-        if np.isnan(self.df.loc[i, "SA"]) :
-            print(f"When {self.df.When[i]}, r_ice {self.df.r_ice[i]}, h_r {self.df.h_r[i]}, h_ice {self.df.h_ice[i]}")
 
         self.df.loc[i, "SRf"] = (
             0.5
@@ -651,19 +655,15 @@ class Icestupa:
                 self.state = 1
                 
                 if self.site == 'guttannen':
-                    # self.df.loc[i - 1, "r_ice"] = self.spray_radius()
-                    self.spray_radius(r_mean = 6)
-                    self.df.loc[i - 1, "r_ice"] = 4.5
+                    
+                    self.df.loc[i - 1, "r_ice"] = self.spray_radius(r_mean = 6)
                     self.df.loc[i - 1, "h_ice"] = self.tree_height
-                    # self.df.loc[i - 1, "h_r"] = self.h_f/self.r_mean
-                    self.df.loc[i - 1, "h_r"] = self.df.loc[i - 1, "h_ice"]/self.df.loc[i - 1, "r_ice"]
 
                 if self.site == 'schwarzsee':
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.dx
-                    self.df.loc[i - 1, "h_r"] = self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
                     
-
+                self.df.loc[i - 1, "h_r"] = self.df.loc[i - 1, "h_ice"]/self.df.loc[i - 1, "r_ice"]
                 self.df.loc[i - 1, "iceV"] = math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.df.loc[i - 1, "h_ice"]
                 self.df.loc[i - 1, "ice"] = math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.dx
                 self.df.loc[i - 1, "input"] = self.df.loc[i - 1, "ice"]
@@ -673,7 +673,7 @@ class Icestupa:
             if self.df.loc[i - 1, "ice"] <= 0:
                 self.df.loc[i - 1, "solid"] = 0
                 self.df.loc[i - 1, "ice"] = 0
-                self.df.loc[i - 1, "iceV"] = 0
+                # self.df.loc[i - 1, "iceV"] = 0
                 if self.df.Discharge[i:].sum() == 0:  # If ice melted after fountain run
                     self.df = self.df[self.start:i]
                     self.df = self.df.reset_index(drop=True)
@@ -1274,6 +1274,10 @@ class PDF(Icestupa):
             axis=1,
         )
 
+        df_cam = pd.read_csv(self.folders["input_folder"] + "cam.csv")
+
+        df_cam["When"] = pd.to_datetime(df_cam["When"])
+
         # Plots
         pp = PdfPages(filename)
 
@@ -1284,14 +1288,25 @@ class PDF(Icestupa):
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Ice Volume [$m^3$]")
+
+        ax1t = ax1.twinx()
+        ax1t.plot(df_cam.When, df_cam.Volume, "o-", color="b", alpha=0.5, linewidth=0.5)
+        ax1t.set_ylabel("Cam Volume [$m^3$]", color="b")
+        for tl in ax1t.get_yticklabels():
+            tl.set_color("b")
+
+        ax1.set_ylim([0, 110])
+        ax1t.set_ylim([0, 110])
         
         
-        ax1.scatter(datetime(2020, 1, 3), (4.33), color="green", marker="o")
+        ax1.scatter(datetime(2020, 1, 3), (4.33), color="green", marker="o", label="Drone Estimate")
         # ax1.scatter(datetime(2020, 1, 24), (209.7), color="green", marker="o")
         ax1.scatter(datetime(2020, 2, 15), (71.48), color="green", marker="o")
         # ax1.scatter(datetime(2020, 4, 14, 18), 0, color="green", marker="o")
 
         ax1.grid()
+        ax1.legend()
+
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -1304,6 +1319,16 @@ class PDF(Icestupa):
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Surface Area [$m^2$]")
         ax1.grid()
+
+        ax1t = ax1.twinx()
+        ax1t.plot(df_cam.When, df_cam.SA, "o-", color="b", alpha=0.5, linewidth=0.5)
+        ax1t.set_ylabel("Cam SA [$m^2$]", color="b")
+        for tl in ax1t.get_yticklabels():
+            tl.set_color("b")
+
+        ax1.set_ylim([0, 175])
+        ax1t.set_ylim([0, 175])
+
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -1317,6 +1342,7 @@ class PDF(Icestupa):
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Ice Cone Height [$m$]")
         ax1.grid()
+
         ax2 = ax1.twinx()
         ax2.plot(x, y2, "b-", linewidth=0.5)
         ax2.set_ylabel("Ice Radius[$m$]", color="b")
@@ -1325,8 +1351,8 @@ class PDF(Icestupa):
 
         # Include Validation line segment 1
 
-        ax1.scatter(datetime(2020, 1, 24, 15), 2.2, color="black", marker="o")
-        ax2.scatter(datetime(2020, 1, 24, 15), 4.5, color="blue", marker="o")
+        # ax1.scatter(datetime(2020, 1, 24, 15), 2.2, color="black", marker="o")
+        # ax2.scatter(datetime(2020, 1, 24, 15), 4.5, color="blue", marker="o")
 
         
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -1485,7 +1511,7 @@ class PDF(Icestupa):
         plt.ylabel("Thickness ($m$ w. e.)")
         plt.xticks(rotation=45)
         # plt.legend(loc='upper right')
-        ax1.set_ylim(-0.025, 0.025)
+        ax1.set_ylim(-0.035, 0.035)
         ax1.yaxis.set_minor_locator(AutoMinorLocator())
         ax1.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
         x_axis = ax1.axes.get_xaxis()
@@ -1558,15 +1584,15 @@ if __name__ == "__main__":
 
     schwarzsee = PDF(site = "guttannen")
 
-    schwarzsee.derive_parameters()
+    # schwarzsee.derive_parameters()
 
-    schwarzsee.print_input()
+    # schwarzsee.print_input()
 
     # schwarzsee.read_input()
 
-    schwarzsee.melt_freeze()
+    # schwarzsee.melt_freeze()
 
-    # schwarzsee.read_outpu t()
+    schwarzsee.read_output()
 
     # schwarzsee.corr_plot()
 
