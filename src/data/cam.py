@@ -19,8 +19,14 @@ dir = "/home/surya/Programs/PycharmProjects/air_model/data/raw/"
 
 df_in1 = pd.read_csv(dir + "Results_1.csv", sep=",")
 df_in2 = pd.read_csv(dir + "Results_2.csv", sep=",")
-df_in3 = pd.read_csv(dir + "Results_rad.csv", sep=",")
-df_in4 = pd.read_csv(dir + "Results_rad2.csv", sep=",")
+
+df_rad0 = pd.read_csv(dir + "Results_radiuslines0.csv", sep=",")
+df_rad1 = pd.read_csv(dir + "Results_radiuslines1.csv", sep=",")
+df_rad2 = pd.read_csv(dir + "Results_radiuslines2.csv", sep=",")
+
+
+
+
 df_in5 = pd.read_csv(dir + "Results_dots.csv", sep=",")
 df_in6 = pd.read_csv(dir + "Results_dots_2.csv", sep=",")
 df_in7 = pd.read_csv(dir + "Results_rest.csv", sep=",")
@@ -41,8 +47,10 @@ df_names3 = pd.DataFrame({"col": onlyfiles3})
 
 df_in1["Label"] = df_in1["Label"].str.split("m").str[-1]
 df_in2["Label"] = df_in2["Label"].str.split("m").str[-1]
-df_in3["Label"] = df_in3["Label"].str.split("m").str[-1]
-df_in4["Label"] = df_in4["Label"].str.split("m").str[-1]
+df_rad0["Label"] = df_rad0["Label"].str.split("m").str[-1]
+df_rad1["Label"] = df_rad1["Label"].str.split("m").str[-1]
+df_rad2["Label"] = df_rad2["Label"].str.split("m").str[-1]
+
 df_in5["Label"] = df_in5["Label"].str.split("m").str[-1]
 df_in6["Label"] = df_in6["Label"].str.split("m").str[-1]
 df_in7["Label"] = df_in7["Label"].str.split("m").str[-1]
@@ -68,21 +76,29 @@ df_in2["Label"] = (
     + " "
     + df_in2["Label"].str[6:8]
 )
-df_in3["Label"] = (
+df_rad0["Label"] = (
     "2020-"
-    + df_in3["Label"].str[2:4]
+    + df_rad0["Label"].str[2:4]
     + "-"
-    + df_in3["Label"].str[4:6]
+    + df_rad0["Label"].str[4:6]
     + " "
-    + df_in3["Label"].str[6:8]
+    + df_rad0["Label"].str[6:8]
 )
-df_in4["Label"] = (
+df_rad1["Label"] = (
     "2020-"
-    + df_in4["Label"].str[2:4]
+    + df_rad1["Label"].str[2:4]
     + "-"
-    + df_in4["Label"].str[4:6]
+    + df_rad1["Label"].str[4:6]
     + " "
-    + df_in4["Label"].str[6:8]
+    + df_rad1["Label"].str[6:8]
+)
+df_rad2["Label"] = (
+    "2020-"
+    + df_rad2["Label"].str[2:4]
+    + "-"
+    + df_rad2["Label"].str[4:6]
+    + " "
+    + df_rad2["Label"].str[6:8]
 )
 df_in5["Label"] = (
     "2020-"
@@ -137,8 +153,10 @@ df_names3["Label"] = (
 
 df_in1["When"] = pd.to_datetime(df_in1["Label"], format="%Y-%m-%d %H")
 df_in2["When"] = pd.to_datetime(df_in2["Label"], format="%Y-%m-%d %H")
-df_in3["When"] = pd.to_datetime(df_in3["Label"], format="%Y-%m-%d %H")
-df_in4["When"] = pd.to_datetime(df_in4["Label"], format="%Y-%m-%d %H")
+df_rad0["When"] = pd.to_datetime(df_rad0["Label"], format="%Y-%m-%d %H")
+df_rad1["When"] = pd.to_datetime(df_rad1["Label"], format="%Y-%m-%d %H")
+df_rad2["When"] = pd.to_datetime(df_rad2["Label"], format="%Y-%m-%d %H")
+
 df_in5["When"] = pd.to_datetime(df_in5["Label"], format="%Y-%m-%d %H")
 df_in6["When"] = pd.to_datetime(df_in6["Label"], format="%Y-%m-%d %H")
 df_in7["When"] = pd.to_datetime(df_in7["Label"], format="%Y-%m-%d %H")
@@ -179,15 +197,17 @@ df_in1 = df_in1.set_index("When")
 df_in2 = df_in2.set_index("When")
 
 
-df_in3["Radius"] = df_in3["Length"] / (183.85 * 2)
-df_in4["Radius"] = df_in4["Length"] / (183.85 * 2)
-
+df_rad0["Radius"] = df_rad0["Length"] / 2
+df_rad1["Radius"] = df_rad1["Length"] / 2
+df_rad2["Radius"] = df_rad2["Length"] / 2
 
 df_in = df_in1.append(df_in2)
 df_in = df_in.reset_index()
 
-df_in_rad = df_in3.append(df_in4)
+df_in_rad = df_rad0.append(df_rad1)
+df_in_rad = df_rad0.append(df_rad2)
 df_in_rad = df_in_rad.reset_index()
+print(df_in_rad.head())
 
 
 left = df_in5.index % 3 == 0
@@ -337,6 +357,25 @@ ax1 = fig.add_subplot(111)
 ax1.plot(dfd4.When, dfd4.Volume, "o-", color="k")
 ax1.set_ylabel("Volume [$m^3$]")
 ax1.grid()
+
+# format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
+ax1 = fig.add_subplot(111)
+ax1.plot(dfd2.When, dfd2.Radius, "o-", color="k")
+ax1.set_ylabel("Radius [$m$]")
+ax1.grid()
+
+ax1t = ax1.twinx()
+ax1t.plot(dfd4.When, dfd4.Radius, "o-", color="b", alpha=0.5, linewidth=0.5)
+ax1t.set_ylabel("Radius [$m$]", color="b")
+for tl in ax1t.get_yticklabels():
+    tl.set_color("b")
 
 # format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
