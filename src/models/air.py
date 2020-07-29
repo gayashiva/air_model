@@ -1386,13 +1386,33 @@ class PDF(Icestupa):
         y2 = self.df.T_bulk
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-", linewidth=0.5, alpha =0.5)
-        ax1.set_ylabel("Surface Temperature")
+        ax1.set_ylabel("Surface Temperature[$\\degree C$]")
         # ax1.grid()
         ax2 = ax1.twinx()
         ax2.plot(x, y2, "b-", linewidth=0.5)
-        ax2.set_ylabel("Bulk Temperature", color="b")
+        ax2.set_ylabel("Bulk Temperature[$\\degree C$]", color="b")
         for tl in ax2.get_yticklabels():
             tl.set_color("b")
+        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        ax1.set_ylim([-20, 1])
+        ax2.set_ylim([-20, 1])
+        fig.autofmt_xdate()
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        y1 = self.df.T_s
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x, y1, "k-", linewidth=0.5, alpha =0.5)
+        ax1.set_ylabel("Surface Temperature[$\\degree C$]")
+
+        ax1t = ax1.twinx()
+        ax1t.plot(df_cam.When, df_cam.Temp, "o-", color="b", alpha=0.5, linewidth=0.5)
+        ax1t.set_ylabel("Cam Temp [$\\degree C$]", color="b")
+        for tl in ax1t.get_yticklabels():
+            tl.set_color("b")
+
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())

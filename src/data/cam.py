@@ -24,6 +24,9 @@ df_rad0 = pd.read_csv(dir + "Results_radiuslines0.csv", sep=",")
 df_rad1 = pd.read_csv(dir + "Results_radiuslines1.csv", sep=",")
 df_rad2 = pd.read_csv(dir + "Results_radiuslines2.csv", sep=",")
 
+# Thermal
+df_th = pd.read_csv(dir + "Results_full_thermal.csv", sep=",")
+
 
 
 
@@ -50,6 +53,8 @@ df_in2["Label"] = df_in2["Label"].str.split("m").str[-1]
 df_rad0["Label"] = df_rad0["Label"].str.split("m").str[-1]
 df_rad1["Label"] = df_rad1["Label"].str.split("m").str[-1]
 df_rad2["Label"] = df_rad2["Label"].str.split("m").str[-1]
+df_th["Label"] = df_th["Label"].str.split("m").str[-1]
+
 
 df_in5["Label"] = df_in5["Label"].str.split("m").str[-1]
 df_in6["Label"] = df_in6["Label"].str.split("m").str[-1]
@@ -149,6 +154,14 @@ df_names3["Label"] = (
     + " "
     + df_names3["Label"].str[6:8]
 )
+df_th["Label"] = (
+    "2020-"
+    + df_th["Label"].str[2:4]
+    + "-"
+    + df_th["Label"].str[4:6]
+    + " "
+    + df_th["Label"].str[6:8]
+)
 
 
 df_in1["When"] = pd.to_datetime(df_in1["Label"], format="%Y-%m-%d %H")
@@ -156,6 +169,8 @@ df_in2["When"] = pd.to_datetime(df_in2["Label"], format="%Y-%m-%d %H")
 df_rad0["When"] = pd.to_datetime(df_rad0["Label"], format="%Y-%m-%d %H")
 df_rad1["When"] = pd.to_datetime(df_rad1["Label"], format="%Y-%m-%d %H")
 df_rad2["When"] = pd.to_datetime(df_rad2["Label"], format="%Y-%m-%d %H")
+df_th["When"] = pd.to_datetime(df_th["Label"], format="%Y-%m-%d %H")
+
 
 df_in5["When"] = pd.to_datetime(df_in5["Label"], format="%Y-%m-%d %H")
 df_in6["When"] = pd.to_datetime(df_in6["Label"], format="%Y-%m-%d %H")
@@ -252,14 +267,34 @@ df_in_dot = df_in_dot.append(df_in7)
 
 df_in_dot = df_in_dot.drop(["X", "Y", "S.No.", "Label", " "], axis=1)
 
-print(df_in_dot.columns)
-print(df_in_dot.tail())
+# Correct thermal values
+mask = (df_th["Mean"] > 180)
+mask_index = df_th[mask].index
+df_th.loc[mask_index] = np.NaN
 
+# Correct thermal values
+mask = (df_th["Mean"] < 140)
+mask_index = df_th[mask].index
+df_th.loc[mask_index] = np.NaN
+
+m = 2.4/(170-168.419)
+c = -m*170
+df_th["Temp"] = m*df_th["Mean"] + c
+
+# Correct thermal values
+mask = (df_th["Temp"] < -25)
+mask_index = df_th[mask].index
+df_th.loc[mask_index,"Temp"] = np.NaN
+
+
+print(df_th["Mean"].max())
 
 dfd = df_in.set_index("When").resample("D").mean().reset_index()
 dfd2 = df_in_rad.set_index("When").resample("D").mean().reset_index()
 dfd3 = pd.merge(dfd, dfd2, how="inner", on=["When"])
 dfd4 = df_in_dot.set_index("When").resample("D").mean().reset_index()
+dfd_th = df_th.set_index("When").resample("D").mean().reset_index()
+
 
 dfd3["Height"] = dfd3["Area"] / dfd3["Radius"]
 
@@ -274,15 +309,22 @@ dfd4["SA"] = abs(
     * np.power((dfd4["Radius"] **2 + (dfd4["Height"]) ** 2), 1 / 2)
 )
 
-print(dfd4["Radius"].mean())
-
 # Correct Hollow Volume
 mask = dfd4["When"] > datetime(2020, 2, 10)
 mask_index = dfd4[mask].index
 dfd4.loc[mask_index,"Volume"] += 1/3* math.pi * fountain["tree_height"] * 6**2
 
+dfd4 = dfd4.set_index("When")
+dfd_th = dfd_th.set_index("When")
 
-df_out = dfd4[["When", "Radius", "Height", "SA", "Volume"]]
+dfd4["Temp"] = dfd_th["Temp"]
+dfd4 = dfd4.reset_index()
+dfd_th = dfd_th.reset_index()
+
+# dfd4.merge(dfd_th[["When", "Temp"]],on='When', how='left')
+
+
+df_out = dfd4[["When", "Radius", "Height", "SA", "Volume", "Temp"]]
 
 df_out.to_csv(folders["input_folder"] + "cam.csv")
 
@@ -292,19 +334,32 @@ x = dfd.When
 
 fig = plt.figure()
 
-# ax1 = fig.add_subplot(111)
-# y1 = dfd.Area
-# ax1.plot(x, y1, 'o-', color="k")
-# ax1.set_ylabel("Area [$m^2$]")
-# ax1.grid()
+ax1 = fig.add_subplot(111)
+ax1.plot(dfd4.When, dfd4.Temp, 'o-', color="k")
+ax1.set_ylabel("Temp [$m^2$]")
+ax1.grid()
 
-# # format the ticks
-# ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-# ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-# ax1.xaxis.set_minor_locator(mdates.DayLocator())
-# fig.autofmt_xdate()
-# pp.savefig(bbox_inches="tight")
-# plt.clf()
+# format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
+ax1 = fig.add_subplot(111)
+ax1.scatter(df_th.When, df_th.Temp, color="k")
+ax1.set_ylabel("Temp [$m^2$]")
+ax1.grid()
+ax1.set_ylim([-30, 0 ])
+
+# format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
 
 # ax1 = fig.add_subplot(111)
 # y1 = dfd.Area
