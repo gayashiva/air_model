@@ -26,8 +26,7 @@ df_rad2 = pd.read_csv(dir + "Results_radiuslines2.csv", sep=",")
 
 # Thermal
 df_th = pd.read_csv(dir + "Results_full_thermal.csv", sep=",")
-
-
+df_red = pd.read_csv(dir + "Results_red.csv", sep=",")
 
 
 df_in5 = pd.read_csv(dir + "Results_dots.csv", sep=",")
@@ -184,6 +183,7 @@ df_names3["When"] = pd.to_datetime(df_names3["Label"], format="%Y-%m-%d %H")
 df_names = df_names.set_index("When").sort_index()
 df_names = df_names.reset_index()
 df_names["Slice"] = df_names.index + 1
+df_red["Slice"] = df_red.index + 1
 
 df_names2 = df_names2.set_index("When").sort_index()
 df_names2 = df_names2.reset_index()
@@ -222,7 +222,6 @@ df_in = df_in.reset_index()
 df_in_rad = df_rad0.append(df_rad1)
 df_in_rad = df_rad0.append(df_rad2)
 df_in_rad = df_in_rad.reset_index()
-print(df_in_rad.head())
 
 
 left = df_in5.index % 3 == 0
@@ -270,30 +269,46 @@ df_in_dot = df_in_dot.drop(["X", "Y", "S.No.", "Label", " "], axis=1)
 # Correct thermal values
 mask = (df_th["Mean"] > 180)
 mask_index = df_th[mask].index
-df_th.loc[mask_index] = np.NaN
+df_th.loc[mask_index, "Mean"] = np.NaN
 
 # Correct thermal values
-mask = (df_th["Mean"] < 140)
+mask = (df_th["Mean"] < 165.876)
 mask_index = df_th[mask].index
-df_th.loc[mask_index] = np.NaN
+df_th.loc[mask_index, "Mean"] = np.NaN
 
-m = 2.4/(170-168.419)
-c = -m*170
+m = 2.4/(df_th["Mean"].max()-168.419)
+c = -m*df_th["Mean"].max()
 df_th["Temp"] = m*df_th["Mean"] + c
 
-# Correct thermal values
-mask = (df_th["Temp"] < -25)
-mask_index = df_th[mask].index
-df_th.loc[mask_index,"Temp"] = np.NaN
+df_red = df_red.set_index("Slice")
+df_th = df_th.set_index("Slice")
 
+df_red["When"] = df_th["When"]
+df_th = df_th.reset_index()
+df_red = df_red.reset_index()
 
-print(df_th["Mean"].max())
+# # Correct thermal values
+# mask = (df_red["Mean1"] > 250)
+# mask_index = df_red[mask].index
+# df_red.loc[mask_index, "Mean1"] = 250
+
+# # Correct thermal values
+# mask = (df_red["Mean1"] < 165.876)
+# mask_index = df_red[mask].index
+# df_red.loc[mask_index, "Mean1"] = np.NaN
+
+m = 2.4/(df_red["Mean1"].max()-119.174)
+c = -m*df_red["Mean1"].max()
+df_red["Temp"] = m*df_red["Mean1"] + c
+
 
 dfd = df_in.set_index("When").resample("D").mean().reset_index()
 dfd2 = df_in_rad.set_index("When").resample("D").mean().reset_index()
 dfd3 = pd.merge(dfd, dfd2, how="inner", on=["When"])
 dfd4 = df_in_dot.set_index("When").resample("D").mean().reset_index()
 dfd_th = df_th.set_index("When").resample("D").mean().reset_index()
+dfd_red = df_red.set_index("When").resample("D").mean().reset_index()
+
 
 
 dfd3["Height"] = dfd3["Area"] / dfd3["Radius"]
@@ -328,6 +343,12 @@ df_out = dfd4[["When", "Radius", "Height", "SA", "Volume", "Temp"]]
 
 df_out.to_csv(folders["input_folder"] + "cam.csv")
 
+df_out2 = df_th[["When", "Mean", "Temp"]]
+df_out2.to_csv(folders["input_folder"] + "temp.csv")
+
+df_out2 = df_red[["When", "Mean1", "Temp"]]
+df_out2.to_csv(folders["input_folder"] + "redtemp.csv")
+
 pp = PdfPages(folders["input_folder"] + site + "_cam" + ".pdf")
 
 x = dfd.When
@@ -347,11 +368,12 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
+
 ax1 = fig.add_subplot(111)
-ax1.scatter(df_th.When, df_th.Temp, color="k")
+ax1.scatter(df_th.When, df_th.Temp, color="b", alpha=0.5, s = 1)
 ax1.set_ylabel("Temp [$m^2$]")
 ax1.grid()
-ax1.set_ylim([-30, 0 ])
+
 
 # format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())

@@ -1278,6 +1278,10 @@ class PDF(Icestupa):
 
         df_cam["When"] = pd.to_datetime(df_cam["When"])
 
+        df_temp = pd.read_csv(self.folders["input_folder"] + "temp.csv")
+
+        df_temp["When"] = pd.to_datetime(df_temp["When"])
+
         # Plots
         pp = PdfPages(filename)
 
@@ -1408,7 +1412,7 @@ class PDF(Icestupa):
         ax1.set_ylabel("Surface Temperature[$\\degree C$]")
 
         ax1t = ax1.twinx()
-        ax1t.plot(df_cam.When, df_cam.Temp, "o-", color="b", alpha=0.5, linewidth=0.5)
+        ax1t.scatter(df_temp.When, df_temp.Temp, color="b", alpha=0.5, s = 1)
         ax1t.set_ylabel("Cam Temp [$\\degree C$]", color="b")
         for tl in ax1t.get_yticklabels():
             tl.set_color("b")
@@ -1416,8 +1420,8 @@ class PDF(Icestupa):
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.set_ylim([-20, 1])
-        ax2.set_ylim([-20, 1])
+        ax1.set_ylim([-30, 1])
+        ax1t.set_ylim([-30, 1])
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.close("all")
