@@ -1278,7 +1278,7 @@ class PDF(Icestupa):
 
         df_cam["When"] = pd.to_datetime(df_cam["When"])
 
-        df_temp = pd.read_csv(self.folders["input_folder"] + "temp.csv")
+        df_temp = pd.read_csv(self.folders["input_folder"] + "lumtemp.csv")
 
         df_temp["When"] = pd.to_datetime(df_temp["When"])
 
@@ -1420,8 +1420,8 @@ class PDF(Icestupa):
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.set_ylim([-30, 1])
-        ax1t.set_ylim([-30, 1])
+        ax1.set_ylim([-20, 5])
+        ax1t.set_ylim([-20, 5])
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.close("all")
