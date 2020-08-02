@@ -11,5 +11,9 @@ pillow
 flake8
 pillow
 matplotlib
-SALib
 scipy
+tqdm
+uncertainpy
+chaospy
+tables
+celluloid

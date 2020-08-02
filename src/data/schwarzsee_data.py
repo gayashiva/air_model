@@ -13,7 +13,7 @@ end_date=datetime(2019,3,10,18)
 
 # read files
 df_in=(
-    pd.read_csv('./AWS/Schwarzsee_2018.txt',header=None,encoding='latin-1',skiprows=7, sep='\s+',
+    pd.read_csv('./AWS/Schwarzsee_2018.txt',header=None,encoding='latin-1',skiprows=7, sep='\\s+',
     names=['Date','Time', 'Discharge', 'Wind Direction','Wind Speed','Maximum Wind Speed', 'Temperature', 'Humidity', 'Pressure', 'Pluviometer'])
 )
 
@@ -21,7 +21,7 @@ df_in=(
 df_in=df_in.drop(['Pluviometer'],axis=1)
 
 #Add Radiation data
-df_in2=pd.read_csv('./AWS/plaffeien.txt',sep='\s+',skiprows=2)
+df_in2=pd.read_csv('./AWS/plaffeien.txt',sep='\\s+',skiprows=2)
 df_in2['When']=pd.to_datetime(df_in2['time'], format='%Y%m%d%H%M')
 df_in2['ods000z0']=pd.to_numeric(df_in2['ods000z0'],errors='coerce')
 df_in2['gre000z0']=pd.to_numeric(df_in2['gre000z0'],errors='coerce')
@@ -102,7 +102,7 @@ for i in range(1,df.shape[0]):
 
 df['Fountain']=0 # Fountain run time
 
-df_nights=pd.read_csv('./field/freeze_nights_times.txt',sep='\s+')
+df_nights=pd.read_csv('./field/freeze_nights_times.txt',sep='\\s+')
 
 df_nights['Start']=pd.to_datetime(df_nights['Date'] + ' ' + df_nights['start'])
 df_nights['End']=pd.to_datetime(df_nights['Date'] + ' ' + df_nights['end'])
