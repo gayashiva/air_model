@@ -31,7 +31,7 @@ if site == "schwarzsee":
         input_folder=os.path.join(dir, "data/interim/schwarzsee/"),
         output_folder=os.path.join(dir, "data/processed/schwarzsee/"),
         sim_folder=os.path.join(dir, "data/processed/schwarzsee/simulations/"),
-        data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
+        data_file=os.path.join(dir, "data/raw/schwarzsee/" + site + "_aws.txt"),
     )
 
     dates = dict(
@@ -56,7 +56,7 @@ if site == "schwarzsee_2020":
         input_folder=os.path.join(dir, "data/interim/schwarzsee_2020/"),
         output_folder=os.path.join(dir, "data/processed/schwarzsee_2020/"),
         sim_folder=os.path.join(dir, "data/processed/schwarzsee_2020/simulations/"),
-        data=os.path.join(dir, "data/raw/CR6_DATA/CardConvert/"),
+        data=os.path.join(dir, "data/raw/schwarzsee/CR6_DATA/CardConvert/"),
     )
 
     dates = dict(
@@ -100,7 +100,7 @@ if site == "guttannen":
         dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
         input_folder=os.path.join(dir, "data/interim/guttannen/"),
         output_folder=os.path.join(dir, "data/processed/guttannen/"),
-        data_file=os.path.join(dir, "data/raw/" + site + "_2020.txt"),
+        data_file=os.path.join(dir, "data/raw/guttannen/" + site + "_2020.txt"),
     )
 
     dates = dict(

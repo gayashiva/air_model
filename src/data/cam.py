@@ -15,7 +15,7 @@ from os import listdir
 from os.path import isfile, join
 
 
-dir = "/home/surya/Programs/PycharmProjects/air_model/data/raw/"
+dir = "/home/surya/Programs/PycharmProjects/air_model/data/raw/guttannen/"
 
 def lum2temp(y0):
 
@@ -53,23 +53,20 @@ def lum2temp(y0):
 
 	return x0
 
-df_in1 = pd.read_csv(dir + "Results_1.csv", sep=",")
-df_in2 = pd.read_csv(dir + "Results_2.csv", sep=",")
+df_in_section_1 = pd.read_csv(dir + "Results_1.csv", sep=",")
+df_in_section_2 = pd.read_csv(dir + "Results_2.csv", sep=",")
 
 df_rad0 = pd.read_csv(dir + "Results_radiuslines0.csv", sep=",")
 df_rad1 = pd.read_csv(dir + "Results_radiuslines1.csv", sep=",")
 df_rad2 = pd.read_csv(dir + "Results_radiuslines2.csv", sep=",")
-
-# Thermal
-df_th = pd.read_csv(dir + "Results_full_thermal.csv", sep=",")
-df_red = pd.read_csv(dir + "Results_red.csv", sep=",")
-df_lum = pd.read_csv(dir + "Results_lum_full.csv", sep=",")
-df_err = pd.read_csv(dir + "Results_errors.csv", sep=",")
-
 df_in5 = pd.read_csv(dir + "Results_dots.csv", sep=",")
 df_in6 = pd.read_csv(dir + "Results_dots_2.csv", sep=",")
 df_in7 = pd.read_csv(dir + "Results_rest.csv", sep=",")
 
+# Thermal
+df_th = pd.read_csv(dir + "Results_full_thermal.csv", sep=",")
+df_lum = pd.read_csv(dir + "Results_lum_full.csv", sep=",")
+df_err = pd.read_csv(dir + "Results_errors.csv", sep=",")
 
 mypath = "/home/surya/Pictures/Guttannen_Jan"
 onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
@@ -84,8 +81,8 @@ onlyfiles3 = [f for f in listdir(mypath3) if isfile(join(mypath3, f))]
 df_names3 = pd.DataFrame({"col": onlyfiles3})
 
 
-df_in1["Label"] = df_in1["Label"].str.split("m").str[-1]
-df_in2["Label"] = df_in2["Label"].str.split("m").str[-1]
+df_in_section_1["Label"] = df_in_section_1["Label"].str.split("m").str[-1]
+df_in_section_2["Label"] = df_in_section_2["Label"].str.split("m").str[-1]
 df_rad0["Label"] = df_rad0["Label"].str.split("m").str[-1]
 df_rad1["Label"] = df_rad1["Label"].str.split("m").str[-1]
 df_rad2["Label"] = df_rad2["Label"].str.split("m").str[-1]
@@ -101,21 +98,21 @@ df_names2["Label"] = df_names2["col"].str.split("m").str[-1]
 df_names3["Label"] = df_names3["col"].str.split("m").str[-1]
 
 
-df_in1["Label"] = (
+df_in_section_1["Label"] = (
     "2020-"
-    + df_in1["Label"].str[2:4]
+    + df_in_section_1["Label"].str[2:4]
     + "-"
-    + df_in1["Label"].str[4:6]
+    + df_in_section_1["Label"].str[4:6]
     + " "
-    + df_in1["Label"].str[6:8]
+    + df_in_section_1["Label"].str[6:8]
 )
-df_in2["Label"] = (
+df_in_section_2["Label"] = (
     "2020-"
-    + df_in2["Label"].str[2:4]
+    + df_in_section_2["Label"].str[2:4]
     + "-"
-    + df_in2["Label"].str[4:6]
+    + df_in_section_2["Label"].str[4:6]
     + " "
-    + df_in2["Label"].str[6:8]
+    + df_in_section_2["Label"].str[6:8]
 )
 df_rad0["Label"] = (
     "2020-"
@@ -200,8 +197,8 @@ df_th["Label"] = (
 )
 
 
-df_in1["When"] = pd.to_datetime(df_in1["Label"], format="%Y-%m-%d %H")
-df_in2["When"] = pd.to_datetime(df_in2["Label"], format="%Y-%m-%d %H")
+df_in_section_1["When"] = pd.to_datetime(df_in_section_1["Label"], format="%Y-%m-%d %H")
+df_in_section_2["When"] = pd.to_datetime(df_in_section_2["Label"], format="%Y-%m-%d %H")
 df_rad0["When"] = pd.to_datetime(df_rad0["Label"], format="%Y-%m-%d %H")
 df_rad1["When"] = pd.to_datetime(df_rad1["Label"], format="%Y-%m-%d %H")
 df_rad2["When"] = pd.to_datetime(df_rad2["Label"], format="%Y-%m-%d %H")
@@ -220,7 +217,6 @@ df_names3["When"] = pd.to_datetime(df_names3["Label"], format="%Y-%m-%d %H")
 df_names = df_names.set_index("When").sort_index()
 df_names = df_names.reset_index()
 df_names["Slice"] = df_names.index + 1
-df_red["Slice"] = df_red.index + 1
 df_lum["Slice"] = df_lum.index + 1
 
 df_lum = df_lum[:320]
@@ -255,15 +251,15 @@ for i in range(0, df_names3.shape[0]):
         if df_in7.loc[j, "Slice"] == df_names3.loc[i, "Slice"]:
             df_in7.loc[j, "When"] = df_names3.loc[i, "When"]
 
-df_in1 = df_in1.set_index("When")
-df_in2 = df_in2.set_index("When")
+df_in_section_1 = df_in_section_1.set_index("When")
+df_in_section_2 = df_in_section_2.set_index("When")
 
 
 df_rad0["Radius"] = df_rad0["Length"] / 2
 df_rad1["Radius"] = df_rad1["Length"] / 2
 df_rad2["Radius"] = df_rad2["Length"] / 2
 
-df_in = df_in1.append(df_in2)
+df_in = df_in_section_1.append(df_in_section_2)
 df_in = df_in.reset_index()
 
 df_in_rad = df_rad0.append(df_rad1)
@@ -327,13 +323,6 @@ m = 2.4/(df_th["Mean"].max()-168.419)
 c = -m*df_th["Mean"].max()
 df_th["Temp"] = m*df_th["Mean"] + c
 
-df_red = df_red.set_index("Slice")
-df_th = df_th.set_index("Slice")
-
-
-df_red["When"] = df_th["When"]
-df_th = df_th.reset_index()
-df_red = df_red.reset_index()
 
 df_lum = df_lum.set_index("Slice")
 df_th = df_th.set_index("Slice")
@@ -341,25 +330,6 @@ df_th = df_th.set_index("Slice")
 df_lum["When"] = df_th["When"]
 df_th = df_th.reset_index()
 df_lum = df_lum.reset_index()
-
-# # Correct thermal values
-# mask = (df_red["Mean1"] > 250)
-# mask_index = df_red[mask].index
-# df_red.loc[mask_index, "Mean1"] = 250
-
-# # Correct thermal values
-# mask = (df_red["Mean1"] < 165.876)
-# mask_index = df_red[mask].index
-# df_red.loc[mask_index, "Mean1"] = np.NaN
-
-# # Correct thermal values
-# mask = (df_lum["Mean1"] > 250)
-# mask_index = df_lum[mask].index
-# df_red.loc[mask_index, "Mean1"] = np.NaN
-
-m = 2.4/(df_red["Mean1"].max()-119.174)
-c = -m*df_red["Mean1"].max()
-df_red["Temp"] = m*df_red["Mean1"] + c
 
 df_lum["Mean"] = df_lum["Mean1"].apply(lum2temp)
 
@@ -370,15 +340,12 @@ m = 2.4/(T_0- T_measured)
 c = -m*T_0
 df_lum["Temp"] = m*df_lum["Mean"] + c
 
-print(df_lum.Temp)
-
 
 dfd = df_in.set_index("When").resample("D").mean().reset_index()
 dfd2 = df_in_rad.set_index("When").resample("D").mean().reset_index()
 dfd3 = pd.merge(dfd, dfd2, how="inner", on=["When"])
 dfd4 = df_in_dot.set_index("When").resample("D").mean().reset_index()
 dfd_th = df_th.set_index("When").resample("D").mean().reset_index()
-dfd_red = df_red.set_index("When").resample("D").mean().reset_index()
 dfd_lum = df_lum.set_index("When").resample("D").mean().reset_index()
 
 dfd3["Height"] = dfd3["Area"] / dfd3["Radius"]
@@ -438,39 +405,10 @@ fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
 
-# ax1 = fig.add_subplot(111)
-# ax1.scatter(df_th.When, df_th.Temp, color="b", alpha=0.5, s = 1)
-# ax1.set_ylabel("Temp [$m^2$]")
-# ax1.grid()
-
-
-# # format the ticks
-# ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-# ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-# ax1.xaxis.set_minor_locator(mdates.DayLocator())
-# fig.autofmt_xdate()
-# pp.savefig(bbox_inches="tight")
-# plt.clf()
-
-# ax1 = fig.add_subplot(111)
-# ax1.scatter(df_red.When, df_red.Temp, color="b", alpha=0.5, s = 1)
-# ax1.set_ylabel("Red Temp [$m^2$]")
-# ax1.grid()
-
-
-# # format the ticks
-# ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-# ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-# ax1.xaxis.set_minor_locator(mdates.DayLocator())
-# fig.autofmt_xdate()
-# pp.savefig(bbox_inches="tight")
-# plt.clf()
-
 ax1 = fig.add_subplot(111)
 ax1.scatter(df_lum.When, df_lum.Temp, color="b", alpha=0.5, s = 1)
 ax1.set_ylabel("Temp [$m^2$]")
 ax1.grid()
-
 
 # format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -479,20 +417,6 @@ ax1.xaxis.set_minor_locator(mdates.DayLocator())
 fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
-
-# ax1 = fig.add_subplot(111)
-# y1 = dfd.Area
-# ax1.plot(dfd2.When, dfd2.Radius, 'o-', color="k")
-# ax1.set_ylabel("Radius [$m$]")
-# ax1.grid()
-
-# # format the ticks
-# ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-# ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-# ax1.xaxis.set_minor_locator(mdates.DayLocator())
-# fig.autofmt_xdate()
-# pp.savefig(bbox_inches="tight")
-# plt.clf()
 
 ax1 = fig.add_subplot(111)
 y1 = dfd4.Height
@@ -539,24 +463,5 @@ ax1.xaxis.set_minor_locator(mdates.DayLocator())
 fig.autofmt_xdate()
 pp.savefig(bbox_inches="tight")
 plt.clf()
-
-# ax1 = fig.add_subplot(111)
-# ax1.plot(dfd2.When, dfd2.Radius, "o-", color="k")
-# ax1.set_ylabel("Radius [$m$]")
-# ax1.grid()
-
-# ax1t = ax1.twinx()
-# ax1t.plot(dfd4.When, dfd4.Radius, "o-", color="b", alpha=0.5, linewidth=0.5)
-# ax1t.set_ylabel("Radius [$m$]", color="b")
-# for tl in ax1t.get_yticklabels():
-#     tl.set_color("b")
-
-# # format the ticks
-# ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-# ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-# ax1.xaxis.set_minor_locator(mdates.DayLocator())
-# fig.autofmt_xdate()
-# pp.savefig(bbox_inches="tight")
-# plt.clf()
 
 pp.close()

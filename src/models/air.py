@@ -10,7 +10,6 @@ from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 import matplotlib
 from matplotlib.offsetbox import AnchoredText
-import math
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
