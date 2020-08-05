@@ -72,18 +72,6 @@ class Icestupa:
 
         self.site = site
 
-        if site == "guttannen":
-            crit_temp=0  # Fountain runtime temperature
-            self.latitude=46.649999
-            self.longitude=8.283333
-            self.tree_height=1.3
-            self.tree_radius=1.35
-            self.dia_f = 0.005  # Fountain aperture diameter
-            self.h_f = 3 # Fountain steps h_f
-            self.theta_f = 0
-
-        
-
         self.folders = dict(
             input_folder=os.path.join(self.dirname, "data/interim/" + site + "/"),
             output_folder=os.path.join(self.dirname, "data/processed/" + site + "/"),
@@ -95,6 +83,21 @@ class Icestupa:
         input_file = self.folders["input_folder"] + "raw_input.csv"
 
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
+
+        if site == "guttannen":
+            crit_temp=0  # Fountain runtime temperature
+            self.latitude=46.649999
+            self.longitude=8.283333
+            self.tree_height=1.3
+            self.tree_radius=1.35
+            self.dia_f = 0.005  # Fountain aperture diameter
+            self.h_f = 3 # Fountain steps h_f
+            self.theta_f = 0
+            self.df_cam = pd.read_csv(self.folders["input_folder"] + "cam.csv", sep=",", header=0, parse_dates=["When"])
+
+        
+
+        
 
     def SEA(self, date):
 
@@ -372,6 +375,10 @@ class Icestupa:
                 )
             )
 
+        # # Add Spray radius
+        # if (self.df.Discharge[i - 1] > 0):
+        #     self.df.loc[i, "SA"] += math.pi * ( 10 **2 - self.df.loc[i, "r_ice"] ** 2)
+
         self.df.loc[i, "SRf"] = (
             0.5
             * self.df.loc[i, "h_ice"]
@@ -383,9 +390,7 @@ class Icestupa:
             * math.sin(self.df.loc[i, "SEA"])
         ) / self.df.loc[i, "SA"]
 
-        # # Add Spray radius
-        # if (self.df.Discharge[i - 1] > 0):
-        #     self.df.loc[i, "SA"] += math.pi * ( 10 **2 - self.df.loc[i, "r_ice"] ** 2)
+        
 
 
     def energy_balance(self, row):
@@ -622,8 +627,7 @@ class Icestupa:
                 self.state = 1
                 
                 if self.site == 'guttannen':
-                    self.spray_radius()
-                    self.df.loc[i - 1, "r_ice"] = 4.5
+                    self.df.loc[i - 1, "r_ice"] = self.spray_radius(r_mean= self.df_cam["Radius"].mean() )
                     self.df.loc[i - 1, "h_ice"] = self.tree_height
                     
 
@@ -1198,10 +1202,6 @@ class PDF(Icestupa):
             axis=1,
         )
 
-        df_cam = pd.read_csv(self.folders["input_folder"] + "cam.csv")
-
-        df_cam["When"] = pd.to_datetime(df_cam["When"])
-
         df_temp = pd.read_csv(self.folders["input_folder"] + "lumtemp.csv")
 
         df_temp["When"] = pd.to_datetime(df_temp["When"])
@@ -1218,7 +1218,7 @@ class PDF(Icestupa):
         ax1.set_ylabel("Ice Volume [$m^3$]")
 
         ax1t = ax1.twinx()
-        ax1t.plot(df_cam.When, df_cam.Volume, "o-", color="b", alpha=0.5, linewidth=0.5)
+        ax1t.plot(self.df_cam.When, self.df_cam.Volume, "o-", color="b", alpha=0.5, linewidth=0.5)
         ax1t.set_ylabel("Cam Volume [$m^3$]", color="b")
         for tl in ax1t.get_yticklabels():
             tl.set_color("b")
@@ -1249,7 +1249,7 @@ class PDF(Icestupa):
         ax1.grid()
 
         ax1t = ax1.twinx()
-        ax1t.plot(df_cam.When, df_cam.SA, "o-", color="b", alpha=0.5, linewidth=0.5)
+        ax1t.plot(self.df_cam.When, self.df_cam.SA, "o-", color="b", alpha=0.5, linewidth=0.5)
         ax1t.set_ylabel("Cam SA [$m^2$]", color="b")
         for tl in ax1t.get_yticklabels():
             tl.set_color("b")

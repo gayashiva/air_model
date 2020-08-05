@@ -10,7 +10,7 @@ from tqdm import tqdm
 import shutil, os
 import glob
 import fnmatch
-from src.data.config import site, dates, folders, fountain, surface
+from src.data.config import site, dates, folders
 from os import listdir
 from os.path import isfile, join
 
@@ -362,6 +362,9 @@ dfd4.loc[mask_index,"Height"] = np.NaN
 
 dfd4["Volume"] = abs(1 / 3 * math.pi * dfd4["Radius"] ** 2 * dfd4["Height"])
 
+dfd4["Slope"] = dfd4["Height"]/dfd4["Radius"]
+
+
 dfd4["SA"] = abs(
     math.pi
     * dfd4["Radius"]
@@ -446,6 +449,19 @@ plt.clf()
 ax1 = fig.add_subplot(111)
 ax1.plot(dfd4.When, dfd4.SA, "o-", color="k")
 ax1.set_ylabel("SA [$m^2$]")
+ax1.grid()
+
+# format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
+ax1 = fig.add_subplot(111)
+ax1.plot(dfd4.When, dfd4.Slope, "o-", color="k")
+ax1.set_ylabel("Slope [$m^2$]")
 ax1.grid()
 
 # format the ticks
