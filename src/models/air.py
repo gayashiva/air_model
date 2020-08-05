@@ -80,6 +80,7 @@ class Icestupa:
             self.tree_radius=1.35
             self.dia_f = 0.005  # Fountain aperture diameter
             self.h_f = 3 # Fountain steps h_f
+            self.theta_f = 0
 
         
 
@@ -371,44 +372,6 @@ class Icestupa:
                 )
             )
 
-            # # Add Spray radius
-            # if (self.df.Discharge[i - 1] > 0):
-            #     self.df.loc[i, "SA"] += math.pi * ( self.r_mean **2 - self.df.loc[i, "r_ice"] ** 2)
-
-
-        #     if (self.df.solid[i - 1] < 0):
-
-        #         # Height constant
-        #         self.df.loc[i, "h_ice"] = self.df.loc[i - 1, "h_ice"]
-
-        #         # Ice Radius
-        #         self.df.loc[i, "r_ice"] = math.pow(
-        #             3 * self.df.loc[i - 1, "iceV"] / (math.pi * self.df.loc[i, "h_ice"]),
-        #             1 / 2,
-        #         )
-
-        #         # Height by Radius ratio
-        #         self.df.loc[i, "h_r"] = (
-        #             self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
-        #         )
-
-        #         # Area of Conical Ice Surface
-        #         self.df.loc[i, "SA"] = (
-        #             math.pi
-        #             * self.df.loc[i, "r_ice"]
-        #             * math.pow(
-        #                 (
-        #                     math.pow(self.df.loc[i, "r_ice"], 2)
-        #                     + math.pow((self.df.loc[i, "h_ice"]), 2)
-        #                 ),
-        #                 1 / 2,
-        #             )
-        #         )
-
-        #     else:
-
-            
-
         self.df.loc[i, "SRf"] = (
             0.5
             * self.df.loc[i, "h_ice"]
@@ -419,6 +382,11 @@ class Icestupa:
             * 0.5
             * math.sin(self.df.loc[i, "SEA"])
         ) / self.df.loc[i, "SA"]
+
+        # # Add Spray radius
+        # if (self.df.Discharge[i - 1] > 0):
+        #     self.df.loc[i, "SA"] += math.pi * ( 10 **2 - self.df.loc[i, "r_ice"] ** 2)
+
 
     def energy_balance(self, row):
         i = row.Index
@@ -654,13 +622,15 @@ class Icestupa:
                 self.state = 1
                 
                 if self.site == 'guttannen':
-                    
-                    self.df.loc[i - 1, "r_ice"] = self.spray_radius(r_mean = 6)
+                    self.spray_radius()
+                    self.df.loc[i - 1, "r_ice"] = 4.5
                     self.df.loc[i - 1, "h_ice"] = self.tree_height
+                    
 
                 if self.site == 'schwarzsee':
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.dx
+                    
                     
                 self.df.loc[i - 1, "h_r"] = self.df.loc[i - 1, "h_ice"]/self.df.loc[i - 1, "r_ice"]
                 self.df.loc[i - 1, "iceV"] = math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.df.loc[i - 1, "h_ice"]
@@ -752,7 +722,7 @@ class Icestupa:
                 self.df.loc[i, "unfrozen_water"] = (
                     self.df.loc[i - 1, "unfrozen_water"] + self.liquid
                 )
-                self.df.loc[i, "iceV"] = self.df.loc[i - 1, "iceV"] + self.df.loc[i, "solid"] / self.rho_i 
+                self.df.loc[i, "iceV"] = self.df.loc[i, "ice"]/ self.rho_i + 1/3* math.pi * self.tree_height * 6**2
                 self.df.loc[i, "input"] = (
                     self.df.loc[i - 1, "input"]
                     + self.df.loc[i, "ppt"]
@@ -772,51 +742,6 @@ class PDF(Icestupa):
     def print_input(self, filename="derived_parameters.pdf"):
         if filename == "derived_parameters.pdf":
             filename = self.folders["input_folder"]
-
-        filename = filename + "derived_parameters.pdf"
-
-        pp = PdfPages(filename)
-
-        x = self.df.When
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        y1 = self.df.Discharge
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Discharge [$l\\, min^{-1}$]")
-        ax1.grid()
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        # ax1 = fig.add_subplot(111)
-        # y1 = self.df.vp_a
-        # ax1.plot(x, y1, "k-", linewidth=0.5)
-        # ax1.set_ylabel("Vapour Pressure")
-        # ax1.grid()
-        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        # fig.autofmt_xdate()
-        # pp.savefig(bbox_inches="tight")
-        # plt.clf()
-
-        # ax1 = fig.add_subplot(111)
-        # y1 = self.df.a
-        # ax1.plot(x, y1, "k-", linewidth=0.5)
-        # ax1.set_ylabel("Albedo")
-        # ax1.grid()
-        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        # fig.autofmt_xdate()
-        # pp.savefig(bbox_inches="tight")
-        # plt.clf()
-
-        # pp.close()
 
         """Input Plots"""
 
@@ -1298,12 +1223,12 @@ class PDF(Icestupa):
         for tl in ax1t.get_yticklabels():
             tl.set_color("b")
 
-        ax1.set_ylim([0, 110])
-        ax1t.set_ylim([0, 110])
+        ax1.set_ylim([0, 150])
+        ax1t.set_ylim([0, 150])
         
         
         ax1.scatter(datetime(2020, 1, 3), (4.33), color="green", marker="o", label="Drone Estimate")
-        # ax1.scatter(datetime(2020, 1, 24), (209.7), color="green", marker="o")
+        ax1.scatter(datetime(2020, 1, 24), (209.7), color="green", marker="o")
         ax1.scatter(datetime(2020, 2, 15), (71.48), color="green", marker="o")
         # ax1.scatter(datetime(2020, 4, 14, 18), 0, color="green", marker="o")
 
@@ -1611,11 +1536,11 @@ if __name__ == "__main__":
 
     # schwarzsee.print_input()
 
-    # schwarzsee.read_input()
+    schwarzsee.read_input()
 
-    # schwarzsee.melt_freeze()
+    schwarzsee.melt_freeze()
 
-    schwarzsee.read_output()
+    # schwarzsee.read_output()
 
     # schwarzsee.corr_plot()
 

@@ -353,6 +353,13 @@ dfd3["Height"] = dfd3["Area"] / dfd3["Radius"]
 dfd4["Radius"] = (dfd4["right"] - dfd4["left"]) / (183.85 * 2)
 dfd4["Height"] = -(dfd4["height"] - dfd4.loc[0, "height"]) / (183.85)
 
+# Correct Hollow Volume
+mask = dfd4["When"] > datetime(2020, 2, 10)
+mask_index = dfd4[mask].index
+# dfd4.loc[mask_index,"Volume"] += 1/3* math.pi * fountain["tree_height"] * 6**2
+dfd4.loc[mask_index,"Radius"] = np.NaN
+dfd4.loc[mask_index,"Height"] = np.NaN
+
 dfd4["Volume"] = abs(1 / 3 * math.pi * dfd4["Radius"] ** 2 * dfd4["Height"])
 
 dfd4["SA"] = abs(
@@ -361,10 +368,8 @@ dfd4["SA"] = abs(
     * np.power((dfd4["Radius"] **2 + (dfd4["Height"]) ** 2), 1 / 2)
 )
 
-# Correct Hollow Volume
-mask = dfd4["When"] > datetime(2020, 2, 10)
-mask_index = dfd4[mask].index
-dfd4.loc[mask_index,"Volume"] += 1/3* math.pi * fountain["tree_height"] * 6**2
+
+
 
 dfd4 = dfd4.set_index("When")
 dfd_th = dfd_th.set_index("When")
