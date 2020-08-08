@@ -350,8 +350,10 @@ dfd_lum = df_lum.set_index("When").resample("D").mean().reset_index()
 
 dfd3["Height"] = dfd3["Area"] / dfd3["Radius"]
 
-dfd4["Radius"] = (dfd4["right"] - dfd4["left"]) / (183.85 * 2)
-dfd4["Height"] = -(dfd4["height"] - dfd4.loc[0, "height"]) / (183.85)
+pixel = 116.9529
+
+dfd4["Radius"] = (dfd4["right"] - dfd4["left"]) / (pixel * 2)
+dfd4["Height"] = -(dfd4["height"] - dfd4.loc[0, "height"]) / (pixel)
 
 # Correct Hollow Volume
 mask = dfd4["When"] > datetime(2020, 2, 10)

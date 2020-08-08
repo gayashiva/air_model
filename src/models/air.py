@@ -88,16 +88,13 @@ class Icestupa:
             crit_temp=0  # Fountain runtime temperature
             self.latitude=46.649999
             self.longitude=8.283333
-            self.tree_height=1.3
-            self.tree_radius=1.35
+            self.tree_height=1.93
+            self.tree_radius=4.13/2
             self.dia_f = 0.005  # Fountain aperture diameter
-            self.h_f = 3 # Fountain steps h_f
+            self.h_f = 3.93 # Fountain steps h_f
             self.theta_f = 0
             self.df_cam = pd.read_csv(self.folders["input_folder"] + "cam.csv", sep=",", header=0, parse_dates=["When"])
 
-        
-
-        
 
     def SEA(self, date):
 
@@ -319,7 +316,7 @@ class Icestupa:
 
     def surface_area(self, i):
 
-        if (self.df.solid[i - 1] > 0) & (self.df.loc[i - 1, "r_ice"] >= self.r_mean):
+        if (self.df.solid[i - 1] > 0) & (self.df.loc[i - 1, "r_ice"] > self.r_mean):
             # Ice Radius
             self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"]
 
@@ -375,9 +372,7 @@ class Icestupa:
                 )
             )
 
-        # # Add Spray radius
-        # if (self.df.Discharge[i - 1] > 0):
-        #     self.df.loc[i, "SA"] += math.pi * ( 10 **2 - self.df.loc[i, "r_ice"] ** 2)
+        
 
         self.df.loc[i, "SRf"] = (
             0.5
@@ -389,6 +384,10 @@ class Icestupa:
             * 0.5
             * math.sin(self.df.loc[i, "SEA"])
         ) / self.df.loc[i, "SA"]
+
+        # # Add Spray radius
+        # if self.df.Discharge[i:].sum() != 0:
+        #     self.df.loc[i, "SA"] += math.pi * ( self.r_mean **2 - self.df.loc[i, "r_ice"] ** 2)
 
         
 
@@ -627,9 +626,10 @@ class Icestupa:
                 self.state = 1
                 
                 if self.site == 'guttannen':
-                    self.df.loc[i - 1, "r_ice"] = self.spray_radius(r_mean= self.df_cam["Radius"].mean() )
-                    self.df.loc[i - 1, "h_ice"] = self.tree_height
                     
+                    self.df.loc[i - 1, "r_ice"] = self.spray_radius()
+                    self.df.loc[i - 1, "h_ice"] = self.tree_height
+                    # self.df.loc[i - 1, "h_r"] = self.tree_height/self.r_mean
 
                 if self.site == 'schwarzsee':
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
@@ -726,7 +726,7 @@ class Icestupa:
                 self.df.loc[i, "unfrozen_water"] = (
                     self.df.loc[i - 1, "unfrozen_water"] + self.liquid
                 )
-                self.df.loc[i, "iceV"] = self.df.loc[i, "ice"]/ self.rho_i + 1/3* math.pi * self.tree_height * 6**2
+                self.df.loc[i, "iceV"] = self.df.loc[i, "ice"]/ self.rho_i + self.df.loc[self.start, "iceV"]
                 self.df.loc[i, "input"] = (
                     self.df.loc[i - 1, "input"]
                     + self.df.loc[i, "ppt"]
@@ -994,25 +994,6 @@ class PDF(Icestupa):
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        # y1 = self.df.a
-        # y2 = self.df.SRf
-        # ax1 = fig.add_subplot(111)
-        # ax1.plot(x, y1, "k-")
-        # ax1.set_ylabel("Albedo")
-        # ax1.grid()
-        # ax2 = ax1.twinx()
-        # ax2.plot(x, y2, "b-", linewidth=0.5)
-        # ax2.set_ylabel("$f_{cone}$", color="b")
-        # for tl in ax2.get_yticklabels():
-        #     tl.set_color("b")
-        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
-
-        # fig.autofmt_xdate()
-        # pp.savefig(bbox_inches="tight")
-        # plt.clf()
-
         y1 = self.df.T_s
         y2 = self.df.T_bulk
         ax1 = fig.add_subplot(111)
@@ -1223,13 +1204,13 @@ class PDF(Icestupa):
         for tl in ax1t.get_yticklabels():
             tl.set_color("b")
 
-        ax1.set_ylim([0, 150])
-        ax1t.set_ylim([0, 150])
+        ax1.set_ylim([0, 500])
+        ax1t.set_ylim([0, 500])
         
         
-        ax1.scatter(datetime(2020, 1, 3), (4.33), color="green", marker="o", label="Drone Estimate")
-        ax1.scatter(datetime(2020, 1, 24), (209.7), color="green", marker="o")
-        ax1.scatter(datetime(2020, 2, 15), (71.48), color="green", marker="o")
+        ax1.scatter(datetime(2020, 1, 3), (24.2), color="green", marker="o", label="Drone Estimate")
+        ax1.scatter(datetime(2020, 1, 24),(413.18), color="green", marker="o")
+        ax1.scatter(datetime(2020, 2, 15), (169.69), color="green", marker="o")
         # ax1.scatter(datetime(2020, 4, 14, 18), 0, color="green", marker="o")
 
         ax1.grid()
@@ -1254,8 +1235,13 @@ class PDF(Icestupa):
         for tl in ax1t.get_yticklabels():
             tl.set_color("b")
 
-        ax1.set_ylim([0, 175])
-        ax1t.set_ylim([0, 175])
+        ax1.set_ylim([0, 600])
+        ax1t.set_ylim([0, 600])
+
+        ax1.scatter(datetime(2020, 1, 3), (133.19), color="green", marker="o", label="Drone Estimate")
+        ax1.scatter(datetime(2020, 1, 24),(282.13), color="green", marker="o")
+        ax1.scatter(datetime(2020, 2, 15), (296.26), color="green", marker="o")
+        ax1.legend()
 
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -1276,12 +1262,6 @@ class PDF(Icestupa):
         ax2.set_ylabel("Ice Radius[$m$]", color="b")
         for tl in ax2.get_yticklabels():
             tl.set_color("b")
-
-        # Include Validation line segment 1
-
-        # ax1.scatter(datetime(2020, 1, 24, 15), 2.2, color="black", marker="o")
-        # ax2.scatter(datetime(2020, 1, 24, 15), 4.5, color="blue", marker="o")
-
         
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -1291,17 +1271,12 @@ class PDF(Icestupa):
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        y1 = self.df.a
-        y2 = self.df.SRf
+        y1 = self.df.h_r
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Albedo")
+        ax1.set_ylabel("Ice Cone Slope [$m$]")
         ax1.grid()
-        ax2 = ax1.twinx()
-        ax2.plot(x, y2, "b-", linewidth=0.5)
-        ax2.set_ylabel("$f_{cone}$", color="b")
-        for tl in ax2.get_yticklabels():
-            tl.set_color("b")
+        
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -1459,7 +1434,7 @@ class PDF(Icestupa):
         plt.ylabel("Thickness ($m$ w. e.)")
         plt.xticks(rotation=45)
         # plt.legend(loc='upper right')
-        ax1.set_ylim(-0.035, 0.035)
+        ax1.set_ylim(-0.055, 0.055)
         ax1.yaxis.set_minor_locator(AutoMinorLocator())
         ax1.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
         x_axis = ax1.axes.get_xaxis()

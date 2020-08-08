@@ -117,6 +117,6 @@ if site == "guttannen":
         latitude=46.649999,
         longitude=8.283333,
         utc_offset=1,
-        tree_height=1.3,
-        tree_radius=1.35,
+        tree_height=1.93,
+        tree_radius=4.13/2,
     )
