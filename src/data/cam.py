@@ -10,7 +10,7 @@ from tqdm import tqdm
 import shutil, os
 import glob
 import fnmatch
-from src.data.config import site, dates, folders
+from config import site, dates, folders
 from os import listdir
 from os.path import isfile, join
 
@@ -254,10 +254,11 @@ for i in range(0, df_names3.shape[0]):
 df_in_section_1 = df_in_section_1.set_index("When")
 df_in_section_2 = df_in_section_2.set_index("When")
 
+pixel = 116.9529
 
-df_rad0["Radius"] = df_rad0["Length"] / 2
-df_rad1["Radius"] = df_rad1["Length"] / 2
-df_rad2["Radius"] = df_rad2["Length"] / 2
+df_rad0["Radius"] = df_rad0["Length"] / 2 * 183.85/pixel
+df_rad1["Radius"] = df_rad1["Length"] / 2 * 183.85/pixel
+df_rad2["Radius"] = df_rad2["Length"] / 2 * 183.85/pixel
 
 df_in = df_in_section_1.append(df_in_section_2)
 df_in = df_in.reset_index()
@@ -348,9 +349,12 @@ dfd4 = df_in_dot.set_index("When").resample("D").mean().reset_index()
 dfd_th = df_th.set_index("When").resample("D").mean().reset_index()
 dfd_lum = df_lum.set_index("When").resample("D").mean().reset_index()
 
-dfd3["Height"] = dfd3["Area"] / dfd3["Radius"]
+# dfd3["Height"] = dfd3["Area"] / dfd3["Radius"]
 
-pixel = 116.9529
+# #Fit Area
+# scale1 = 133.19/(dfd3.loc[dfd3["When"] == datetime(2020, 1, 3), "Area"].values)
+# scale2 = 282.13/(dfd3.loc[dfd3["When"] == datetime(2020, 1, 23), "Area"].values)
+# scale3 = 296.26/(dfd3.loc[dfd3["When"] == datetime(2020, 2, 15), "Area"].values)
 
 dfd4["Radius"] = (dfd4["right"] - dfd4["left"]) / (pixel * 2)
 dfd4["Height"] = -(dfd4["height"] - dfd4.loc[0, "height"]) / (pixel)
@@ -465,6 +469,22 @@ ax1 = fig.add_subplot(111)
 ax1.plot(dfd4.When, dfd4.Slope, "o-", color="k")
 ax1.set_ylabel("Slope [$m^2$]")
 ax1.grid()
+
+# format the ticks
+ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+ax1.xaxis.set_minor_locator(mdates.DayLocator())
+fig.autofmt_xdate()
+pp.savefig(bbox_inches="tight")
+plt.clf()
+
+ax1 = fig.add_subplot(111)
+ax1.plot(dfd3.When, dfd3.Area, "o-", color="k")
+ax1.set_ylabel("Cross section [$m^2$]")
+ax1.grid()
+# ax1.scatter(datetime(2020, 1, 3), (133.19), color="green", marker="o", label="Drone Estimate")
+# ax1.scatter(datetime(2020, 1, 24),(282.13), color="green", marker="o")
+# ax1.scatter(datetime(2020, 2, 15), (296.26), color="green", marker="o") 
 
 # format the ticks
 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())

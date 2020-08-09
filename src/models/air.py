@@ -6,7 +6,6 @@ import os
 import math
 import time
 from pandas.plotting import register_matplotlib_converters
-
 register_matplotlib_converters()
 import matplotlib
 from matplotlib.offsetbox import AnchoredText
@@ -626,10 +625,9 @@ class Icestupa:
                 self.state = 1
                 
                 if self.site == 'guttannen':
-                    
-                    self.df.loc[i - 1, "r_ice"] = self.spray_radius()
+                    self.spray_radius()
+                    self.df.loc[i - 1, "r_ice"] = 9.8655
                     self.df.loc[i - 1, "h_ice"] = self.tree_height
-                    # self.df.loc[i - 1, "h_r"] = self.tree_height/self.r_mean
 
                 if self.site == 'schwarzsee':
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()

@@ -4,6 +4,7 @@ from datetime import datetime
 
 dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
+
 # site = input("Input the Field Site Name: ") or "guttannen"
 
 site = "guttannen"
