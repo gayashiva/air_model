@@ -1,20 +1,16 @@
 import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime
 from tqdm import tqdm
 import os
 import math
 import time
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
-import matplotlib
-from matplotlib.offsetbox import AnchoredText
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
-import scipy.stats as stats
 import seaborn as sns
 from src.data.config import dates
 
@@ -82,6 +78,7 @@ class Icestupa:
         input_file = self.folders["input_folder"] + "raw_input.csv"
 
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
+
 
         if site == "guttannen":
             crit_temp=0  # Fountain runtime temperature
@@ -737,7 +734,49 @@ class Icestupa:
 
                 self.liquid, self.gas, self.EJoules = [0] * 3
 
-                
+    def corr_plot(self):
+
+        data = self.df
+
+        data = data[data.columns.drop(list(data.filter(regex="Unnamed")))]
+
+        data["$q_{net}$"] = data["TotalE"] + data["Ql"]
+
+        data["$\\Delta M_{input}$"] = data["Discharge"] * 5 + data["dpt"] + data["ppt"]
+
+        data["$SW_{in}$"] = data["SW_direct"] + data["SW_diffuse"]
+
+        # data = data.drop(["When", "input", "ppt", "ice", "T_s", "vapour", "Discharge", "TotalE", "T_a", "SEA", "SW_direct", "a", "cld", "SEA", "e_a", "vp_a", "LW_in", "vp_ice", "SRf", "SW_diffuse", "h_r", "RH", "iceV", "melted", "Qf", "SW", "LW", "Qs", "Ql", "dpt", "p_a", "thickness", "h_ice", "r_ice", "Prec", "v_a", "unfrozen_water", "meltwater"], axis=1)
+
+        data = data.rename(
+            {
+                "solid": "$\\Delta M_{ice}$",
+                "delta_T_s": "$\\Delta T_{ice}$",
+                "SA": "A",
+                "T_a": "$T_a$",
+                "v_a": "$v_a$",
+                "p_a": "$p_a$",
+            },
+            axis=1,
+        )
+
+        data = data[["$q_{net}$", "$T_a$", "$v_a$", "$p_a$", "RH", "$SW_{in}$", "$\\Delta M_{ice}$", "A"]]
+
+        print(data.drop("$q_{net}$", axis=1).apply(lambda x: x.corr(data["$q_{net}$"])))
+
+        corr = data.corr()
+        ax = sns.heatmap(
+            corr,
+            vmin=-1,
+            vmax=1,
+            center=0,
+            cmap=sns.diverging_palette(20, 220, n=200),
+            square=True,
+        )
+        ax.set_xticklabels(
+            ax.get_xticklabels(), rotation=45, horizontalalignment="right"
+        )
+        plt.show()
 
 
 class PDF(Icestupa):
@@ -1206,10 +1245,10 @@ class PDF(Icestupa):
         ax1t.set_ylim([0, 500])
         
         
-        ax1.scatter(datetime(2020, 1, 3), (24.2), color="green", marker="o", label="Drone Estimate")
-        ax1.scatter(datetime(2020, 1, 24),(413.18), color="green", marker="o")
-        ax1.scatter(datetime(2020, 2, 15), (169.69), color="green", marker="o")
-        # ax1.scatter(datetime(2020, 4, 14, 18), 0, color="green", marker="o")
+        ax1.scatter(datetime(2020, 1, 3), (54.15), color="green", marker="o", label="Drone Estimate")
+        ax1.scatter(datetime(2020, 1, 24),(120.61), color="green", marker="o")
+        ax1.scatter(datetime(2020, 2, 15), (128.32), color="green", marker="o")
+        ax1.scatter(datetime(2020, 4, 14, 18), 0, color="green", marker="o")
 
         ax1.grid()
         ax1.legend()
@@ -1236,9 +1275,9 @@ class PDF(Icestupa):
         ax1.set_ylim([0, 600])
         ax1t.set_ylim([0, 600])
 
-        ax1.scatter(datetime(2020, 1, 3), (133.19), color="green", marker="o", label="Drone Estimate")
-        ax1.scatter(datetime(2020, 1, 24),(282.13), color="green", marker="o")
-        ax1.scatter(datetime(2020, 2, 15), (296.26), color="green", marker="o")
+        ax1.scatter(datetime(2020, 1, 3), (334.78), color="green", marker="o", label="Drone Estimate")
+        ax1.scatter(datetime(2020, 1, 24),(374.61), color="green", marker="o")
+        ax1.scatter(datetime(2020, 2, 15), (564.12), color="green", marker="o")
         ax1.legend()
 
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -1454,49 +1493,6 @@ class PDF(Icestupa):
 
         pp.close()
 
-    def corr_plot(self):
-
-        data = self.df
-
-        data = data[data.columns.drop(list(data.filter(regex="Unnamed")))]
-
-        data["$q_{net}$"] = data["TotalE"] + data["Ql"]
-
-        data["$\\Delta M_{input}$"] = data["Discharge"] * 5 + data["dpt"] + data["ppt"]
-
-        data["$SW_{in}$"] = data["SW_direct"] + data["SW_diffuse"]
-
-        # data = data.drop(["When", "input", "ppt", "ice", "T_s", "vapour", "Discharge", "TotalE", "T_a", "SEA", "SW_direct", "a", "cld", "SEA", "e_a", "vp_a", "LW_in", "vp_ice", "SRf", "SW_diffuse", "h_r", "RH", "iceV", "melted", "Qf", "SW", "LW", "Qs", "Ql", "dpt", "p_a", "thickness", "h_ice", "r_ice", "Prec", "v_a", "unfrozen_water", "meltwater"], axis=1)
-
-        data = data.rename(
-            {
-                "solid": "$\\Delta M_{ice}$",
-                "delta_T_s": "$\\Delta T_{ice}$",
-                "SA": "A",
-                "T_a": "$T_a$",
-                "v_a": "$v_a$",
-                "p_a": "$p_a$",
-            },
-            axis=1,
-        )
-
-        data = data[["$q_{net}$", "$T_a$", "$v_a$", "$p_a$", "RH", "$SW_{in}$", "$\\Delta M_{ice}$", "A"]]
-
-        print(data.drop("$q_{net}$", axis=1).apply(lambda x: x.corr(data["$q_{net}$"])))
-
-        corr = data.corr()
-        ax = sns.heatmap(
-            corr,
-            vmin=-1,
-            vmax=1,
-            center=0,
-            cmap=sns.diverging_palette(20, 220, n=200),
-            square=True,
-        )
-        ax.set_xticklabels(
-            ax.get_xticklabels(), rotation=45, horizontalalignment="right"
-        )
-        plt.show()
 
 
 if __name__ == "__main__":

@@ -5,11 +5,6 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.backends.backend_pdf import PdfPages
 import math
-import time
-from tqdm import tqdm
-import shutil, os
-import glob
-import fnmatch
 from config import site, dates, folders
 from os import listdir
 from os.path import isfile, join

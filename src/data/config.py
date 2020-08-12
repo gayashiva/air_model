@@ -4,10 +4,9 @@ from datetime import datetime
 
 dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-
-# site = input("Input the Field Site Name: ") or "guttannen"
-
 site = "guttannen"
+
+# site = input("Input the Field Site Name: ") or site
 
 print("Site is", site)
 
@@ -112,7 +111,8 @@ if site == "guttannen":
     )
     fountain = dict(
         aperture_f=0.005,  # Fountain aperture diameter
-        h_f=2.5,  # Fountain steps h_f
+        theta_f=0,
+        h_f=3.93,  # Fountain steps h_f
         discharge=3.58,  # Fountain on discharge
         crit_temp=1,  # Fountain runtime temperature
         latitude=46.649999,
