@@ -48,7 +48,7 @@ while aperture_f_new > 2e-03:
     aperture_f_new = aperture_f_new - 1e-04
 
 # """For discharge constant"""
-# for i in aperture_f_new:
+# for i in dia_f_new:
 #     i = i/1000
 #     v_new = (math.pi * aperture_f_old**2 * v_old / (i**2 * math.pi))
 #

@@ -60,6 +60,7 @@ class Icestupa:
     latitude = 46.693723
     longitude = 7.297543
 
+    site = "schwarzsee"
     state = 0
     utc_offset = 1
 
@@ -80,12 +81,12 @@ class Icestupa:
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
 
 
-        if site == "guttannen":
-            crit_temp=0  # Fountain runtime temperature
-            self.latitude=46.649999
-            self.longitude=8.283333
-            self.tree_height=1.93
-            self.tree_radius=4.13/2
+        if self.site == "guttannen":
+            crit_temp =0  # Fountain runtime temperature
+            self.latitude =46.649999
+            self.longitude =8.283333
+            self.tree_height =1.93
+            self.tree_radius =4.13/2
             self.dia_f = 0.005  # Fountain aperture diameter
             self.h_f = 3.93 # Fountain steps h_f
             self.theta_f = 0
@@ -207,7 +208,7 @@ class Icestupa:
 
         return s, f
 
-    def spray_radius(self, r_mean=0, aperture_f_new=0):
+    def spray_radius(self, r_mean=0, dia_f_new=0):
 
         Area_old = math.pi * math.pow(self.dia_f, 2) / 4
         v_old = self.df["Discharge"].replace(0, np.NaN).mean() / (60 * 1000 * Area_old)
@@ -215,10 +216,10 @@ class Icestupa:
         if r_mean != 0:
             self.r_mean = r_mean
         else:
-            if aperture_f_new != 0:
+            if dia_f_new != 0:
                 """Keeping Discharge constant"""
                 v_new = (
-                    math.pi * self.dia_f ** 2 * v_old / (aperture_f_new ** 2 * math.pi)
+                    math.pi * self.dia_f ** 2 * v_old / (dia_f_new ** 2 * math.pi)
                 )
                 h_new = h_old - (v_new ** 2 - v_old ** 2) / (2 * 9.81)
                 self.r_mean = self.projectile_xy(
@@ -577,6 +578,10 @@ class Icestupa:
             f"Max_growth {self.df.solid.max() / 5}, average_discharge {self.df.Discharge.replace(0, np.NaN).mean()}"
         )
 
+        print(
+            f"Duration {self.df.index[-1] * 5 / (60 * 24)}"
+        )
+
         # self.corr_plot()
 
     def melt_freeze(self):
@@ -628,6 +633,7 @@ class Icestupa:
 
                 if self.site == 'schwarzsee':
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
+                    print(self.df.loc[i - 1, "r_ice"])
                     self.df.loc[i - 1, "h_ice"] = self.dx
                     
                     
@@ -1499,7 +1505,7 @@ if __name__ == "__main__":
 
     start = time.time()
 
-    schwarzsee = PDF(site = "guttannen")
+    schwarzsee = PDF(site = "schwarzsee")
 
     # schwarzsee.derive_parameters()
 
@@ -1515,7 +1521,7 @@ if __name__ == "__main__":
 
     schwarzsee.summary()
 
-    schwarzsee.print_output_guttannen()
+    schwarzsee.print_output()
 
     total = time.time() - start
 

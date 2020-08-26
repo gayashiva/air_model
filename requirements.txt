@@ -17,3 +17,5 @@ uncertainpy
 chaospy
 tables
 celluloid
+numpy
+seaborn

@@ -11,7 +11,7 @@ from pathlib import Path
 from tqdm import tqdm
 import os
 import logging
-from src.data.config import site, dates, folders, fountain, surface
+from src.data.config import site, option, dates, folders, fountain
 
 start = time.time()
 
@@ -333,7 +333,7 @@ if __name__ == '__main__':
 
         df_out = df_out.round(5)
 
-        df_out.to_csv(folders["input_folder"] + "raw_input.csv")
+        df_out.to_csv(folders["input_folder"] + "raw_input_" + option)
 
         fig, ax = plt.subplots()
         ax.plot(df.When, df.Discharge)

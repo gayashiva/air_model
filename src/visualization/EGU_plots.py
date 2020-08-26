@@ -14,22 +14,22 @@ plt.rcParams["figure.figsize"] = (10,7)
 plt.gca().spines['top'].set_visible(False)
 plt.gca().spines['right'].set_visible(False)
 
-filename = "/data/processed/schwarzsee/simulations/spray_radius_results.csv"
+filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_results.csv"
 df = pd.read_csv(filename, sep=",")
 
 # df = df[:param_values[-1]]
 
-filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/spray_radius.h5"
+filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_sim.h5"
 data_store = pd.HDFStore(filename2)
 dfd = data_store['dfd']
 data_store.close()
 
-figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/spray_radius_"
+figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/dia_f_"
 
 """Equate column lengths"""
 for i in param_values:
     iterables = [[i], variables]
-    index = pd.MultiIndex.from_product(iterables, names=['spray_radius', 'variables'])
+    index = pd.MultiIndex.from_product(iterables, names=['dia_f', 'variables'])
 
     days = pd.date_range(start=dfd.loc[0,(param_values[0], "When")], end=dfd.loc[len(dfd[param_values[0]])-1,(param_values[0], "When")], freq="H")
 
