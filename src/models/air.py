@@ -12,7 +12,7 @@ from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import seaborn as sns
-from src.data.config import dates
+from src.data.config import site, dates
 
 
 class Icestupa:
@@ -1502,7 +1502,7 @@ if __name__ == "__main__":
 
     start = time.time()
 
-    schwarzsee = PDF(site = "guttannen")
+    schwarzsee = PDF(site = site)
 
     # schwarzsee.derive_parameters()
 
