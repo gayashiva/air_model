@@ -11,7 +11,7 @@ from pathlib import Path
 from tqdm import tqdm
 import os
 import logging
-from src.data.config import site, dates, folders, fountain, surface
+from src.data.config import site, option, dates, folders, fountain
 
 start = time.time()
 
@@ -333,7 +333,7 @@ if __name__ == '__main__':
 
         df_out = df_out.round(5)
 
-        df_out.to_csv(folders["input_folder"] + "raw_input.csv")
+        df_out.to_csv(folders["input_folder"] + "raw_input_" + option)
 
         fig, ax = plt.subplots()
         ax.plot(df.When, df.Discharge)
@@ -432,8 +432,6 @@ if __name__ == '__main__':
             df_in3["fkl010z0"], errors="coerce"
         )  # Wind speed
 
-        df_in3["Wind Speed"] = df_in3["Wind Speed"]/3.6
-
         df_in3["Humidity"] = pd.to_numeric(
             df_in3["ure200s0"], errors="coerce"
         )
@@ -468,7 +466,7 @@ if __name__ == '__main__':
         )
         df_5 = df_in2.loc[mask]
         df_5 = df_5.reset_index()
-        df_4["Pressure"] = df_5["prestas0"]
+        df_4["Pressure"] = df_in["Pressure"].mean()
         df_4["gre000z0"] = df_5["gre000z0"]
         df_4["oli000z0"] = df_5["oli000z0"]
 
@@ -491,7 +489,6 @@ if __name__ == '__main__':
                     "When",
                     "Discharge",
                     "Temperature",
-                    "Wind Speed",
                     "Humidity",
                     "Pressure",
                 ]
@@ -504,6 +501,8 @@ if __name__ == '__main__':
         df["oli000z0"] = df_2["oli000z0"]
         df["Prec"] = df_3["Prec"]
         df["vp_a"] = df_3["vp_a"]
+        df["Wind Speed"] = df_3["Wind Speed"]
+
 
         mask = (df["When"] >= dates["start_date"]) & (df["When"] <= dates["error_date"])
         df = df.loc[mask]
@@ -535,6 +534,11 @@ if __name__ == '__main__':
             inplace=True,
         )
 
+        # Inactive spray
+        mask = df["Discharge"] < 8
+        mask_index = df[mask].index
+        df.loc[mask_index, "Discharge"] = 0
+
         df_out = df[
             ["When", "T_a", "RH", "v_a", "Discharge", "SW_direct", "SW_diffuse", "LW_in", "cld", "Prec", "p_a", "vp_a"]
         ]
@@ -546,5 +550,5 @@ if __name__ == '__main__':
         df_out.to_csv(folders["input_folder"] + "raw_input.csv")
 
         fig, ax = plt.subplots()
-        ax.plot(df.When, df.LW_in)
+        ax.plot(df.When, df.Discharge)
         plt.show()

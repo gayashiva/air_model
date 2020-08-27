@@ -1,24 +1,18 @@
 import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime
 from tqdm import tqdm
 import os
 import math
 import time
 from pandas.plotting import register_matplotlib_converters
-
 register_matplotlib_converters()
-import matplotlib
-from matplotlib.offsetbox import AnchoredText
-import math
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
-import scipy.stats as stats
 import seaborn as sns
-from src.data.config import dates, fountain
+from src.data.config import dates
 
 
 class Icestupa:
@@ -48,13 +42,14 @@ class Icestupa:
     ie = 0.95  # Ice Emissivity ie
     a_i = 0.35  # Albedo of Ice a_i
     a_s = 0.85  # Albedo of Fresh Snow a_s
+    a_w = 0.1   # Albedo of water a_w
     t_decay = 10  # Albedo decay rate decay_t_d
     z_i = 0.0017  # Ice Momentum and Scalar roughness length
     d_ppt = 250  # Snowfall density
     T_rain = 1  # Temperature condition for liquid precipitation
 
     """Fountain"""
-    dia_f = 0.005  # Fountain aperture diameter
+    dia_f = 0.002  # Fountain aperture diameter
     h_f = 1.35  # Fountain steps h_f
     theta_f = 45  # Fountain aperture diameter
     ftl = 0  # Fountain flight time loss ftl
@@ -62,17 +57,16 @@ class Icestupa:
 
     """Miscellaneous"""
     h_aws = 3  # m height of AWS
+    latitude = 46.693723
+    longitude = 7.297543
 
+    site = "schwarzsee"
     state = 0
     utc_offset = 1
 
-    def __init__(self, site="schwarzsee", latitude = 46.693723, longitude = 7.297543):
+    def __init__(self, site="schwarzsee"):
 
         self.site = site
-
-        """Site constants"""
-        self.latitude = latitude
-        self.longitude = longitude
 
         self.folders = dict(
             input_folder=os.path.join(self.dirname, "data/interim/" + site + "/"),
@@ -85,6 +79,19 @@ class Icestupa:
         input_file = self.folders["input_folder"] + "raw_input.csv"
 
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
+
+
+        if self.site == "guttannen":
+            crit_temp =0  # Fountain runtime temperature
+            self.latitude =46.649999
+            self.longitude =8.283333
+            self.tree_height =1.93
+            self.tree_radius =4.13/2
+            self.dia_f = 0.005  # Fountain aperture diameter
+            self.h_f = 3.93 # Fountain steps h_f
+            self.theta_f = 0
+            self.df_cam = pd.read_csv(self.folders["input_folder"] + "cam.csv", sep=",", header=0, parse_dates=["When"])
+
 
     def SEA(self, date):
 
@@ -173,8 +180,6 @@ class Icestupa:
 
         i = row.Index
 
-        a_min = self.a_i
-
         """Albedo"""
         # Precipitation
         if (row.Discharge == 0) & (row.Prec > 0.00025):
@@ -192,11 +197,18 @@ class Icestupa:
             )
             s = s + 1
         else:  # last sprayed
+
+            # if self.site == "guttannen" :
+            #     self.df.loc[i, "a"] = self.a_w + (self.a_i - self.a_w) * math.exp(
+            #         -s / self.t_decay
+            #     )
+            #     s = s + 1
+            # else:
             self.df.loc[i, "a"] = self.a_i
 
         return s, f
 
-    def spray_radius(self, r_mean=0, aperture_f_new=0):
+    def spray_radius(self, r_mean=0, dia_f_new=0):
 
         Area_old = math.pi * math.pow(self.dia_f, 2) / 4
         v_old = self.df["Discharge"].replace(0, np.NaN).mean() / (60 * 1000 * Area_old)
@@ -204,10 +216,10 @@ class Icestupa:
         if r_mean != 0:
             self.r_mean = r_mean
         else:
-            if aperture_f_new != 0:
+            if dia_f_new != 0:
                 """Keeping Discharge constant"""
                 v_new = (
-                    math.pi * self.dia_f ** 2 * v_old / (aperture_f_new ** 2 * math.pi)
+                    math.pi * self.dia_f ** 2 * v_old / (dia_f_new ** 2 * math.pi)
                 )
                 h_new = h_old - (v_new ** 2 - v_old ** 2) / (2 * 9.81)
                 self.r_mean = self.projectile_xy(
@@ -301,7 +313,7 @@ class Icestupa:
 
     def surface_area(self, i):
 
-        if (self.df.solid[i - 1] > 0) & (self.df.loc[i - 1, "r_ice"] >= self.r_mean):
+        if (self.df.solid[i - 1] > 0) & (self.df.loc[i - 1, "r_ice"] > self.r_mean):
             # Ice Radius
             self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"]
 
@@ -333,7 +345,7 @@ class Icestupa:
         else:
 
             # Height to radius ratio
-            self.df.loc[i, "h_r"] = self.df.loc[i - 1, "h_r"]
+            self.df.loc[i, "h_r"] = self.df.loc[i-1, "h_r"]
 
             # Ice Radius
             self.df.loc[i, "r_ice"] = math.pow(
@@ -357,6 +369,8 @@ class Icestupa:
                 )
             )
 
+        
+
         self.df.loc[i, "SRf"] = (
             0.5
             * self.df.loc[i, "h_ice"]
@@ -367,6 +381,10 @@ class Icestupa:
             * 0.5
             * math.sin(self.df.loc[i, "SEA"])
         ) / self.df.loc[i, "SA"]
+
+        # # Add Spray radius
+        # if self.df.Discharge[i:].sum() != 0:
+        #     self.df.loc[i, "SA"] += math.pi * ( self.r_mean **2 - self.df.loc[i, "r_ice"] ** 2)
 
     def energy_balance(self, row):
         i = row.Index
@@ -488,8 +506,8 @@ class Icestupa:
             + self.df.loc[i, "Qg"]
         )
 
-        if np.isnan(self.df.loc[i, "TotalE"]) :
-            print(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}")
+        # if np.isnan(self.df.loc[i, "TotalE"]) :
+        #     print(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}, SA {self.df.SA[i]}")
 
         # Total Energy Joules
         self.EJoules = self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]
@@ -506,6 +524,7 @@ class Icestupa:
         print("Ice Mass Remaining", self.df["ice"].iloc[-1])
         print("Meltwater", self.df["meltwater"].iloc[-1])
         print("Ppt", self.df["ppt"].sum())
+        print("Deposition", self.df["dpt"].sum())
 
         # Full Output
         filename4 = self.folders["output_folder"] + "model_results.csv"
@@ -557,6 +576,10 @@ class Icestupa:
             f"Max_growth {self.df.solid.max() / 5}, average_discharge {self.df.Discharge.replace(0, np.NaN).mean()}"
         )
 
+        print(
+            f"Duration {self.df.index[-1] * 5 / (60 * 24)}"
+        )
+
         # self.corr_plot()
 
     def melt_freeze(self):
@@ -602,30 +625,29 @@ class Icestupa:
                 self.state = 1
                 
                 if self.site == 'guttannen':
-                    # self.df.loc[i - 1, "r_ice"] = self.spray_radius()
-                    self.r_mean = 4.5
-                    self.df.loc[i - 1, "r_ice"] = 6
+                    self.spray_radius()
+                    self.df.loc[i - 1, "r_ice"] = 9.8655
                     self.df.loc[i - 1, "h_ice"] = self.tree_height
-                    # self.df.loc[i - 1, "h_r"] = self.h_f/self.r_mean
-                    self.df.loc[i - 1, "h_r"] = self.df.loc[i - 1, "h_ice"]/self.df.loc[i - 1, "r_ice"]
+
                 if self.site == 'schwarzsee':
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.dx
-                    self.df.loc[i - 1, "h_r"] = self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
-
+                    
+                    
+                self.df.loc[i - 1, "h_r"] = self.df.loc[i - 1, "h_ice"]/self.df.loc[i - 1, "r_ice"]
                 self.df.loc[i - 1, "iceV"] = math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.df.loc[i - 1, "h_ice"]
                 self.df.loc[i - 1, "ice"] = math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.dx
                 self.df.loc[i - 1, "input"] = self.df.loc[i - 1, "ice"]
-                
+
                 self.start = i - 1
 
             # Ice Melted
             if self.df.loc[i - 1, "ice"] <= 0:
-                self.df.loc[i - 1, "solid"] = 0
-                self.df.loc[i - 1, "ice"] = 0
-                self.df.loc[i - 1, "iceV"] = 0
+                # self.df.loc[i - 1, "solid"] = 0
+                # self.df.loc[i - 1, "ice"] = 0
+                # self.df.loc[i - 1, "iceV"] = 0
                 if self.df.Discharge[i:].sum() == 0:  # If ice melted after fountain run
-                    self.df = self.df[self.start:i]
+                    self.df = self.df[self.start:i-1]
                     self.df = self.df.reset_index(drop=True)
                     break
                 else:  # If ice melted in between fountain run
@@ -703,7 +725,7 @@ class Icestupa:
                 self.df.loc[i, "unfrozen_water"] = (
                     self.df.loc[i - 1, "unfrozen_water"] + self.liquid
                 )
-                self.df.loc[i, "iceV"] = self.df.loc[i - 1, "iceV"] + self.df.loc[i, "solid"] / self.rho_i 
+                self.df.loc[i, "iceV"] = self.df.loc[i, "ice"]/ self.rho_i + self.df.loc[self.start, "iceV"]
                 self.df.loc[i, "input"] = (
                     self.df.loc[i - 1, "input"]
                     + self.df.loc[i, "ppt"]
@@ -716,58 +738,55 @@ class Icestupa:
 
                 self.liquid, self.gas, self.EJoules = [0] * 3
 
-                
+    def corr_plot(self):
+
+        data = self.df
+
+        data = data[data.columns.drop(list(data.filter(regex="Unnamed")))]
+
+        data["$q_{net}$"] = data["TotalE"] + data["Ql"]
+
+        data["$\\Delta M_{input}$"] = data["Discharge"] * 5 + data["dpt"] + data["ppt"]
+
+        data["$SW_{in}$"] = data["SW_direct"] + data["SW_diffuse"]
+
+        # data = data.drop(["When", "input", "ppt", "ice", "T_s", "vapour", "Discharge", "TotalE", "T_a", "SEA", "SW_direct", "a", "cld", "SEA", "e_a", "vp_a", "LW_in", "vp_ice", "SRf", "SW_diffuse", "h_r", "RH", "iceV", "melted", "Qf", "SW", "LW", "Qs", "Ql", "dpt", "p_a", "thickness", "h_ice", "r_ice", "Prec", "v_a", "unfrozen_water", "meltwater"], axis=1)
+
+        data = data.rename(
+            {
+                "solid": "$\\Delta M_{ice}$",
+                "delta_T_s": "$\\Delta T_{ice}$",
+                "SA": "A",
+                "T_a": "$T_a$",
+                "v_a": "$v_a$",
+                "p_a": "$p_a$",
+            },
+            axis=1,
+        )
+
+        data = data[["$q_{net}$", "$T_a$", "$v_a$", "$p_a$", "RH", "$SW_{in}$", "$\\Delta M_{ice}$", "A"]]
+
+        print(data.drop("$q_{net}$", axis=1).apply(lambda x: x.corr(data["$q_{net}$"])))
+
+        corr = data.corr()
+        ax = sns.heatmap(
+            corr,
+            vmin=-1,
+            vmax=1,
+            center=0,
+            cmap=sns.diverging_palette(20, 220, n=200),
+            square=True,
+        )
+        ax.set_xticklabels(
+            ax.get_xticklabels(), rotation=45, horizontalalignment="right"
+        )
+        plt.show()
 
 
 class PDF(Icestupa):
     def print_input(self, filename="derived_parameters.pdf"):
         if filename == "derived_parameters.pdf":
             filename = self.folders["input_folder"]
-
-        filename = filename + "derived_parameters.pdf"
-
-        pp = PdfPages(filename)
-
-        x = self.df.When
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        y1 = self.df.Discharge
-        ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Discharge [$l\\, min^{-1}$]")
-        ax1.grid()
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        # ax1 = fig.add_subplot(111)
-        # y1 = self.df.vp_a
-        # ax1.plot(x, y1, "k-", linewidth=0.5)
-        # ax1.set_ylabel("Vapour Pressure")
-        # ax1.grid()
-        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        # fig.autofmt_xdate()
-        # pp.savefig(bbox_inches="tight")
-        # plt.clf()
-
-        # ax1 = fig.add_subplot(111)
-        # y1 = self.df.a
-        # ax1.plot(x, y1, "k-", linewidth=0.5)
-        # ax1.set_ylabel("Albedo")
-        # ax1.grid()
-        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        # fig.autofmt_xdate()
-        # pp.savefig(bbox_inches="tight")
-        # plt.clf()
-
-        # pp.close()
 
         """Input Plots"""
 
@@ -1016,25 +1035,6 @@ class PDF(Icestupa):
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        y1 = self.df.a
-        y2 = self.df.SRf
-        ax1 = fig.add_subplot(111)
-        ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Albedo")
-        ax1.grid()
-        ax2 = ax1.twinx()
-        ax2.plot(x, y2, "b-", linewidth=0.5)
-        ax2.set_ylabel("$f_{cone}$", color="b")
-        for tl in ax2.get_yticklabels():
-            tl.set_color("b")
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
         y1 = self.df.T_s
         y2 = self.df.T_bulk
         ax1 = fig.add_subplot(111)
@@ -1224,20 +1224,39 @@ class PDF(Icestupa):
             axis=1,
         )
 
+        df_temp = pd.read_csv(self.folders["input_folder"] + "lumtemp.csv")
+
+        df_temp["When"] = pd.to_datetime(df_temp["When"])
+
         # Plots
         pp = PdfPages(filename)
 
         fig = plt.figure()
         x = self.df.When
-        y1 = self.df.ice
+        y1 = self.df.iceV
 
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Ice Mass [$kg$]")
+        ax1.set_ylabel("Ice Volume [$m^3$]")
+
+        ax1t = ax1.twinx()
+        ax1t.plot(self.df_cam.When, self.df_cam.Volume, "o-", color="b", alpha=0.5, linewidth=0.5)
+        ax1t.set_ylabel("Cam Volume [$m^3$]", color="b")
+        for tl in ax1t.get_yticklabels():
+            tl.set_color("b")
+
+        ax1.set_ylim([0, 500])
+        ax1t.set_ylim([0, 500])
         
+        
+        ax1.scatter(datetime(2020, 1, 3), (54.15), color="green", marker="o", label="Drone Estimate")
+        ax1.scatter(datetime(2020, 1, 24),(120.61), color="green", marker="o")
+        ax1.scatter(datetime(2020, 2, 15), (128.32), color="green", marker="o")
         ax1.scatter(datetime(2020, 4, 14, 18), 0, color="green", marker="o")
 
         ax1.grid()
+        ax1.legend()
+
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -1250,6 +1269,21 @@ class PDF(Icestupa):
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Surface Area [$m^2$]")
         ax1.grid()
+
+        ax1t = ax1.twinx()
+        ax1t.plot(self.df_cam.When, self.df_cam.SA, "o-", color="b", alpha=0.5, linewidth=0.5)
+        ax1t.set_ylabel("Cam SA [$m^2$]", color="b")
+        for tl in ax1t.get_yticklabels():
+            tl.set_color("b")
+
+        ax1.set_ylim([0, 600])
+        ax1t.set_ylim([0, 600])
+
+        ax1.scatter(datetime(2020, 1, 3), (334.78), color="green", marker="o", label="Drone Estimate")
+        ax1.scatter(datetime(2020, 1, 24),(374.61), color="green", marker="o")
+        ax1.scatter(datetime(2020, 2, 15), (564.12), color="green", marker="o")
+        ax1.legend()
+
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -1263,17 +1297,12 @@ class PDF(Icestupa):
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Ice Cone Height [$m$]")
         ax1.grid()
+
         ax2 = ax1.twinx()
         ax2.plot(x, y2, "b-", linewidth=0.5)
         ax2.set_ylabel("Ice Radius[$m$]", color="b")
         for tl in ax2.get_yticklabels():
             tl.set_color("b")
-
-        # Include Validation line segment 1
-
-        ax1.scatter(datetime(2020, 1, 24, 15), 2.2, color="black", marker="o")
-        ax2.scatter(datetime(2020, 1, 24, 15), 4.5, color="blue", marker="o")
-
         
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -1283,17 +1312,12 @@ class PDF(Icestupa):
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        y1 = self.df.a
-        y2 = self.df.SRf
+        y1 = self.df.h_r
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Albedo")
+        ax1.set_ylabel("Ice Cone Slope [$m$]")
         ax1.grid()
-        ax2 = ax1.twinx()
-        ax2.plot(x, y2, "b-", linewidth=0.5)
-        ax2.set_ylabel("$f_{cone}$", color="b")
-        for tl in ax2.get_yticklabels():
-            tl.set_color("b")
+        
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -1306,11 +1330,11 @@ class PDF(Icestupa):
         y2 = self.df.T_bulk
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-", linewidth=0.5, alpha =0.5)
-        ax1.set_ylabel("Surface Temperature")
+        ax1.set_ylabel("Surface Temperature[$\\degree C$]")
         # ax1.grid()
         ax2 = ax1.twinx()
         ax2.plot(x, y2, "b-", linewidth=0.5)
-        ax2.set_ylabel("Bulk Temperature", color="b")
+        ax2.set_ylabel("Bulk Temperature[$\\degree C$]", color="b")
         for tl in ax2.get_yticklabels():
             tl.set_color("b")
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -1318,6 +1342,26 @@ class PDF(Icestupa):
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
         ax1.set_ylim([-20, 1])
         ax2.set_ylim([-20, 1])
+        fig.autofmt_xdate()
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        y1 = self.df.T_s
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x, y1, "k-", linewidth=0.5, alpha =0.5)
+        ax1.set_ylabel("Surface Temperature[$\\degree C$]")
+
+        ax1t = ax1.twinx()
+        ax1t.scatter(df_temp.When, df_temp.Temp, color="b", alpha=0.5, s = 1)
+        ax1t.set_ylabel("Cam Temp [$\\degree C$]", color="b")
+        for tl in ax1t.get_yticklabels():
+            tl.set_color("b")
+
+        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        ax1.set_ylim([-20, 5])
+        ax1t.set_ylim([-20, 5])
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.close("all")
@@ -1431,7 +1475,7 @@ class PDF(Icestupa):
         plt.ylabel("Thickness ($m$ w. e.)")
         plt.xticks(rotation=45)
         # plt.legend(loc='upper right')
-        ax1.set_ylim(-0.025, 0.025)
+        ax1.set_ylim(-0.055, 0.055)
         ax1.yaxis.set_minor_locator(AutoMinorLocator())
         ax1.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
         x_axis = ax1.axes.get_xaxis()
@@ -1453,49 +1497,6 @@ class PDF(Icestupa):
 
         pp.close()
 
-    def corr_plot(self):
-
-        data = self.df
-
-        data = data[data.columns.drop(list(data.filter(regex="Unnamed")))]
-
-        data["$q_{net}$"] = data["TotalE"] + data["Ql"]
-
-        data["$\\Delta M_{input}$"] = data["Discharge"] * 5 + data["dpt"] + data["ppt"]
-
-        data["$SW_{in}$"] = data["SW_direct"] + data["SW_diffuse"]
-
-        # data = data.drop(["When", "input", "ppt", "ice", "T_s", "vapour", "Discharge", "TotalE", "T_a", "SEA", "SW_direct", "a", "cld", "SEA", "e_a", "vp_a", "LW_in", "vp_ice", "SRf", "SW_diffuse", "h_r", "RH", "iceV", "melted", "Qf", "SW", "LW", "Qs", "Ql", "dpt", "p_a", "thickness", "h_ice", "r_ice", "Prec", "v_a", "unfrozen_water", "meltwater"], axis=1)
-
-        data = data.rename(
-            {
-                "solid": "$\\Delta M_{ice}$",
-                "delta_T_s": "$\\Delta T_{ice}$",
-                "SA": "A",
-                "T_a": "$T_a$",
-                "v_a": "$v_a$",
-                "p_a": "$p_a$",
-            },
-            axis=1,
-        )
-
-        data = data[["$q_{net}$", "$T_a$", "$v_a$", "$p_a$", "RH", "$SW_{in}$", "$\\Delta M_{ice}$", "A"]]
-
-        print(data.drop("$q_{net}$", axis=1).apply(lambda x: x.corr(data["$q_{net}$"])))
-
-        corr = data.corr()
-        ax = sns.heatmap(
-            corr,
-            vmin=-1,
-            vmax=1,
-            center=0,
-            cmap=sns.diverging_palette(20, 220, n=200),
-            square=True,
-        )
-        ax.set_xticklabels(
-            ax.get_xticklabels(), rotation=45, horizontalalignment="right"
-        )
-        plt.show()
 
 
 if __name__ == "__main__":
@@ -1506,7 +1507,7 @@ if __name__ == "__main__":
 
     # schwarzsee.derive_parameters()
 
-    schwarzsee.print_input()
+    # schwarzsee.print_input()
 
     schwarzsee.read_input()
 
