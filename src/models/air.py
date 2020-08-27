@@ -49,7 +49,7 @@ class Icestupa:
     T_rain = 1  # Temperature condition for liquid precipitation
 
     """Fountain"""
-    dia_f = 0.005  # Fountain aperture diameter
+    dia_f = 0.002  # Fountain aperture diameter
     h_f = 1.35  # Fountain steps h_f
     theta_f = 45  # Fountain aperture diameter
     ftl = 0  # Fountain flight time loss ftl
@@ -386,9 +386,6 @@ class Icestupa:
         # if self.df.Discharge[i:].sum() != 0:
         #     self.df.loc[i, "SA"] += math.pi * ( self.r_mean **2 - self.df.loc[i, "r_ice"] ** 2)
 
-        
-
-
     def energy_balance(self, row):
         i = row.Index
 
@@ -527,6 +524,7 @@ class Icestupa:
         print("Ice Mass Remaining", self.df["ice"].iloc[-1])
         print("Meltwater", self.df["meltwater"].iloc[-1])
         print("Ppt", self.df["ppt"].sum())
+        print("Deposition", self.df["dpt"].sum())
 
         # Full Output
         filename4 = self.folders["output_folder"] + "model_results.csv"
@@ -633,7 +631,6 @@ class Icestupa:
 
                 if self.site == 'schwarzsee':
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
-                    print(self.df.loc[i - 1, "r_ice"])
                     self.df.loc[i - 1, "h_ice"] = self.dx
                     
                     
@@ -645,11 +642,11 @@ class Icestupa:
 
             # Ice Melted
             if self.df.loc[i - 1, "ice"] <= 0:
-                self.df.loc[i - 1, "solid"] = 0
-                self.df.loc[i - 1, "ice"] = 0
+                # self.df.loc[i - 1, "solid"] = 0
+                # self.df.loc[i - 1, "ice"] = 0
                 # self.df.loc[i - 1, "iceV"] = 0
                 if self.df.Discharge[i:].sum() == 0:  # If ice melted after fountain run
-                    self.df = self.df[self.start:i]
+                    self.df = self.df[self.start:i-1]
                     self.df = self.df.reset_index(drop=True)
                     break
                 else:  # If ice melted in between fountain run

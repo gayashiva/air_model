@@ -14,10 +14,10 @@ plt.rcParams["figure.figsize"] = (10,7)
 plt.gca().spines['top'].set_visible(False)
 plt.gca().spines['right'].set_visible(False)
 
-filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_results.csv"
+filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_results2.csv"
 df = pd.read_csv(filename, sep=",")
 
-filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_sim.h5"
+filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_sim2.h5"
 data_store = pd.HDFStore(filename2)
 dfd = data_store['dfd']
 data_store.close()
@@ -26,7 +26,7 @@ figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarz
 
 dfd = dfd.fillna(0)
 
-print(df[df["dia_f"] < 0.0031]["avg_freeze_rate"])
+print(df[df["dia_f"] < 0.0021].values)
 
 cmap = plt.cm.rainbow  # define the colormap
 norm = mpl.colors.Normalize(vmin=0, vmax=3.6)

@@ -97,10 +97,10 @@ if __name__ == "__main__":
 
         print(results)
 
-        filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_results.csv"
+        filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_results2.csv"
         results.to_csv(filename, sep=",")
 
-        filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_sim.h5"
+        filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_sim2.h5"
         data_store = pd.HDFStore(filename2)
         data_store["dfd"] = df_out
         data_store.close()
