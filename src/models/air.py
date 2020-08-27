@@ -49,7 +49,7 @@ class Icestupa:
     T_rain = 1  # Temperature condition for liquid precipitation
 
     """Fountain"""
-    dia_f = 0.002  # Fountain aperture diameter
+    dia_f = 0.005  # Fountain aperture diameter
     h_f = 1.35  # Fountain steps h_f
     theta_f = 45  # Fountain aperture diameter
     ftl = 0  # Fountain flight time loss ftl
@@ -514,7 +514,7 @@ class Icestupa:
 
     def summary(self):
         Efficiency = (
-            (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1])
+            (self.df["meltwater"].iloc[-1])
             / self.df["input"].iloc[-1]
             * 100
         )
@@ -641,10 +641,9 @@ class Icestupa:
                 self.start = i - 1
 
             # Ice Melted
-            if self.df.loc[i - 1, "ice"] <= 0:
-                # self.df.loc[i - 1, "solid"] = 0
-                # self.df.loc[i - 1, "ice"] = 0
-                # self.df.loc[i - 1, "iceV"] = 0
+            if self.df.loc[i - 1, "ice"] < 0:
+                self.df.loc[i - 2, "meltwater"] += self.df.loc[i - 2, "ice"]
+                self.df.loc[i - 2, "ice"] = 0
                 if self.df.Discharge[i:].sum() == 0:  # If ice melted after fountain run
                     self.df = self.df[self.start:i-1]
                     self.df = self.df.reset_index(drop=True)
