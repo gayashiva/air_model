@@ -638,6 +638,7 @@ class Icestupa:
                 self.df.loc[i - 1, "iceV"] = math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.df.loc[i - 1, "h_ice"]
                 self.df.loc[i - 1, "ice"] = math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.dx
                 self.df.loc[i - 1, "input"] = self.df.loc[i - 1, "ice"]
+
                 self.start = i - 1
 
             # Ice Melted
@@ -1502,7 +1503,7 @@ if __name__ == "__main__":
 
     start = time.time()
 
-    schwarzsee = PDF(site = "schwarzsee")
+    schwarzsee = PDF(site = "guttannen")
 
     # schwarzsee.derive_parameters()
 
