@@ -87,7 +87,7 @@ t_decay = 10
 k_i = 2.123
 d_ppt = 250
 
-interval = 0.5
+interval = 0.05
 
 ie_dist = uniform(ie, interval)
 # ie_dist = cp.Normal(mu=ie, sigma=interval/3)
@@ -103,7 +103,7 @@ T_rain_dist = cp.Uniform(0, 2)
 # z_i_dist = cp.Uniform(0.0007, 0.0027)
 d_ppt_dist = cp.Uniform(200, 300)
 
-dia_f = 0.025
+dia_f = 0.005
 h_f = 1.35
 h_aws = 3
 T_w = 5
@@ -123,7 +123,7 @@ T_w_dist = cp.Uniform(0, 9)
 dx_dist = cp.Uniform(0.001, 0.01)
 
 parameters = {
-                "dia_f": dia_f_dist
+                "t_decay": t_decay_dist
 
 }
 
@@ -168,13 +168,13 @@ model = UQ_Icestupa()
 UQ = un.UncertaintyQuantification(model=model,
                                   parameters=parameters,
                                   features=features,
-                                  CPUs=6,
+                                  CPUs=8,
                                   )
 
 # Perform the uncertainty quantification using
 # polynomial chaos with point collocation (by default)
 data = UQ.quantify(data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
                     figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
-                    filename="dia_f_optimise")
+                    filename="t_decay")
 
 

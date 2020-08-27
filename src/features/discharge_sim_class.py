@@ -36,7 +36,7 @@ class Discharge_Icestupa(Icestupa):
         # self.print_output(filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/discharge_output.pdf")
 
         Max_IceV = self.df["iceV"].max()
-        Efficiency = (self.df["meltwater"].iloc[-1]) / (self.df["input"].iloc[-1]) * 100
+        Efficiency = (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1]) / (self.df["input"].iloc[-1]) * 100
         Duration = self.df.index[-1] * 5 /(60 * 24)
         h_r = self.df.h_ice.max()/self.df.r_ice.max()
         water_stored = (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1])

@@ -182,7 +182,7 @@ class Icestupa:
 
         """Albedo"""
         # Precipitation
-        if (row.Discharge == 0) & (row.Prec > 0.00025):
+        if (row.Discharge == 0) & (row.Prec > 0):
             if row.T_a < self.T_rain:  # Snow
                 s = 0
                 f = 0
@@ -514,7 +514,7 @@ class Icestupa:
 
     def summary(self):
         Efficiency = (
-            (self.df["meltwater"].iloc[-1])
+            (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1])
             / self.df["input"].iloc[-1]
             * 100
         )
@@ -1014,7 +1014,7 @@ class PDF(Icestupa):
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Ice Cone Height [$m$]")
-        ax1.grid()
+
         ax2 = ax1.twinx()
         ax2.plot(x, y2, "b-", linewidth=0.5)
         ax2.set_ylabel("Ice Radius[$m$]", color="b")
@@ -1025,6 +1025,27 @@ class PDF(Icestupa):
 
         ax1.scatter(datetime(2019, 2, 14, 16), 0.7, color="black", marker="o")
         ax2.scatter(datetime(2019, 2, 14, 16), 1.15, color="blue", marker="o")
+        ax1.grid()
+        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+
+        fig.autofmt_xdate()
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        y1 = self.df.a
+        y2 = self.df.SRf
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x, y1, "k-")
+        ax1.set_ylabel("Albedo")
+        # ax1.set_xlabel("Days")
+        ax1t = ax1.twinx()
+        ax1t.plot(x, y2, "b-", linewidth=0.5)
+        ax1t.set_ylabel("$f_{cone}$", color="b")
+        for tl in ax1t.get_yticklabels():
+            tl.set_color("b")
+        ax1.grid()
 
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -1508,11 +1529,11 @@ if __name__ == "__main__":
 
     # schwarzsee.print_input()
 
-    schwarzsee.read_input()
+    # schwarzsee.read_input()
 
-    schwarzsee.melt_freeze()
+    # schwarzsee.melt_freeze()
 
-    # schwarzsee.read_output()
+    schwarzsee.read_output()
 
     # schwarzsee.corr_plot()
 
