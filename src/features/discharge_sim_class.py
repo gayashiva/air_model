@@ -36,7 +36,7 @@ class Discharge_Icestupa(Icestupa):
         # self.print_output(filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/discharge_output.pdf")
 
         Max_IceV = self.df["iceV"].max()
-        Efficiency = (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1]) / (self.df["input"].iloc[-1]) * 100
+        Efficiency = (self.df["meltwater"].iloc[-1]) / (self.df["input"].iloc[-1]) * 100
         Duration = self.df.index[-1] * 5 /(60 * 24)
         h_r = self.df.h_ice.max()/self.df.r_ice.max()
         water_stored = (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1])
@@ -97,10 +97,10 @@ if __name__ == "__main__":
 
         print(results)
 
-        filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_results2.csv"
+        filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_results.csv"
         results.to_csv(filename, sep=",")
 
-        filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_sim2.h5"
+        filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_sim.h5"
         data_store = pd.HDFStore(filename2)
         data_store["dfd"] = df_out
         data_store.close()
