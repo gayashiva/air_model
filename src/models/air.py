@@ -46,7 +46,7 @@ class Icestupa:
     t_decay = 10  # Albedo decay rate decay_t_d
     z_i = 0.0017  # Ice Momentum and Scalar roughness length
     d_ppt = 250  # Snowfall density
-    T_rain = 1  # Temperature condition for liquid precipitation
+    T_rain = 0  # Temperature condition for liquid precipitation
 
     """Fountain"""
     dia_f = 0.005  # Fountain aperture diameter
@@ -198,12 +198,6 @@ class Icestupa:
             s = s + 1
         else:  # last sprayed
 
-            # if self.site == "guttannen" :
-            #     self.df.loc[i, "a"] = self.a_w + (self.a_i - self.a_w) * math.exp(
-            #         -s / self.t_decay
-            #     )
-            #     s = s + 1
-            # else:
             self.df.loc[i, "a"] = self.a_i
 
         return s, f
@@ -329,19 +323,6 @@ class Icestupa:
                 self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
             )
 
-            # Area of Conical Ice Surface
-            self.df.loc[i, "SA"] = (
-                math.pi
-                * self.df.loc[i, "r_ice"]
-                * math.pow(
-                    (
-                        math.pow(self.df.loc[i, "r_ice"], 2)
-                        + math.pow((self.df.loc[i, "h_ice"]), 2)
-                    ),
-                    1 / 2,
-                )
-            )
-
         else:
 
             # Height to radius ratio
@@ -356,20 +337,19 @@ class Icestupa:
             # Ice Height
             self.df.loc[i, "h_ice"] = self.df.loc[i, "h_r"] * self.df.loc[i, "r_ice"]
 
-            # Area of Conical Ice Surface
-            self.df.loc[i, "SA"] = (
+
+        # Area of Conical Ice Surface
+        self.df.loc[i, "SA"] = (
                 math.pi
                 * self.df.loc[i, "r_ice"]
                 * math.pow(
-                    (
-                        math.pow(self.df.loc[i, "r_ice"], 2)
-                        + math.pow(self.df.loc[i, "r_ice"] * self.df.loc[i, "h_r"], 2)
-                    ),
-                    1 / 2,
-                )
-            )
-
-        
+            (
+                    math.pow(self.df.loc[i, "r_ice"], 2)
+                    + math.pow((self.df.loc[i, "h_ice"]), 2)
+            ),
+            1 / 2,
+        )
+        )
 
         self.df.loc[i, "SRf"] = (
             0.5
@@ -1529,11 +1509,11 @@ if __name__ == "__main__":
 
     # schwarzsee.print_input()
 
-    # schwarzsee.read_input()
+    schwarzsee.read_input()
 
-    # schwarzsee.melt_freeze()
+    schwarzsee.melt_freeze()
 
-    schwarzsee.read_output()
+    # schwarzsee.read_output()
 
     # schwarzsee.corr_plot()
 
