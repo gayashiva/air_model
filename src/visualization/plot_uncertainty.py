@@ -19,18 +19,27 @@ evaluations = []
 data = un.Data()
 filename1 = input + names + ".h5"
 data.load(filename1)
+# print(data)
 
 eval = data["max_volume"].evaluations
 print(f"95 percent confidence interval caused by {names} is {round(2 * st.stdev(eval),2)}")
 
 print(data["max_volume"].mean)
 
-print(data["UQ_Icestupa"])
+
+
+
 data = data["UQ_Icestupa"]
+
+divisibleBySeven = [num for num in data["time"] if num<30]
+print(divisibleBySeven)
+
+
 fig, ax = plt.subplots()
 
 
 ax.plot(data.time, data.mean, color = 'black')
+ax.plot(data.time, data.percentile_5, color = 'blue')
 ax.set_xlabel("Time [Days]")
 ax.set_ylabel("Ice Volume[$m^3$]")
 

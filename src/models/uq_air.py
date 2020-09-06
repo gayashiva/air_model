@@ -1,26 +1,24 @@
 import uncertainpy as un
 import chaospy as cp
 import pandas as pd
-import numpy as np
-import os
 import math
 from src.models.air import Icestupa
 
-def uniform(parameter, interval):
 
+def uniform(parameter, interval):
     if parameter == 0:
         raise ValueError("Creating a percentage distribution around 0 does not work")
 
-    return cp.Uniform(parameter - abs(interval/2.*parameter),
-                      parameter + abs(interval/2.*parameter))
+    return cp.Uniform(parameter - abs(interval / 2. * parameter),
+                      parameter + abs(interval / 2. * parameter))
 
-    return distribution
 
 def max_volume(time, values):
     # Calculate the feature using time, values and info.
     icev_max = values.max()
     # Return the feature times and values.
-    return None, icev_max #todo include efficiency
+    return None, icev_max  # todo include efficiency
+
 
 class UQ_Icestupa(un.Model, Icestupa):
 
@@ -28,7 +26,8 @@ class UQ_Icestupa(un.Model, Icestupa):
 
         super(UQ_Icestupa, self).__init__(labels=["Time (days)", "Ice Volume ($m^3$)"], interpolate=True)
 
-        data_store = pd.HDFStore("/home/surya/Programs/PycharmProjects/air_model/data/interim/schwarzsee/model_input.h5")
+        data_store = pd.HDFStore(
+            "/home/surya/Programs/PycharmProjects/air_model/data/interim/schwarzsee/model_input.h5")
         self.df = data_store['df']
         data_store.close()
 
@@ -65,23 +64,32 @@ class UQ_Icestupa(un.Model, Icestupa):
         print("Ice Mass Remaining", self.df["ice"].iloc[-1])
         print("Meltwater", self.df["meltwater"].iloc[-1])
         print("Ppt", self.df["ppt"].sum())
+        print("Number of days", self.df.index[-1] * 5 / (60*24))
 
         self.df = self.df.set_index('When').resample('1H').mean().reset_index()
 
+        if len(self.df) < 50 * 24:
+            for i in range(len(self.df), 50 * 24):
+                self.df.loc[i, "iceV"] = 0
+                # self.df.loc[len(self.df):50 * 24] = 0
+
+        # else:
+        #     self.df = self.df[:50 * 24]
+
         return self.df.index.values / 24, self.df["iceV"].values
+
 
 list_of_feature_functions = [max_volume]
 
 features = un.Features(new_features=list_of_feature_functions,
                        features_to_run=["max_volume"])
 
-
 # # Set all parameters to have a uniform distribution
 # # within a 20% interval around their fixed value
 # parameters.set_all_distributions(un.uniform(0.05))
 
 ie = 0.95
-a_i =0.35
+a_i = 0.35
 a_s = 0.85
 t_decay = 10
 k_i = 2.123
@@ -90,17 +98,13 @@ d_ppt = 250
 interval = 0.05
 
 ie_dist = uniform(ie, interval)
-# ie_dist = cp.Normal(mu=ie, sigma=interval/3)
 a_i_dist = uniform(a_i, interval)
-# a_i_dist = cp.Normal(mu=a_i, sigma=interval/3)
 a_s_dist = uniform(a_s, interval)
-# a_s_dist = cp.Normal(mu=a_s, sigma=interval/3)
 
 k_i_dist = uniform(k_i, interval)
 
 t_decay_dist = cp.Uniform(1, 22)
 T_rain_dist = cp.Uniform(0, 2)
-# z_i_dist = cp.Uniform(0.0007, 0.0027)
 d_ppt_dist = cp.Uniform(200, 300)
 
 dia_f = 0.005
@@ -108,57 +112,56 @@ h_f = 1.35
 h_aws = 3
 T_w = 5
 
-
-
 interval = 0.01
 
 dia_f_dist = uniform(0.005, interval)
-# dia_f_dist = cp.Normal(mu=dia_f, sigma=interval/3)
 h_f_dist = uniform(1.35, interval)
-# h_f_dist = cp.Normal(mu=h_f, sigma=interval/3)
 h_aws_dist = uniform(3, interval)
-# h_aws_dist = cp.Normal(mu=h_aws, sigma=interval/3)
 T_w_dist = cp.Uniform(0, 9)
 
 dx_dist = cp.Uniform(0.001, 0.01)
 
+parameters_single = {
+    "ie": ie_dist,
+    "a_i": a_i_dist,
+    "a_s": a_s_dist,
+    "k_i": k_i_dist,
+    "t_decay": t_decay_dist,
+    "T_rain": T_rain_dist,
+    "d_ppt": d_ppt_dist,
+    "dia_f": dia_f_dist,
+    "h_f": h_f_dist,
+    "h_aws": h_aws_dist,
+    "T_w": T_w_dist
+}
+
+# # Create the parameters
+# for k,v in parameters.items():
+#     parameters = un.Parameters({k:v})
+#
+#
+#     # Initialize the model
+#     model = UQ_Icestupa()
+#
+#     # Set up the uncertainty quantification
+#     UQ = un.UncertaintyQuantification(model=model,
+#                                       parameters=parameters,
+#                                       features=features,
+#                                       CPUs=8,
+#                                       )
+#
+# # Perform the uncertainty quantification using # polynomial chaos with point collocation (by default) data =
+# UQ.quantify(seed=10, data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations
+# /data/", figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations
+# /figures/", filename=k)
+
+
 parameters = {
-                "k_i": k_i_dist
+    "T_rain": T_rain_dist,
+    "ie": ie_dist
 
 }
 
-# parameters = {
-#                 "ie": ie_dist,
-#                 "a_i": a_i_dist,
-#                 "a_s": a_s_dist,
-#                 "t_decay": decay_t_dist
-# }
-
-# parameters = {
-#               "T_rain": rain_temp_dist,
-#               "z_i": r_i_dist,
-#               "d_ppt": snow_fall_density_dist
-#               }
-
-# parameters = {
-#               "dia_f": aperture_f_dist,
-#               "h_f": height_f_dist,
-#               "h_AWS": h_AWS_dist,
-
-#               }
-
-# parameters = {
-#                 "ie": ie_dist,
-#                 "a_i": a_i_dist,
-#                 "a_s": a_s_dist,
-#                 "t_decay": decay_t_dist,
-#               "T_rain": rain_temp_dist,
-#               "z_i": r_i_dist,
-#               "d_ppt": snow_fall_density_dist
-# }
-
-
-# Create the parameters
 parameters = un.Parameters(parameters)
 
 # Initialize the model
@@ -173,8 +176,7 @@ UQ = un.UncertaintyQuantification(model=model,
 
 # Perform the uncertainty quantification using
 # polynomial chaos with point collocation (by default)
-data = UQ.quantify(data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
-                    figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
-                    filename="ie")
-
-
+data = UQ.quantify(seed=10,
+    data_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
+    figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
+    filename="full2")
