@@ -12,7 +12,6 @@ import math
 import sys
 import os
 
-
 # To watch one of these scenes, run the following:
 # python -m manim C:\air_model\src\visualization\visualize.py Forecast -pl
 #
@@ -29,11 +28,11 @@ import os
 class Forecast(Scene):
     def construct(self):
 
-        site = input("Input the Field Site Name: ") or "plaffeien"
+        site = input("Input the Field Site Name: ") or "schwarzsee"
 
         dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-        input_folder = os.path.join(dirname, "data/processed/")
+        input_folder = os.path.join(dirname, "data/processed/" + site)
 
         # output_folder = os.path.join(dirname, "data/processed/" )
 
@@ -63,19 +62,21 @@ class Forecast(Scene):
 
         h_f = 0
 
-        if site == "Schwarzsee":
+        if site == "schwarzsee":
             scale_factor = 1.35
+            scale_factor_shape = 1.35 /4
+
         else:
             scale_factor = 3
 
-        for i in range(1, df2.shape[0], 144):
+        for i in range(0, df2.shape[0]-150, 72):
 
             date = TextMobject(str(df.loc[i, "When"].date()))
             date.scale(h_f / scale_factor)
             date.next_to(text0, DOWN)
 
             dimensions = TexMobject(
-                str(df2.loc[i, "z_i"] * 2)
+                str(df2.loc[i, "r_ice"] * 2)
                 + "  m"
                 + " \\cross"
                 + str(df2.loc[i, "h_ice"] * 2)
@@ -87,11 +88,11 @@ class Forecast(Scene):
 
             triangle = Polygon(
                 np.array([0, 1 * df2.loc[i, "h_ice"], 0]),
-                np.array([1 * df2.loc[i, "z_i"], 0, 0]),
-                np.array([-1 * df2.loc[i, "z_i"], 0, 0]),
+                np.array([1 * df2.loc[i, "r_ice"], 0, 0]),
+                np.array([-1 * df2.loc[i, "r_ice"], 0, 0]),
             )
             triangle.set_fill(WHITE, opacity=1)
-            triangle.scale(h_f / scale_factor)
+            triangle.scale(h_f / scale_factor_shape)
             triangle.next_to(dimensions, UP)
 
             temp = TexMobject(str(df2.loc[i, "T_a"]) + "  C", aligned_edge=TOP)

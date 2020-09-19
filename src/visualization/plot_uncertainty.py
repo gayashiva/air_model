@@ -11,7 +11,7 @@ import statistics as st
 input = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/"
 figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/"
 
-names = "full"
+names = "full2"
 variance = []
 mean = []
 evaluations = []
@@ -31,15 +31,12 @@ print(data["max_volume"].mean)
 
 data = data["UQ_Icestupa"]
 
-divisibleBySeven = [num for num in data["time"] if num<30]
-print(divisibleBySeven)
-
 
 fig, ax = plt.subplots()
 
 
 ax.plot(data.time, data.mean, color = 'black')
-ax.plot(data.time, data.percentile_5, color = 'blue')
+# ax.plot(data.time, data.percentile_5, color = 'blue')
 ax.set_xlabel("Time [Days]")
 ax.set_ylabel("Ice Volume[$m^3$]")
 

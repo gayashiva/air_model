@@ -39,13 +39,13 @@ class Icestupa:
     dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
     """Surface"""
-    ie = 0.9975  # Ice Emissivity ie
+    ie = 0.95  # Ice Emissivity ie
     a_i = 0.35  # Albedo of Ice a_i
     a_s = 0.85  # Albedo of Fresh Snow a_s
     a_w = 0.1  # Albedo of water a_w
     t_decay = 10  # Albedo decay rate decay_t_d
     z_i = 0.0017  # Ice Momentum and Scalar roughness length
-    d_ppt = 250  # Snowfall density
+    d_ppt: int = 250  # Snowfall density
     T_rain = 1  # Temperature condition for liquid precipitation
 
     """Fountain"""
@@ -556,6 +556,13 @@ class Icestupa:
             f"Duration {self.df.index[-1] * 5 / (60 * 24)}"
         )
 
+        # Output for manim
+        filename2 = os.path.join(self.folders["output_folder"], self.site + "_model_gif.csv")
+        self.df["h_f"] = self.h_f
+        cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
+        self.df[cols].to_csv(filename2, sep=",")
+        print(self.df[cols])
+
         # self.corr_plot()
 
     def melt_freeze(self):
@@ -635,7 +642,7 @@ class Icestupa:
                 # Precipitation to ice quantity
                 if row.T_a < self.T_rain and row.Prec > 0:
                     self.df.loc[i, "ppt"] = (
-                            self.d_ppt
+                            self.rho_w
                             * row.Prec
                             * math.pi
                             * math.pow(self.df.loc[i, "r_ice"], 2)
@@ -775,7 +782,7 @@ class PDF(Icestupa):
 
         y1 = self.df.Discharge
         ax1.plot(x, y1, "k-", linewidth=0.5)
-        ax1.set_ylabel("Discharge [$l\\, min^{-1}$]")
+        ax1.set_ylabel("Fountain Spray [$l\\, min^{-1}$]")
         ax1.grid()
 
         ax1t = ax1.twinx()
@@ -1125,7 +1132,7 @@ class PDF(Icestupa):
         ax.xaxis.set_label_text("")
         plt.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
         # plt.xlabel('Date')
-        plt.ylabel("Energy Flux Density [$W\\,m^{-2}$]")
+        plt.ylabel("Energy Flux [$W\\,m^{-2}$]")
         plt.legend(loc="lower right")
         # plt.ylim(-150, 150)
         plt.xticks(rotation=45)
