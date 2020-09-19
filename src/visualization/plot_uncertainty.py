@@ -46,7 +46,7 @@ ax.fill_between(data["time"],
                          data.percentile_95, color='gray', alpha=0.2)
 
 # ax.set_xlim([min(time), max(time)])
-ax.set_ylim([0, 1])
+ax.set_ylim(bottom=0)
 plt.legend(["Mean", "90% prediction interval"], loc="best")
 
 plt.tight_layout()
