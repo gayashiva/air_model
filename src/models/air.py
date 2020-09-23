@@ -58,7 +58,7 @@ class Icestupa:
     latitude = 46.693723
     longitude = 7.297543
 
-    site = "schwarzsee"
+    # site = "schwarzsee"
     state = 0
     utc_offset = 1
 
@@ -1505,17 +1505,17 @@ if __name__ == "__main__":
 
     # schwarzsee.print_input()
 
-    # schwarzsee.read_input()
+    schwarzsee.read_input()
 
-    # schwarzsee.melt_freeze()
+    schwarzsee.melt_freeze()
 
-    schwarzsee.read_output()
+    # schwarzsee.read_output()
 
     # schwarzsee.corr_plot()
 
     schwarzsee.summary()
 
-    schwarzsee.print_output()
+    schwarzsee.print_output_guttannen()
 
     total = time.time() - start
 

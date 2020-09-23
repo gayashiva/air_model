@@ -19,3 +19,4 @@ tables
 celluloid
 numpy
 seaborn
+cdsapi==0.3.1
