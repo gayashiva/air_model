@@ -14,19 +14,19 @@ plt.rcParams["figure.figsize"] = (10,7)
 plt.gca().spines['top'].set_visible(False)
 plt.gca().spines['right'].set_visible(False)
 
-filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_results.csv"
+filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_results2.csv"
 df = pd.read_csv(filename, sep=",")
 
-filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_sim.h5"
+filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_sim2.h5"
 data_store = pd.HDFStore(filename2)
 dfd = data_store['dfd']
 data_store.close()
 
-figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/dia_f"
+figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/dia_f2"
 
 dfd = dfd.fillna(0)
 
-print(df[df["dia_f"] < 0.0031]["avg_freeze_rate"])
+print(df[df["dia_f"] < 0.003]["avg_freeze_rate"])
 
 cmap = plt.cm.rainbow  # define the colormap
 norm = mpl.colors.Normalize(vmin=0, vmax=3.6)
@@ -44,9 +44,10 @@ ax.scatter(x, y, color='k')
 ax.set_ylabel("Storage Efficiency [%]")
 ax.set_xlabel("Aperture Diameter [$mm$]")
 ax.set_xlim([1.8, 6.2])
+ax.set_ylim([0,100])
 # Add labels to the plot
 style = dict(size=10, color='gray', rotation=90)
-ax.text(5.01, 6, "Schwarzsee Experiment", **style)
+ax.text(5.01, 7.7, "Schwarzsee Experiment", **style)
 
 
 ax1t = ax.twinx()
@@ -54,6 +55,7 @@ for i in range(0,df.shape[0]):
     ax1t.scatter(x[i], y2[i], color=cmap(norm(y1[i])))
 # ax1t.scatter(x, y2, color = "b", alpha=0.5)
 ax1t.set_ylabel("Survival Duration [Days]", color="b")
+ax1t.set_ylim([0, 50])
 for tl in ax1t.get_yticklabels():
     tl.set_color("b")
 ax.grid()

@@ -19,7 +19,7 @@ def draw_plot(data, edge_color, fill_color, labels):
 input = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/"
 figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/"
 
-names = ["T_rain", "k_i", "ie", "a_i", "a_s", "t_decay",  "dia_f",  "h_f", "h_aws", "T_w", "dx"]
+names = ["T_rain", "ie", "a_i", "a_s", "t_decay",  "dia_f",  "h_f", "h_aws", "T_w", "dx"]
 variance = []
 mean = []
 evaluations = []
@@ -53,12 +53,12 @@ for name in names:
     #     plt.clf()
 
 
-names = ["$T_{rain}$", "$k_{ice}$", "$\\epsilon_{ice}$", r'$\alpha_{ice}$', r'$\alpha_{snow}$', "$t_{decay}$",  "$dia_{F}$",  "$h_F$", "$h_{AWS}$", "$T_{water}$",  "$\\Delta x$"]
+names = ["$T_{rain}$", "$\\epsilon_{ice}$", r'$\alpha_{ice}$', r'$\alpha_{snow}$', "$t_{decay}$",  "$dia_{F}$",  "$h_F$", "$h_{AWS}$", "$T_{water}$",  "$\\Delta x$"]
 
 fig, ax = plt.subplots()
 draw_plot(evaluations, 'k', 'xkcd:grey', names)
 ax.set_xlabel("Parameter")
-ax.set_ylabel("Sensitivity of Maximum Ice Volume ($m^3$)")
+ax.set_ylabel("Sensitivity of Maximum Ice Volume [$m^3$]")
 ax.grid(axis = "y")
 plt.savefig(figures + "sensitivities.jpg", bbox_inches="tight", dpi=300)
 

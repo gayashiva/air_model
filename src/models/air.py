@@ -22,11 +22,11 @@ class Icestupa:
     L_s = 2848 * 1000  # J/kg Sublimation
     L_e = 2514 * 1000  # J/kg Evaporation
     L_f = 334 * 1000  # J/kg Fusion
-    c_a = 1.01 * 1000  # J/kgC Specific heat water
+    c_a = 1.01 * 1000  # J/kgC Specific heat air
     c_w = 4.186 * 1000  # J/kgC Specific heat water
-    c_i = 2.108 * 1000  # J/kgC Specific heat ice
+    c_i = 2.097 * 1000  # J/kgC Specific heat ice
     rho_w = 1000  # Density of water
-    rho_i = 916  # Density of Ice rho_i
+    rho_i = 917  # Density of Ice rho_i
     rho_a = 1.29  # kg/m3 air density at mean sea level
     k = 0.4  # Van Karman constant
     k_i = 2.123  # Thermal Conductivity Waite et al. 2006
@@ -42,10 +42,8 @@ class Icestupa:
     ie = 0.95  # Ice Emissivity ie
     a_i = 0.35  # Albedo of Ice a_i
     a_s = 0.85  # Albedo of Fresh Snow a_s
-    a_w = 0.1  # Albedo of water a_w
     t_decay = 10  # Albedo decay rate decay_t_d
     z_i = 0.0017  # Ice Momentum and Scalar roughness length
-    d_ppt: int = 250  # Snowfall density
     T_rain = 1  # Temperature condition for liquid precipitation
 
     """Fountain"""
@@ -561,7 +559,7 @@ class Icestupa:
         self.df["h_f"] = self.h_f
         cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
         self.df[cols].to_csv(filename2, sep=",")
-        print(self.df[cols])
+        print(self.df["When"].iloc[-1])
 
         # self.corr_plot()
 
@@ -1026,7 +1024,7 @@ class PDF(Icestupa):
         ax1t.set_ylabel("$f_{cone}$", color="b")
         for tl in ax1t.get_yticklabels():
             tl.set_color("b")
-        ax1.grid()
+        # ax1.grid()
 
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -1040,11 +1038,11 @@ class PDF(Icestupa):
         y2 = self.df.T_bulk
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-", linewidth=0.5, alpha=0.5)
-        ax1.set_ylabel("Surface Temperature")
+        ax1.set_ylabel("Surface Temperature [$\\degree C$]")
         # ax1.grid()
         ax2 = ax1.twinx()
         ax2.plot(x, y2, "b-", linewidth=0.5)
-        ax2.set_ylabel("Bulk Temperature", color="b")
+        ax2.set_ylabel("Bulk Temperature [$\\degree C$]", color="b")
         for tl in ax2.get_yticklabels():
             tl.set_color("b")
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -1507,11 +1505,11 @@ if __name__ == "__main__":
 
     # schwarzsee.print_input()
 
-    schwarzsee.read_input()
+    # schwarzsee.read_input()
 
-    schwarzsee.melt_freeze()
+    # schwarzsee.melt_freeze()
 
-    # schwarzsee.read_output()
+    schwarzsee.read_output()
 
     # schwarzsee.corr_plot()
 
