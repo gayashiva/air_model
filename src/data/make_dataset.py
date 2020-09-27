@@ -213,38 +213,37 @@ if __name__ == '__main__':
             if str(df_in.loc[i, "When"].year) != "2019":
                 df_in.loc[i, "When"] = df_in.loc[i - 1, "When"] + pd.Timedelta(minutes=5)
 
-        # i=1
-        # while df_in.loc[i, "When"] != datetime(2019, 2, 6, 16, 15):
-        #     if str(df_in.loc[i, "When"].year) != "2019":
-        #         df_in.loc[i, "When"] = df_in.loc[i - 1, "When"] + pd.Timedelta(minutes=5)
-        #     i = i + 1
-        #
-        # while df_in.loc[i, "When"] != datetime(2019, 3, 2, 15):
-        #     if str(df_in.loc[i, "When"].year) != "2019":
-        #         df_in.loc[i, "When"] = df_in.loc[i - 1, "When"] + pd.Timedelta(minutes=5)
-        #     i = i + 1
-        #
-        # while df_in.loc[i, "When"] != datetime(2019, 3, 6, 16, 25):
-        #     if str(df_in.loc[i, "When"].year) != "2019":
-        #         df_in.loc[i, "When"] = df_in.loc[i - 1, "When"] + pd.Timedelta(minutes=5)
-        #     i = i + 1
-
-
-        # df_in = df_in.drop(["Date", "Time"], axis=1)
-        df_in = df_in.set_index("When")
-        print(pd.concat([df_in, df_in.resample("5T").last()]).drop_duplicates(keep=False))
-        df_in.to_csv(folders["input_folder"] + "corrected_input1.csv")
-        df_in.resample("5T").last().to_csv(folders["input_folder"] + "corrected_input2.csv")
-        # print(df_in.first())
-        # df_in = df_in.set_index("When").resample("5T").interpolate(method='linear').reset_index()
-        # df_in = df_in.resample("5Min", on="When").first().drop("When", 1).reset_index()
-        # print(df_in.head())
-
         df_in = df_in.set_index("When").resample("5T").last().reset_index()
 
         mask = (df_in["When"] >= dates["start_date"]) & (df_in["When"] <= dates["end_date"])
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
+
+        # Fill Plaffeien data
+        df_in1 = pd.read_csv(
+            os.path.join(folders["raw_folder"], "plaffeien_aws.txt"),
+            sep=";",
+            skiprows=2,
+        )
+        df_in1["When"] = pd.to_datetime(df_in1["time"], format="%Y%m%d%H%M")
+        df_in1["Humidity"] = pd.to_numeric(df_in1["ure200s0"], errors="coerce")
+        df_in1["Wind Speed"] = pd.to_numeric(df_in1["fkl010z0"], errors="coerce")
+        df_in1["Temperature"] = pd.to_numeric(df_in1["tre200s0"], errors="coerce")
+        df_in1["Pressure"] = pd.to_numeric(df_in1["prestas0"], errors="coerce")
+
+        mask = (df_in1["When"] >= dates["start_date"]) & (df_in1["When"] <= dates["end_date"])
+        df_in1 = df_in1.loc[mask]
+        df_in1 = df_in1.reset_index()
+
+        df_in1 = df_in1.set_index("When").resample("5T").interpolate(method='linear').reset_index()
+
+        df_in = df_in.set_index("When")
+        df_in1 = df_in1.set_index("When")
+        df_in[df_in["Temperature"].isnull()].to_csv(folders["input_folder"] + "missing_input.csv")
+
+        df_in.loc[df_in["Temperature"].isnull(), ["Temperature", "Humidity", "Wind Speed", "Pressure"]] = df_in1[["Temperature", "Humidity", "Wind Speed", "Pressure"]]
+        df_in = df_in.reset_index()
+        df_in1 = df_in1.reset_index()
 
         # Add Radiation data
         df_in2 = pd.read_csv(
@@ -313,16 +312,6 @@ if __name__ == '__main__':
         v_a = df["v_a"].replace(0, np.NaN).mean()  # m/s Average Humidity
         df["v_a"] = df["v_a"].replace(0, v_a)
 
-        for i in tqdm(range(1, df.shape[0])):
-            if np.isnan(df.loc[i, "SW_direct"]):
-                df.loc[i, "SW_direct"] = df.loc[i - 1, "SW_direct"]
-            if np.isnan(df.loc[i, "SW_diffuse"]):
-                df.loc[i, "SW_diffuse"] = df.loc[i - 1, "SW_diffuse"]
-            # if np.isnan(df.loc[i, "Prec"]):
-            #     print(i)
-            #     df.loc[i, "Prec"] = df.loc[i - 1, "Prec"]
-
-        # df = df.set_index("When").resample("5T").interpolate(method='linear').reset_index()
 
         """Discharge Rate"""
         df["Fountain"], df["Discharge"] = discharge_rate(df,fountain)
@@ -335,7 +324,6 @@ if __name__ == '__main__':
         ]
 
         df_out = df_out.round(5)
-        print(df_out.shape[0])
 
         df_out.to_csv(folders["input_folder"] + "raw_input.csv")
 
