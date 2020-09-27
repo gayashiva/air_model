@@ -14,6 +14,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import seaborn as sns
 from src.data.config import site, dates
+from pvlib import location
 
 
 class Icestupa:
@@ -88,6 +89,25 @@ class Icestupa:
             self.h_f = 3.93  # Fountain steps h_f
             self.theta_f = 0
             self.df_cam = pd.read_csv(self.folders["input_folder"] + "cam.csv", sep=",", header=0, parse_dates=["When"])
+
+    def get_ghi_sea(self, site_location):
+
+        times = pd.date_range(start=dates["start_date"], end=dates["end_date"], freq="5T")
+        clearsky = site_location.get_clearsky(times)
+        # Get solar azimuth and zenith to pass to the transposition function
+        solar_position = site_location.get_solarposition(times=times)
+        solar_df = pd.DataFrame({'GHI': clearsky['ghi'],
+                             'SEA': solar_position['elevation']})
+        solar_df.loc[solar_df['SEA']<0,'SEA'] = 0
+        solar_df.index = solar_df.index.set_names(['When'])
+        solar_df = solar_df.reset_index()
+
+        self.df = pd.merge(
+            solar_df,
+            self.df,
+            on="When",
+        )
+        self.df = self.df.reset_index()
 
     def SEA(self, date):
 
@@ -222,12 +242,16 @@ class Icestupa:
 
     def derive_parameters(self):
 
-        missing = ["a", "cld", "SEA", "e_a", "vp_a", "LW_in"]
+        """Solar Elevation Angle"""
+        site_location = location.Location(self.latitude, self.longitude)
+        self.get_ghi_sea(site_location)
+
+        missing = ["a", "cld", "e_a", "vp_a", "LW_in"]
         for col in missing:
             if col in list(self.df.columns):
                 missing.remove(col)
             else:
-                self.df[col] = 0
+                self.df[col] = np.NaN
 
         """Albedo Decay"""
         self.t_decay = (
@@ -236,10 +260,13 @@ class Icestupa:
         s = 0
         f = 0
 
+
+
         for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
 
-            """Solar Elevation Angle"""
-            self.df.loc[row.Index, "SEA"] = self.SEA(row.When)
+            # """Solar Elevation Angle"""
+            # self.df.loc[row.Index, "GHI"], self.df.loc[row.Index, "SEA"] = self.get_ghi_sea(site_location, row.When)
+            # self.df.loc[row.Index, "SEA"] = self.SEA(row.When)
 
             """ Vapour Pressure"""
             if "vp_a" in missing:
@@ -259,7 +286,44 @@ class Icestupa:
             if "LW_in" in missing:
 
                 # Cloudiness from diffuse fraction
-                if row.SW_direct + row.SW_diffuse > 1:
+                if row.SW_direct + row.SW_diffuse > 10:
+                    # # print("Quadratic function : (a * x^2) + b*x + c")
+                    # a = -0.415
+                    # b = -0.233
+                    # c = 1-(row.SW_direct + row.SW_diffuse)/self.df.loc[row.Index, "GHI"]
+                    #
+                    # r = b ** 2 - 4 * a * c
+                    #
+                    # if r > 0:
+                    #     num_roots = 2
+                    #     x1 = (((-b) + np.sqrt(r)) / (2 * a))
+                    #     x2 = (((-b) - np.sqrt(r)) / (2 * a))
+                    #     if x2 < 0:
+                    #         if x1 > 0:
+                    #             self.df.loc[row.Index, "cld"] = x1
+                    #         else:
+                    #             self.df.loc[row.Index, "cld"] = np.NaN
+                    #     else:
+                    #         if x1 < 0:
+                    #             self.df.loc[row.Index, "cld"] = x2
+                    #         else:
+                    #             self.df.loc[row.Index, "cld"] = np.NaN
+                    #
+                    # elif r == 0:
+                    #     num_roots = 1
+                    #     x = (-b) / 2 * a
+                    #     if x < 0:
+                    #         self.df.loc[row.Index, "cld"] = np.NaN
+                    #     else:
+                    #         self.df.loc[row.Index, "cld"] = x
+                    # else:
+                    #     num_roots = 0
+                    #     self.df.loc[row.Index, "cld"] = np.NaN
+                    # if self.df.loc[row.Index, "cld"] > 1:
+                    #     self.df.loc[row.Index, "cld"] = 1
+                        # print("No roots, discriminant < 0.")
+                        # print(row.SW_direct, row.SW_diffuse, self.df.loc[row.Index, "GHI"])
+                        # exit()
                     self.df.loc[row.Index, "cld"] = row.SW_diffuse / (
                             row.SW_direct + row.SW_diffuse
                     )
@@ -292,6 +356,8 @@ class Icestupa:
                 )
 
             s, f = self.albedo(row, s, f)
+
+        self.df["cld"] = self.df["cld"].interpolate(method='linear', limit_direction='forward')
 
         self.df = self.df.round(5)
 
@@ -915,10 +981,22 @@ class PDF(Icestupa):
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
+
+        ax1 = fig.add_subplot(111)
+        y6 = self.df.cld
+        ax1.plot(x, y6, "k-", linewidth=0.5)
+        ax1.set_ylabel("Wind [$m\\,s^{-1}$]")
+
+        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        fig.autofmt_xdate()
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
         plt.close("all")
         pp.close()
 
@@ -1501,11 +1579,11 @@ if __name__ == "__main__":
 
     schwarzsee = PDF(site=site)
 
-    # schwarzsee.derive_parameters()
+    schwarzsee.derive_parameters()
 
-    # schwarzsee.print_input()
+    # schwarzsee.read_input()
 
-    schwarzsee.read_input()
+    schwarzsee.print_input()
 
     schwarzsee.melt_freeze()
 
@@ -1515,7 +1593,7 @@ if __name__ == "__main__":
 
     schwarzsee.summary()
 
-    schwarzsee.print_output_guttannen()
+    schwarzsee.print_output()
 
     total = time.time() - start
 

@@ -3,7 +3,7 @@ from datetime import datetime
 
 dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-site = "guttannen"
+site = "schwarzsee"
 option = 'schwarzsee'
 
 # site = input("Input the Field Site Name: ") or site
@@ -31,7 +31,7 @@ if site == "schwarzsee":
         input_folder=os.path.join(dir, "data/interim/schwarzsee/"),
         output_folder=os.path.join(dir, "data/processed/schwarzsee/"),
         sim_folder=os.path.join(dir, "data/processed/schwarzsee/simulations/"),
-        data_file=os.path.join(dir, "data/raw/schwarzsee/" + site + "_aws.txt"),
+        raw_folder=os.path.join(dir, "data/raw/schwarzsee/"),
     )
 
     dates = dict(

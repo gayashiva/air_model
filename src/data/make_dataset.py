@@ -21,7 +21,7 @@ def discharge_rate(df, fountain):
         df["Fountain"] = 0  # Fountain run time
 
         df_nights = pd.read_csv(
-            os.path.join(folders["dirname"], "data/raw/schwarzsee_fountain_time.txt"),
+            os.path.join(folders["raw_folder"], "schwarzsee_fountain_time.txt"),
             sep="\\s+",
         )
 
@@ -182,7 +182,7 @@ if __name__ == '__main__':
 
         # read files
         df_in = pd.read_csv(
-            folders["data_file"],
+            folders["raw_folder"]+ site + "_aws.txt",
             header=None,
             encoding="latin-1",
             skiprows=7,
@@ -208,37 +208,39 @@ if __name__ == '__main__':
         df_in["When"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
         df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
 
-        # Correct data errors
-        i = 1
-        while df_in.loc[i, "When"] != datetime(2019, 2, 6, 16, 15):
+        # Correct datetime errors
+        for i in tqdm(range(1, df_in.shape[0])):
             if str(df_in.loc[i, "When"].year) != "2019":
                 df_in.loc[i, "When"] = df_in.loc[i - 1, "When"] + pd.Timedelta(minutes=5)
-            i = i + 1
 
-        while df_in.loc[i, "When"] != datetime(2019, 3, 2, 15):
-            if str(df_in.loc[i, "When"].year) != "2019":
-                df_in.loc[i, "When"] = df_in.loc[i - 1, "When"] + pd.Timedelta(minutes=5)
-            i = i + 1
+        # i=1
+        # while df_in.loc[i, "When"] != datetime(2019, 2, 6, 16, 15):
+        #     if str(df_in.loc[i, "When"].year) != "2019":
+        #         df_in.loc[i, "When"] = df_in.loc[i - 1, "When"] + pd.Timedelta(minutes=5)
+        #     i = i + 1
+        #
+        # while df_in.loc[i, "When"] != datetime(2019, 3, 2, 15):
+        #     if str(df_in.loc[i, "When"].year) != "2019":
+        #         df_in.loc[i, "When"] = df_in.loc[i - 1, "When"] + pd.Timedelta(minutes=5)
+        #     i = i + 1
+        #
+        # while df_in.loc[i, "When"] != datetime(2019, 3, 6, 16, 25):
+        #     if str(df_in.loc[i, "When"].year) != "2019":
+        #         df_in.loc[i, "When"] = df_in.loc[i - 1, "When"] + pd.Timedelta(minutes=5)
+        #     i = i + 1
 
-        while df_in.loc[i, "When"] != datetime(2019, 3, 6, 16, 25):
-            if str(df_in.loc[i, "When"].year) != "2019":
-                df_in.loc[i, "When"] = df_in.loc[i - 1, "When"] + pd.Timedelta(minutes=5)
-            i = i + 1
 
-        df_in = df_in.resample("5Min", on="When").first().drop("When", 1).reset_index()
+        # df_in = df_in.drop(["Date", "Time"], axis=1)
+        df_in = df_in.set_index("When")
+        print(pd.concat([df_in, df_in.resample("5T").last()]).drop_duplicates(keep=False))
+        df_in.to_csv(folders["input_folder"] + "corrected_input1.csv")
+        df_in.resample("5T").last().to_csv(folders["input_folder"] + "corrected_input2.csv")
+        # print(df_in.first())
+        # df_in = df_in.set_index("When").resample("5T").interpolate(method='linear').reset_index()
+        # df_in = df_in.resample("5Min", on="When").first().drop("When", 1).reset_index()
+        # print(df_in.head())
 
-        # Fill missing data
-        for i in range(1, df_in.shape[0]):
-            if np.isnan(df_in.loc[i, "Temperature"]):
-                df_in.loc[i, "Temperature"] = df_in.loc[i - 288, "Temperature"]
-                df_in.loc[i, "Humidity"] = df_in.loc[i - 288, "Humidity"]
-                df_in.loc[i, "Wind Speed"] = df_in.loc[i - 288, "Wind Speed"]
-                df_in.loc[i, "Maximum Wind Speed"] = df_in.loc[
-                    i - 288, "Maximum Wind Speed"
-                ]
-                df_in.loc[i, "Wind Direction"] = df_in.loc[i - 288, "Wind Direction"]
-                df_in.loc[i, "Pressure"] = df_in.loc[i - 288, "Pressure"]
-                df_in.loc[i, "Discharge"] = df_in.loc[i - 288, "Discharge"]
+        df_in = df_in.set_index("When").resample("5T").last().reset_index()
 
         mask = (df_in["When"] >= dates["start_date"]) & (df_in["When"] <= dates["end_date"])
         df_in = df_in.loc[mask]
@@ -246,7 +248,7 @@ if __name__ == '__main__':
 
         # Add Radiation data
         df_in2 = pd.read_csv(
-            os.path.join(folders["dirname"], "data/raw/plaffeien_rad.txt"),
+            os.path.join(folders["raw_folder"], "plaffeien_rad.txt"),
             sep="\\s+",
             skiprows=2,
         )
@@ -259,7 +261,7 @@ if __name__ == '__main__':
         # Add Precipitation data
         df_in2["Prec"] = pd.to_numeric(df_in2["rre150z0"], errors="coerce")
         df_in2["Prec"] = df_in2["Prec"] / 2  # 5 minute sum
-        df_in2 = df_in2.set_index("When").resample("5T").ffill().reset_index()
+        df_in2 = df_in2.set_index("When").resample("5T").interpolate(method='linear').reset_index()
 
         mask = (df_in2["When"] >= dates["start_date"]) & (
             df_in2["When"] <= dates["end_date"]
@@ -287,14 +289,12 @@ if __name__ == '__main__':
             on="When",
         )
 
+
+
         # Add Radiation DataFrame
         df["SW_direct"] = df_in2["SW_direct"]
         df["DRad"] = df_in2["DRad"]
         df["Prec"] = df_in2["Prec"] / 1000
-
-        df["cld"] = 0
-        df["SEA"] = 0
-        df["e_a"] = 0
 
         # CSV output
         df.rename(
@@ -318,8 +318,11 @@ if __name__ == '__main__':
                 df.loc[i, "SW_direct"] = df.loc[i - 1, "SW_direct"]
             if np.isnan(df.loc[i, "SW_diffuse"]):
                 df.loc[i, "SW_diffuse"] = df.loc[i - 1, "SW_diffuse"]
-            if np.isnan(df.loc[i, "Prec"]):
-                df.loc[i, "Prec"] = df.loc[i - 1, "Prec"]
+            # if np.isnan(df.loc[i, "Prec"]):
+            #     print(i)
+            #     df.loc[i, "Prec"] = df.loc[i - 1, "Prec"]
+
+        # df = df.set_index("When").resample("5T").interpolate(method='linear').reset_index()
 
         """Discharge Rate"""
         df["Fountain"], df["Discharge"] = discharge_rate(df,fountain)
@@ -332,12 +335,13 @@ if __name__ == '__main__':
         ]
 
         df_out = df_out.round(5)
+        print(df_out.shape[0])
 
-        df_out.to_csv(folders["input_folder"] + "raw_input_" + option)
+        df_out.to_csv(folders["input_folder"] + "raw_input.csv")
 
-        fig, ax = plt.subplots()
-        ax.plot(df.When, df.Discharge)
-        plt.show()
+        # fig, ax = plt.subplots()
+        # ax.plot(df.When, df.Discharge)
+        # plt.show()
 
     if site == "guttannen":
 
