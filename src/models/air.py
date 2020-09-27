@@ -97,8 +97,8 @@ class Icestupa:
         # Get solar azimuth and zenith to pass to the transposition function
         solar_position = site_location.get_solarposition(times=times)
         solar_df = pd.DataFrame({'GHI': clearsky['ghi'],
-                             'SEA': solar_position['elevation']})
-        solar_df.loc[solar_df['SEA']<0,'SEA'] = 0
+                             'sea': solar_position['elevation']})
+        solar_df.loc[solar_df['sea']<0,'sea'] = 0
         solar_df.index = solar_df.index.set_names(['When'])
         solar_df = solar_df.reset_index()
 
@@ -109,7 +109,7 @@ class Icestupa:
         )
         self.df = self.df.reset_index()
 
-    def SEA(self, date):
+    def sea(self, date):
 
         latitude = self.latitude
         longitude = self.longitude
@@ -162,12 +162,12 @@ class Icestupa:
 
         SZA = math.degrees(SZA_radians)
 
-        SEA = 90 - SZA
+        sea = 90 - SZA
 
-        if SEA < 0:  # Before Sunrise or after sunset
-            SEA = 0
+        if sea < 0:  # Before Sunrise or after sunset
+            sea = 0
 
-        return math.radians(SEA)
+        return math.radians(sea)
 
     def projectile_xy(self, v, h=0):
         if h == 0:
@@ -242,16 +242,12 @@ class Icestupa:
 
     def derive_parameters(self):
 
-        """Solar Elevation Angle"""
-        site_location = location.Location(self.latitude, self.longitude)
-        self.get_ghi_sea(site_location)
-
-        missing = ["a", "cld", "e_a", "vp_a", "LW_in"]
+        missing = ["a", "e_a", "vp_a", "LW_in"]
         for col in missing:
             if col in list(self.df.columns):
                 missing.remove(col)
             else:
-                self.df[col] = np.NaN
+                self.df[col] = 0
 
         """Albedo Decay"""
         self.t_decay = (
@@ -263,10 +259,6 @@ class Icestupa:
 
 
         for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
-
-            # """Solar Elevation Angle"""
-            # self.df.loc[row.Index, "GHI"], self.df.loc[row.Index, "SEA"] = self.get_ghi_sea(site_location, row.When)
-            # self.df.loc[row.Index, "SEA"] = self.SEA(row.When)
 
             """ Vapour Pressure"""
             if "vp_a" in missing:
@@ -285,63 +277,6 @@ class Icestupa:
             """LW incoming"""
             if "LW_in" in missing:
 
-                # Cloudiness from diffuse fraction
-                if row.SW_direct + row.SW_diffuse > 10:
-                    # # print("Quadratic function : (a * x^2) + b*x + c")
-                    # a = -0.415
-                    # b = -0.233
-                    # c = 1-(row.SW_direct + row.SW_diffuse)/self.df.loc[row.Index, "GHI"]
-                    #
-                    # r = b ** 2 - 4 * a * c
-                    #
-                    # if r > 0:
-                    #     num_roots = 2
-                    #     x1 = (((-b) + np.sqrt(r)) / (2 * a))
-                    #     x2 = (((-b) - np.sqrt(r)) / (2 * a))
-                    #     if x2 < 0:
-                    #         if x1 > 0:
-                    #             self.df.loc[row.Index, "cld"] = x1
-                    #         else:
-                    #             self.df.loc[row.Index, "cld"] = np.NaN
-                    #     else:
-                    #         if x1 < 0:
-                    #             self.df.loc[row.Index, "cld"] = x2
-                    #         else:
-                    #             self.df.loc[row.Index, "cld"] = np.NaN
-                    #
-                    # elif r == 0:
-                    #     num_roots = 1
-                    #     x = (-b) / 2 * a
-                    #     if x < 0:
-                    #         self.df.loc[row.Index, "cld"] = np.NaN
-                    #     else:
-                    #         self.df.loc[row.Index, "cld"] = x
-                    # else:
-                    #     num_roots = 0
-                    #     self.df.loc[row.Index, "cld"] = np.NaN
-                    # if self.df.loc[row.Index, "cld"] > 1:
-                    #     self.df.loc[row.Index, "cld"] = 1
-                        # print("No roots, discriminant < 0.")
-                        # print(row.SW_direct, row.SW_diffuse, self.df.loc[row.Index, "GHI"])
-                        # exit()
-                    self.df.loc[row.Index, "cld"] = row.SW_diffuse / (
-                            row.SW_direct + row.SW_diffuse
-                    )
-                else:
-                    # Night Cloudiness average of last 8 hours
-                    if row.Index - 96 > 0:
-                        for j in range(row.Index - 96, row.Index):
-                            self.df.loc[row.Index, "cld"] += self.df.loc[j, "cld"]
-                        self.df.loc[row.Index, "cld"] = (
-                                self.df.loc[row.Index, "cld"] / 96
-                        )
-                    else:
-                        for j in range(0, row.Index):
-                            self.df.loc[row.Index, "cld"] += self.df.loc[j, "cld"]
-                        self.df.loc[row.Index, "cld"] = (
-                                self.df.loc[row.Index, "cld"] / row.Index
-                        )
-
                 self.df.loc[row.Index, "e_a"] = (
                                                         1.24
                                                         * math.pow(
@@ -356,8 +291,6 @@ class Icestupa:
                 )
 
             s, f = self.albedo(row, s, f)
-
-        self.df["cld"] = self.df["cld"].interpolate(method='linear', limit_direction='forward')
 
         self.df = self.df.round(5)
 
@@ -416,11 +349,11 @@ class Icestupa:
                                         0.5
                                         * self.df.loc[i, "h_ice"]
                                         * self.df.loc[i, "r_ice"]
-                                        * math.cos(self.df.loc[i, "SEA"])
+                                        * math.cos(self.df.loc[i, "sea"])
                                         + math.pi
                                         * math.pow(self.df.loc[i, "r_ice"], 2)
                                         * 0.5
-                                        * math.sin(self.df.loc[i, "SEA"])
+                                        * math.sin(self.df.loc[i, "sea"])
                                 ) / self.df.loc[i, "SA"]
 
         # # Add Spray radius
@@ -583,10 +516,6 @@ class Icestupa:
         )
         self.df = data_store["df"]
         data_store.close()
-
-        mask = (self.df["When"] >= dates["start_date"]) & (self.df["When"] <= dates["end_date"])
-        self.df = self.df.loc[mask]
-        self.df = self.df.reset_index()
 
     def read_output(self):
 
@@ -780,6 +709,8 @@ class Icestupa:
                         self.df.loc[i, "SA"] * self.rho_i
                 )
 
+                # print(self.df.loc[i, "When"], self.df.loc[i, "input"])
+
                 self.liquid, self.gas, self.EJoules = [0] * 3
 
     def corr_plot(self):
@@ -794,7 +725,7 @@ class Icestupa:
 
         data["$SW_{in}$"] = data["SW_direct"] + data["SW_diffuse"]
 
-        # data = data.drop(["When", "input", "ppt", "ice", "T_s", "vapour", "Discharge", "TotalE", "T_a", "SEA", "SW_direct", "a", "cld", "SEA", "e_a", "vp_a", "LW_in", "vp_ice", "SRf", "SW_diffuse", "h_r", "RH", "iceV", "melted", "Qf", "SW", "LW", "Qs", "Ql", "dpt", "p_a", "thickness", "h_ice", "r_ice", "Prec", "v_a", "unfrozen_water", "meltwater"], axis=1)
+        # data = data.drop(["When", "input", "ppt", "ice", "T_s", "vapour", "Discharge", "TotalE", "T_a", "sea", "SW_direct", "a", "cld", "sea", "e_a", "vp_a", "LW_in", "vp_ice", "SRf", "SW_diffuse", "h_r", "RH", "iceV", "melted", "Qf", "SW", "LW", "Qs", "Ql", "dpt", "p_a", "thickness", "h_ice", "r_ice", "Prec", "v_a", "unfrozen_water", "meltwater"], axis=1)
 
         data = data.rename(
             {
@@ -890,7 +821,6 @@ class PDF(Icestupa):
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
-        plt.savefig(self.folders["output_folder"] + "data.jpg", bbox_inches="tight")
         pp.savefig(bbox_inches="tight")
 
         plt.clf()
@@ -988,7 +918,7 @@ class PDF(Icestupa):
         ax1 = fig.add_subplot(111)
         y6 = self.df.cld
         ax1.plot(x, y6, "k-", linewidth=0.5)
-        ax1.set_ylabel("Wind [$m\\,s^{-1}$]")
+        ax1.set_ylabel("Cloudiness")
 
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -1086,6 +1016,8 @@ class PDF(Icestupa):
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        ax1.set_ylim([0, 2])
+        ax2.set_ylim([0, 2])
 
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
@@ -1102,12 +1034,13 @@ class PDF(Icestupa):
         ax1t.set_ylabel("$f_{cone}$", color="b")
         for tl in ax1t.get_yticklabels():
             tl.set_color("b")
-        # ax1.grid()
+        ax1.grid()
 
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-
+        ax1.set_ylim([0, 1])
+        ax1t.set_ylim([0, 1])
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
@@ -1149,6 +1082,8 @@ class PDF(Icestupa):
         for tl in ax1t.get_yticklabels():
             tl.set_color("b")
         ax1.grid()
+        ax1.set_ylim([0, 1])
+        ax1t.set_ylim([0, 1])
 
         y1 = self.df.e_a
         y2 = self.df.cld

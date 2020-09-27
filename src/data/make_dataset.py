@@ -241,9 +241,20 @@ if __name__ == '__main__':
         df_in1 = df_in1.set_index("When")
         df_in[df_in["Temperature"].isnull()].to_csv(folders["input_folder"] + "missing_input.csv")
 
-        df_in.loc[df_in["Temperature"].isnull(), ["Temperature", "Humidity", "Wind Speed", "Pressure"]] = df_in1[["Temperature", "Humidity", "Wind Speed", "Pressure"]]
+        df_in.loc[df_in["Temperature"].isnull(), "Temperature"] = df_in1["Temperature"]
+
         df_in = df_in.reset_index()
         df_in1 = df_in1.reset_index()
+
+        # Others
+        v_a = df_in["Wind Speed"].replace(0, np.NaN).mean()  # m/s Average Humidity
+        df_in.loc[(df_in["Wind Speed"] == 0) | (df_in["Wind Speed"].isnull()), "Wind Speed"] = v_a
+        p_a = df_in["Pressure"].mean()  # m/s Average Humidity
+        df_in.loc[(df_in["Pressure"].isnull()), "Pressure"] = p_a
+        RH = df_in["Humidity"].mean()  # m/s Average Humidity
+        df_in.loc[(df_in["Humidity"].isnull()), "Humidity"] = RH
+
+        df_in.loc[df_in["Discharge"].isnull(), "Discharge"] = 0
 
         # Add Radiation data
         df_in2 = pd.read_csv(
@@ -267,6 +278,15 @@ if __name__ == '__main__':
         )
         df_in2 = df_in2.loc[mask]
         df_in2 = df_in2.reset_index()
+
+        # Add Solar and cloudiness data
+        df_in3 = pd.read_csv(
+            os.path.join(folders["input_folder"] + "solar_output.csv"),sep=",", header=0, parse_dates=["When"]
+        )
+
+        df_in3.loc[df_in3['sea']<0,'sea'] = 0
+        for i in range(0,df_in3.shape[0]):
+            df_in3.loc[i,'sea'] = math.radians(df_in3.loc[i,'sea'])
 
         days = pd.date_range(start=dates["start_date"], end=dates["end_date"], freq="5T")
         days = pd.DataFrame({"When": days})
@@ -295,6 +315,12 @@ if __name__ == '__main__':
         df["DRad"] = df_in2["DRad"]
         df["Prec"] = df_in2["Prec"] / 1000
 
+        # Add Solar DataFrame
+        df["cld"] = df_in3["cld"]
+        df["sea"] = df_in3["sea"]
+
+
+
         # CSV output
         df.rename(
             columns={
@@ -308,9 +334,9 @@ if __name__ == '__main__':
             inplace=True,
         )
 
-        # v_a mean
-        v_a = df["v_a"].replace(0, np.NaN).mean()  # m/s Average Humidity
-        df["v_a"] = df["v_a"].replace(0, v_a)
+
+
+
 
 
         """Discharge Rate"""
@@ -320,16 +346,18 @@ if __name__ == '__main__':
 
 
         df_out = df[
-            ["When", "T_a", "RH", "v_a", "Discharge", "SW_direct", "SW_diffuse", "Prec", "p_a"]
+            ["When", "T_a", "RH", "v_a", "Discharge", "SW_direct", "SW_diffuse", "Prec", "p_a", "cld", "sea"]
         ]
 
         df_out = df_out.round(5)
 
+        print(df_out.tail())
+
         df_out.to_csv(folders["input_folder"] + "raw_input.csv")
 
-        # fig, ax = plt.subplots()
-        # ax.plot(df.When, df.Discharge)
-        # plt.show()
+        fig, ax = plt.subplots()
+        ax.plot(df.When, df.T_a)
+        plt.show()
 
     if site == "guttannen":
 
