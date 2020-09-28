@@ -279,14 +279,13 @@ if __name__ == '__main__':
         df_in2 = df_in2.loc[mask]
         df_in2 = df_in2.reset_index()
 
-        # Add Solar and cloudiness data
-        df_in3 = pd.read_csv(
-            os.path.join(folders["input_folder"] + "solar_output.csv"),sep=",", header=0, parse_dates=["When"]
-        )
-
-        df_in3.loc[df_in3['sea']<0,'sea'] = 0
-        for i in range(0,df_in3.shape[0]):
-            df_in3.loc[i,'sea'] = math.radians(df_in3.loc[i,'sea'])
+        # # Add Solar and cloudiness data
+        # df_in3 = pd.read_csv(
+        #     os.path.join(folders["input_folder"] + "solar_output.csv"),sep=",", header=0, parse_dates=["When"]
+        # )
+        #
+        # df_in3.loc[df_in3['sea']<0,'sea'] = 0
+        # df_in3.loc[i, 'sea'] = np.radians(df_in3.loc[i, 'sea'])
 
         days = pd.date_range(start=dates["start_date"], end=dates["end_date"], freq="5T")
         days = pd.DataFrame({"When": days})
@@ -315,9 +314,9 @@ if __name__ == '__main__':
         df["DRad"] = df_in2["DRad"]
         df["Prec"] = df_in2["Prec"] / 1000
 
-        # Add Solar DataFrame
-        df["cld"] = df_in3["cld"]
-        df["sea"] = df_in3["sea"]
+        # # Add Solar DataFrame
+        # df["cld"] = df_in3["cld"]
+        # df["sea"] = df_in3["sea"]
 
 
 
@@ -346,7 +345,7 @@ if __name__ == '__main__':
 
 
         df_out = df[
-            ["When", "T_a", "RH", "v_a", "Discharge", "SW_direct", "SW_diffuse", "Prec", "p_a", "cld", "sea"]
+            ["When", "T_a", "RH", "v_a", "Discharge", "SW_direct", "SW_diffuse", "Prec", "p_a"]
         ]
 
         df_out = df_out.round(5)
