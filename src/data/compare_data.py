@@ -12,6 +12,8 @@ from src.data.config import site, dates, folders
 
 df = pd.read_csv(folders["input_folder"] + "raw_input.csv", sep=",", header=0, parse_dates=["When"])
 df5 = pd.read_csv("/home/surya/Programs/PycharmProjects/ERA5/Eispalast_raw_input_ERA5.csv", sep=",", header=0, parse_dates=["When"])
+
+print(df5.columns)
 df5["Wind Speed"] = df5["v_a"]
 df["Wind Speed"] = df["v_a"]
 df["Temperature"] = df["T_a"]

@@ -128,7 +128,6 @@ class Icestupa:
 
         self.df["cld"] = df1["cld"]
         self.df["Dn"] = (self.df["dif"] - self.df["difcs"]) / self.df["ghics"]
-        print(self.df['cld'].head())
 
         for i in range(0, self.df.shape[0]):
             if self.df.loc[i, "sea"] < np.radians(20):
@@ -147,7 +146,6 @@ class Icestupa:
 
         self.df.loc[(self.df["Dn"] < 0.37) & (self.df["Dn"] > 0.9), "cld"] = 1
         self.df.loc[(self.df["cld"] > 1), "cld"] = 1
-        print(self.df['cld'].head())
 
         r = self.df["cld"].rolling(window=11)
         mps = r.mean() + 0.1
@@ -227,7 +225,7 @@ class Icestupa:
     def derive_parameters(self):
 
         self.get_solar()
-        self.cloudiness()
+        # self.cloudiness()
 
         missing = ["a", "e_a", "vp_a", "LW_in"]
         for col in missing:
@@ -465,6 +463,10 @@ class Icestupa:
         self.EJoules = self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]
 
     def summary(self):
+
+        if self.df.isnull().values.any() :
+            print( "Warning: Null values present")
+
         Efficiency = (
             (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1])
             / self.df["input"].iloc[-1]
@@ -1535,11 +1537,11 @@ if __name__ == "__main__":
 
     schwarzsee = PDF(site=site)
 
-    # schwarzsee.derive_parameters()
+    schwarzsee.derive_parameters()
 
-    schwarzsee.read_input()
+    # schwarzsee.read_input()
 
-    # schwarzsee.print_input()
+    schwarzsee.print_input()
 
     schwarzsee.melt_freeze()
 

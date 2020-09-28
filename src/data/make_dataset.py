@@ -219,74 +219,6 @@ if __name__ == '__main__':
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
 
-        # Fill Plaffeien data
-        df_in1 = pd.read_csv(
-            os.path.join(folders["raw_folder"], "plaffeien_aws.txt"),
-            sep=";",
-            skiprows=2,
-        )
-        df_in1["When"] = pd.to_datetime(df_in1["time"], format="%Y%m%d%H%M")
-        df_in1["Humidity"] = pd.to_numeric(df_in1["ure200s0"], errors="coerce")
-        df_in1["Wind Speed"] = pd.to_numeric(df_in1["fkl010z0"], errors="coerce")
-        df_in1["Temperature"] = pd.to_numeric(df_in1["tre200s0"], errors="coerce")
-        df_in1["Pressure"] = pd.to_numeric(df_in1["prestas0"], errors="coerce")
-
-        mask = (df_in1["When"] >= dates["start_date"]) & (df_in1["When"] <= dates["end_date"])
-        df_in1 = df_in1.loc[mask]
-        df_in1 = df_in1.reset_index()
-
-        df_in1 = df_in1.set_index("When").resample("5T").interpolate(method='linear').reset_index()
-
-        df_in = df_in.set_index("When")
-        df_in1 = df_in1.set_index("When")
-        df_in[df_in["Temperature"].isnull()].to_csv(folders["input_folder"] + "missing_input.csv")
-
-        df_in.loc[df_in["Temperature"].isnull(), "Temperature"] = df_in1["Temperature"]
-
-        df_in = df_in.reset_index()
-        df_in1 = df_in1.reset_index()
-
-        # Others
-        v_a = df_in["Wind Speed"].replace(0, np.NaN).mean()  # m/s Average Humidity
-        df_in.loc[(df_in["Wind Speed"] == 0) | (df_in["Wind Speed"].isnull()), "Wind Speed"] = v_a
-        p_a = df_in["Pressure"].mean()  # m/s Average Humidity
-        df_in.loc[(df_in["Pressure"].isnull()), "Pressure"] = p_a
-        RH = df_in["Humidity"].mean()  # m/s Average Humidity
-        df_in.loc[(df_in["Humidity"].isnull()), "Humidity"] = RH
-
-        df_in.loc[df_in["Discharge"].isnull(), "Discharge"] = 0
-
-        # Add Radiation data
-        df_in2 = pd.read_csv(
-            os.path.join(folders["raw_folder"], "plaffeien_rad.txt"),
-            sep="\\s+",
-            skiprows=2,
-        )
-        df_in2["When"] = pd.to_datetime(df_in2["time"], format="%Y%m%d%H%M")
-        df_in2["ods000z0"] = pd.to_numeric(df_in2["ods000z0"], errors="coerce")
-        df_in2["gre000z0"] = pd.to_numeric(df_in2["gre000z0"], errors="coerce")
-        df_in2["SW_direct"] = df_in2["gre000z0"] - df_in2["ods000z0"]
-        df_in2["DRad"] = df_in2["ods000z0"]
-
-        # Add Precipitation data
-        df_in2["Prec"] = pd.to_numeric(df_in2["rre150z0"], errors="coerce")
-        df_in2["Prec"] = df_in2["Prec"] / 2  # 5 minute sum
-        df_in2 = df_in2.set_index("When").resample("5T").interpolate(method='linear').reset_index()
-
-        mask = (df_in2["When"] >= dates["start_date"]) & (
-            df_in2["When"] <= dates["end_date"]
-        )
-        df_in2 = df_in2.loc[mask]
-        df_in2 = df_in2.reset_index()
-
-        # # Add Solar and cloudiness data
-        # df_in3 = pd.read_csv(
-        #     os.path.join(folders["input_folder"] + "solar_output.csv"),sep=",", header=0, parse_dates=["When"]
-        # )
-        #
-        # df_in3.loc[df_in3['sea']<0,'sea'] = 0
-        # df_in3.loc[i, 'sea'] = np.radians(df_in3.loc[i, 'sea'])
-
         days = pd.date_range(start=dates["start_date"], end=dates["end_date"], freq="5T")
         days = pd.DataFrame({"When": days})
 
@@ -307,19 +239,6 @@ if __name__ == '__main__':
             on="When",
         )
 
-
-
-        # Add Radiation DataFrame
-        df["SW_direct"] = df_in2["SW_direct"]
-        df["DRad"] = df_in2["DRad"]
-        df["Prec"] = df_in2["Prec"] / 1000
-
-        # # Add Solar DataFrame
-        # df["cld"] = df_in3["cld"]
-        # df["sea"] = df_in3["sea"]
-
-
-
         # CSV output
         df.rename(
             columns={
@@ -327,15 +246,51 @@ if __name__ == '__main__':
                 "Temperature": "T_a",
                 "Humidity": "RH",
                 "Pressure": "p_a",
-                "SW_direct": 'SW_direct',
-                "DRad": 'SW_diffuse',
             },
             inplace=True,
         )
 
+        # Fill from ERA5
+        df_ERA5 = pd.read_csv("/home/surya/Programs/PycharmProjects/ERA5/Eispalast_raw_input_ERA5.csv", sep=",", header=0, parse_dates=["When"])
+        df_ERA5 = df_ERA5.set_index("When")
+        df = df.set_index("When")
+        df.loc[df["T_a"].isnull(), [ 'T_a', 'RH', 'v_a', 'p_a', 'Discharge']] = df_ERA5[[ 'T_a', 'RH', 'v_a', 'p_a', 'Discharge']]
+
+        df["v_a"] = df["v_a"].replace(0, np.NaN)
+        df.loc[df["v_a"].isnull(), "v_a"] = df_ERA5["v_a"]
+
+        df[['SW_direct', "SW_diffuse", 'Prec', 'cld']] = df_ERA5[['SW_direct', "SW_diffuse", 'Prec', 'cld']]
+
+        # df[ 'Prec'] = df_ERA5[ 'Prec']
 
 
 
+        # Add Radiation data
+        df_in2 = pd.read_csv(
+            os.path.join(folders["raw_folder"], "plaffeien_rad.txt"),
+            sep="\\s+",
+            skiprows=2,
+        )
+        df_in2["When"] = pd.to_datetime(df_in2["time"], format="%Y%m%d%H%M")
+        df_in2["ods000z0"] = pd.to_numeric(df_in2["ods000z0"], errors="coerce")
+        df_in2["gre000z0"] = pd.to_numeric(df_in2["gre000z0"], errors="coerce")
+        df_in2["SW_direct"] = df_in2["gre000z0"] - df_in2["ods000z0"]
+        df_in2["SW_diffuse"] = df_in2["ods000z0"]
+
+        mask = (df_in2["When"] >= dates["start_date"]) & (
+                df_in2["When"] <= dates["end_date"]
+        )
+        df_in2 = df_in2.loc[mask]
+        df_in2 = df_in2.reset_index()
+
+        df_in2 = df_in2.set_index("When").resample("5T").interpolate(method='linear').reset_index()
+
+        df_in2 = df_in2.set_index("When")
+
+
+        # df[['SW_direct', "SW_diffuse"]] = df_in2[['SW_direct', "SW_diffuse"]]
+
+        df = df.reset_index()
 
 
         """Discharge Rate"""
@@ -343,10 +298,13 @@ if __name__ == '__main__':
 
         df["Discharge"] = df["Discharge"] * df["Fountain"]
 
-
         df_out = df[
-            ["When", "T_a", "RH", "v_a", "Discharge", "SW_direct", "SW_diffuse", "Prec", "p_a"]
+            ["When", "T_a", "RH", "v_a", "Discharge", "SW_direct", "SW_diffuse", "Prec", "p_a", 'cld']
         ]
+
+        if df_out.isnull().values.any() :
+            print( "Warning: Null values present")
+            print(df[['When']].isnull().sum())
 
         df_out = df_out.round(5)
 
@@ -354,9 +312,9 @@ if __name__ == '__main__':
 
         df_out.to_csv(folders["input_folder"] + "raw_input.csv")
 
-        fig, ax = plt.subplots()
-        ax.plot(df.When, df.T_a)
-        plt.show()
+        # fig, ax = plt.subplots()
+        # ax.plot(df.When, df.T_a)
+        # plt.show()
 
     if site == "guttannen":
 
