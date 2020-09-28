@@ -10,21 +10,6 @@ option = 'schwarzsee'
 
 print("Site is", site)
 
-max = False
-
-surface = dict(
-    ie=0.95,  # Ice Emissivity ie
-    a_i=0.35,  # Albedo of Ice a_i
-    a_s=0.85,  # Albedo of Fresh Snow a_s
-    decay_t=10,  # Albedo dry decay rate decay_t_d
-    dx=1e-02,  # Ice layer thickness
-    z0mi=0.0017,  # Ice Momentum roughness length
-    z0hi=0.0017,  # Ice Scalar roughness length
-    snow_fall_density=250,  # Snowfall density
-    rain_temp=1,  # Temperature condition for liquid precipitation
-    h_aws=3,  # m height of AWS
-)
-
 if site == "schwarzsee":
     folders = dict(
         dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
