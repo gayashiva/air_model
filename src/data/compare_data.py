@@ -11,7 +11,7 @@ import os
 from src.data.config import site, dates, folders
 
 df = pd.read_csv(folders["input_folder"] + "raw_input.csv", sep=",", header=0, parse_dates=["When"])
-df5 = pd.read_csv("/home/surya/Programs/PycharmProjects/ERA5/Eispalast_raw_input_ERA5.csv", sep=",", header=0, parse_dates=["When"])
+df5 = pd.read_csv(folders["input_folder"] + "raw_input_ERA5.csv", sep=",", header=0, parse_dates=["When"])
 
 print(df5.columns)
 df5["Wind Speed"] = df5["v_a"]
@@ -31,7 +31,7 @@ dfp["Wind Speed"] = pd.to_numeric(dfp["fkl010z0"], errors="coerce")
 dfp["Temperature"] = pd.to_numeric(dfp["tre200s0"], errors="coerce")
 dfp["Pressure"] = pd.to_numeric(dfp["prestas0"], errors="coerce")
 dfp["Prec"] = pd.to_numeric(dfp["rre150z0"], errors="coerce")
-dfp["Prec"] = dfp["Prec"] / 2  # 5 minute sum
+dfp["Prec"] = dfp["Prec"] / (2*1000)  # 5 minute sum
 dfp = dfp.set_index("When").resample("5T").interpolate(method='linear').reset_index()
 
 mask = (dfp["When"] >= dates["start_date"]) & (dfp["When"] <= dates["end_date"])
@@ -46,6 +46,8 @@ df = df[["When", "Wind Speed", "Temperature", "Prec"]]
 
 print(df5.head())
 print(dfp.head())
+
+print(df5["Prec"].max(), dfp["Prec"].max())
 
 pp = PdfPages(folders["input_folder"] + "compare" + ".pdf")
 fig = plt.figure()

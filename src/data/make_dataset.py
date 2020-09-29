@@ -250,8 +250,91 @@ if __name__ == '__main__':
             inplace=True,
         )
 
+        # ERA5 begins
+        df_in3 = pd.read_csv(folders["raw_folder"]+ site + "_ERA5.csv", sep=",", header=0, parse_dates=["dataDate"])
+
+        df_in3 = df_in3.drop(["Latitude", "Longitude"], axis=1)
+        df_in3["time"] = df_in3["validityTime"].replace([0, 100, 200, 300, 400, 500, 600, 700, 800, 900],
+                                                ["0000", "0100", "0200", "0300", "0400", "0500", "0600", "0700", "0800",
+                                                 "0900"])
+        df_in3["time"] = df_in3["time"].astype(str)
+        df_in3["time"] = df_in3["time"].str[0:2] + ":" + df_in3["time"].str[2:4]
+        df_in3["dataDate"] = df_in3["dataDate"].astype(str)
+        df_in3["When"] = df_in3["dataDate"] + " " + df_in3["time"]
+        df_in3["When"] = pd.to_datetime(df_in3["When"])
+
+        days = pd.date_range(start=dates["start_date"], end=dates["end_date"], freq="1H")
+        df_out1 = pd.DataFrame({"When": days})
+
+        mask = (df_in3["When"] >= dates["start_date"]) & (df_in3["When"] <= dates["end_date"])
+        df_in3 = df_in3.loc[mask]
+        df_in3 = df_in3.reset_index()
+
+        df_out1 = df_out1.set_index("When")
+        df_in3 = df_in3.set_index("When")
+
+        time_steps = 60 * 60
+        df_out1["10u"] = df_in3.loc[df_in3.shortName == '10u', "Value"]
+        df_out1["10v"] = df_in3.loc[df_in3.shortName == '10v', "Value"]
+        df_out1["2d"] = df_in3.loc[df_in3.shortName == '2d', "Value"]
+        df_out1["2t"] = df_in3.loc[df_in3.shortName == '2t', "Value"]
+        df_out1["sp"] = df_in3.loc[df_in3.shortName == 'sp', "Value"]
+        df_out1["tcc"] = df_in3.loc[df_in3.shortName == 'tcc', "Value"]
+        df_out1["tp"] = df_in3.loc[df_in3.shortName == 'tp', "Value"]
+        df_out1["ssrd"] = df_in3.loc[df_in3.shortName == 'ssrd', "Value"] / time_steps
+        df_out1["strd"] = df_in3.loc[df_in3.shortName == 'strd', "Value"] / time_steps
+        df_out1["fdir"] = df_in3.loc[df_in3.shortName == 'fdir', "Value"] / time_steps
+
+        df_out1["v_a"] = np.sqrt(df_out1["10u"] ** 2 + df_out1["10v"] ** 2)
+        df_out1["RH"] = 100 * (np.exp((17.625 * df_out1["2d"]) / (243.04 + df_out1["2d"])) / np.exp(
+            (17.625 * df_out1["2t"]) / (243.04 + df_out1["2t"])))
+        df_out1["sp"] = df_out1["sp"] / 100
+        df_out1["tp"] = df_out1["tp"] / 1000 # m/s
+        df_out1["SW_diffuse"] = df_out1["ssrd"] - df_out1["fdir"]
+        df_out1["2t"] = df_out1["2t"] - 273.15
+
+        # CSV output
+        df_out1.rename(
+            columns={
+                "2t": "T_a",
+                "sp": "p_a",
+                "tcc": "cld",
+                "tp": "Prec",
+                "fdir": 'SW_direct',
+                "strd": 'LW_in',
+
+            },
+            inplace=True,
+        )
+
+        df_in3 = df_out1[
+            ["T_a", "RH", "v_a", "SW_direct", "SW_diffuse", "LW_in", "cld", "p_a"]
+        ]
+
+        df_in3 = df_in3.round(5)
+
+        upsampled = df_in3.resample("5T")
+        interpolated = upsampled.interpolate(method='linear')
+        interpolated["Prec"] = df_out1["Prec"].resample("5T").bfill()
+
+        interpolated["Prec"] = interpolated["Prec"] * 5 * 60 # 5 minute sums in m
+
+        interpolated = interpolated.reset_index()
+
+        interpolated["Discharge"] = 0
+        mask = (interpolated["T_a"] < fountain["crit_temp"]) & (interpolated["SW_direct"] < 100)
+        mask_index = interpolated[mask].index
+        interpolated.loc[mask_index, "Discharge"] = 2 * 60
+        mask = interpolated["When"] >= dates["fountain_off_date"]
+        mask_index = interpolated[mask].index
+        interpolated.loc[mask_index, "Discharge"] = 0
+        interpolated = interpolated.reset_index()
+
+        interpolated.to_csv(folders["input_folder"] + "raw_input_ERA5.csv")
+
+        df_ERA5 = interpolated[["When", "T_a", "RH", "v_a", "SW_direct", "SW_diffuse", "LW_in", "cld", "p_a", "Prec", "Discharge"]]
+
         # Fill from ERA5
-        df_ERA5 = pd.read_csv(folders["raw_folder"]+ site + "_ERA5.csv", sep=",", header=0, parse_dates=["When"])
         df_ERA5 = df_ERA5.set_index("When")
         df = df.set_index("When")
         df.loc[df["T_a"].isnull(), [ 'T_a', 'RH', 'v_a', 'p_a', 'Discharge']] = df_ERA5[[ 'T_a', 'RH', 'v_a', 'p_a', 'Discharge']]
@@ -259,11 +342,26 @@ if __name__ == '__main__':
         df["v_a"] = df["v_a"].replace(0, np.NaN)
         df.loc[df["v_a"].isnull(), "v_a"] = df_ERA5["v_a"]
 
-        df[['SW_direct', "SW_diffuse", 'Prec', 'cld']] = df_ERA5[['SW_direct', "SW_diffuse", 'Prec', 'cld']]
+        df[['SW_direct', "SW_diffuse", 'cld']] = df_ERA5[['SW_direct', "SW_diffuse", 'cld']]
 
-        # df[ 'Prec'] = df_ERA5[ 'Prec']
+        # Add Precipitation data
+        df_in2 = pd.read_csv(
+            os.path.join(folders["raw_folder"], "plaffeien_rad.txt"),
+            sep="\\s+",
+            skiprows=2,
+        )
+        df_in2["When"] = pd.to_datetime(df_in2["time"], format="%Y%m%d%H%M")
 
+        df_in2["Prec"] = pd.to_numeric(df_in2["rre150z0"], errors="coerce")
+        df_in2["Prec"] = df_in2["Prec"] / 2  # 5 minute sum
+        df_in2 = df_in2.set_index("When").resample("5T").ffill().reset_index()
 
+        mask = (df_in2["When"] >= dates["start_date"]) & (
+                df_in2["When"] <= dates["end_date"]
+        )
+        df_in2 = df_in2.loc[mask]
+        df_in2 = df_in2.set_index("When")
+        df["Prec"] = df_in2["Prec"] / 1000
 
         # # Add Radiation data
         # df_in2 = pd.read_csv(
@@ -287,7 +385,6 @@ if __name__ == '__main__':
         #
         # df_in2 = df_in2.set_index("When")
 
-
         # df[['SW_direct', "SW_diffuse"]] = df_in2[['SW_direct', "SW_diffuse"]]
 
         df = df.reset_index()
@@ -304,7 +401,7 @@ if __name__ == '__main__':
 
         if df_out.isnull().values.any() :
             print( "Warning: Null values present")
-            print(df[['When']].isnull().sum())
+            print(df[['Prec']].isnull().sum())
 
         df_out = df_out.round(5)
 

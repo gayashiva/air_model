@@ -592,8 +592,7 @@ class Icestupa:
 
         print(f"Duration {self.df.index[-1] * 5 / (60 * 24)}")
 
-        print(self.df.head())
-        print(self.df.tail())
+
         # Output for manim
         filename2 = os.path.join(
             self.folders["output_folder"], self.site + "_model_gif.csv"
