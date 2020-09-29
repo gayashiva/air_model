@@ -251,7 +251,7 @@ if __name__ == '__main__':
         )
 
         # Fill from ERA5
-        df_ERA5 = pd.read_csv("/home/surya/Programs/PycharmProjects/ERA5/Eispalast_raw_input_ERA5.csv", sep=",", header=0, parse_dates=["When"])
+        df_ERA5 = pd.read_csv(folders["raw_folder"]+ site + "_ERA5.csv", sep=",", header=0, parse_dates=["When"])
         df_ERA5 = df_ERA5.set_index("When")
         df = df.set_index("When")
         df.loc[df["T_a"].isnull(), [ 'T_a', 'RH', 'v_a', 'p_a', 'Discharge']] = df_ERA5[[ 'T_a', 'RH', 'v_a', 'p_a', 'Discharge']]
@@ -265,27 +265,27 @@ if __name__ == '__main__':
 
 
 
-        # Add Radiation data
-        df_in2 = pd.read_csv(
-            os.path.join(folders["raw_folder"], "plaffeien_rad.txt"),
-            sep="\\s+",
-            skiprows=2,
-        )
-        df_in2["When"] = pd.to_datetime(df_in2["time"], format="%Y%m%d%H%M")
-        df_in2["ods000z0"] = pd.to_numeric(df_in2["ods000z0"], errors="coerce")
-        df_in2["gre000z0"] = pd.to_numeric(df_in2["gre000z0"], errors="coerce")
-        df_in2["SW_direct"] = df_in2["gre000z0"] - df_in2["ods000z0"]
-        df_in2["SW_diffuse"] = df_in2["ods000z0"]
-
-        mask = (df_in2["When"] >= dates["start_date"]) & (
-                df_in2["When"] <= dates["end_date"]
-        )
-        df_in2 = df_in2.loc[mask]
-        df_in2 = df_in2.reset_index()
-
-        df_in2 = df_in2.set_index("When").resample("5T").interpolate(method='linear').reset_index()
-
-        df_in2 = df_in2.set_index("When")
+        # # Add Radiation data
+        # df_in2 = pd.read_csv(
+        #     os.path.join(folders["raw_folder"], "plaffeien_rad.txt"),
+        #     sep="\\s+",
+        #     skiprows=2,
+        # )
+        # df_in2["When"] = pd.to_datetime(df_in2["time"], format="%Y%m%d%H%M")
+        # df_in2["ods000z0"] = pd.to_numeric(df_in2["ods000z0"], errors="coerce")
+        # df_in2["gre000z0"] = pd.to_numeric(df_in2["gre000z0"], errors="coerce")
+        # df_in2["SW_direct"] = df_in2["gre000z0"] - df_in2["ods000z0"]
+        # df_in2["SW_diffuse"] = df_in2["ods000z0"]
+        #
+        # mask = (df_in2["When"] >= dates["start_date"]) & (
+        #         df_in2["When"] <= dates["end_date"]
+        # )
+        # df_in2 = df_in2.loc[mask]
+        # df_in2 = df_in2.reset_index()
+        #
+        # df_in2 = df_in2.set_index("When").resample("5T").interpolate(method='linear').reset_index()
+        #
+        # df_in2 = df_in2.set_index("When")
 
 
         # df[['SW_direct', "SW_diffuse"]] = df_in2[['SW_direct', "SW_diffuse"]]

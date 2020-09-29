@@ -11,7 +11,7 @@ import statistics as st
 input = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/"
 figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/"
 
-names = "full2"
+names = "full"
 variance = []
 mean = []
 evaluations = []

@@ -59,7 +59,7 @@ class Icestupa:
     latitude = 46.693723
     longitude = 7.297543
 
-    # site = "schwarzsee"
+    site = "schwarzsee"
     state = 0
     utc_offset = 1
 
@@ -254,8 +254,8 @@ class Icestupa:
                     * math.pow(
                         10,
                         7.5
-                        * self.df.loc[row.Index - 1, "T_a"]
-                        / (self.df.loc[row.Index - 1, "T_a"] + 237.3),
+                        * self.df.loc[row.Index, "T_a"]
+                        / (self.df.loc[row.Index, "T_a"] + 237.3),
                     )
                     * row.RH
                     / 100
@@ -452,12 +452,12 @@ class Icestupa:
 
         self.df.loc[i, "Qg"] = (
             self.k_i
-            * (self.df.loc[i - 1, "T_bulk"] - self.df.loc[i, "T_s"])
+            * (self.df.loc[i, "T_bulk"] - self.df.loc[i, "T_s"])
             / (self.df.loc[i, "r_ice"])
         )
 
         # Bulk Temperature
-        self.df.loc[i, "T_bulk"] = self.df.loc[i - 1, "T_bulk"] - self.df.loc[
+        self.df.loc[i+1, "T_bulk"] = self.df.loc[i, "T_bulk"] - self.df.loc[
             i, "Qg"
         ] * self.time_steps * self.df.loc[i, "SA"] / (self.df.loc[i, "ice"] * self.c_i)
 
@@ -480,14 +480,10 @@ class Icestupa:
 
         if self.df.isnull().values.any():
             print("Warning: Null values present")
-            print(self.df.columns)
 
         self.df = self.df[
             [
                 "When",
-                "ghics",
-                "difcs",
-                "zen",
                 "sea",
                 "T_a",
                 "RH",
@@ -498,8 +494,6 @@ class Icestupa:
                 "Prec",
                 "p_a",
                 "cld",
-                "ghi",
-                "dif",
                 "a",
                 "e_a",
                 "vp_a",
@@ -556,6 +550,7 @@ class Icestupa:
     def read_input(self):
 
         self.df = pd.read_hdf(self.folders["input_folder"] + "model_input.h5", 'df')
+
 
         if self.df.isnull().values.any():
             print("Warning: Null values present")
@@ -845,8 +840,8 @@ class PDF(Icestupa):
 
         pp = PdfPages(filename)
 
-        fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
-            nrows=6, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
+        fig, (ax1, ax2, ax3, ax4, ax5, ax6, ax7) = plt.subplots(
+            nrows=7, ncols=1, sharex="col", sharey="row", figsize=(16,14)
         )
 
         x = self.df.When
@@ -893,6 +888,12 @@ class PDF(Icestupa):
         ax6.plot(x, y6, "k-", linewidth=0.5)
         ax6.set_ylabel("Wind [$m\\,s^{-1}$]")
         ax6.grid()
+
+        y7 = self.df.cld
+        ax7.plot(x, y7, "k-", linewidth=0.5)
+        ax7.set_ylabel("Cloudiness")
+        ax7.grid()
+
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -1002,6 +1003,8 @@ class PDF(Icestupa):
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
+
+
 
         plt.close("all")
         pp.close()
@@ -1611,21 +1614,21 @@ if __name__ == "__main__":
 
     schwarzsee = PDF(site=site)
 
-    schwarzsee.derive_parameters()
+    # schwarzsee.derive_parameters()
 
     # schwarzsee.read_input()
 
-    schwarzsee.print_input()
+    # schwarzsee.print_input()
 
-    schwarzsee.melt_freeze()
+    # schwarzsee.melt_freeze()
 
-    # schwarzsee.read_output()
+    schwarzsee.read_output()
 
     # schwarzsee.corr_plot()
 
     schwarzsee.summary()
 
-    schwarzsee.print_output()
+    # schwarzsee.print_output()
 
     total = time.time() - start
 

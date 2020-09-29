@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages
-from src.data.config import site, option, folders, fountain, surface
+from src.data.config import site, option, folders, fountain
 
 from multiprocessing import Pool
 from src.models.air import Icestupa
@@ -97,10 +97,10 @@ if __name__ == "__main__":
 
         print(results)
 
-        filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_results2.csv"
+        filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_results.csv"
         results.to_csv(filename, sep=",")
 
-        filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_sim2.h5"
+        filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_sim.h5"
         data_store = pd.HDFStore(filename2)
         data_store["dfd"] = df_out
         data_store.close()
