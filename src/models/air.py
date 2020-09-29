@@ -107,7 +107,9 @@ class Icestupa:
         )
         clearsky = site_location.get_clearsky(times)
         # Get solar azimuth and zenith to pass to the transposition function
-        solar_position = site_location.get_solarposition(times=times, method="ephemeris")
+        solar_position = site_location.get_solarposition(
+            times=times, method="ephemeris"
+        )
 
         solar_df = pd.DataFrame(
             {
@@ -123,7 +125,7 @@ class Icestupa:
 
         self.df = pd.merge(solar_df, self.df, on="When")
 
-    def cloudiness(self, clear_sky_filename='clear_sky.csv'):
+    def cloudiness(self, clear_sky_filename="clear_sky.csv"):
         df1 = pd.read_csv(self.folders["input_folder"] + clear_sky_filename)
 
         self.df["cld"] = df1["cld"]
@@ -142,16 +144,18 @@ class Icestupa:
                         self.df.loc[i, "cld"] = 1
 
                 if (self.df.loc[i, "cld"] == 1) & (self.df.loc[i, "Dn"] > 0):
-                    self.df.loc[i, "cld"] = 2.255 * math.pow(self.df.loc[i, "Dn"], 0.9381)
+                    self.df.loc[i, "cld"] = 2.255 * math.pow(
+                        self.df.loc[i, "Dn"], 0.9381
+                    )
 
         self.df.loc[(self.df["Dn"] < 0.37) & (self.df["Dn"] > 0.9), "cld"] = 1
         self.df.loc[(self.df["cld"] > 1), "cld"] = 1
 
         r = self.df["cld"].rolling(window=11)
         mps = r.mean() + 0.1
-        self.df['cld'] = self.df['cld'].where(self.df.cld < mps, np.nan)
-        self.df['cld'] = self.df['cld'].interpolate(method='linear')
-        self.df['cld'] = self.df['cld'].fillna(method='bfill')
+        self.df["cld"] = self.df["cld"].where(self.df.cld < mps, np.nan)
+        self.df["cld"] = self.df["cld"].interpolate(method="linear")
+        self.df["cld"] = self.df["cld"].fillna(method="bfill")
 
     def projectile_xy(self, v, h=0):
         if h == 0:
@@ -277,11 +281,12 @@ class Icestupa:
 
         self.df = self.df.round(5)
 
-        self.df = self.df.drop(["Unnamed: 0"], axis=1)
+        self.df = self.df[['When', 'sea', 'T_a', 'RH', 'v_a', 'Discharge',
+       'SW_direct', 'SW_diffuse', 'Prec', 'p_a', 'cld', 'a',
+       'e_a', 'vp_a', 'LW_in']]
 
-        data_store = pd.HDFStore(self.folders["input_folder"] + "model_input.h5")
-        data_store["df"] = self.df
-        data_store.close()
+        self.df.to_hdf(self.folders["input_folder"] + "model_input.h5", key='df', mode='w')
+
 
     def surface_area(self, i):
 
@@ -295,22 +300,22 @@ class Icestupa:
             )
 
             # Height by Radius ratio
-            self.df.loc[i, "h_r"] = (
+            self.df.loc[i, "s_cone"] = (
                 self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
             )
 
         else:
 
             # Height to radius ratio
-            self.df.loc[i, "h_r"] = self.df.loc[i - 1, "h_r"]
+            self.df.loc[i, "s_cone"] = self.df.loc[i - 1, "s_cone"]
 
             # Ice Radius
             self.df.loc[i, "r_ice"] = math.pow(
-                self.df.loc[i, "iceV"] / math.pi * (3 / self.df.loc[i, "h_r"]), 1 / 3
+                self.df.loc[i, "iceV"] / math.pi * (3 / self.df.loc[i, "s_cone"]), 1 / 3
             )
 
             # Ice Height
-            self.df.loc[i, "h_ice"] = self.df.loc[i, "h_r"] * self.df.loc[i, "r_ice"]
+            self.df.loc[i, "h_ice"] = self.df.loc[i, "s_cone"] * self.df.loc[i, "r_ice"]
 
         # Area of Conical Ice Surface
         self.df.loc[i, "SA"] = (
@@ -325,7 +330,7 @@ class Icestupa:
             )
         )
 
-        self.df.loc[i, "SRf"] = (
+        self.df.loc[i, "f_cone"] = (
             0.5
             * self.df.loc[i, "h_ice"]
             * self.df.loc[i, "r_ice"]
@@ -359,20 +364,29 @@ class Icestupa:
                 / ((np.log(self.h_aws / self.z_i)) ** 2)
             )
 
-            if self.df.loc[i, "Ql"] < 0:  # Sublimation
-                self.gas -= (
-                    self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.time_steps
-                ) / self.L_s
+            if self.df.loc[i, "Ql"] < 0:
+                if self.df.loc[i, "RH"] < 50:
+                    L = self.L_s  # Sublimation
 
-                # Removing gas quantity generated from previous ice
-                self.df.loc[i, "solid"] += (
-                    self.df.loc[i, "Ql"] * (self.df.loc[i, "SA"]) * self.time_steps
-                ) / self.L_s
+                    self.gas -= (
+                        self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.time_steps
+                    ) / L
 
-                # Ice Temperature
-                self.df.loc[i, "delta_T_s"] += (
-                    self.df.loc[i, "Ql"] * self.time_steps
-                ) / (self.rho_i * self.dx * self.c_i)
+                    # Removing gas quantity generated from previous ice
+                    self.df.loc[i, "solid"] += (
+                        self.df.loc[i, "Ql"] * (self.df.loc[i, "SA"]) * self.time_steps
+                    ) / L
+                else:
+                    L = self.L_e
+
+                    self.gas -= (
+                        self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.time_steps
+                    ) / L
+
+                    # Removing gas quantity generated from previous meltwater
+                    self.df.loc[i, "meltwater"] += (
+                        self.df.loc[i, "Ql"] * (self.df.loc[i, "SA"]) * self.time_steps
+                    ) / L
 
             else:  # Deposition
 
@@ -380,12 +394,12 @@ class Icestupa:
                     self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.time_steps
                 ) / self.L_s
 
-                # Ice Temperature
-                self.df.loc[i, "delta_T_s"] += (
-                    self.df.loc[i, "Ql"] * self.time_steps
-                ) / (self.rho_i * self.dx * self.c_i)
-
                 self.df.loc[i, "solid"] += self.df.loc[i, "dpt"]
+
+            # Ice Temperature
+            self.df.loc[i, "delta_T_s"] += (self.df.loc[i, "Ql"] * self.time_steps) / (
+                self.rho_i * self.dx * self.c_i
+            )
 
         # Sensible Heat Qs
         self.df.loc[i, "Qs"] = (
@@ -401,7 +415,7 @@ class Icestupa:
 
         # Short Wave Radiation SW
         self.df.loc[i, "SW"] = (1 - row.a) * (
-            row.SW_direct * self.df.loc[i, "SRf"] + row.SW_diffuse
+            row.SW_direct * self.df.loc[i, "f_cone"] + row.SW_diffuse
         )
 
         # Long Wave Radiation LW
@@ -464,8 +478,61 @@ class Icestupa:
 
     def summary(self):
 
-        if self.df.isnull().values.any() :
-            print( "Warning: Null values present")
+        if self.df.isnull().values.any():
+            print("Warning: Null values present")
+            print(self.df.columns)
+
+        self.df = self.df[
+            [
+                "When",
+                "ghics",
+                "difcs",
+                "zen",
+                "sea",
+                "T_a",
+                "RH",
+                "v_a",
+                "Discharge",
+                "SW_direct",
+                "SW_diffuse",
+                "Prec",
+                "p_a",
+                "cld",
+                "ghi",
+                "dif",
+                "a",
+                "e_a",
+                "vp_a",
+                "LW_in",
+                "T_s",
+                "T_bulk",
+                "f_cone",
+                "ice",
+                "iceV",
+                "solid",
+                "vapour",
+                "melted",
+                "delta_T_s",
+                "unfrozen_water",
+                "TotalE",
+                "SW",
+                "LW",
+                "Qs",
+                "Ql",
+                "Qf",
+                "Qg",
+                "meltwater",
+                "SA",
+                "h_ice",
+                "r_ice",
+                "ppt",
+                "dpt",
+                "s_cone",
+                "input",
+                "vp_ice",
+                "thickness",
+            ]
+        ]
 
         Efficiency = (
             (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1])
@@ -484,22 +551,29 @@ class Icestupa:
         filename4 = self.folders["output_folder"] + "model_results.csv"
         self.df.to_csv(filename4, sep=",")
 
-        data_store = pd.HDFStore(self.folders["output_folder"] + "model_output.h5")
-        data_store["df_out"] = self.df
-        data_store.close()
+        self.df.to_hdf(self.folders["output_folder"] + "model_output.h5", key='df', mode='w')
 
     def read_input(self):
 
-        data_store = pd.HDFStore(self.folders["input_folder"] + "model_input.h5")
-        self.df = data_store["df"]
-        data_store.close()
+        self.df = pd.read_hdf(self.folders["input_folder"] + "model_input.h5", 'df')
+
+        if self.df.isnull().values.any():
+            print("Warning: Null values present")
+
+        # data_store = pd.HDFStore(self.folders["input_folder"] + "model_input.h5")
+        # self.df = data_store["df"]
+        # data_store.close()
 
     def read_output(self):
 
-        self.df = pd.read_csv(
-            self.folders["output_folder"] + "model_results.csv", sep=","
-        )
-        self.df["When"] = pd.to_datetime(self.df["When"], format="%Y.%m.%d %H:%M:%S")
+        self.df = pd.read_hdf(self.folders["output_folder"] + "model_output.h5", 'df')
+
+        if self.df.isnull().values.any():
+            print("Warning: Null values present")
+            # print(self.df.columns)
+            # print(self.df[['s_cone']].isnull().sum())
+            # print(self.df[self.df['s_cone'].isnull()])
+
 
         print(
             f"Mean of SW {self.df.SW.mean()}, LW {self.df.LW.mean()}, Qs {self.df.Qs.mean()}, Ql {self.df.Ql.mean()}, Qf {self.df.Qf.mean()}, Qg {self.df.Qg.mean()}"
@@ -508,7 +582,7 @@ class Icestupa:
             f"Range of SW {self.df.SW.min()}-{self.df.SW.max()}, LW {self.df.LW.min()}-{self.df.LW.max()}, Qs {self.df.Qs.min()}-{self.df.Qs.max()}, Ql {self.df.Ql.min()}-{self.df.Ql.max()}, Qf {self.df.Qf.min()}-{self.df.Qf.max()}, Qg {self.df.Qg.min()}-{self.df.Qg.max()}"
         )
         print(
-            f"Mean of emissivity {self.df.e_a.mean()}, Range of SRf {self.df.e_a.min()}-{self.df.e_a.max()}"
+            f"Mean of emissivity {self.df.e_a.mean()}, Range of f_cone {self.df.e_a.min()}-{self.df.e_a.max()}"
         )
         print(f"Max SA {self.df.SA.max()}")
         print(
@@ -541,7 +615,7 @@ class Icestupa:
         l = [
             "T_s",  # Surface Temperature
             "T_bulk",  # Bulk Temperature
-            "SRf",
+            "f_cone",
             "ice",
             "iceV",
             "solid",
@@ -587,7 +661,7 @@ class Icestupa:
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.dx
 
-                self.df.loc[i - 1, "h_r"] = (
+                self.df.loc[i - 1, "s_cone"] = (
                     self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
                 )
                 self.df.loc[i, "iceV"] = (
@@ -716,7 +790,7 @@ class Icestupa:
 
         data["$SW_{in}$"] = data["SW_direct"] + data["SW_diffuse"]
 
-        # data = data.drop(["When", "input", "ppt", "ice", "T_s", "vapour", "Discharge", "TotalE", "T_a", "sea", "SW_direct", "a", "cld", "sea", "e_a", "vp_a", "LW_in", "vp_ice", "SRf", "SW_diffuse", "h_r", "RH", "iceV", "melted", "Qf", "SW", "LW", "Qs", "Ql", "dpt", "p_a", "thickness", "h_ice", "r_ice", "Prec", "v_a", "unfrozen_water", "meltwater"], axis=1)
+        # data = data.drop(["When", "input", "ppt", "ice", "T_s", "vapour", "Discharge", "TotalE", "T_a", "sea", "SW_direct", "a", "cld", "sea", "e_a", "vp_a", "LW_in", "vp_ice", "f_cone", "SW_diffuse", "s_cone", "RH", "iceV", "melted", "Qf", "SW", "LW", "Qs", "Ql", "dpt", "p_a", "thickness", "h_ice", "r_ice", "Prec", "v_a", "unfrozen_water", "meltwater"], axis=1)
 
         data = data.rename(
             {
@@ -1026,7 +1100,7 @@ class PDF(Icestupa):
         plt.clf()
 
         y1 = self.df.a
-        y2 = self.df.SRf
+        y2 = self.df.f_cone
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Albedo")
@@ -1074,7 +1148,7 @@ class PDF(Icestupa):
         x = self.df.When
 
         y1 = self.df.a
-        y2 = self.df.SRf
+        y2 = self.df.f_cone
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Albedo")
         # ax1.set_xlabel("Days")
@@ -1346,7 +1420,7 @@ class PDF(Icestupa):
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        y1 = self.df.h_r
+        y1 = self.df.s_cone
         ax1 = fig.add_subplot(111)
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Ice Cone Slope [$m$]")
@@ -1407,7 +1481,7 @@ class PDF(Icestupa):
         x = self.df.When
 
         y1 = self.df.a
-        y2 = self.df.SRf
+        y2 = self.df.f_cone
         ax1.plot(x, y1, "k-")
         ax1.set_ylabel("Albedo")
         # ax1.set_xlabel("Days")
