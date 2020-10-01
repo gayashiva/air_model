@@ -17,9 +17,11 @@ class Discharge_Icestupa(Icestupa):
 
     def __init__(self):
 
-        data_store = pd.HDFStore("/home/surya/Programs/PycharmProjects/air_model/data/interim/schwarzsee/model_input.h5")
-        self.df = data_store['df']
-        data_store.close()
+        # data_store = pd.HDFStore("/home/surya/Programs/PycharmProjects/air_model/data/interim/schwarzsee/model_input.h5")
+        # self.df = data_store['df']
+        # data_store.close()
+
+        self.df = pd.read_hdf(folders["input_folder"] + "model_input_extended.h5", "df")
 
 
     def run(self, experiment):
@@ -44,12 +46,14 @@ class Discharge_Icestupa(Icestupa):
         unfrozen_water = self.df["unfrozen_water"].iloc[-1]
         avg_freeze_rate = self.df[self.df["Discharge"]>0]["solid"].mean() / 5
 
-        print("\nIce Volume Max", float(self.df["iceV"].max()))
+        print("\nDia", key)
+        print("Ice Volume Max", float(self.df["iceV"].max()))
         print("Fountain efficiency", Efficiency)
         print("Ice Mass Remaining", self.df["ice"].iloc[-1])
         print("Meltwater", self.df["meltwater"].iloc[-1])
         print("Ppt", self.df["ppt"].sum())
         print("Deposition", self.df["dpt"].sum() )
+        print("Ended on", self.df["When"].iloc[-1])
 
         result = pd.Series([experiment.get("dia_f"),
                              Max_IceV,
@@ -66,7 +70,7 @@ class Discharge_Icestupa(Icestupa):
 
         return key, self.df["When"].values, self.df["SA"].values, self.df["iceV"].values, self.df["solid"].values, self.df["thickness"].values, self.df["Discharge"].values, self.df["input"].values, self.df["meltwater"].values, result
 
-param_values = np.arange(0.002, 0.0062, 0.0002).tolist()
+param_values = np.arange(0.002, 0.0062, 0.001).tolist()
 
 
 experiments = pd.DataFrame(param_values,
@@ -81,7 +85,7 @@ df_out = pd.DataFrame()
 results = []
 
 if __name__ == "__main__":
-    with Pool(7) as executor:
+    with Pool(6) as executor:
 
         for key, When, SA, iceV, solid, thickness, Discharge, input, meltwater, result in executor.map(model.run, experiments.to_dict('records')):
             iterables = [[key], variables]
@@ -97,10 +101,10 @@ if __name__ == "__main__":
 
         print(results)
 
-        filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_results.csv"
+        filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_results2.csv"
         results.to_csv(filename, sep=",")
 
-        filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_sim.h5"
+        filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_sim2.h5"
         data_store = pd.HDFStore(filename2)
         data_store["dfd"] = df_out
         data_store.close()

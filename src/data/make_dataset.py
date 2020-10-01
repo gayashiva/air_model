@@ -263,12 +263,8 @@ if __name__ == '__main__':
         df_in3["When"] = df_in3["dataDate"] + " " + df_in3["time"]
         df_in3["When"] = pd.to_datetime(df_in3["When"])
 
-        days = pd.date_range(start=dates["start_date"], end=dates["end_date"], freq="1H")
+        days = pd.date_range(start=dates["start_date"], end=df_in3["When"].iloc[-1], freq="1H")
         df_out1 = pd.DataFrame({"When": days})
-
-        mask = (df_in3["When"] >= dates["start_date"]) & (df_in3["When"] <= dates["end_date"])
-        df_in3 = df_in3.loc[mask]
-        df_in3 = df_in3.reset_index()
 
         df_out1 = df_out1.set_index("When")
         df_in3 = df_in3.set_index("When")
@@ -330,9 +326,22 @@ if __name__ == '__main__':
         interpolated.loc[mask_index, "Discharge"] = 0
         interpolated = interpolated.reset_index()
 
-        interpolated.to_csv(folders["input_folder"] + "raw_input_ERA5.csv")
+        print(interpolated.tail())
+
+        df_in3 = interpolated[
+            ["When", "T_a", "RH", "v_a", "SW_direct", "SW_diffuse", "LW_in", "cld", "p_a"]
+        ]
+
+        df_in3 = df_in3.reset_index()
+        # print(df_in3.head(), interpolated.head())
+        mask = (df_in3["When"] >= dates["start_date"]) & (df_in3["When"] <= dates["end_date"])
+        df_in3 = df_in3.loc[mask]
+        df_in3 = df_in3.reset_index()
+
+        df_in3.to_csv(folders["input_folder"] + "raw_input_ERA5.csv")
 
         df_ERA5 = interpolated[["When", "T_a", "RH", "v_a", "SW_direct", "SW_diffuse", "LW_in", "cld", "p_a", "Prec", "Discharge"]]
+        df_ERA5.loc[:,"Discharge"] = 0
 
         # Fill from ERA5
         df_ERA5 = df_ERA5.set_index("When")
@@ -343,6 +352,8 @@ if __name__ == '__main__':
         df.loc[df["v_a"].isnull(), "v_a"] = df_ERA5["v_a"]
 
         df[['SW_direct', "SW_diffuse", 'cld']] = df_ERA5[['SW_direct', "SW_diffuse", 'cld']]
+
+        print(df.columns, df_ERA5.columns)
 
         # Add Precipitation data
         df_in2 = pd.read_csv(
@@ -363,30 +374,6 @@ if __name__ == '__main__':
         df_in2 = df_in2.set_index("When")
         df["Prec"] = df_in2["Prec"] / 1000
 
-        # # Add Radiation data
-        # df_in2 = pd.read_csv(
-        #     os.path.join(folders["raw_folder"], "plaffeien_rad.txt"),
-        #     sep="\\s+",
-        #     skiprows=2,
-        # )
-        # df_in2["When"] = pd.to_datetime(df_in2["time"], format="%Y%m%d%H%M")
-        # df_in2["ods000z0"] = pd.to_numeric(df_in2["ods000z0"], errors="coerce")
-        # df_in2["gre000z0"] = pd.to_numeric(df_in2["gre000z0"], errors="coerce")
-        # df_in2["SW_direct"] = df_in2["gre000z0"] - df_in2["ods000z0"]
-        # df_in2["SW_diffuse"] = df_in2["ods000z0"]
-        #
-        # mask = (df_in2["When"] >= dates["start_date"]) & (
-        #         df_in2["When"] <= dates["end_date"]
-        # )
-        # df_in2 = df_in2.loc[mask]
-        # df_in2 = df_in2.reset_index()
-        #
-        # df_in2 = df_in2.set_index("When").resample("5T").interpolate(method='linear').reset_index()
-        #
-        # df_in2 = df_in2.set_index("When")
-
-        # df[['SW_direct', "SW_diffuse"]] = df_in2[['SW_direct', "SW_diffuse"]]
-
         df = df.reset_index()
 
 
@@ -401,7 +388,7 @@ if __name__ == '__main__':
 
         if df_out.isnull().values.any() :
             print( "Warning: Null values present")
-            print(df[['Prec']].isnull().sum())
+            print(df[["When", "T_a", "RH", "v_a", "Discharge", "SW_direct", "SW_diffuse", "Prec", "p_a", 'cld']].isnull().sum())
 
         df_out = df_out.round(5)
 
@@ -412,6 +399,33 @@ if __name__ == '__main__':
         # fig, ax = plt.subplots()
         # ax.plot(df.When, df.T_a)
         # plt.show()
+
+        # Extend data
+        df_ERA5["Prec"] = 0
+        df_ERA5 = df_ERA5.reset_index()
+        mask = (df_ERA5["When"] >= df_out["When"].iloc[-1])
+        df_ERA5 = df_ERA5.loc[mask]
+        df_ERA5 = df_ERA5.set_index("When")
+
+        df_out = df_out.set_index("When")
+        # df_ERA5 = df_ERA5.set_index("When")
+        df_ERA5 = df_ERA5.drop(["LW_in"], axis=1)
+        concat = pd.concat([df_out, df_ERA5])
+        concat.loc[concat["Prec"].isnull(), "Prec"] = df_ERA5["Prec"]
+        print(concat.tail())
+        concat = concat.reset_index()
+
+        if concat.isnull().values.any() :
+            print( "Warning: Null values present")
+            print(concat[["When", "T_a", "RH", "v_a", "Discharge", "SW_direct", "SW_diffuse", "Prec", "p_a", 'cld']].isnull().sum())
+
+        concat.to_csv(folders["input_folder"] + "raw_input_extended.csv")
+        concat.to_hdf(
+            folders["input_folder"] + "raw_input_extended.h5", key="df", mode="w"
+        )
+
+        print(concat.loc[concat["Discharge"]>0,["When","Discharge"]])
+
 
     if site == "guttannen":
 

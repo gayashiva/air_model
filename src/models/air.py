@@ -75,7 +75,7 @@ class Icestupa:
             ),
         )
 
-        input_file = self.folders["input_folder"] + "raw_input.csv"
+        input_file = self.folders["input_folder"] + "raw_input_extended.csv"
 
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
 
@@ -103,7 +103,7 @@ class Icestupa:
         site_location = location.Location(self.latitude, self.longitude)
 
         times = pd.date_range(
-            start=dates["start_date"], end=dates["end_date"], freq="5T"
+            start=dates["start_date"], end=self.df["When"].iloc[-1], freq="5T"
         )
         clearsky = site_location.get_clearsky(times)
         # Get solar azimuth and zenith to pass to the transposition function
@@ -250,7 +250,7 @@ class Icestupa:
             """ Vapour Pressure"""
             if "vp_a" in missing:
                 self.df.loc[row.Index, "vp_a"] = (
-                    6.11
+                    6.107
                     * math.pow(
                         10,
                         7.5
@@ -281,12 +281,30 @@ class Icestupa:
 
         self.df = self.df.round(5)
 
-        self.df = self.df[['When', 'sea', 'T_a', 'RH', 'v_a', 'Discharge',
-       'SW_direct', 'SW_diffuse', 'Prec', 'p_a', 'cld', 'a',
-       'e_a', 'vp_a', 'LW_in']]
+        self.df = self.df[
+            [
+                "When",
+                "sea",
+                "T_a",
+                "RH",
+                "v_a",
+                "Discharge",
+                "SW_direct",
+                "SW_diffuse",
+                "Prec",
+                "p_a",
+                "cld",
+                "a",
+                "e_a",
+                "vp_a",
+                "LW_in",
+            ]
+        ]
 
-        self.df.to_hdf(self.folders["input_folder"] + "model_input.h5", key='df', mode='w')
 
+        self.df.to_hdf(
+            self.folders["input_folder"] + "model_input.h5", key="df", mode="w"
+        )
 
     def surface_area(self, i):
 
@@ -345,11 +363,21 @@ class Icestupa:
         # if self.df.Discharge[i:].sum() != 0:
         #     self.df.loc[i, "SA"] += math.pi * ( self.r_mean **2 - self.df.loc[i, "r_ice"] ** 2)
 
+        # print(self.df.loc[i, "When"], self.df.loc[i, "r_ice"])
+
     def energy_balance(self, row):
         i = row.Index
 
-        self.df.loc[i, "vp_ice"] = 6.112 * np.exp(
-            22.46 * (self.df.loc[i, "T_s"]) / ((self.df.loc[i, "T_s"]) + 272.62)
+        self.df.loc[i, "vp_ice"] = (
+            (
+                1.0016
+                + 3.15 * math.pow(10, -6) * self.df.loc[i, "p_a"]
+                - 0.074 * math.pow(self.df.loc[i, "p_a"], -1)
+            )
+            * 6.112
+            * np.exp(
+                22.46 * (self.df.loc[i, "T_s"]) / ((self.df.loc[i, "T_s"]) + 272.62)
+            )
         )
 
         if self.liquid == 0:
@@ -457,7 +485,7 @@ class Icestupa:
         )
 
         # Bulk Temperature
-        self.df.loc[i+1, "T_bulk"] = self.df.loc[i, "T_bulk"] - self.df.loc[
+        self.df.loc[i + 1, "T_bulk"] = self.df.loc[i, "T_bulk"] - self.df.loc[
             i, "Qg"
         ] * self.time_steps * self.df.loc[i, "SA"] / (self.df.loc[i, "ice"] * self.c_i)
 
@@ -545,12 +573,16 @@ class Icestupa:
         filename4 = self.folders["output_folder"] + "model_results.csv"
         self.df.to_csv(filename4, sep=",")
 
-        self.df.to_hdf(self.folders["output_folder"] + "model_output.h5", key='df', mode='w')
+        self.df.to_hdf(
+            self.folders["output_folder"] + "model_output.h5", key="df", mode="w"
+        )
 
     def read_input(self):
 
-        self.df = pd.read_hdf(self.folders["input_folder"] + "model_input.h5", 'df')
+        self.df = pd.read_hdf(self.folders["input_folder"] + "model_input_extended.h5", "df")
 
+        # print(self.df.columns)
+        print(self.df.head())
 
         if self.df.isnull().values.any():
             print("Warning: Null values present")
@@ -561,14 +593,13 @@ class Icestupa:
 
     def read_output(self):
 
-        self.df = pd.read_hdf(self.folders["output_folder"] + "model_output.h5", 'df')
+        self.df = pd.read_hdf(self.folders["output_folder"] + "model_output.h5", "df")
 
         if self.df.isnull().values.any():
             print("Warning: Null values present")
             # print(self.df.columns)
             # print(self.df[['s_cone']].isnull().sum())
             # print(self.df[self.df['s_cone'].isnull()])
-
 
         print(
             f"Mean of SW {self.df.SW.mean()}, LW {self.df.LW.mean()}, Qs {self.df.Qs.mean()}, Ql {self.df.Ql.mean()}, Qf {self.df.Qf.mean()}, Qg {self.df.Qg.mean()}"
@@ -591,7 +622,6 @@ class Icestupa:
         )
 
         print(f"Duration {self.df.index[-1] * 5 / (60 * 24)}")
-
 
         # Output for manim
         filename2 = os.path.join(
@@ -840,7 +870,7 @@ class PDF(Icestupa):
         pp = PdfPages(filename)
 
         fig, (ax1, ax2, ax3, ax4, ax5, ax6, ax7) = plt.subplots(
-            nrows=7, ncols=1, sharex="col", sharey="row", figsize=(16,14)
+            nrows=7, ncols=1, sharex="col", sharey="row", figsize=(16, 14)
         )
 
         x = self.df.When
@@ -1002,8 +1032,6 @@ class PDF(Icestupa):
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
-
-
 
         plt.close("all")
         pp.close()
@@ -1613,21 +1641,21 @@ if __name__ == "__main__":
 
     schwarzsee = PDF(site=site)
 
-    # schwarzsee.derive_parameters()
+    schwarzsee.derive_parameters()
 
     # schwarzsee.read_input()
 
     # schwarzsee.print_input()
 
-    # schwarzsee.melt_freeze()
+    schwarzsee.melt_freeze()
 
-    schwarzsee.read_output()
+    # schwarzsee.read_output()
 
     # schwarzsee.corr_plot()
 
     schwarzsee.summary()
 
-    # schwarzsee.print_output()
+    schwarzsee.print_output()
 
     total = time.time() - start
 
