@@ -70,7 +70,7 @@ class Discharge_Icestupa(Icestupa):
 
         return key, self.df["When"].values, self.df["SA"].values, self.df["iceV"].values, self.df["solid"].values, self.df["thickness"].values, self.df["Discharge"].values, self.df["input"].values, self.df["meltwater"].values, result
 
-param_values = np.arange(0.002, 0.0062, 0.001).tolist()
+param_values = np.arange(0.002, 0.0082, 0.001).tolist()
 
 
 experiments = pd.DataFrame(param_values,
@@ -85,7 +85,7 @@ df_out = pd.DataFrame()
 results = []
 
 if __name__ == "__main__":
-    with Pool(6) as executor:
+    with Pool(7) as executor:
 
         for key, When, SA, iceV, solid, thickness, Discharge, input, meltwater, result in executor.map(model.run, experiments.to_dict('records')):
             iterables = [[key], variables]

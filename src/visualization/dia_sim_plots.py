@@ -55,7 +55,7 @@ for i in range(0,df.shape[0]):
     ax1t.scatter(x[i], y2[i], color=cmap(norm(y1[i])))
 # ax1t.scatter(x, y2, color = "b", alpha=0.5)
 ax1t.set_ylabel("Survival Duration [Days]", color="b")
-ax1t.set_ylim([0, 50])
+ax1t.set_ylim([0, 100])
 for tl in ax1t.get_yticklabels():
     tl.set_color("b")
 ax.grid()

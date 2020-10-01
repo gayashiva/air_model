@@ -303,7 +303,7 @@ class Icestupa:
 
 
         self.df.to_hdf(
-            self.folders["input_folder"] + "model_input.h5", key="df", mode="w"
+            self.folders["input_folder"] + "model_input_extended.h5", key="df", mode="w"
         )
 
     def surface_area(self, i):
@@ -702,7 +702,7 @@ class Icestupa:
                 self.start = i - 1
 
             # Ice Melted
-            if self.df.loc[i, "ice"] < 0:
+            if self.df.loc[i, "ice"] < 0.005:
                 self.df.loc[i - 1, "meltwater"] += self.df.loc[i - 1, "ice"]
                 self.df.loc[i - 1, "ice"] = 0
                 if self.df.Discharge[i:].sum() == 0:  # If ice melted after fountain run
@@ -1645,17 +1645,17 @@ if __name__ == "__main__":
 
     # schwarzsee.read_input()
 
-    # schwarzsee.print_input()
+    schwarzsee.print_input()
 
-    schwarzsee.melt_freeze()
+    # schwarzsee.melt_freeze()
 
     # schwarzsee.read_output()
 
     # schwarzsee.corr_plot()
 
-    schwarzsee.summary()
+    # schwarzsee.summary()
 
-    schwarzsee.print_output()
+    # schwarzsee.print_output()
 
     total = time.time() - start
 
