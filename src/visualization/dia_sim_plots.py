@@ -14,10 +14,10 @@ plt.rcParams["figure.figsize"] = (10,7)
 plt.gca().spines['top'].set_visible(False)
 plt.gca().spines['right'].set_visible(False)
 
-filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_results2.csv"
+filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_results.csv"
 df = pd.read_csv(filename, sep=",")
 
-filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_sim2.h5"
+filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_sim.h5"
 data_store = pd.HDFStore(filename2)
 dfd = data_store['dfd']
 data_store.close()
@@ -25,6 +25,8 @@ data_store.close()
 figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/dia_f2"
 
 dfd = dfd.fillna(0)
+
+print(df["Duration"].tail())
 
 print(df[df["dia_f"] < 0.003]["avg_freeze_rate"])
 
@@ -43,11 +45,11 @@ fig, ax = plt.subplots()
 ax.scatter(x, y, color='k')
 ax.set_ylabel("Storage Efficiency [%]")
 ax.set_xlabel("Aperture Diameter [$mm$]")
-ax.set_xlim([1.8, 6.2])
+ax.set_xlim([1, 20])
 ax.set_ylim([0,100])
 # Add labels to the plot
 style = dict(size=10, color='gray', rotation=90)
-ax.text(5.01, 7.7, "Schwarzsee Experiment", **style)
+ax.text(5.01, 9, "Schwarzsee Experiment", **style)
 
 
 ax1t = ax.twinx()
@@ -60,7 +62,7 @@ for tl in ax1t.get_yticklabels():
     tl.set_color("b")
 ax.grid()
 
-fig.subplots_adjust(right=0.8)
+fig.subplots_adjust(right=0.78)
 cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
 cbar = fig.colorbar(sm, cax=cbar_ax)
 cbar.set_label("Average Freeze Rate [$l\\, min^{-1}$]")

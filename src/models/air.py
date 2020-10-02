@@ -9,6 +9,7 @@ from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
+from matplotlib.offsetbox import AnchoredText
 from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
@@ -447,6 +448,7 @@ class Icestupa:
         )
 
         # Long Wave Radiation LW
+
         self.df.loc[i, "LW"] = row.LW_in - self.ie * self.bc * math.pow(
             self.df.loc[i, "T_s"] + 273.15, 4
         )
@@ -666,6 +668,9 @@ class Icestupa:
 
         self.liquid, self.gas, self.EJoules = [0] * 3
 
+        Duration = 0
+        self.start = -10
+
         self.sum_T_s = 0  # weighted_sums
         self.sum_SA = 0  # weighted_sums
 
@@ -702,15 +707,26 @@ class Icestupa:
                 self.start = i - 1
 
             # Ice Melted
-            if self.df.loc[i, "ice"] < 0.005:
+            if ((self.df.loc[i, "ice"] < 0.01) or self.df.loc[i, "T_s"] < -100) & (self.df.Discharge[i:].sum() == 0) :
                 self.df.loc[i - 1, "meltwater"] += self.df.loc[i - 1, "ice"]
                 self.df.loc[i - 1, "ice"] = 0
-                if self.df.Discharge[i:].sum() == 0:  # If ice melted after fountain run
-                    self.df = self.df[self.start : i - 1]
-                    self.df = self.df.reset_index(drop=True)
-                    break
-                else:  # If ice melted in between fountain run
-                    self.state = 0
+                # if self.df.Discharge[i:].sum() == 0:  # If ice melted after fountain run
+                self.df = self.df[self.start : i - 1]
+                self.df = self.df.reset_index(drop=True)
+                # Duration = Duration + (i - 1 - self.start) * 5 / (60 * 24)
+                # print(self.df["When"].iloc[-1], Duration)
+                break
+                # else:  # If ice melted in between fountain run
+                #     self.state = 0
+                #     Duration = Duration + (i - 1 - self.start) * 5 / (60 * 24)
+                #     print(self.df["When"].iloc[-1], Duration)
+
+            # if (self.df.loc[i, "ice"] < 0):
+            #     self.df.loc[i - 1, "ice"] = 0
+            #     print("Ice negative")
+            #     self.state = 0
+            #     Duration = Duration + (i - 1 - self.start) * 5 / (60 * 24)
+            #     print(self.df["When"].iloc[-1], Duration)
 
             if self.state == 1:
 
@@ -798,7 +814,7 @@ class Icestupa:
                     self.df.loc[i, "SA"] * self.rho_i
                 )
 
-                # print(self.df.loc[i, "When"], self.df.loc[i, "input"])
+                # print(self.df.loc[i, "When"], self.df.loc[i, "ice"])
 
                 self.liquid, self.gas, self.EJoules = [0] * 3
 
@@ -1303,7 +1319,7 @@ class PDF(Icestupa):
         plt.ylabel("Thickness ($m$ w. e.)")
         plt.xticks(rotation=45)
         # plt.legend(loc='upper right')
-        ax1.set_ylim(-0.025, 0.025)
+        ax1.set_ylim(-0.035, 0.035)
         ax1.yaxis.set_minor_locator(AutoMinorLocator())
         ax1.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
         x_axis = ax1.axes.get_xaxis()
@@ -1318,6 +1334,67 @@ class PDF(Icestupa):
         ax3.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
         plt.xticks(rotation=45)
         # plt.savefig(self.folders["output_folder"] + "thickness.pdf")
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        fig = plt.figure(figsize=(8.27, 8.27))
+        ax1 = fig.add_subplot(3, 1, 1)
+        ax1 = z.plot.bar(stacked=True, edgecolor=dfd["Discharge"], linewidth=0.5,ax=ax1,)
+        ax1.xaxis.set_label_text("")
+        plt.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
+        # plt.xlabel('Date')
+        plt.ylabel("Energy Flux [$W\\,m^{-2}$]")
+        plt.legend(loc="lower right")
+        # plt.ylim(-150, 150)
+        plt.xticks(rotation=45)
+        x_axis = ax1.axes.get_xaxis()
+        x_axis.set_visible(False)
+        at = AnchoredText("(a)",
+                          prop=dict(size=10), frameon=True,
+                          loc='upper left',
+                          )
+        at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+        ax1.add_artist(at)
+
+        ax2 = fig.add_subplot(3, 1, 2)
+        y1.plot(
+            kind="bar",
+            stacked=True,
+            edgecolor="black",
+            linewidth=0.5,
+            color=["#D9E9FA", "#0C70DE"],
+            ax=ax2,
+        )
+        plt.ylabel("Thickness ($m$ w. e.)")
+        plt.xticks(rotation=45)
+        # plt.legend(loc='upper right')
+        ax2.set_ylim(-0.035, 0.035)
+        ax2.yaxis.set_minor_locator(AutoMinorLocator())
+        ax2.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
+        x_axis = ax2.axes.get_xaxis()
+        x_axis.set_visible(False)
+        at = AnchoredText("(b)",
+                          prop=dict(size=10), frameon=True,
+                          loc='upper left',
+                          )
+        at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+        ax2.add_artist(at)
+
+        ax3 = fig.add_subplot(3, 1, 3)
+        ax3 = y3.plot.bar(
+            y="SA", linewidth=0.5, edgecolor="black", color="xkcd:grey", ax=ax3
+        )
+        ax3.xaxis.set_label_text("")
+        ax3.set_ylabel("Surface Area ($m^2$)")
+        ax3.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
+        at = AnchoredText("(c)",
+                          prop=dict(size=10), frameon=True,
+                          loc='upper left',
+                          )
+        at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+        ax3.add_artist(at)
+
+        plt.xticks(rotation=45)
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
@@ -1641,21 +1718,21 @@ if __name__ == "__main__":
 
     schwarzsee = PDF(site=site)
 
-    schwarzsee.derive_parameters()
+    # schwarzsee.derive_parameters()
 
     # schwarzsee.read_input()
 
-    schwarzsee.print_input()
-
     # schwarzsee.melt_freeze()
 
-    # schwarzsee.read_output()
+    schwarzsee.read_output()
 
     # schwarzsee.corr_plot()
 
-    # schwarzsee.summary()
+    schwarzsee.summary()
 
-    # schwarzsee.print_output()
+    # schwarzsee.print_input()
+
+    schwarzsee.print_output()
 
     total = time.time() - start
 

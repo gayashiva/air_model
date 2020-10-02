@@ -53,7 +53,7 @@ class Discharge_Icestupa(Icestupa):
         print("Meltwater", self.df["meltwater"].iloc[-1])
         print("Ppt", self.df["ppt"].sum())
         print("Deposition", self.df["dpt"].sum() )
-        print("Ended on", self.df["When"].iloc[-1])
+        print("Duration", Duration)
 
         result = pd.Series([experiment.get("dia_f"),
                              Max_IceV,
@@ -68,9 +68,9 @@ class Discharge_Icestupa(Icestupa):
 
         self.df = self.df.set_index('When').resample("H").mean().reset_index()
 
-        return key, self.df["When"].values, self.df["SA"].values, self.df["iceV"].values, self.df["solid"].values, self.df["thickness"].values, self.df["Discharge"].values, self.df["input"].values, self.df["meltwater"].values, result
+        return key, self.df["When"].values, self.df["SA"].values, self.df["iceV"].values, self.df["solid"].values, self.df["Discharge"].values, self.df["input"].values, self.df["meltwater"].values, result
 
-param_values = np.arange(0.002, 0.0082, 0.001).tolist()
+param_values = np.arange(0.002, 0.02, 0.001).tolist()
 
 
 experiments = pd.DataFrame(param_values,
@@ -78,19 +78,19 @@ experiments = pd.DataFrame(param_values,
 
 model = Discharge_Icestupa()
 
-variables = ["When", 'SA', 'iceV', 'solid', 'thickness', 'Discharge', 'input', 'meltwater']
+variables = ["When", 'SA', 'iceV', 'solid', 'Discharge', 'input', 'meltwater']
 
 df_out = pd.DataFrame()
 
 results = []
 
 if __name__ == "__main__":
-    with Pool(7) as executor:
+    with Pool(6) as executor:
 
-        for key, When, SA, iceV, solid, thickness, Discharge, input, meltwater, result in executor.map(model.run, experiments.to_dict('records')):
+        for key, When, SA, iceV, solid, Discharge, input, meltwater, result in executor.map(model.run, experiments.to_dict('records')):
             iterables = [[key], variables]
             index = pd.MultiIndex.from_product(iterables, names=['dia_f', 'variables'])
-            data = pd.DataFrame({ (key, "When"):When, (key, "SA"):SA, (key, "iceV"): iceV, (key, "solid"):solid, (key, "thickness"):thickness, (key, "Discharge"): Discharge, (key, "input"): input, (key, "meltwater"): meltwater}, columns = index)
+            data = pd.DataFrame({ (key, "When"):When, (key, "SA"):SA, (key, "iceV"): iceV, (key, "solid"):solid, (key, "Discharge"): Discharge, (key, "input"): input, (key, "meltwater"): meltwater}, columns = index)
             df_out = pd.concat([df_out, data], axis=1, join='outer', ignore_index=False)
 
             results.append(result)
@@ -101,10 +101,10 @@ if __name__ == "__main__":
 
         print(results)
 
-        filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_results2.csv"
+        filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_results.csv"
         results.to_csv(filename, sep=",")
 
-        filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_sim2.h5"
+        filename2 = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/dia_f_sim.h5"
         data_store = pd.HDFStore(filename2)
         data_store["dfd"] = df_out
         data_store.close()
