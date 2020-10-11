@@ -28,7 +28,7 @@ dfd = dfd.fillna(0)
 
 print(df["Duration"].tail())
 
-print(df[df["dia_f"] < 0.003]["avg_freeze_rate"])
+print(df[df["dia_f"] < 0.0031]["avg_freeze_rate"])
 
 cmap = plt.cm.rainbow  # define the colormap
 norm = mpl.colors.Normalize(vmin=0, vmax=3.6)

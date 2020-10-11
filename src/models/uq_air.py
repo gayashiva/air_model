@@ -68,13 +68,8 @@ class UQ_Icestupa(un.Model, Icestupa):
 
         self.df = self.df.set_index('When').resample('1H').mean().reset_index()
 
-        if len(self.df) < 50 * 24:
-            for i in range(len(self.df), 50 * 24):
-                self.df.loc[i, "iceV"] = 0
-                # self.df.loc[len(self.df):50 * 24] = 0
-
-        # else:
-        #     self.df = self.df[:50 * 24]
+        for i in range(len(self.df), 62 * 24):
+            self.df.loc[i, "iceV"] = 0
 
         return self.df.index.values / 24, self.df["iceV"].values
 
@@ -116,19 +111,19 @@ T_w_dist = cp.Uniform(0, 9)
 
 dx_dist = cp.Uniform(0.001, 0.01)
 
-# parameters_single = {
-#     "ie": ie_dist,
-#     "a_i": a_i_dist,
-#     "a_s": a_s_dist,
-#     "t_decay": t_decay_dist,
-#     "T_rain": T_rain_dist,
-#     "dia_f": dia_f_dist,
-#     "h_f": h_f_dist,
-#     "h_aws": h_aws_dist,
-#     "T_w": T_w_dist,
-#     "dx": dx_dist
-# }
-#
+parameters_single = {
+    "ie": ie_dist,
+    "a_i": a_i_dist,
+    "a_s": a_s_dist,
+    "t_decay": t_decay_dist,
+    "T_rain": T_rain_dist,
+    "dia_f": dia_f_dist,
+    "h_f": h_f_dist,
+    "h_aws": h_aws_dist,
+    "T_w": T_w_dist,
+    "dx": dx_dist
+}
+
 # # Create the parameters
 # for k,v in parameters_single.items():
 #     print(k,v)
@@ -142,12 +137,12 @@ dx_dist = cp.Uniform(0.001, 0.01)
 #     UQ = un.UncertaintyQuantification(model=model,
 #                                       parameters=parameters,
 #                                       features=features,
-#                                       CPUs=7,
+#                                       CPUs=6,
 #                                       )
 #
 #     # Perform the uncertainty quantification using # polynomial chaos with point collocation (by default) data =
 #     UQ.quantify(seed=10, data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/", figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/", filename=k)
-
+#
 
 parameters = {
     "T_rain": T_rain_dist,
@@ -164,7 +159,7 @@ model = UQ_Icestupa()
 UQ = un.UncertaintyQuantification(model=model,
                                   parameters=parameters,
                                   features=features,
-                                  CPUs=7,
+                                  CPUs=6,
                                   )
 
 # Perform the uncertainty quantification using

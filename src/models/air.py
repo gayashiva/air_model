@@ -5,7 +5,6 @@ import os
 import math
 import time
 from pandas.plotting import register_matplotlib_converters
-
 register_matplotlib_converters()
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -60,7 +59,7 @@ class Icestupa:
     latitude = 46.693723
     longitude = 7.297543
 
-    site = "schwarzsee"
+    # site = "schwarzsee"
     state = 0
     utc_offset = 1
 
@@ -225,6 +224,7 @@ class Icestupa:
             else:
                 self.r_mean = self.projectile_xy(v=v_old)
 
+        print(self.r_mean)
         return self.r_mean
 
     def derive_parameters(self):
@@ -425,11 +425,6 @@ class Icestupa:
 
                 self.df.loc[i, "solid"] += self.df.loc[i, "dpt"]
 
-            # Ice Temperature
-            self.df.loc[i, "delta_T_s"] += (self.df.loc[i, "Ql"] * self.time_steps) / (
-                self.rho_i * self.dx * self.c_i
-            )
-
         # Sensible Heat Qs
         self.df.loc[i, "Qs"] = (
             self.c_a
@@ -483,7 +478,7 @@ class Icestupa:
         self.df.loc[i, "Qg"] = (
             self.k_i
             * (self.df.loc[i, "T_bulk"] - self.df.loc[i, "T_s"])
-            / (self.df.loc[i, "r_ice"])
+            / (self.df.loc[i, "r_ice"]/2)
         )
 
         # Bulk Temperature
@@ -498,6 +493,7 @@ class Icestupa:
             + self.df.loc[i, "Qs"]
             + self.df.loc[i, "Qf"]
             + self.df.loc[i, "Qg"]
+            + self.df.loc[i, "Ql"]
         )
 
         # if np.isnan(self.df.loc[i, "TotalE"]) :
@@ -603,6 +599,12 @@ class Icestupa:
             # print(self.df[['s_cone']].isnull().sum())
             # print(self.df[self.df['s_cone'].isnull()])
 
+        self.df["Global"] = self.df["SW_diffuse"] + self.df["SW_direct"]
+        print("Global max", self.df["Global"].max(), "SW max", self.df.SW.max())
+        print("AE", self.df["e_a"].mean())
+        print(f"Temperature of spray", self.df.loc[self.df["TotalE"]<0, "T_a"].mean())
+        print(f"Temperature minimum", self.df[ "T_a"].min())
+
         print(
             f"Mean of SW {self.df.SW.mean()}, LW {self.df.LW.mean()}, Qs {self.df.Qs.mean()}, Ql {self.df.Ql.mean()}, Qf {self.df.Qf.mean()}, Qg {self.df.Qg.mean()}"
         )
@@ -624,6 +626,7 @@ class Icestupa:
         )
 
         print(f"Duration {self.df.index[-1] * 5 / (60 * 24)}")
+        print(f"Ended {self.df.When.iloc[-1]}")
 
         # Output for manim
         filename2 = os.path.join(
@@ -632,7 +635,6 @@ class Icestupa:
         self.df["h_f"] = self.h_f
         cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
         self.df[cols].to_csv(filename2, sep=",")
-        print(self.df["When"].iloc[-1])
 
         # self.corr_plot()
 
@@ -710,23 +712,9 @@ class Icestupa:
             if ((self.df.loc[i, "ice"] < 0.01) or self.df.loc[i, "T_s"] < -100) & (self.df.Discharge[i:].sum() == 0) :
                 self.df.loc[i - 1, "meltwater"] += self.df.loc[i - 1, "ice"]
                 self.df.loc[i - 1, "ice"] = 0
-                # if self.df.Discharge[i:].sum() == 0:  # If ice melted after fountain run
                 self.df = self.df[self.start : i - 1]
                 self.df = self.df.reset_index(drop=True)
-                # Duration = Duration + (i - 1 - self.start) * 5 / (60 * 24)
-                # print(self.df["When"].iloc[-1], Duration)
                 break
-                # else:  # If ice melted in between fountain run
-                #     self.state = 0
-                #     Duration = Duration + (i - 1 - self.start) * 5 / (60 * 24)
-                #     print(self.df["When"].iloc[-1], Duration)
-
-            # if (self.df.loc[i, "ice"] < 0):
-            #     self.df.loc[i - 1, "ice"] = 0
-            #     print("Ice negative")
-            #     self.state = 0
-            #     Duration = Duration + (i - 1 - self.start) * 5 / (60 * 24)
-            #     print(self.df["When"].iloc[-1], Duration)
 
             if self.state == 1:
 
@@ -904,7 +892,7 @@ class PDF(Icestupa):
 
         y2 = self.df.T_a
         ax2.plot(x, y2, "k-", linewidth=0.5)
-        ax2.set_ylabel("Temperature [$\\degree C$]")
+        ax2.set_ylabel("Temperature [ea]")
         ax2.grid()
 
         y3 = self.df.SW_direct + self.df.SW_diffuse
@@ -1266,8 +1254,8 @@ class PDF(Icestupa):
         plt.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
         # plt.xlabel('Date')
         plt.ylabel("Energy Flux [$W\\,m^{-2}$]")
-        plt.legend(loc="lower right")
-        # plt.ylim(-150, 150)
+        plt.legend(loc="best")
+        plt.ylim(-150, 150)
         plt.xticks(rotation=45)
         pp.savefig(bbox_inches="tight")
         plt.close("all")
@@ -1301,9 +1289,9 @@ class PDF(Icestupa):
         dfds2 = dfds2.set_index("label")
 
         dfds1 = dfds1.rename(
-            columns={"positive": "Ice thickness", "negative": "Meltwater thickness"}
+            columns={"positive": "Ice", "negative": "Meltwater"}
         )
-        y1 = dfds1[["Ice thickness", "Meltwater thickness"]]
+        y1 = dfds1[["Ice", "Meltwater"]]
         y3 = dfds2["SA"]
 
         fig = plt.figure()
@@ -1339,13 +1327,13 @@ class PDF(Icestupa):
 
         fig = plt.figure(figsize=(8.27, 8.27))
         ax1 = fig.add_subplot(3, 1, 1)
-        ax1 = z.plot.bar(stacked=True, edgecolor=dfd["Discharge"], linewidth=0.5,ax=ax1,)
+        ax1 = z.plot.bar(stacked=True, edgecolor="black", linewidth=0.5, ax=ax1, )
         ax1.xaxis.set_label_text("")
-        plt.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
+        ax1.grid(color="black", alpha=0.3, linewidth=0.5, which="major")
         # plt.xlabel('Date')
         plt.ylabel("Energy Flux [$W\\,m^{-2}$]")
         plt.legend(loc="lower right")
-        # plt.ylim(-150, 150)
+        plt.ylim(-200, 200)
         plt.xticks(rotation=45)
         x_axis = ax1.axes.get_xaxis()
         x_axis.set_visible(False)
@@ -1393,8 +1381,92 @@ class PDF(Icestupa):
                           )
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
         ax3.add_artist(at)
-
+        plt.tight_layout()
         plt.xticks(rotation=45)
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11.69, 8.27 ))
+        y1 = self.df.a
+        y2 = self.df.f_cone
+        ax1.plot(x, y1, "k-")
+        ax1.set_ylabel("Albedo")
+        # ax1.set_xlabel("Days")
+        ax1t = ax1.twinx()
+        ax1t.plot(x, y2, "b-", linewidth=0.5)
+        ax1t.set_ylabel("$f_{cone}$", color="b")
+        for tl in ax1t.get_yticklabels():
+            tl.set_color("b")
+        ax1.grid(axis="x", color="black", alpha=0.3, linewidth=0.5, which="major")
+
+        at = AnchoredText("(a)",
+                          prop=dict(size=10), frameon=True,
+                          loc='upper left',
+                          )
+        at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+        ax1.add_artist(at)
+
+        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        ax1.set_ylim([0, 1])
+        ax1t.set_ylim([0, 1])
+        fig.autofmt_xdate()
+
+        y1 = self.df.T_s
+        y2 = self.df.T_bulk
+        ax2.plot(x, y1, "k-", linewidth=0.5, alpha=0.5)
+        ax2.set_ylabel("Surface Temperature [$\\degree C$]")
+        # ax1.grid()
+        ax2t = ax2.twinx()
+        ax2t.plot(x, y2, "b-", linewidth=0.5)
+        ax2t.set_ylabel("Bulk Temperature [$\\degree C$]", color="b")
+        for tl in ax2t.get_yticklabels():
+            tl.set_color("b")
+        ax2.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax2.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax2.xaxis.set_minor_locator(mdates.DayLocator())
+        ax2.set_ylim([-20, 1])
+        ax2t.set_ylim([-20, 1])
+        fig.autofmt_xdate()
+        at = AnchoredText("(b)",
+                          prop=dict(size=10), frameon=True,
+                          loc='upper left',
+                          )
+        at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+        ax2.add_artist(at)
+        ax2.grid(axis="x", color="black", alpha=0.3, linewidth=0.5, which="major")
+        plt.tight_layout()
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        x = self.df.When
+        y1 = self.df["$q_L$"]
+
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x, y1, "k-")
+        ax1.set_ylabel("Latent heat")
+        # ax1.set_xlabel("Days")
+        ax1.grid()
+        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        fig.autofmt_xdate()
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        x = self.df.When
+        y1 = self.df.TotalE
+
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x, y1, "k-")
+        ax1.set_ylabel("Latent heat")
+        # ax1.set_xlabel("Days")
+        ax1.grid()
+        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
@@ -1672,9 +1744,9 @@ class PDF(Icestupa):
         dfds2 = dfds2.set_index("label")
 
         dfds1 = dfds1.rename(
-            columns={"positive": "Ice thickness", "negative": "Meltwater thickness"}
+            columns={"positive": "Ice", "negative": "Meltwater"}
         )
-        y1 = dfds1[["Ice thickness", "Meltwater thickness"]]
+        y1 = dfds1[["Ice", "Meltwater"]]
         y3 = dfds2["SA"]
 
         fig = plt.figure()
