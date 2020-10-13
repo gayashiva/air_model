@@ -68,7 +68,7 @@ class UQ_Icestupa(un.Model, Icestupa):
 
         self.df = self.df.set_index('When').resample('1H').mean().reset_index()
 
-        for i in range(len(self.df), 62 * 24):
+        for i in range(len(self.df), 65 * 24):
             self.df.loc[i, "iceV"] = 0
 
         return self.df.index.values / 24, self.df["iceV"].values
