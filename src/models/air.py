@@ -466,9 +466,6 @@ class Icestupa:
         # if np.isnan(self.df.loc[i, "TotalE"]) :
         #     print(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}, SA {self.df.SA[i]}")
 
-        # Total Energy Joules
-        self.EJoules = self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]
-
     def summary(self):
 
         if self.df.isnull().values.any():
@@ -651,7 +648,7 @@ class Icestupa:
         for col in l:
             self.df[col] = 0
 
-        self.liquid, self.EJoules = [0] * 2
+        self.liquid = [0] * 1
 
         Duration = 0
         self.start = -10
@@ -718,64 +715,61 @@ class Icestupa:
                 self.energy_balance(row)
 
                 # Latent Heat
-                self.df.loc[i, "$q_{T}$"] = self.df.loc[i, "Ql"] * self.df.loc[i, "SA"] * self.time_steps
+                self.df.loc[i, "$q_{T}$"] = self.df.loc[i, "Ql"]
 
                 if self.df.loc[i, "Ql"] < 0:
                     if self.df.loc[i, "RH"] < 50:
                         L = self.L_s  # Sublimation
-                        self.df.loc[i, "gas"] -= self.df.loc[i, "$q_{T}$"] / L
+                        self.df.loc[i, "gas"] -= self.df.loc[i, "$q_{T}$"] * self.time_steps * self.df.loc[i, "SA"]/ L
 
                         # Removing gas quantity generated from ice
-                        self.df.loc[i, "solid"] += self.df.loc[i, "$q_{T}$"] / L
+                        self.df.loc[i, "solid"] += self.df.loc[i, "$q_{T}$"] * self.time_steps * self.df.loc[i, "SA"] / L
                     else:
                         L = self.L_e
-                        self.df.loc[i, "gas"] -= self.df.loc[i, "$q_{T}$"] / L
+                        self.df.loc[i, "gas"] -= self.df.loc[i, "$q_{T}$"] * self.time_steps * self.df.loc[i, "SA"] / L
 
                         # Removing gas quantity generated from meltwater
-                        self.df.loc[i, "meltwater"] += self.df.loc[i, "$q_{T}$"] / L
+                        self.df.loc[i, "meltwater"] += self.df.loc[i, "$q_{T}$"] * self.time_steps * self.df.loc[i, "SA"] / L
 
                 else:  # Deposition
 
-                    self.df.loc[i, "dpt"] += self.df.loc[i, "$q_{T}$"] / self.L_s
+                    self.df.loc[i, "dpt"] += self.df.loc[i, "$q_{T}$"] * self.time_steps * self.df.loc[i, "SA"]/ self.L_s
 
 
-                if self.EJoules < 0 and self.liquid > 0:
+                if self.df.loc[i, "TotalE"] < 0 and self.liquid > 0:
 
                     """Freezing water"""
 
-                    self.liquid += (self.EJoules) / (self.L_f)
+                    self.liquid += (self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]) / (self.L_f)
 
                     if self.liquid < 0:
 
                         # Cooling Ice
-                        self.df.loc[i, "$q_{T}$"] += (self.liquid * self.L_f)
-                        self.liquid += (self.EJoules) / (-self.L_f)
-                        self.df.loc[i, "$q_{melt}$"] += (-self.liquid * self.L_f)
+                        self.df.loc[i, "$q_{T}$"] += (self.liquid * self.L_f) / (self.time_steps * self.df.loc[i, "SA"])
+                        self.liquid += (self.df.loc[i, "TotalE"] * self.time_steps * self.df.loc[i, "SA"]) / (-self.L_f)
+                        self.df.loc[i, "$q_{melt}$"] += (-self.liquid * self.L_f) / (self.time_steps * self.df.loc[i, "SA"])
                         self.liquid = 0
                     else:
-                        self.df.loc[i, "$q_{melt}$"] += self.EJoules
+                        self.df.loc[i, "$q_{melt}$"] += self.df.loc[i, "TotalE"]
 
                 else:
                     # Heating Ice
-                    self.df.loc[i, "$q_{T}$"] += self.df.loc[i, "TotalE"] * self.time_steps
+                    self.df.loc[i, "$q_{T}$"] += self.df.loc[i, "TotalE"]
 
-                self.df.loc[i, "$q_{T}$"] /= self.time_steps
 
                 self.df.loc[i, "delta_T_s"] += self.df.loc[i, "$q_{T}$"] / (self.rho_i * self.dx * self.c_i)
 
                 """Hot Ice"""
                 if (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]) > 0:
-                    self.df.loc[i, "$q_{melt}$"] += (self.rho_i * self.dx * self.c_i * self.df.loc[i, "SA"]) * (
+                    self.df.loc[i, "$q_{melt}$"] += (self.rho_i * self.dx * self.c_i) * (
                                 self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"])
 
                     self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
 
-                self.df.loc[i, "$q_{melt}$"] /= self.time_steps
-
                 if self.df.loc[i, "$q_{melt}$"] < 0:
-                    self.df.loc[i, "solid"] -= self.df.loc[i, "$q_{melt}$"] / (self.L_f)
+                    self.df.loc[i, "solid"] -= self.df.loc[i, "$q_{melt}$"] * self.time_steps * self.df.loc[i, "SA"] / (self.L_f)
                 else:
-                    self.df.loc[i, "melted"] += self.df.loc[i, "$q_{melt}$"] / (self.L_f)
+                    self.df.loc[i, "melted"] += self.df.loc[i, "$q_{melt}$"] * self.time_steps * self.df.loc[i, "SA"] / (self.L_f)
 
                 """ Quantities of all phases """
                 self.df.loc[i + 1, "T_s"] = (
@@ -808,7 +802,7 @@ class Icestupa:
 
                 # print(self.df.loc[i, "When"], self.df.loc[i, "ice"])
 
-                self.liquid, self.EJoules = [0] * 2
+                self.liquid = [0] * 1
 
     def corr_plot(self):
 
