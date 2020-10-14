@@ -12,6 +12,7 @@ from tqdm import tqdm
 import os
 import logging
 from src.data.config import site, option, dates, folders, fountain
+from scipy import stats
 
 start = time.time()
 
@@ -352,6 +353,17 @@ if __name__ == '__main__':
         df.loc[df["v_a"].isnull(), "v_a"] = df_ERA5["v_a"]
 
         df[['SW_direct', "SW_diffuse", 'cld']] = df_ERA5[['SW_direct', "SW_diffuse", 'cld']]
+
+        # RMSE
+
+        print("RMSE Temp", ((df.T_a - df_ERA5.T_a) ** 2).mean() ** .5)
+        print("RMSE wind", ((df.v_a - df_ERA5.v_a) ** 2).mean() ** .5)
+
+        slope, intercept, r_value1, p_value, std_err = stats.linregress(df.T_a.values , df_in3.T_a.values)
+        slope, intercept, r_value2, p_value, std_err = stats.linregress(df.v_a.values , df_in3.v_a.values)
+
+        print("R2 temp", r_value1)
+        print("R2 temp", r_value2)
 
         # Add Precipitation data
         df_in2 = pd.read_csv(

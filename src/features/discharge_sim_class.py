@@ -70,7 +70,7 @@ class Discharge_Icestupa(Icestupa):
 
         return key, self.df["When"].values, self.df["SA"].values, self.df["iceV"].values, self.df["solid"].values, self.df["Discharge"].values, self.df["input"].values, self.df["meltwater"].values, result
 
-param_values = np.arange(0.002, 0.02, 0.001).tolist()
+param_values = np.arange(0.002, 0.015, 0.001).tolist()
 print(param_values)
 
 

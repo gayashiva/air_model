@@ -22,7 +22,7 @@ data_store = pd.HDFStore(filename2)
 dfd = data_store['dfd']
 data_store.close()
 
-figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/dia_f2"
+figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/dia_f"
 
 dfd = dfd.fillna(0)
 
@@ -45,7 +45,7 @@ fig, ax = plt.subplots()
 ax.scatter(x, y, color='k')
 ax.set_ylabel("Storage Efficiency [%]")
 ax.set_xlabel("Aperture Diameter [$mm$]")
-ax.set_xlim([1, 20])
+ax.set_xlim([1, 15])
 ax.set_ylim([0,100])
 # Add labels to the plot
 style = dict(size=10, color='gray', rotation=90)
