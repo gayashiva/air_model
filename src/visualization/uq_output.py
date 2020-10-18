@@ -7,8 +7,11 @@ import matplotlib.colors
 import uncertainpy as un
 import statistics as st
 
+import sys
+sys.path.append('/home/surya/Programs/PycharmProjects/air_model')
+
 def draw_plot(data, edge_color, fill_color, labels):
-    bp = ax.boxplot(data, patch_artist=True, labels = labels)
+    bp = ax.boxplot(data, patch_artist=True, labels = labels, sym='')
 
     for element in ['boxes', 'whiskers', 'fliers', 'means', 'medians', 'caps']:
         plt.setp(bp[element], color=edge_color)
@@ -19,7 +22,7 @@ def draw_plot(data, edge_color, fill_color, labels):
 input = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/"
 figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/"
 
-names = ["T_rain", "ie", "a_i", "a_s", "t_decay",  "dia_f",  "h_f", "h_aws", "T_w", "dx", "full"]
+names = ["T_rain", "ie", "a_i", "a_s", "t_decay",  "dia_f",  "h_f", "h_aws", "T_w", "dx", "alpha"]
 variance = []
 mean = []
 evaluations = []
@@ -53,7 +56,7 @@ for name in names:
     #     plt.clf()
 
 
-names = ["$T_{rain}$", "$\\epsilon_{ice}$", r'$\alpha_{ice}$', r'$\alpha_{snow}$', "$t_{decay}$",  "$dia_{F}$",  "$h_F$", "$h_{AWS}$", "$T_{water}$",  "$\\Delta x$"]
+names = ["$T_{rain}$", "$\\epsilon_{ice}$", r'$\alpha_{ice}$', r'$\alpha_{snow}$', "$t_{decay}$",  "$dia_{F}$",  "$h_F$", "$h_{AWS}$", "$T_{water}$",  "$\\Delta x$", "$\\alpha$"]
 
 fig, ax = plt.subplots()
 draw_plot(evaluations, 'k', 'xkcd:grey', names)

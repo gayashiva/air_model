@@ -3,6 +3,8 @@ from datetime import datetime
 from tqdm import tqdm
 import os
 import math
+import sys
+sys.path.append('/home/surya/Programs/PycharmProjects/air_model')
 import time
 from pandas.plotting import register_matplotlib_converters
 
@@ -15,7 +17,6 @@ from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import seaborn as sns
 from src.data.config import site, dates
-from pvlib import location
 
 
 class Icestupa:
@@ -579,6 +580,7 @@ class Icestupa:
         print("Nonzero Qf", self.df.Qf.astype(bool).sum(axis=0))
         Total = dfd.SW.abs().sum() + dfd.LW.abs().sum() + dfd.Qs.abs().sum() + dfd.Ql.abs().sum() + dfd.Qf.abs().sum() + dfd.Qg.abs().sum() + dfd["$q_{melt}$"].abs().sum() + dfd["$q_{T}$"].abs().sum()
         print("Qmelt", dfd["$q_{melt}$"].abs().sum()/Total, "Qt", dfd["$q_{T}$"].abs().sum()/Total )
+        print("Qmelt", dfd["$q_{melt}$"].mean(), "Qt", dfd["$q_{T}$"].mean() )
         print(
             f"% of SW {dfd.SW.abs().sum()/Total}, LW {dfd.LW.abs().sum()/Total}, Qs {dfd.Qs.abs().sum()/Total}, Ql {dfd.Ql.abs().sum()/Total}, Qf {dfd.Qf.abs().sum()/Total}, Qg {dfd.Qg.abs().sum()/Total}"
         )
@@ -728,7 +730,7 @@ class Icestupa:
                 self.df.loc[i, "$q_{T}$"] = self.df.loc[i, "Ql"]
 
                 if self.df.loc[i, "Ql"] < 0:
-                    if self.df.loc[i, "RH"] < 50:
+                    if self.df.loc[i, "RH"] < 60:
                         L = self.L_s  # Sublimation
                         self.df.loc[i, "gas"] -= (
                             self.df.loc[i, "$q_{T}$"]
@@ -895,11 +897,12 @@ class Icestupa:
 
         data["$SW_{in}$"] = data["SW_direct"] + data["SW_diffuse"]
 
+        data["$\\Delta M_{ice}$"] = self.df["solid"] + self.df["dpt"] - self.df["melted"]+ self.df["ppt"]
+
         # data = data.drop(["When", "input", "ppt", "ice", "T_s", "vapour", "Discharge", "TotalE", "T_a", "sea", "SW_direct", "a", "cld", "sea", "e_a", "vp_a", "LW_in", "vp_ice", "f_cone", "SW_diffuse", "s_cone", "RH", "iceV", "melted", "Qf", "SW", "LW", "Qs", "Ql", "dpt", "p_a", "thickness", "h_ice", "r_ice", "Prec", "v_a", "unfrozen_water", "meltwater"], axis=1)
 
         data = data.rename(
             {
-                "solid": "$\\Delta M_{ice}$",
                 "delta_T_s": "$\\Delta T_{ice}$",
                 "SA": "A",
                 "T_a": "$T_a$",
@@ -922,8 +925,8 @@ class Icestupa:
             ]
         ]
 
-        print(data.drop("$q_{net}$", axis=1).apply(lambda x: x.corr(data["$q_{net}$"])))
-        print(data.drop("$\\Delta M_{ice}$", axis=1).apply(lambda x: x.corr(data["$\\Delta M_{ice}$"])))
+        print(data.drop("$q_{net}$", axis=1).apply(lambda x: x.corr(data["$q_{net}$"])**2))
+        print(data.drop("$\\Delta M_{ice}$", axis=1).apply(lambda x: x.corr(data["$\\Delta M_{ice}$"])**2))
 
         corr = data.corr()
         ax = sns.heatmap(

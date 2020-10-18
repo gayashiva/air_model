@@ -58,7 +58,7 @@ parso==0.6.2
 pathlib2==2.3.5
 pexpect==4.8.0
 pickleshare==0.7.5
-Pillow==7.0.0
+Pillow>=7.1.0
 progress==1.5
 progressbar==2.5
 prompt-toolkit==3.0.4

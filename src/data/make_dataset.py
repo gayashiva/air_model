@@ -10,6 +10,8 @@ import time
 from pathlib import Path
 from tqdm import tqdm
 import os
+import sys
+sys.path.append('/home/surya/Programs/PycharmProjects/air_model')
 import logging
 from src.data.config import site, option, dates, folders, fountain
 from scipy import stats
@@ -344,6 +346,8 @@ if __name__ == '__main__':
         df_ERA5 = interpolated[["When", "T_a", "RH", "v_a", "SW_direct", "SW_diffuse", "LW_in", "cld", "p_a", "Prec", "Discharge"]]
         df_ERA5.loc[:,"Discharge"] = 0
 
+        print("Data gaps", df.loc[df["T_a"].isnull()].count()/df.shape[0])
+
         # Fill from ERA5
         df_ERA5 = df_ERA5.set_index("When")
         df = df.set_index("When")
@@ -362,8 +366,8 @@ if __name__ == '__main__':
         slope, intercept, r_value1, p_value, std_err = stats.linregress(df.T_a.values , df_in3.T_a.values)
         slope, intercept, r_value2, p_value, std_err = stats.linregress(df.v_a.values , df_in3.v_a.values)
 
-        print("R2 temp", r_value1)
-        print("R2 temp", r_value2)
+        print("R2 temp", r_value1**2)
+        print("R2 wind", r_value2**2)
 
         # Add Precipitation data
         df_in2 = pd.read_csv(

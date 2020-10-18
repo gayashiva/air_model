@@ -6,6 +6,8 @@ from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.colors
 import uncertainpy as un
 import statistics as st
+import sys
+sys.path.append('/home/surya/Programs/PycharmProjects/air_model')
 from src.data.config import site, dates, folders
 from datetime import datetime
 import matplotlib.dates as mdates
