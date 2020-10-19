@@ -5,9 +5,8 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 
-from src.features.discharge_sim_class import param_values, variables
-from celluloid import Camera
-
+import sys
+sys.path.append('/home/surya/Programs/PycharmProjects/air_model')
 
 plt.rcParams["figure.figsize"] = (10,7)
 # mpl.rc('xtick', labelsize=5)
@@ -28,7 +27,9 @@ dfd = dfd.fillna(0)
 
 print(df["Duration"].tail())
 
-print(df[df["dia_f"] < 0.0031]["avg_freeze_rate"])
+print(df[df["dia_f"] < 0.0051]["water_stored"])
+
+print(df[df["dia_f"] < 0.0051]["Duration"])
 
 cmap = plt.cm.rainbow  # define the colormap
 norm = mpl.colors.Normalize(vmin=0, vmax=3.6)
@@ -44,7 +45,7 @@ y2 = df.Duration
 fig, ax = plt.subplots()
 ax.scatter(x, y, color='k')
 ax.set_ylabel("Storage Efficiency [%]")
-ax.set_xlabel("Aperture Diameter [$mm$]")
+ax.set_xlabel("Nozzle Diameter [$mm$]")
 ax.set_xlim([1, 15])
 ax.set_ylim([0,100])
 # Add labels to the plot
