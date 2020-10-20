@@ -1,3 +1,5 @@
+import sys
+sys.path.append('/home/surya/Programs/PycharmProjects/air_model')
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -10,8 +12,6 @@ import time
 from pathlib import Path
 from tqdm import tqdm
 import os
-import sys
-sys.path.append('/home/surya/Programs/PycharmProjects/air_model')
 import logging
 from src.data.config import site, option, dates, folders, fountain
 from scipy import stats
@@ -288,7 +288,7 @@ if __name__ == '__main__':
         df_out1["RH"] = 100 * (np.exp((17.625 * df_out1["2d"]) / (243.04 + df_out1["2d"])) / np.exp(
             (17.625 * df_out1["2t"]) / (243.04 + df_out1["2t"])))
         df_out1["sp"] = df_out1["sp"] / 100
-        df_out1["tp"] = df_out1["tp"] / 1000 # m/s
+        df_out1["tp"] = df_out1["tp"] # mm/s
         df_out1["SW_diffuse"] = df_out1["ssrd"] - df_out1["fdir"]
         df_out1["2t"] = df_out1["2t"] - 273.15
 
@@ -307,17 +307,13 @@ if __name__ == '__main__':
         )
 
         df_in3 = df_out1[
-            ["T_a", "RH", "v_a", "SW_direct", "SW_diffuse", "LW_in", "cld", "p_a"]
+            ["T_a", "RH","Prec", "v_a", "SW_direct", "SW_diffuse", "LW_in", "cld", "p_a"]
         ]
 
         df_in3 = df_in3.round(5)
 
         upsampled = df_in3.resample("5T")
         interpolated = upsampled.interpolate(method='linear')
-        interpolated["Prec"] = df_out1["Prec"].resample("5T").bfill()
-
-        interpolated["Prec"] = interpolated["Prec"] * 5 * 60 # 5 minute sums in m
-
         interpolated = interpolated.reset_index()
 
         interpolated["Discharge"] = 0
@@ -329,14 +325,11 @@ if __name__ == '__main__':
         interpolated.loc[mask_index, "Discharge"] = 0
         interpolated = interpolated.reset_index()
 
-        print(interpolated.tail())
-
         df_in3 = interpolated[
             ["When", "T_a", "RH", "v_a", "SW_direct", "SW_diffuse", "LW_in", "cld", "p_a"]
         ]
 
         df_in3 = df_in3.reset_index()
-        # print(df_in3.head(), interpolated.head())
         mask = (df_in3["When"] >= dates["start_date"]) & (df_in3["When"] <= dates["end_date"])
         df_in3 = df_in3.loc[mask]
         df_in3 = df_in3.reset_index()
@@ -346,7 +339,6 @@ if __name__ == '__main__':
         df_ERA5 = interpolated[["When", "T_a", "RH", "v_a", "SW_direct", "SW_diffuse", "LW_in", "cld", "p_a", "Prec", "Discharge"]]
         df_ERA5.loc[:,"Discharge"] = 0
 
-        print("Data gaps", df.loc[df["T_a"].isnull()].count()/df.shape[0])
 
         # Fill from ERA5
         df_ERA5 = df_ERA5.set_index("When")
@@ -378,9 +370,8 @@ if __name__ == '__main__':
         df_in2["When"] = pd.to_datetime(df_in2["time"], format="%Y%m%d%H%M")
 
         df_in2["Prec"] = pd.to_numeric(df_in2["rre150z0"], errors="coerce")
-        df_in2["Prec"] = df_in2["Prec"] / (2*1000)  # 5 minute sum
-        df_in2 = df_in2.set_index("When").resample("5T").ffill().reset_index()
-        print(df_in2["When"].iloc[-1])
+        df_in2["Prec"] = df_in2["Prec"] / (10*60)  # ppt rate mm/s
+        df_in2 = df_in2.set_index("When").resample("5T").interpolate(method='linear').reset_index()
 
         mask = (df_in2["When"] >= dates["start_date"]) & (
                 df_in2["When"] <= dates["end_date"]
@@ -407,13 +398,9 @@ if __name__ == '__main__':
 
         df_out = df_out.round(5)
 
-        print(df_out.tail())
 
         df_out.to_csv(folders["input_folder"] + "raw_input.csv")
 
-        # fig, ax = plt.subplots()
-        # ax.plot(df.When, df.T_a)
-        # plt.show()
 
         # Extend data
         df_ERA5["Prec"] = 0
@@ -432,14 +419,10 @@ if __name__ == '__main__':
         df_out = df_out.set_index("When")
         df_ERA5 = df_ERA5.set_index("When")
 
-        # df_ERA5 = df_ERA5.set_index("When")
         df_ERA5 = df_ERA5.drop(["LW_in"], axis=1)
         concat = pd.concat([df_out, df_ERA5])
         concat["Prec"] = df_in2["Prec"]
-        concat.loc[concat["Prec"].isnull(), "Prec"] = df_in2["Prec"]
-        # print(concat.loc[concat["Prec"]>0].tail())
         concat = concat.reset_index()
-        print(concat.tail())
 
         if concat.isnull().values.any() :
             print( "Warning: Null values present")
