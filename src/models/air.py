@@ -546,8 +546,8 @@ class Icestupa:
         self.df = pd.read_hdf(
             self.folders["input_folder"] + "model_input_extended.h5", "df"
         )
-        # self.time_steps=30*60
-        # self.df = self.df.set_index('When').resample('30T').mean().reset_index()
+        self.time_steps=30*60
+        self.df = self.df.set_index('When').resample('30T').mean().reset_index()
 
         print(self.df.head())
 

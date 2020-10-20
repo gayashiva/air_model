@@ -112,38 +112,40 @@ h_aws_dist = uniform(3, interval)
 T_w_dist = cp.Uniform(0, 9)
 
 dx_dist = cp.Uniform(0.001, 0.01)
-#
-# parameters_single = {
-#     "ie": ie_dist,
-#     "a_i": a_i_dist,
-#     "a_s": a_s_dist,
-#     "t_decay": t_decay_dist,
-#     "T_rain": T_rain_dist,
-#     "dia_f": dia_f_dist,
-#     "h_f": h_f_dist,
-#     "h_aws": h_aws_dist,
-#     "T_w": T_w_dist,
-#     "dx": dx_dist
-# }
-#
-# # Create the parameters
-# for k,v in parameters_single.items():
-#     print(k,v)
-#     parameters = un.Parameters({k:v})
-#
-#
-#     # Initialize the model
-#     model = UQ_Icestupa()
-#
-#     # Set up the uncertainty quantification
-#     UQ = un.UncertaintyQuantification(model=model,
-#                                       parameters=parameters,
-#                                       features=features,
-#                                       CPUs=6,
-#                                       )
-#
-#     # Perform the uncertainty quantification using # polynomial chaos with point collocation (by default) data =
-#     UQ.quantify(seed=10, data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/", figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/", filename=k)
+time_steps_dist = cp.Uniform(5*60, 30*60)
+
+parameters_single = {
+    # "ie": ie_dist,
+    # "a_i": a_i_dist,
+    # "a_s": a_s_dist,
+    # "t_decay": t_decay_dist,
+    # "T_rain": T_rain_dist,
+    # "dia_f": dia_f_dist,
+    # "h_f": h_f_dist,
+    # "h_aws": h_aws_dist,
+    # "T_w": T_w_dist,
+    "dx": dx_dist
+    "time_steps": time_steps_dist
+}
+
+# Create the parameters
+for k,v in parameters_single.items():
+    print(k,v)
+    parameters = un.Parameters({k:v})
+
+
+    # Initialize the model
+    model = UQ_Icestupa()
+
+    # Set up the uncertainty quantification
+    UQ = un.UncertaintyQuantification(model=model,
+                                      parameters=parameters,
+                                      features=features,
+                                      CPUs=6,
+                                      )
+
+    # Perform the uncertainty quantification using # polynomial chaos with point collocation (by default) data =
+    UQ.quantify(seed=10, data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/", figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/", filename=k)
 
 # parameters = {
 #     "a_i": a_i_dist,
@@ -172,30 +174,30 @@ dx_dist = cp.Uniform(0.001, 0.01)
 #     filename="alpha")
 
 
-parameters = {
-    "a_i": a_i_dist,
-    "a_s": a_s_dist,
-    "t_decay": t_decay_dist,
-    "T_rain": T_rain_dist,
-    "ie": ie_dist
+# parameters = {
+    # "a_i": a_i_dist,
+    # "a_s": a_s_dist,
+    # "t_decay": t_decay_dist,
+    # "T_rain": T_rain_dist,
+    # "ie": ie_dist
 
-}
+# }
 
-parameters = un.Parameters(parameters)
+# parameters = un.Parameters(parameters)
 
-# Initialize the model
-model = UQ_Icestupa()
+# # Initialize the model
+# model = UQ_Icestupa()
 
-# Set up the uncertainty quantification
-UQ = un.UncertaintyQuantification(model=model,
-                                  parameters=parameters,
-                                  features=features,
-                                  CPUs=6,
-                                  )
+# # Set up the uncertainty quantification
+# UQ = un.UncertaintyQuantification(model=model,
+                                  # parameters=parameters,
+                                  # features=features,
+                                  # CPUs=6,
+                                  # )
 
-# Perform the uncertainty quantification using
-# polynomial chaos with point collocation (by default)
-data = UQ.quantify(seed=10,
-    data_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
-    figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
-    filename="full2")
+# # Perform the uncertainty quantification using
+# # polynomial chaos with point collocation (by default)
+# data = UQ.quantify(seed=10,
+    # data_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/",
+    # figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/",
+    # filename="full2")
