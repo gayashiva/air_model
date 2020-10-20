@@ -1,10 +1,10 @@
 import pandas as pd
+import sys
+sys.path.append('/home/surya/Programs/PycharmProjects/air_model')
 from datetime import datetime
 from tqdm import tqdm
 import os
 import math
-import sys
-sys.path.append('/home/surya/Programs/PycharmProjects/air_model')
 import time
 from pandas.plotting import register_matplotlib_converters
 
@@ -17,7 +17,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import seaborn as sns
 from src.data.config import site, dates
-
+from pvlib import location
 
 class Icestupa:
     """Physical Constants"""
@@ -37,7 +37,7 @@ class Icestupa:
     p0 = 1013  # Standard air pressure hPa
 
     """Model constants"""
-    time_steps = 5 * 60  # s Model time steps
+    time_steps = 5*60  # s Model time steps
     dx = 5e-03  # Ice layer thickness
     dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -546,16 +546,14 @@ class Icestupa:
         self.df = pd.read_hdf(
             self.folders["input_folder"] + "model_input_extended.h5", "df"
         )
+        # self.time_steps=30*60
+        # self.df = self.df.set_index('When').resample('30T').mean().reset_index()
 
-        # print(self.df.columns)
         print(self.df.head())
 
         if self.df.isnull().values.any():
             print("Warning: Null values present")
 
-        # data_store = pd.HDFStore(self.folders["input_folder"] + "model_input.h5")
-        # self.df = data_store["df"]
-        # data_store.close()
 
     def read_output(self):
 
@@ -717,6 +715,7 @@ class Icestupa:
                     self.df.loc[i, "ppt"] = (
                         self.rho_w
                         * row.Prec
+                        * self.time_steps/1000
                         * math.pi
                         * math.pow(self.df.loc[i, "r_ice"], 2)
                     )
@@ -1961,17 +1960,17 @@ if __name__ == "__main__":
 
     # schwarzsee.derive_parameters()
 
-    # schwarzsee.read_input()
+    schwarzsee.read_input()
 
-    # schwarzsee.melt_freeze()
+    schwarzsee.melt_freeze()
 
-    schwarzsee.read_output()
+    # schwarzsee.read_output()
 
-    schwarzsee.corr_plot()
+    # schwarzsee.corr_plot()
 
     schwarzsee.summary()
 
-    # schwarzsee.print_input()
+    schwarzsee.print_input()
 
     schwarzsee.print_output()
 
