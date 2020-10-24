@@ -1,6 +1,7 @@
 import pandas as pd
 import sys
-sys.path.append('/home/surya/Programs/PycharmProjects/air_model')
+
+sys.path.append("/home/surya/Programs/PycharmProjects/air_model")
 from datetime import datetime
 from tqdm import tqdm
 import os
@@ -18,6 +19,7 @@ import numpy as np
 import seaborn as sns
 from src.data.config import site, dates
 from pvlib import location
+
 
 class Icestupa:
     """Physical Constants"""
@@ -37,7 +39,7 @@ class Icestupa:
     p0 = 1013  # Standard air pressure hPa
 
     """Model constants"""
-    time_steps = 5*60  # s Model time steps
+    time_steps = 5 * 60  # s Model time steps
     dx = 5e-03  # Ice layer thickness
     dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -310,7 +312,13 @@ class Icestupa:
 
     def surface_area(self, i):
 
-        if (self.df.solid[i - 1] + self.df.dpt[i - 1] - self.df.melted[i - 1] + self.df.ppt[i - 1] > 0) & (self.df.loc[i - 1, "r_ice"] > self.r_mean):
+        if (
+            self.df.solid[i - 1]
+            + self.df.dpt[i - 1]
+            - self.df.melted[i - 1]
+            + self.df.ppt[i - 1]
+            > 0
+        ) & (self.df.loc[i - 1, "r_ice"] > self.r_mean):
             # Ice Radius
             self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"]
 
@@ -361,11 +369,6 @@ class Icestupa:
             * math.sin(self.df.loc[i, "sea"])
         ) / self.df.loc[i, "SA"]
 
-        # # Add Spray radius
-        # if self.df.Discharge[i:].sum() != 0:
-        #     self.df.loc[i, "SA"] += math.pi * ( self.r_mean **2 - self.df.loc[i, "r_ice"] ** 2)
-
-        # print(self.df.loc[i, "When"], self.df.loc[i, "r_ice"])
 
     def energy_balance(self, row):
         i = row.Index
@@ -424,9 +427,7 @@ class Icestupa:
 
         if self.liquid > 0:
             self.df.loc[i, "Qf"] = (
-                (
-                    self.df.loc[i - 1, "solid"]
-                )
+                (self.df.loc[i - 1, "solid"])
                 * self.c_w
                 * self.T_w
                 / (self.time_steps * self.df.loc[i, "SA"])
@@ -439,8 +440,6 @@ class Icestupa:
                 * (self.df.loc[i, "T_s"])
                 / self.time_steps
             )
-
-
 
         self.df.loc[i, "Qg"] = (
             self.k_i
@@ -546,14 +545,13 @@ class Icestupa:
         self.df = pd.read_hdf(
             self.folders["input_folder"] + "model_input_extended.h5", "df"
         )
-        self.time_steps=30*60
-        self.df = self.df.set_index('When').resample('30T').mean().reset_index()
+        # self.time_steps=30*60
+        # self.df = self.df.set_index('When').resample('30T').mean().reset_index()
 
         print(self.df.head())
 
         if self.df.isnull().values.any():
             print("Warning: Null values present")
-
 
     def read_output(self):
 
@@ -565,7 +563,33 @@ class Icestupa:
             # print(self.df[['s_cone']].isnull().sum())
             # print(self.df[self.df['s_cone'].isnull()])
 
-
+        # Table outputs
+        f_off = (self.df.index[self.df.Discharge.astype(bool)].tolist())
+        f_off = f_off[-1] + 1
+        print(
+            "When",
+            self.df.When.iloc[f_off],
+            "M_U",
+            self.df.unfrozen_water.iloc[f_off],
+            "M_solid",
+            self.df.ice.iloc[f_off],
+            "M_gas",
+            self.df.vapour.iloc[f_off],
+            "M_liquid",
+            self.df.meltwater.iloc[f_off],
+            "M_R",
+            self.df.ppt[:f_off+1].sum(),
+            "M_D",
+            self.df.dpt[:f_off+1].sum(),
+            "M_F",
+            self.df.Discharge[:f_off+1].sum() * 5 + self.df.iceV.iloc[0] * self.rho_i 
+        )
+        print(
+            f"M_input {self.df.input.iloc[-1]}, M_R {self.df.ppt.sum()}, M_D {self.df.dpt.sum()}, M_F {self.df.Discharge.sum() * 5 + self.df.iceV.iloc[0] * self.rho_i}"
+        )
+        print(
+            f"When {self.df.When.iloc[-1]},M_U {self.df.unfrozen_water.iloc[-1]}, M_solid {self.df.ice.iloc[-1]}, M_gas {self.df.vapour.iloc[-1]}, M_liquid {self.df.meltwater.iloc[-1]}"
+        )
         print("AE", self.df["e_a"].mean())
         print(f"Temperature of spray", self.df.loc[self.df["TotalE"] < 0, "T_a"].mean())
         print(f"Temperature minimum", self.df["T_a"].min())
@@ -576,9 +600,23 @@ class Icestupa:
         dfd["Global"] = dfd["SW_diffuse"] + dfd["SW_direct"]
         print("Global max", dfd["Global"].max(), "SW max", dfd.SW.max())
         print("Nonzero Qf", self.df.Qf.astype(bool).sum(axis=0))
-        Total = dfd.SW.abs().sum() + dfd.LW.abs().sum() + dfd.Qs.abs().sum() + dfd.Ql.abs().sum() + dfd.Qf.abs().sum() + dfd.Qg.abs().sum() + dfd["$q_{melt}$"].abs().sum() + dfd["$q_{T}$"].abs().sum()
-        print("Qmelt", dfd["$q_{melt}$"].abs().sum()/Total, "Qt", dfd["$q_{T}$"].abs().sum()/Total )
-        print("Qmelt", dfd["$q_{melt}$"].mean(), "Qt", dfd["$q_{T}$"].mean() )
+        Total = (
+            dfd.SW.abs().sum()
+            + dfd.LW.abs().sum()
+            + dfd.Qs.abs().sum()
+            + dfd.Ql.abs().sum()
+            + dfd.Qf.abs().sum()
+            + dfd.Qg.abs().sum()
+            + dfd["$q_{melt}$"].abs().sum()
+            + dfd["$q_{T}$"].abs().sum()
+        )
+        print(
+            "Qmelt",
+            dfd["$q_{melt}$"].abs().sum() / Total,
+            "Qt",
+            dfd["$q_{T}$"].abs().sum() / Total,
+        )
+        print("Qmelt", dfd["$q_{melt}$"].mean(), "Qt", dfd["$q_{T}$"].mean())
         print(
             f"% of SW {dfd.SW.abs().sum()/Total}, LW {dfd.LW.abs().sum()/Total}, Qs {dfd.Qs.abs().sum()/Total}, Ql {dfd.Ql.abs().sum()/Total}, Qf {dfd.Qf.abs().sum()/Total}, Qg {dfd.Qg.abs().sum()/Total}"
         )
@@ -603,9 +641,6 @@ class Icestupa:
             f"M_input {self.df.input.iloc[-1]}, M_R {self.df.ppt.sum()}, M_D {self.df.dpt.sum()}, M_F {self.df.Discharge.sum() * 5 + self.df.iceV.iloc[0] * self.rho_i}"
         )
         print(
-            f"M_U {self.df.unfrozen_water.iloc[-1]}, M_solid {self.df.ice.iloc[-1]}, M_gas {self.df.vapour.iloc[-1]}, M_liquid {self.df.meltwater.iloc[-1]}"
-        )
-        print(
             f"Max_growth {self.df.solid.max() / 5}, average_discharge {self.df.Discharge.replace(0, np.NaN).mean()}"
         )
 
@@ -619,8 +654,6 @@ class Icestupa:
         self.df["h_f"] = self.h_f
         cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
         self.df[cols].to_csv(filename2, sep=",")
-
-        # self.corr_plot()
 
     def melt_freeze(self):
 
@@ -715,7 +748,8 @@ class Icestupa:
                     self.df.loc[i, "ppt"] = (
                         self.rho_w
                         * row.Prec
-                        * self.time_steps/1000
+                        * self.time_steps
+                        / 1000
                         * math.pi
                         * math.pow(self.df.loc[i, "r_ice"], 2)
                     )
@@ -780,8 +814,15 @@ class Icestupa:
                         * self.df.loc[i, "SA"]
                     ) / (self.L_f)
 
-                    #DUE TO qF force surface temperature zero
-                    self.df.loc[i, "$q_{T}$"] += -self.df.loc[i, "T_s"] * self.rho_i * self.dx * self.c_i/self.time_steps - self.df.loc[i, "Ql"]
+                    # DUE TO qF force surface temperature zero
+                    self.df.loc[i, "$q_{T}$"] += (
+                        -self.df.loc[i, "T_s"]
+                        * self.rho_i
+                        * self.dx
+                        * self.c_i
+                        / self.time_steps
+                        - self.df.loc[i, "Ql"]
+                    )
                     # self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
 
                     if self.liquid < 0:
@@ -896,7 +937,9 @@ class Icestupa:
 
         data["$SW_{in}$"] = data["SW_direct"] + data["SW_diffuse"]
 
-        data["$\\Delta M_{ice}$"] = self.df["solid"] + self.df["dpt"] - self.df["melted"]+ self.df["ppt"]
+        data["$\\Delta M_{ice}$"] = (
+            self.df["solid"] + self.df["dpt"] - self.df["melted"] + self.df["ppt"]
+        )
 
         # data = data.drop(["When", "input", "ppt", "ice", "T_s", "vapour", "Discharge", "TotalE", "T_a", "sea", "SW_direct", "a", "cld", "sea", "e_a", "vp_a", "LW_in", "vp_ice", "f_cone", "SW_diffuse", "s_cone", "RH", "iceV", "melted", "Qf", "SW", "LW", "Qs", "Ql", "dpt", "p_a", "thickness", "h_ice", "r_ice", "Prec", "v_a", "unfrozen_water", "meltwater"], axis=1)
 
@@ -924,8 +967,16 @@ class Icestupa:
             ]
         ]
 
-        print(data.drop("$q_{net}$", axis=1).apply(lambda x: x.corr(data["$q_{net}$"])**2))
-        print(data.drop("$\\Delta M_{ice}$", axis=1).apply(lambda x: x.corr(data["$\\Delta M_{ice}$"])**2))
+        print(
+            data.drop("$q_{net}$", axis=1).apply(
+                lambda x: x.corr(data["$q_{net}$"]) ** 2
+            )
+        )
+        print(
+            data.drop("$\\Delta M_{ice}$", axis=1).apply(
+                lambda x: x.corr(data["$\\Delta M_{ice}$"]) ** 2
+            )
+        )
 
         corr = data.corr()
         ax = sns.heatmap(
@@ -966,7 +1017,7 @@ class PDF(Icestupa):
 
         ax1t = ax1.twinx()
         ax1t.plot(x, self.df.Prec * 1000, "b-", linewidth=0.5)
-        ax1t.set_ylabel("Precipitation [$mm$]", color="b")
+        ax1t.set_ylabel("Precipitation [$mm\\, s^{-1}$]", color="b")
         for tl in ax1t.get_yticklabels():
             tl.set_color("b")
 
@@ -1458,24 +1509,23 @@ class PDF(Icestupa):
             columns={
                 "solid": "Ice",
                 "ppt": "Snow",
-                "dpt": "Vapour deposition",
+                "dpt": "Vapour condensation/deposition",
                 "melted": "Melt",
                 "gas": "Vapour sublimation/evaporation",
             }
         )
 
-        y2 = dfds[["Ice", "Snow", "Vapour deposition", "Vapour sublimation/evaporation", "Melt"]]
-
-        z = dfd[
+        y2 = dfds[
             [
-                "$q_{SW}$",
-                "$q_{LW}$",
-                "$q_S$",
-                "$q_L$",
-                "$q_{F}$",
-                "$q_{G}$",
+                "Ice",
+                "Snow",
+                "Vapour condensation/deposition",
+                "Vapour sublimation/evaporation",
+                "Melt",
             ]
         ]
+
+        z = dfd[["$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
 
         ax1 = fig.add_subplot(3, 1, 1)
         ax1 = z.plot.bar(stacked=True, edgecolor="black", linewidth=0.5, ax=ax1)
@@ -1498,7 +1548,7 @@ class PDF(Icestupa):
             stacked=True,
             edgecolor="black",
             linewidth=0.5,
-            color=["#D9E9FA", "#00DBFD", "#EA9010", "#006C67", "#0C70DE" ],
+            color=["#D9E9FA", "#00DBFD", "#EA9010", "#006C67", "#0C70DE"],
             ax=ax2,
         )
         plt.ylabel("Thickness ($m$ w. e.)")
@@ -1576,6 +1626,7 @@ class PDF(Icestupa):
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
+        
         fig, (ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8) = plt.subplots(
             nrows=8, ncols=1, sharex="col", sharey="row", figsize=(16, 14)
         )
@@ -1640,8 +1691,20 @@ class PDF(Icestupa):
 
         plt.clf()
 
-        plt.close("all")
+        ax2 = fig.add_subplot()
+        y1 = self.df.unfrozen_water
+        ax2.plot(x, y1, "k-", linewidth=0.5, alpha=0.5)
+        ax2.set_ylabel("Surface Temperature [$\\degree C$]")
+        ax2.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax2.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax2.xaxis.set_minor_locator(mdates.DayLocator())
+        fig.autofmt_xdate()
+        ax2.grid(axis="x", color="black", alpha=0.3, linewidth=0.5, which="major")
+        plt.tight_layout()
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
 
+        plt.close("all")
         pp.close()
 
     def print_output_guttannen(self, filename="model_results.pdf"):
@@ -1960,20 +2023,22 @@ if __name__ == "__main__":
 
     # schwarzsee.derive_parameters()
 
-    schwarzsee.read_input()
+    # schwarzsee.read_input()
 
-    schwarzsee.melt_freeze()
+    # schwarzsee.melt_freeze()
 
-    # schwarzsee.read_output()
+    schwarzsee.read_output()
 
     # schwarzsee.corr_plot()
 
     schwarzsee.summary()
 
-    schwarzsee.print_input()
+    # schwarzsee.print_input()
 
-    schwarzsee.print_output()
+    # schwarzsee.print_output()
 
     total = time.time() - start
 
     print("Total time : ", total / 60)
+
+

@@ -59,26 +59,6 @@ if site == "schwarzsee_2020":
         utc_offset=1,
     )
 
-if site == "plaffeien":
-    folders = dict(
-        dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
-        input_folder=os.path.join(dir, "data/interim/plaffeien/"),
-        output_folder=os.path.join(dir, "data/processed/plaffeien/"),
-        sim_folder=os.path.join(dir, "data/processed/plaffeien/simulations/"),
-        data_file=os.path.join(dir, "data/raw/" + site + "_aws.txt"),
-    )
-
-    dates = dict(
-        start_date=datetime(2018, 11, 15),
-        end_date=datetime(2019, 7, 1),
-        fountain_off_date=datetime(2019, 3, 1),
-    )
-    fountain = dict(
-        aperture_f=0.005,  # Fountain hole diameter
-        h_f=1,  # Fountain steps h_f
-        discharge=10.5,  # Fountain on discharge in LPM
-        crit_temp=-1,  # Fountain runtime temperature
-    )
 
 if site == "guttannen":
     folders = dict(

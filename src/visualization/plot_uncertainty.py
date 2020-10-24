@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+import sys
+sys.path.append('/home/surya/Programs/PycharmProjects/air_model')
 import numpy as np
 import pandas as pd
 import math
@@ -6,8 +8,6 @@ from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.colors
 import uncertainpy as un
 import statistics as st
-import sys
-sys.path.append('/home/surya/Programs/PycharmProjects/air_model')
 from src.data.config import site, dates, folders
 from datetime import datetime
 import matplotlib.dates as mdates
@@ -67,7 +67,7 @@ ax.fill_between(data["When"],
 x = df.When
 y1 = df.iceV
 
-ax.plot(x, y1, "b-", label = "Estimation", linewidth=0.5)
+ax.plot(x, y1, "b-", label = "Modelled Ice Volume", linewidth=0.5)
 # ax1.set_xlabel("Days")
 
 # Include Validation line segment 1
