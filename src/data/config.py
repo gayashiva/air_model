@@ -11,29 +11,28 @@ option = 'schwarzsee'
 print("Site is", site)
 
 if site == "schwarzsee":
-    folders = dict(
-        dirname=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
-        input_folder=os.path.join(dir, "data/interim/schwarzsee/"),
-        output_folder=os.path.join(dir, "data/processed/schwarzsee/"),
-        sim_folder=os.path.join(dir, "data/processed/schwarzsee/simulations/"),
-        raw_folder=os.path.join(dir, "data/raw/schwarzsee/"),
-    )
+    site = dict(
+            name="schwarzsee",
+            end_date=datetime(2019, 3, 17),
+            start_date=datetime(2019, 1, 30, 17),
+            utc_offset=1,
+            longitude=7.297543,
+            latitude=46.693723,
+            h_aws = 3,
+            )
 
-    dates = dict(
-        start_date=datetime(2019, 1, 30, 17),
-        end_date=datetime(2019, 3, 17),
-        fountain_off_date=datetime(2019, 3, 10, 18),
-    )
     fountain = dict(
-        aperture_f=0.005,  # Fountain aperture diameter
-        theta_f=45,  # Fountain aperture diameter
-        h_f=1.35,  # Fountain steps h_f
+
+        fountain_off_date=datetime(2019, 3, 10, 18),
+        dia_f = 0.005, # Fountain aperture diameter
+        h_f = 1.35, # Fountain steps h_f
+        theta_f = 45, # Fountain aperture diameter
+        ftl = 0, # Fountain flight time loss ftl
+        T_w = 5, # Fountain Water temperature
         discharge=3.58,  # Fountain on discharge
         crit_temp=0,  # Fountain runtime temperature
-        latitude=46.693723,
-        longitude=7.297543,
-        utc_offset=1,
     )
+
 
 if site == "schwarzsee_2020":
     folders = dict(
@@ -86,3 +85,13 @@ if site == "guttannen":
         tree_height=1.93,
         tree_radius=4.13 / 2,
     )
+
+folders = dict(
+            raw_folder=os.path.join(dir, "data/raw/" + site['name'] + "/"),
+            input_folder=os.path.join(dir, "data/interim/" + site['name'] + "/"),
+            output_folder=os.path.join(dir, "data/processed/" + site['name'] + "/"),
+            sim_folder=os.path.join(
+                dir, "data/processed/" + site['name'] + "/simulations"
+            ),
+        )
+

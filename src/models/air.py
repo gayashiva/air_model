@@ -17,7 +17,7 @@ from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import seaborn as sns
-from src.data.config import site, dates
+from src.data.config import *
 from pvlib import location
 
 
@@ -51,31 +51,18 @@ class Icestupa:
     z_i = 0.0017  # Ice Momentum and Scalar roughness length
     T_rain = 1  # Temperature condition for liquid precipitation
 
-    """Fountain"""
-    dia_f = 0.005  # Fountain aperture diameter
-    h_f = 1.35  # Fountain steps h_f
-    theta_f = 45  # Fountain aperture diameter
-    ftl = 0  # Fountain flight time loss ftl
-    T_w = 5  # Fountain Water temperature
-
     """Miscellaneous"""
-    h_aws = 3  # m height of AWS
-    latitude = 46.693723
-    longitude = 7.297543
-
-    site = "schwarzsee"
     state = 0
-    utc_offset = 1
 
-    def __init__(self, site="schwarzsee"):
-
-        self.site = site
+    def __init__(self, **kwds):
+        self.__dict__.update(kwds)
+        print(self.fountain['T_w'])
 
         self.folders = dict(
-            input_folder=os.path.join(self.dirname, "data/interim/" + site + "/"),
-            output_folder=os.path.join(self.dirname, "data/processed/" + site + "/"),
+            input_folder=os.path.join(self.dirname, "data/interim/" + site['name'] + "/"),
+            output_folder=os.path.join(self.dirname, "data/processed/" + site['name'] + "/"),
             sim_folder=os.path.join(
-                self.dirname, "data/processed/" + site + "/simulations"
+                self.dirname, "data/processed/" + site['name'] + "/simulations"
             ),
         )
 
@@ -83,10 +70,10 @@ class Icestupa:
 
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
 
-        if self.site == "guttannen":
+        if self.site['name'] == "guttannen":
             crit_temp = 0  # Fountain runtime temperature
-            self.latitude = 46.649999
-            self.longitude = 8.283333
+            self.fountain['latitude'] = 46.649999
+            self.fountain['longitude'] = 8.283333
             self.tree_height = 1.93
             self.tree_radius = 4.13 / 2
             self.dia_f = 0.005  # Fountain aperture diameter
@@ -104,10 +91,10 @@ class Icestupa:
         self.df["ghi"] = self.df["SW_direct"] + self.df["SW_diffuse"]
         self.df["dif"] = self.df["SW_diffuse"]
 
-        site_location = location.Location(self.latitude, self.longitude)
+        site_location = location.Location(self.site['latitude'], self.site['longitude'])
 
         times = pd.date_range(
-            start=dates["start_date"], end=self.df["When"].iloc[-1], freq="5T"
+            start=self.site["start_date"], end=self.df["When"].iloc[-1], freq="5T"
         )
         clearsky = site_location.get_clearsky(times)
         # Get solar azimuth and zenith to pass to the transposition function
@@ -163,13 +150,13 @@ class Icestupa:
 
     def projectile_xy(self, v, h=0):
         if h == 0:
-            hs = self.h_f
+            hs = self.fountain['h_f']
         else:
             hs = h
         g = 9.81
         data_xy = []
         t = 0.0
-        theta_f = math.radians(self.theta_f)
+        theta_f = math.radians(self.fountain['theta_f'])
         while True:
             # now calculate the height y
             y = hs + (t * v * math.sin(theta_f)) - (g * t * t) / 2
@@ -212,7 +199,7 @@ class Icestupa:
 
     def spray_radius(self, r_mean=0, dia_f_new=0):
 
-        Area_old = math.pi * math.pow(self.dia_f, 2) / 4
+        Area_old = math.pi * math.pow(self.fountain['dia_f'], 2) / 4
         v_old = self.df["Discharge"].replace(0, np.NaN).mean() / (60 * 1000 * Area_old)
 
         if r_mean != 0:
@@ -220,7 +207,7 @@ class Icestupa:
         else:
             if dia_f_new != 0:
                 """Keeping Discharge constant"""
-                v_new = math.pi * self.dia_f ** 2 * v_old / (dia_f_new ** 2 * math.pi)
+                v_new = math.pi * self.fountain['dia_f'] ** 2 * v_old / (dia_f_new ** 2 * math.pi)
                 h_new = h_old - (v_new ** 2 - v_old ** 2) / (2 * 9.81)
                 self.r_mean = self.projectile_xy(
                     v=v_new, h=h_new
@@ -394,7 +381,7 @@ class Icestupa:
                 * math.pow(self.k, 2)
                 * self.df.loc[i, "v_a"]
                 * (row.vp_a - self.df.loc[i, "vp_ice"])
-                / ((np.log(self.h_aws / self.z_i)) ** 2)
+                / ((np.log(self.site['h_aws'] / self.z_i)) ** 2)
             )
 
         # Sensible Heat Qs
@@ -406,7 +393,7 @@ class Icestupa:
             * math.pow(self.k, 2)
             * self.df.loc[i, "v_a"]
             * (self.df.loc[i, "T_a"] - self.df.loc[i, "T_s"])
-            / ((np.log(self.h_aws / self.z_i)) ** 2)
+            / ((np.log(self.site['h_aws'] / self.z_i)) ** 2)
         )
 
         # Short Wave Radiation SW
@@ -429,7 +416,7 @@ class Icestupa:
             self.df.loc[i, "Qf"] = (
                 (self.df.loc[i - 1, "solid"])
                 * self.c_w
-                * self.T_w
+                * self.fountain['T_w']
                 / (self.time_steps * self.df.loc[i, "SA"])
             )
 
@@ -649,9 +636,9 @@ class Icestupa:
 
         # Output for manim
         filename2 = os.path.join(
-            self.folders["output_folder"], self.site + "_model_gif.csv"
+            self.folders["output_folder"], self.site['name'] + "_model_gif.csv"
         )
-        self.df["h_f"] = self.h_f
+        self.df["h_f"] = self.fountain['h_f']
         cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
         self.df[cols].to_csv(filename2, sep=",")
 
@@ -704,12 +691,12 @@ class Icestupa:
             if self.df.Discharge[i] > 0 and self.state == 0:
                 self.state = 1
 
-                if self.site == "guttannen":
+                if self.site['name'] == "guttannen":
                     self.spray_radius()
                     self.df.loc[i - 1, "r_ice"] = 9.8655
                     self.df.loc[i - 1, "h_ice"] = self.tree_height
 
-                if self.site == "schwarzsee":
+                if self.site['name'] == "schwarzsee":
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.dx
 
@@ -755,7 +742,7 @@ class Icestupa:
                     )
 
                 # Fountain water output
-                self.liquid = row.Discharge * (1 - self.ftl) * self.time_steps / 60
+                self.liquid = row.Discharge * (1 - self.fountain['ftl']) * self.time_steps / 60
 
                 self.energy_balance(row)
 
@@ -1468,7 +1455,6 @@ class PDF(Icestupa):
         ax3.set_ylabel("Surface Area ($m^2$)")
         ax3.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
         plt.xticks(rotation=45)
-        # plt.savefig(self.folders["output_folder"] + "thickness.pdf")
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
@@ -2007,7 +1993,6 @@ class PDF(Icestupa):
         ax3.set_ylabel("Surface Area ($m^2$)")
         ax3.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
         plt.xticks(rotation=45)
-        # plt.savefig(self.folders["output_folder"] + "thickness.pdf")
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
@@ -2019,15 +2004,15 @@ class PDF(Icestupa):
 if __name__ == "__main__":
     start = time.time()
 
-    schwarzsee = PDF(site=site)
+    schwarzsee = PDF(site=site, fountain=fountain)
 
     # schwarzsee.derive_parameters()
 
-    # schwarzsee.read_input()
+    schwarzsee.read_input()
 
-    # schwarzsee.melt_freeze()
+    schwarzsee.melt_freeze()
 
-    schwarzsee.read_output()
+    # schwarzsee.read_output()
 
     # schwarzsee.corr_plot()
 
