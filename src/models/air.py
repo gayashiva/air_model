@@ -41,7 +41,6 @@ class Icestupa:
     """Model constants"""
     time_steps = 5 * 60  # s Model time steps
     dx = 5e-03  # Ice layer thickness
-    dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
     """Surface"""
     ie = 0.95  # Ice Emissivity ie
@@ -56,31 +55,14 @@ class Icestupa:
 
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
-        print(self.fountain['T_w'])
 
-        self.folders = dict(
-            input_folder=os.path.join(self.dirname, "data/interim/" + site['name'] + "/"),
-            output_folder=os.path.join(self.dirname, "data/processed/" + site['name'] + "/"),
-            sim_folder=os.path.join(
-                self.dirname, "data/processed/" + site['name'] + "/simulations"
-            ),
-        )
-
-        input_file = self.folders["input_folder"] + "raw_input_extended.csv"
+        input_file = folders["input_folder"] + "raw_input_extended.csv"
 
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
 
         if self.site['name'] == "guttannen":
-            crit_temp = 0  # Fountain runtime temperature
-            self.fountain['latitude'] = 46.649999
-            self.fountain['longitude'] = 8.283333
-            self.tree_height = 1.93
-            self.tree_radius = 4.13 / 2
-            self.dia_f = 0.005  # Fountain aperture diameter
-            self.h_f = 3.93  # Fountain steps h_f
-            self.theta_f = 0
             self.df_cam = pd.read_csv(
-                self.folders["input_folder"] + "cam.csv",
+                folders["input_folder"] + "cam.csv",
                 sep=",",
                 header=0,
                 parse_dates=["When"],
@@ -117,7 +99,7 @@ class Icestupa:
         self.df = pd.merge(solar_df, self.df, on="When")
 
     def cloudiness(self, clear_sky_filename="clear_sky.csv"):
-        df1 = pd.read_csv(self.folders["input_folder"] + clear_sky_filename)
+        df1 = pd.read_csv(folders["input_folder"] + clear_sky_filename)
 
         self.df["cld"] = df1["cld"]
         self.df["Dn"] = (self.df["dif"] - self.df["difcs"]) / self.df["ghics"]
@@ -215,13 +197,12 @@ class Icestupa:
             else:
                 self.r_mean = self.projectile_xy(v=v_old)
 
-        # print(self.r_mean)
+        print(self.r_mean)
         return self.r_mean
 
     def derive_parameters(self):
 
         self.get_solar()
-        # self.cloudiness()
 
         missing = ["a", "e_a", "vp_a", "LW_in"]
         for col in missing:
@@ -294,7 +275,7 @@ class Icestupa:
         ]
 
         self.df.to_hdf(
-            self.folders["input_folder"] + "model_input_extended.h5", key="df", mode="w"
+            folders["input_folder"] + "model_input_extended.h5", key="df", mode="w"
         )
 
     def surface_area(self, i):
@@ -520,17 +501,17 @@ class Icestupa:
         print("Deposition", self.df["dpt"].sum())
 
         # Full Output
-        filename4 = self.folders["output_folder"] + "model_results.csv"
+        filename4 = folders["output_folder"] + "model_results.csv"
         self.df.to_csv(filename4, sep=",")
 
         self.df.to_hdf(
-            self.folders["output_folder"] + "model_output.h5", key="df", mode="w"
+            folders["output_folder"] + "model_output.h5", key="df", mode="w"
         )
 
     def read_input(self):
 
         self.df = pd.read_hdf(
-            self.folders["input_folder"] + "model_input_extended.h5", "df"
+            folders["input_folder"] + "model_input_extended.h5", "df"
         )
         # self.time_steps=30*60
         # self.df = self.df.set_index('When').resample('30T').mean().reset_index()
@@ -542,7 +523,7 @@ class Icestupa:
 
     def read_output(self):
 
-        self.df = pd.read_hdf(self.folders["output_folder"] + "model_output.h5", "df")
+        self.df = pd.read_hdf(folders["output_folder"] + "model_output.h5", "df")
 
         if self.df.isnull().values.any():
             print("Warning: Null values present")
@@ -636,7 +617,7 @@ class Icestupa:
 
         # Output for manim
         filename2 = os.path.join(
-            self.folders["output_folder"], self.site['name'] + "_model_gif.csv"
+            folders["output_folder"], self.site['name'] + "_model_gif.csv"
         )
         self.df["h_f"] = self.fountain['h_f']
         cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
@@ -692,9 +673,11 @@ class Icestupa:
                 self.state = 1
 
                 if self.site['name'] == "guttannen":
-                    self.spray_radius()
-                    self.df.loc[i - 1, "r_ice"] = 9.8655
-                    self.df.loc[i - 1, "h_ice"] = self.tree_height
+                    self.df.loc[i - 1, "r_ice"] = self.spray_radius()
+                    self.df.loc[i - 1, "h_ice"] = self.dx
+                    # self.spray_radius()
+                    # self.df.loc[i - 1, "r_ice"] = 9.8655
+                    # self.df.loc[i - 1, "h_ice"] = self.fountain['tree_height']
 
                 if self.site['name'] == "schwarzsee":
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
@@ -983,11 +966,11 @@ class Icestupa:
 class PDF(Icestupa):
     def print_input(self, filename="derived_parameters.pdf"):
         if filename == "derived_parameters.pdf":
-            filename = self.folders["input_folder"]
+            filename = folders["input_folder"]
 
         """Input Plots"""
 
-        filename = self.folders["input_folder"] + "data.pdf"
+        filename = folders["input_folder"] + "data.pdf"
 
         pp = PdfPages(filename)
 
@@ -1161,7 +1144,7 @@ class PDF(Icestupa):
     def print_output(self, filename="model_results.pdf"):
 
         if filename == "model_results.pdf":
-            filename = self.folders["output_folder"] + "model_results.pdf"
+            filename = folders["output_folder"] + "model_results.pdf"
 
         self.df = self.df.rename(
             {
@@ -1696,7 +1679,7 @@ class PDF(Icestupa):
     def print_output_guttannen(self, filename="model_results.pdf"):
 
         if filename == "model_results.pdf":
-            filename = self.folders["output_folder"] + "model_results.pdf"
+            filename = folders["output_folder"] + "model_results.pdf"
 
         self.df = self.df.rename(
             {
@@ -1710,7 +1693,7 @@ class PDF(Icestupa):
             axis=1,
         )
 
-        df_temp = pd.read_csv(self.folders["input_folder"] + "lumtemp.csv")
+        df_temp = pd.read_csv(folders["input_folder"] + "lumtemp.csv")
 
         df_temp["When"] = pd.to_datetime(df_temp["When"])
 
@@ -2004,23 +1987,23 @@ class PDF(Icestupa):
 if __name__ == "__main__":
     start = time.time()
 
-    schwarzsee = PDF(site=site, fountain=fountain)
+    icestupa = PDF(site=site, fountain=fountain)
 
-    # schwarzsee.derive_parameters()
+    # icestupa.derive_parameters()
 
-    schwarzsee.read_input()
+    icestupa.read_input()
 
-    schwarzsee.melt_freeze()
+    icestupa.melt_freeze()
 
-    # schwarzsee.read_output()
+    # icestupa.read_output()
 
-    # schwarzsee.corr_plot()
+    # icestupa.corr_plot()
 
-    schwarzsee.summary()
+    icestupa.summary()
 
-    # schwarzsee.print_input()
+    # icestupa.print_input()
 
-    # schwarzsee.print_output()
+    icestupa.print_output_guttannen()
 
     total = time.time() - start
 
