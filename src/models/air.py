@@ -187,14 +187,6 @@ class Icestupa:
         if r_mean != 0:
             self.r_mean = r_mean
         else:
-            if dia_f_new != 0:
-                """Keeping Discharge constant"""
-                v_new = math.pi * fountain['dia_f'] ** 2 * v_old / (dia_f_new ** 2 * math.pi)
-                h_new = h_old - (v_new ** 2 - v_old ** 2) / (2 * 9.81)
-                self.r_mean = self.projectile_xy(
-                    v=v_new, h=h_new
-                )  # todo implement other options
-            else:
                 self.r_mean = self.projectile_xy(v=v_old)
 
         print(self.r_mean)
@@ -286,7 +278,7 @@ class Icestupa:
             - self.df.melted[i - 1]
             + self.df.ppt[i - 1]
             > 0
-        ) & (self.df.loc[i - 1, "r_ice"] > self.r_mean):
+            )& (self.df.loc[i - 1, "r_ice"] > self.r_mean):
             # Ice Radius
             self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"]
 
@@ -681,11 +673,12 @@ class Icestupa:
                     self.spray_radius()
                     self.df.loc[i - 1, "r_ice"] = 9.8655
                     # self.df.loc[i - 1, "r_ice"] =self.spray_radius() 
-                    self.df.loc[i - 1, "h_ice"] = fountain['tree_height']
+                    self.df.loc[i - 1, "h_ice"] =self.dx 
                     self.hollow_V = (
                         math.pi
                         / 3
-                        * fountain['tree_radius'] **2
+                        # * fountain['tree_radius'] **2
+                        * self.df.loc[i-1, "r_ice"]**2
                         * fountain['tree_height']
                         )
                     print(self.hollow_V)
@@ -710,10 +703,9 @@ class Icestupa:
 
                 self.start = i - 1
 
-            # Ice Melted
-            if ((self.df.loc[i, "ice"] < 0.01) or self.df.loc[i, "T_s"] < -100) & (
-                self.df.Discharge[i:].sum() == 0
-            ):
+            ice_melted = (self.df.loc[i, "ice"] < 0.01) or (self.df.loc[i, "T_s"] < -100)
+            fountain_off = self.df.Discharge[i:].sum() == 0
+            if ice_melted & fountain_off:
                 self.df.loc[i - 1, "meltwater"] += self.df.loc[i - 1, "ice"]
                 self.df.loc[i - 1, "ice"] = 0
                 self.df = self.df[self.start : i - 1]
