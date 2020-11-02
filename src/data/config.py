@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 DIRNAME = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-SITE = "guttannen"
+SITE = "schwarzsee"
 OPTION = 'schwarzsee'
 
 # SITE = input("Input the Field SITE Name: ") or SITE
