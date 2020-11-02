@@ -13,18 +13,18 @@ from pathlib import Path
 from tqdm import tqdm
 import os
 import logging
-from src.data.config import site, folders, fountain
+from src.data.config import SITE, FOLDERS, FOUNTAIN
 from scipy import stats
 
 start = time.time()
 
-def discharge_rate(df, fountain):
+def discharge_rate(df, FOUNTAIN):
 
     if option == 'schwarzsee':
         df["Fountain"] = 0  # Fountain run time
 
         df_nights = pd.read_csv(
-            os.path.join(folders["raw_folder"], "schwarzsee_fountain_time.txt"),
+            os.path.join(FOLDERS["raw_folder"], "schwarzsee_fountain_time.txt"),
             sep="\\s+",
         )
 
@@ -49,10 +49,10 @@ def discharge_rate(df, fountain):
             ] = 1
 
     if option == 'temperature':
-        mask = df["T_a"] < fountain["crit_temp"]
+        mask = df["T_a"] < FOUNTAIN["crit_temp"]
         mask_index = df[mask].index
         df.loc[mask_index, "Fountain"] = 1
-        mask = df["When"] >= fountain["fountain_off_date"]
+        mask = df["When"] >= FOUNTAIN["fountain_off_date"]
         mask_index = df[mask].index
         df.loc[mask_index, "Fountain"] = 0
 
@@ -167,25 +167,25 @@ def discharge_rate(df, fountain):
         mask = df["TotalE"] < 0
         mask_index = df[mask].index
         df.loc[mask_index, "Fountain"] = 1
-        mask = df["When"] >= fountain["fountain_off_date"]
+        mask = df["When"] >= FOUNTAIN["fountain_off_date"]
         mask_index = df[mask].index
         df.loc[mask_index, "Fountain"] = 0
 
     if option == 'schwarzsee':
         df.Discharge = df.Discharge * df.Fountain
     else:
-        df.Discharge = fountain["discharge"] * df.Fountain
+        df.Discharge = FOUNTAIN["discharge"] * df.Fountain
 
     return df["Fountain"], df["Discharge"]
 
 
 if __name__ == '__main__':
 
-    if site['name'] == "schwarzsee":
+    if SITE['name'] == "schwarzsee":
 
         # read files
         df_in = pd.read_csv(
-            folders["raw_folder"]+ site['name'] + "_aws.txt",
+            FOLDERS["raw_folder"]+ SITE['name'] + "_aws.txt",
             header=None,
             encoding="latin-1",
             skiprows=7,
@@ -218,11 +218,11 @@ if __name__ == '__main__':
 
         df_in = df_in.set_index("When").resample("5T").last().reset_index()
 
-        mask = (df_in["When"] >= site["start_date"]) & (df_in["When"] <= site["end_date"])
+        mask = (df_in["When"] >= SITE["start_date"]) & (df_in["When"] <= SITE["end_date"])
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
 
-        days = pd.date_range(start=site["start_date"], end=site["end_date"], freq="5T")
+        days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="5T")
         days = pd.DataFrame({"When": days})
 
         df = pd.merge(
@@ -254,7 +254,7 @@ if __name__ == '__main__':
         )
 
         # ERA5 begins
-        df_in3 = pd.read_csv(folders["raw_folder"]+ site['name'] + "_ERA5.csv", sep=",", header=0, parse_dates=["dataDate"])
+        df_in3 = pd.read_csv(FOLDERS["raw_folder"]+ SITE['name'] + "_ERA5.csv", sep=",", header=0, parse_dates=["dataDate"])
 
         df_in3 = df_in3.drop(["Latitude", "Longitude"], axis=1)
         df_in3["time"] = df_in3["validityTime"].replace([0, 100, 200, 300, 400, 500, 600, 700, 800, 900],
@@ -266,7 +266,7 @@ if __name__ == '__main__':
         df_in3["When"] = df_in3["dataDate"] + " " + df_in3["time"]
         df_in3["When"] = pd.to_datetime(df_in3["When"])
 
-        days = pd.date_range(start=site["start_date"], end=df_in3["When"].iloc[-1], freq="1H")
+        days = pd.date_range(start=SITE["start_date"], end=df_in3["When"].iloc[-1], freq="1H")
         df_out1 = pd.DataFrame({"When": days})
 
         df_out1 = df_out1.set_index("When")
@@ -317,10 +317,10 @@ if __name__ == '__main__':
         interpolated = interpolated.reset_index()
 
         interpolated["Discharge"] = 0
-        mask = (interpolated["T_a"] < site["crit_temp"]) & (interpolated["SW_direct"] < 100)
+        mask = (interpolated["T_a"] < SITE["crit_temp"]) & (interpolated["SW_direct"] < 100)
         mask_index = interpolated[mask].index
         interpolated.loc[mask_index, "Discharge"] = 2 * 60
-        mask = interpolated["When"] >= site["fountain_off_date"]
+        mask = interpolated["When"] >= SITE["fountain_off_date"]
         mask_index = interpolated[mask].index
         interpolated.loc[mask_index, "Discharge"] = 0
         interpolated = interpolated.reset_index()
@@ -330,11 +330,11 @@ if __name__ == '__main__':
         ]
 
         df_in3 = df_in3.reset_index()
-        mask = (df_in3["When"] >= site["start_date"]) & (df_in3["When"] <= site["end_date"])
+        mask = (df_in3["When"] >= SITE["start_date"]) & (df_in3["When"] <= SITE["end_date"])
         df_in3 = df_in3.loc[mask]
         df_in3 = df_in3.reset_index()
 
-        df_in3.to_csv(folders["input_folder"] + "raw_input_ERA5.csv")
+        df_in3.to_csv(FOLDERS["input_folder"] + "raw_input_ERA5.csv")
 
         df_ERA5 = interpolated[["When", "T_a", "RH", "v_a", "SW_direct", "SW_diffuse", "LW_in", "cld", "p_a", "Prec", "Discharge"]]
         df_ERA5.loc[:,"Discharge"] = 0
@@ -363,7 +363,7 @@ if __name__ == '__main__':
 
         # Add Precipitation data
         df_in2 = pd.read_csv(
-            os.path.join(folders["raw_folder"], "plf_ppt.txt"),
+            os.path.join(FOLDERS["raw_folder"], "plf_ppt.txt"),
             sep=";",
             skiprows=2,
         )
@@ -373,8 +373,8 @@ if __name__ == '__main__':
         df_in2["Prec"] = df_in2["Prec"] / (10*60)  # ppt rate mm/s
         df_in2 = df_in2.set_index("When").resample("5T").interpolate(method='linear').reset_index()
 
-        mask = (df_in2["When"] >= site["start_date"]) & (
-                df_in2["When"] <= site["end_date"]
+        mask = (df_in2["When"] >= SITE["start_date"]) & (
+                df_in2["When"] <= SITE["end_date"]
         )
         df_in3 = df_in2.loc[mask]
         df_in3 = df_in3.set_index("When")
@@ -384,7 +384,7 @@ if __name__ == '__main__':
 
 
         """Discharge Rate"""
-        df["Fountain"], df["Discharge"] = discharge_rate(df,fountain)
+        df["Fountain"], df["Discharge"] = discharge_rate(df,FOUNTAIN)
 
         df["Discharge"] = df["Discharge"] * df["Fountain"]
 
@@ -399,7 +399,7 @@ if __name__ == '__main__':
         df_out = df_out.round(5)
 
 
-        df_out.to_csv(folders["input_folder"] + "raw_input.csv")
+        df_out.to_csv(FOLDERS["input_folder"] + "raw_input.csv")
 
 
         # Extend data
@@ -410,7 +410,7 @@ if __name__ == '__main__':
         )
         df_ERA5 = df_ERA5.loc[mask]
 
-        mask = (df_in2["When"] >= site["start_date"]) & (
+        mask = (df_in2["When"] >= SITE["start_date"]) & (
                 df_in2["When"] <= df_ERA5["When"].iloc[-1]
         )
         df_in2 = df_in2.loc[mask]
@@ -428,16 +428,16 @@ if __name__ == '__main__':
             print( "Warning: Null values present")
             print(concat[["When", "T_a", "RH", "v_a", "Discharge", "SW_direct", "SW_diffuse", "Prec", "p_a", 'cld']].isnull().sum())
 
-        concat.to_csv(folders["input_folder"] + "raw_input_extended.csv")
+        concat.to_csv(FOLDERS["input_folder"] + "raw_input_extended.csv")
         concat.to_hdf(
-            folders["input_folder"] + "raw_input_extended.h5", key="df", mode="w"
+            FOLDERS["input_folder"] + "raw_input_extended.h5", key="df", mode="w"
         )
 
-    if site['name'] == "guttannen":
+    if SITE['name'] == "guttannen":
 
         # read files
         df_in = pd.read_csv(
-            folders["raw_folder"]+ site['name'] + "_aws.txt",
+            FOLDERS["raw_folder"]+ SITE['name'] + "_aws.txt",
             header=None,
             encoding="latin-1",
             skiprows=7,
@@ -464,7 +464,7 @@ if __name__ == '__main__':
         df_in = df_in.drop(["Pluviometer"], axis=1)
         df_in = df_in.drop(["Wind Direction"], axis=1)
 
-        mask = (df_in["When"] >= site["start_date"]) & (df_in["When"] <= site["end_date"])
+        mask = (df_in["When"] >= SITE["start_date"]) & (df_in["When"] <= SITE["end_date"])
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
 
@@ -489,7 +489,7 @@ if __name__ == '__main__':
         """
 
         # Add Radiation data
-        df_in2 = pd.read_csv(os.path.join(folders["raw_folder"], "guttannen_rad.txt"), encoding="latin-1", skiprows=2, sep='\\s+')
+        df_in2 = pd.read_csv(os.path.join(FOLDERS["raw_folder"], "guttannen_rad.txt"), encoding="latin-1", skiprows=2, sep='\\s+')
         df_in2["When"] = pd.to_datetime(df_in2["time"], format="%Y%m%d%H%M")  # Datetime
 
         # Convert to int
@@ -502,7 +502,7 @@ if __name__ == '__main__':
         )  # Add Radiation data
 
         # Add rest of data
-        df_in3 = pd.read_csv(os.path.join(folders["raw_folder"], "guttannen_prec.txt"), encoding="latin-1",
+        df_in3 = pd.read_csv(os.path.join(FOLDERS["raw_folder"], "guttannen_prec.txt"), encoding="latin-1",
                              skiprows=2, sep='\\s+')
         df_in3["When"] = pd.to_datetime(df_in3["time"], format="%Y%m%d%H%M")  # Datetime
 
@@ -531,30 +531,30 @@ if __name__ == '__main__':
         df_in2 = df_in2.set_index("When").resample("5T").ffill().reset_index()
         df_in3 = df_in3.set_index("When").resample("5T").ffill().reset_index()
 
-        mask = (df_in["When"] >= site["start_date"]) & (df_in["When"] <= site["error_date"])
+        mask = (df_in["When"] >= SITE["start_date"]) & (df_in["When"] <= SITE["error_date"])
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
 
-        mask = (df_in2["When"] >= site["start_date"]) & (
-                df_in2["When"] <= site["error_date"]
+        mask = (df_in2["When"] >= SITE["start_date"]) & (
+                df_in2["When"] <= SITE["error_date"]
         )
         df_2 = df_in2.loc[mask]
         df_2 = df_2.reset_index()
 
-        mask = (df_in3["When"] >= site["start_date"]) & (
-                df_in3["When"] <= site["error_date"]
+        mask = (df_in3["When"] >= SITE["start_date"]) & (
+                df_in3["When"] <= SITE["error_date"]
         )
         df_3 = df_in3.loc[mask]
         df_3 = df_3.reset_index()
 
-        mask = (df_in3["When"] >= site["error_date"]) & (
-                df_in3["When"] <= site["end_date"]
+        mask = (df_in3["When"] >= SITE["error_date"]) & (
+                df_in3["When"] <= SITE["end_date"]
         )
         df_4 = df_in3.loc[mask]
         df_4 = df_4.reset_index()
 
-        mask = (df_in2["When"] >= site["error_date"]) & (
-                df_in2["When"] <= site["end_date"]
+        mask = (df_in2["When"] >= SITE["error_date"]) & (
+                df_in2["When"] <= SITE["end_date"]
         )
         df_5 = df_in2.loc[mask]
         df_5 = df_5.reset_index()
@@ -564,14 +564,14 @@ if __name__ == '__main__':
 
 
         df_4["Discharge"] = 0
-        mask = df_4["Temperature"] < fountain["crit_temp"]
+        mask = df_4["Temperature"] < FOUNTAIN["crit_temp"]
         mask_index = df_4[mask].index
         df_4.loc[mask_index, "Discharge"] = 15
-        mask = df_4["When"] >= fountain["fountain_off_date"]
+        mask = df_4["When"] >= FOUNTAIN["fountain_off_date"]
         mask_index = df_4[mask].index
         df_4.loc[mask_index, "Discharge"] = 0
 
-        days = pd.date_range(start=site["start_date"], end=site["error_date"], freq="5T")
+        days = pd.date_range(start=SITE["start_date"], end=SITE["error_date"], freq="5T")
         days = pd.DataFrame({"When": days})
 
         df = pd.merge(
@@ -596,7 +596,7 @@ if __name__ == '__main__':
         df["Wind Speed"] = df_3["Wind Speed"]
 
 
-        mask = (df["When"] >= site["start_date"]) & (df["When"] <= site["error_date"])
+        mask = (df["When"] >= SITE["start_date"]) & (df["When"] <= SITE["error_date"])
         df = df.loc[mask]
         df = df.reset_index()
 
@@ -636,7 +636,7 @@ if __name__ == '__main__':
         ]
 
         # ERA5 begins
-        df_in3 = pd.read_csv(folders["raw_folder"]+ site['name'] + "_ERA5.csv", sep=",", header=0, parse_dates=["dataDate"])
+        df_in3 = pd.read_csv(FOLDERS["raw_folder"]+ SITE['name'] + "_ERA5.csv", sep=",", header=0, parse_dates=["dataDate"])
 
         df_in3 = df_in3.drop(["Latitude", "Longitude"], axis=1)
         df_in3["time"] = df_in3["validityTime"].replace([0, 100, 200, 300, 400, 500, 600, 700, 800, 900],
@@ -648,7 +648,7 @@ if __name__ == '__main__':
         df_in3["When"] = df_in3["dataDate"] + " " + df_in3["time"]
         df_in3["When"] = pd.to_datetime(df_in3["When"])
 
-        days = pd.date_range(start=site["start_date"], end=df_in3["When"].iloc[-1], freq="1H")
+        days = pd.date_range(start=SITE["start_date"], end=df_in3["When"].iloc[-1], freq="1H")
         df_out1 = pd.DataFrame({"When": days})
 
         df_out1 = df_out1.set_index("When")
@@ -699,10 +699,10 @@ if __name__ == '__main__':
         interpolated = interpolated.reset_index()
 
         interpolated["Discharge"] = 0
-        mask = (interpolated["T_a"] < fountain["crit_temp"]) & (interpolated["SW_direct"] < 100)
+        mask = (interpolated["T_a"] < FOUNTAIN["crit_temp"]) & (interpolated["SW_direct"] < 100)
         mask_index = interpolated[mask].index
         interpolated.loc[mask_index, "Discharge"] = 2 * 60
-        mask = interpolated["When"] >= fountain["fountain_off_date"]
+        mask = interpolated["When"] >= FOUNTAIN["fountain_off_date"]
         mask_index = interpolated[mask].index
         interpolated.loc[mask_index, "Discharge"] = 0
         interpolated = interpolated.reset_index()
@@ -712,11 +712,11 @@ if __name__ == '__main__':
         ]
 
         df_in3 = df_in3.reset_index()
-        mask = (df_in3["When"] >= site["start_date"]) & (df_in3["When"] <= site["end_date"])
+        mask = (df_in3["When"] >= SITE["start_date"]) & (df_in3["When"] <= SITE["end_date"])
         df_in3 = df_in3.loc[mask]
         df_in3 = df_in3.reset_index()
 
-        df_in3.to_csv(folders["input_folder"] + "raw_input_ERA5.csv")
+        df_in3.to_csv(FOLDERS["input_folder"] + "raw_input_ERA5.csv")
 
         df_ERA5 = interpolated[["When", "T_a", "RH", "v_a", "SW_direct", "SW_diffuse", "LW_in", "cld", "p_a", "Prec", "Discharge"]]
 
@@ -738,7 +738,7 @@ if __name__ == '__main__':
 
         print(df_out.tail())
 
-        df_out.to_csv(folders["input_folder"] + "raw_input_extended.csv")
+        df_out.to_csv(FOLDERS["input_folder"] + "raw_input_extended.csv")
 
         # fig, ax = plt.subplots()
         # ax.plot(df.When, df.Discharge)
