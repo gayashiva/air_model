@@ -1,0 +1,4 @@
+[project-run]
+cwd=<root>
+command:python=/home/surya/Programs/anaconda3/envs/air_model/bin/python "src/models/air.py"
+output=terminal

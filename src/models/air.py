@@ -12,12 +12,10 @@ from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import seaborn as sns
-sys.path.append("/home/surya/Programs/PycharmProjects/air_model")
+sys.path.append("/home/surya/Programs/Github/air_model")
 from src.data.config import SITE, FOUNTAIN, FOLDERS
 from pvlib import location
-
 pd.plotting.register_matplotlib_converters()
-
 
 class Icestupa:
     """Physical Constants"""
@@ -1381,224 +1379,6 @@ class PDF(Icestupa):
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        dfds = self.df[["When", "thickness", "SA"]]
-
-        with pd.option_context("mode.chained_assignment", None):
-            dfds["negative"] = dfds.loc[dfds.thickness < 0, "thickness"]
-            dfds["positive"] = dfds.loc[dfds.thickness >= 0, "thickness"]
-
-        dfds1 = dfds.set_index("When").resample("D").sum().reset_index()
-        dfds2 = dfds.set_index("When").resample("D").mean().reset_index()
-
-        dfds2["When"] = dfds2["When"].dt.strftime("%b %d")
-        dfds2["label"] = " "
-        labels = [
-            "Jan 30",
-            "Feb 05",
-            "Feb 12",
-            "Feb 19",
-            "Feb 26",
-            "Mar 05",
-            "Mar 12",
-            "Mar 19",
-            "Mar 26",
-            "Apr 02",
-        ]
-        for i in range(0, dfds2.shape[0]):
-            for item in labels:
-                if dfds2.When[i] == item:
-                    dfds2.loc[i, "label"] = dfds2.When[i]
-
-        dfds2 = dfds2.set_index("label")
-
-        dfds1 = dfds1.rename(columns={"positive": "Ice", "negative": "Meltwater"})
-        y1 = dfds1[["Ice", "Meltwater"]]
-        y3 = dfds2["SA"]
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(2, 1, 1)
-        y1.plot(
-            kind="bar",
-            stacked=True,
-            edgecolor="black",
-            linewidth=0.5,
-            color=["#D9E9FA", "#0C70DE"],
-            ax=ax1,
-        )
-        plt.ylabel("Thickness ($m$ w. e.)")
-        plt.xticks(rotation=45)
-        # plt.legend(loc='upper right')
-        ax1.set_ylim(-0.035, 0.035)
-        ax1.yaxis.set_minor_locator(AutoMinorLocator())
-        ax1.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
-        x_axis = ax1.axes.get_xaxis()
-        x_axis.set_visible(False)
-
-        ax3 = fig.add_subplot(2, 1, 2)
-        ax = y3.plot.bar(
-            y="SA", linewidth=0.5, edgecolor="black", color="xkcd:grey", ax=ax3
-        )
-        ax.xaxis.set_label_text("")
-        ax3.set_ylabel("Surface Area ($m^2$)")
-        ax3.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
-        plt.xticks(rotation=45)
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        fig = plt.figure(figsize=(8.27, 8.27))
-        dfds = self.df[["When", "solid", "ppt", "dpt", "melted", "gas", "SA"]]
-
-        with pd.option_context("mode.chained_assignment", None):
-            dfds["solid"] = dfds["solid"] / (self.df.loc[i, "SA"] * self.RHO_I)
-            dfds["solid"] = dfds.loc[dfds.solid >= 0, "solid"]
-            dfds["melted"] *= -1 / (self.df.loc[i, "SA"] * self.RHO_I)
-            dfds["gas"] *= -1 / (self.df.loc[i, "SA"] * self.RHO_I)
-            dfds["ppt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
-            dfds["dpt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
-
-        dfds = dfds.set_index("When").resample("D").sum().reset_index()
-        dfds["When"] = dfds["When"].dt.strftime("%b %d")
-
-        dfds["label"] = " "
-        labels = [
-            "Jan 30",
-            "Feb 05",
-            "Feb 12",
-            "Feb 19",
-            "Feb 26",
-            "Mar 05",
-            "Mar 12",
-            "Mar 19",
-            "Mar 26",
-            "Apr 02",
-        ]
-        for i in range(0, dfds.shape[0]):
-            for item in labels:
-                if dfds.When[i] == item:
-                    dfds.loc[i, "label"] = dfds.When[i]
-
-        dfds = dfds.set_index("label")
-        dfds = dfds.rename(
-            columns={
-                "solid": "Ice",
-                "ppt": "Snow",
-                "dpt": "Vapour condensation/deposition",
-                "melted": "Melt",
-                "gas": "Vapour sublimation/evaporation",
-            }
-        )
-
-        y2 = dfds[
-            [
-                "Ice",
-                "Snow",
-                "Vapour condensation/deposition",
-                "Vapour sublimation/evaporation",
-                "Melt",
-            ]
-        ]
-
-        z = dfd[["$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
-
-        ax1 = fig.add_subplot(3, 1, 1)
-        ax1 = z.plot.bar(stacked=True, edgecolor="black", linewidth=0.5, ax=ax1)
-        ax1.xaxis.set_label_text("")
-        ax1.grid(color="black", alpha=0.3, linewidth=0.5, which="major")
-        # plt.xlabel('Date')
-        plt.ylabel("Energy Flux [$W\\,m^{-2}$]")
-        plt.legend(loc="upper right", ncol=6)
-        plt.ylim(-200, 200)
-        plt.xticks(rotation=45)
-        x_axis = ax1.axes.get_xaxis()
-        x_axis.set_visible(False)
-        at = AnchoredText("(a)", prop=dict(size=10), frameon=True, loc="upper left")
-        at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-        ax1.add_artist(at)
-
-        ax2 = fig.add_subplot(3, 1, 2)
-        y2.plot(
-            kind="bar",
-            stacked=True,
-            edgecolor="black",
-            linewidth=0.5,
-            color=["#D9E9FA", "#00DBFD", "#EA9010", "#006C67", "#0C70DE"],
-            ax=ax2,
-        )
-        plt.ylabel("Thickness ($m$ w. e.)")
-        plt.xticks(rotation=45)
-        plt.legend(loc="upper right", ncol=3)
-        ax2.set_ylim(-0.03, 0.03)
-        ax2.yaxis.set_minor_locator(AutoMinorLocator())
-        ax2.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
-        x_axis = ax2.axes.get_xaxis()
-        x_axis.set_visible(False)
-        at = AnchoredText("(b)", prop=dict(size=10), frameon=True, loc="upper left")
-        at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-        ax2.add_artist(at)
-
-        ax3 = fig.add_subplot(3, 1, 3)
-        ax3 = y3.plot.bar(
-            y="SA", linewidth=0.5, edgecolor="black", color="xkcd:grey", ax=ax3
-        )
-        ax3.xaxis.set_label_text("")
-        ax3.set_ylabel("Surface Area ($m^2$)")
-        ax3.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
-        at = AnchoredText("(c)", prop=dict(size=10), frameon=True, loc="upper left")
-        at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-        ax3.add_artist(at)
-        plt.tight_layout()
-        plt.xticks(rotation=45)
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11.69, 8.27))
-        y1 = self.df.a
-        y2 = self.df.f_cone
-        ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Albedo")
-        # ax1.set_xlabel("Days")
-        ax1t = ax1.twinx()
-        ax1t.plot(x, y2, "b-", linewidth=0.5)
-        ax1t.set_ylabel("$f_{cone}$", color="b")
-        for tl in ax1t.get_yticklabels():
-            tl.set_color("b")
-        ax1.grid(axis="x", color="black", alpha=0.3, linewidth=0.5, which="major")
-
-        at = AnchoredText("(a)", prop=dict(size=10), frameon=True, loc="upper left")
-        at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-        ax1.add_artist(at)
-
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.set_ylim([0, 1])
-        ax1t.set_ylim([0, 1])
-        fig.autofmt_xdate()
-
-        y1 = self.df.T_s
-        y2 = self.df.T_bulk
-        ax2.plot(x, y1, "k-", linewidth=0.5, alpha=0.5)
-        ax2.set_ylabel("Surface Temperature [$\\degree C$]")
-        # ax1.grid()
-        ax2t = ax2.twinx()
-        ax2t.plot(x, y2, "b-", linewidth=0.5)
-        ax2t.set_ylabel("Bulk Temperature [$\\degree C$]", color="b")
-        for tl in ax2t.get_yticklabels():
-            tl.set_color("b")
-        ax2.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax2.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax2.xaxis.set_minor_locator(mdates.DayLocator())
-        ax2.set_ylim([-20, 1])
-        ax2t.set_ylim([-20, 1])
-        fig.autofmt_xdate()
-        at = AnchoredText("(b)", prop=dict(size=10), frameon=True, loc="upper left")
-        at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-        ax2.add_artist(at)
-        ax2.grid(axis="x", color="black", alpha=0.3, linewidth=0.5, which="major")
-        plt.tight_layout()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-
         fig, (ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8) = plt.subplots(
             nrows=8, ncols=1, sharex="col", sharey="row", figsize=(16, 14)
         )
@@ -1609,12 +1389,6 @@ class PDF(Icestupa):
         ax1.plot(x, y1, "k-", linewidth=0.5)
         ax1.set_ylabel("SW")
         ax1.grid()
-
-        # ax1t = ax1.twinx()
-        # ax1t.plot(x, self.df.Prec * 1000, "b-", linewidth=0.5)
-        # ax1t.set_ylabel("Precipitation [$mm$]", color="b")
-        # for tl in ax1t.get_yticklabels():
-        #     tl.set_color("b")
 
         y2 = self.df["$q_{LW}$"]
         ax2.plot(x, y2, "k-", linewidth=0.5)
@@ -2064,12 +1838,12 @@ class PDF(Icestupa):
         plt.clf()
         pp.close()
 
-        pp = PdfPages(FOLDERS["output_folder"] + "paper/Figure_7.pdf")
+        pp = PdfPages(FOLDERS["output_folder"] + "paper/Figure_6.pdf")
         fig = plt.figure(figsize=(8.27, 8.27))
         dfds = self.df[["When", "solid", "ppt", "dpt", "melted", "gas", "SA"]]
 
         with pd.option_context("mode.chained_assignment", None):
-            for i in range(0,dfds.shape[0]):
+            for i in range( 1, dfds.shape[0]):
                 dfds.loc[i,"solid"] = dfds.loc[i,"solid"] / (self.df.loc[i, "SA"] * self.RHO_I)
                 dfds["solid"] = dfds.loc[dfds.solid >= 0, "solid"]
                 dfds.loc[i,"melted"] *= -1 / (self.df.loc[i, "SA"] * self.RHO_I)

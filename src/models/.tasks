@@ -1,0 +1,3 @@
+[file-run]
+command:python=/home/surya/Programs/anaconda3/envs/air_model/bin/python "$(VIM_FILENAME)"
+output=terminal
