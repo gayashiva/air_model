@@ -1,9 +1,3 @@
-[project-run]
-cwd=<root>
-command:python=/home/surya/Programs/anaconda3/envs/air_model/bin/python "src/models/air.py"
-output=terminal
-save=2
-
 [file-run]
 command:python=/home/surya/Programs/anaconda3/envs/air_model/bin/python  "$(VIM_RELNAME)"
 output=terminal

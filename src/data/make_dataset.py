@@ -14,7 +14,7 @@ from pathlib import Path
 from tqdm import tqdm
 import os
 import logging
-from src.data.config import SITE, FOLDERS, FOUNTAIN
+from src.data.config import SITE, FOLDERS, FOUNTAIN, OPTION
 from scipy import stats
 
 start = time.time()
@@ -22,7 +22,7 @@ start = time.time()
 
 def discharge_rate(df, FOUNTAIN):
 
-    if option == "schwarzsee":
+    if OPTION == "schwarzsee":
         df["Fountain"] = 0  # Fountain run time
 
         df_nights = pd.read_csv(
@@ -49,7 +49,7 @@ def discharge_rate(df, FOUNTAIN):
                 "Fountain",
             ] = 1
 
-    if option == "temperature":
+    if OPTION == "temperature":
         mask = df["T_a"] < FOUNTAIN["crit_temp"]
         mask_index = df[mask].index
         df.loc[mask_index, "Fountain"] = 1
@@ -57,123 +57,7 @@ def discharge_rate(df, FOUNTAIN):
         mask_index = df[mask].index
         df.loc[mask_index, "Fountain"] = 0
 
-    if option == "energy":
-
-        """Constants"""
-        Ls = 2848 * 1000  # J/kg Sublimation
-        Le = 2514 * 1000  # J/kg Evaporation
-        Lf = 334 * 1000  # J/kg Fusion
-        cw = 4.186 * 1000  # J/kg Specific heat water
-        ci = 2.108 * 1000  # J/kgC Specific heat ice
-        rho_w = 1000  # Density of water
-        rho_i = 916  # Density of Ice rho_i
-        rho_a = 1.29  # kg/m3 air density at mean sea level
-        k = 0.4  # Van Karman constant
-        bc = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
-        g = 9.8  # gravity
-
-        """Miscellaneous"""
-        time_steps = 5 * 60  # s Model time steps
-        p0 = 1013  # Standard air pressure hPa
-
-        """ Estimating Albedo """
-        df["a"] = albedo(df, surface)
-
-        df["T_s"] = 0
-
-        for i in range(1, df.shape[0]):
-
-            """ Energy Balance starts """
-
-            # Vapor Pressure empirical relations
-            if "vp_a" not in list(df.columns):
-                df.loc[i, "vp_a"] = (
-                    6.11
-                    * math.pow(
-                        10, 7.5 * df.loc[i - 1, "T_a"] / (df.loc[i - 1, "T_a"] + 237.3)
-                    )
-                    * df.loc[i, "RH"]
-                    / 100
-                )
-
-            df.loc[i, "vp_ice"] = 6.112 * np.exp(
-                22.46 * (df.loc[i - 1, "T_s"]) / ((df.loc[i - 1, "T_s"]) + 243.12)
-            )
-
-            # Sublimation only
-            df.loc[i, "Ql"] = (
-                0.623
-                * Ls
-                * rho_a
-                / p0
-                * math.pow(k, 2)
-                * df.loc[i, "v_a"]
-                * (df.loc[i, "vp_a"] - df.loc[i, "vp_ice"])
-                / (
-                    np.log(surface["h_aws"] / surface["z0mi"])
-                    * np.log(surface["h_aws"] / surface["z0hi"])
-                )
-            )
-
-            # Short Wave Radiation SW
-            df.loc[i, "SW"] = (1 - df.loc[i, "a"]) * (
-                df.loc[i, "SW_direct"] + df.loc[i, "DRad"]
-            )
-
-            # Cloudiness from diffuse fraction
-            if df.loc[i, "SW_direct"] + df.loc[i, "DRad"] > 1:
-                df.loc[i, "cld"] = df.loc[i, "DRad"] / (
-                    df.loc[i, "SW_direct"] + df.loc[i, "DRad"]
-                )
-            else:
-                df.loc[i, "cld"] = 0
-
-            # atmospheric emissivity
-            df.loc[i, "e_a"] = (
-                1.24
-                * math.pow(abs(df.loc[i, "vp_a"] / (df.loc[i, "T_a"] + 273.15)), 1 / 7)
-            ) * (1 + 0.22 * math.pow(df.loc[i, "cld"], 2))
-
-            # Long Wave Radiation LW
-            if "oli000z0" not in list(df.columns):
-
-                df.loc[i, "LW"] = df.loc[i, "e_a"] * bc * math.pow(
-                    df.loc[i, "T_a"] + 273.15, 4
-                ) - surface["ie"] * bc * math.pow(df.loc[i - 1, "T_s"] + 273.15, 4)
-            else:
-                df.loc[i, "LW"] = df.loc[i, "oli000z0"] - surface["ie"] * bc * math.pow(
-                    df.loc[i - 1, "T_s"] + 273.15, 4
-                )
-
-            # Sensible Heat Qs
-            df.loc[i, "Qs"] = (
-                ci
-                * rho_a
-                * df.loc[i, "p_a"]
-                / p0
-                * math.pow(k, 2)
-                * df.loc[i, "v_a"]
-                * (df.loc[i, "T_a"] - df.loc[i - 1, "T_s"])
-                / (
-                    np.log(surface["h_aws"] / surface["z0mi"])
-                    * np.log(surface["h_aws"] / surface["z0hi"])
-                )
-            )
-
-            # Total Energy W/m2
-            df.loc[i, "TotalE"] = (
-                df.loc[i, "SW"] + df.loc[i, "LW"] + df.loc[i, "Qs"] + df.loc[i, "Ql"]
-            )
-
-        x = df["When"]
-        mask = df["TotalE"] < 0
-        mask_index = df[mask].index
-        df.loc[mask_index, "Fountain"] = 1
-        mask = df["When"] >= FOUNTAIN["fountain_off_date"]
-        mask_index = df[mask].index
-        df.loc[mask_index, "Fountain"] = 0
-
-    if option == "schwarzsee":
+    if OPTION == "schwarzsee":
         df.Discharge = df.Discharge * df.Fountain
     else:
         df.Discharge = FOUNTAIN["discharge"] * df.Fountain
@@ -353,12 +237,12 @@ if __name__ == "__main__":
         interpolated = interpolated.reset_index()
 
         interpolated["Discharge"] = 0
-        mask = (interpolated["T_a"] < SITE["crit_temp"]) & (
+        mask = (interpolated["T_a"] < FOUNTAIN["crit_temp"]) & (
             interpolated["SW_direct"] < 100
         )
         mask_index = interpolated[mask].index
         interpolated.loc[mask_index, "Discharge"] = 2 * 60
-        mask = interpolated["When"] >= SITE["fountain_off_date"]
+        mask = interpolated["When"] >= FOUNTAIN["fountain_off_date"]
         mask_index = interpolated[mask].index
         interpolated.loc[mask_index, "Discharge"] = 0
         interpolated = interpolated.reset_index()
@@ -390,8 +274,8 @@ if __name__ == "__main__":
             [
                 "When",
                 "T_a",
-                "RH",
                 "v_a",
+                "RH",
                 "SW_direct",
                 "SW_diffuse",
                 "LW_in",
@@ -406,6 +290,8 @@ if __name__ == "__main__":
         # Fill from ERA5
         df_ERA5 = df_ERA5.set_index("When")
         df = df.set_index("When")
+        df["Source"] = "AWS"
+        df.loc[df["T_a"].isnull(), "Source"] = "ERA5"
         df.loc[df["T_a"].isnull(), ["T_a", "RH", "v_a", "p_a", "Discharge"]] = df_ERA5[
             ["T_a", "RH", "v_a", "p_a", "Discharge"]
         ]
@@ -434,7 +320,7 @@ if __name__ == "__main__":
 
         # Add Precipitation data
         df_in2 = pd.read_csv(
-            os.path.join(FOLDERS["raw_folder"], "plf_ppt.txt"),
+            os.path.join(FOLDERS["raw_folder"], "plaffeien_aws.txt"),
             sep=";",
             skiprows=2,
         )
@@ -475,6 +361,7 @@ if __name__ == "__main__":
                 "Prec",
                 "p_a",
                 "cld",
+                "Source",
             ]
         ]
 
@@ -493,6 +380,7 @@ if __name__ == "__main__":
                         "Prec",
                         "p_a",
                         "cld",
+                        "Source",
                     ]
                 ]
                 .isnull()
@@ -540,6 +428,7 @@ if __name__ == "__main__":
                         "Prec",
                         "p_a",
                         "cld",
+                        "Source",
                     ]
                 ]
                 .isnull()

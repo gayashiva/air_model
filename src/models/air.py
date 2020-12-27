@@ -94,38 +94,6 @@ class Icestupa:
 
         self.df = pd.merge(solar_df, self.df, on="When")
 
-    def cloudiness(self, clear_sky_filename="clear_sky.csv"):
-        df1 = pd.read_csv(FOLDERS["input_folder"] + clear_sky_filename)
-
-        self.df["cld"] = df1["cld"]
-        self.df["Dn"] = (self.df["dif"] - self.df["difcs"]) / self.df["ghics"]
-
-        for i in range(0, self.df.shape[0]):
-            if self.df.loc[i, "sea"] < np.radians(20):
-                self.df.loc[i, "Dn"] = np.NaN
-            if np.isnan(self.df.loc[i, "Dn"]):
-                self.df.loc[i, "cld"] = np.NaN
-            else:
-                if self.df.loc[i, "Dn"] < 0:
-                    if self.df.loc[i, "ghi"] / self.df.loc[i, "ghics"] > 0.4:
-                        self.df.loc[i, "Dn"] = 0
-                    else:
-                        self.df.loc[i, "cld"] = 1
-
-                if (self.df.loc[i, "cld"] == 1) & (self.df.loc[i, "Dn"] > 0):
-                    self.df.loc[i, "cld"] = 2.255 * math.pow(
-                        self.df.loc[i, "Dn"], 0.9381
-                    )
-
-        self.df.loc[(self.df["Dn"] < 0.37) & (self.df["Dn"] > 0.9), "cld"] = 1
-        self.df.loc[(self.df["cld"] > 1), "cld"] = 1
-
-        r = self.df["cld"].rolling(window=11)
-        mps = r.mean() + 0.1
-        self.df["cld"] = self.df["cld"].where(self.df.cld < mps, np.nan)
-        self.df["cld"] = self.df["cld"].interpolate(method="linear")
-        self.df["cld"] = self.df["cld"].fillna(method="bfill")
-
     def projectile_xy(self, v, h=0):
         if h == 0:
             hs = FOUNTAIN["h_f"]
@@ -1773,7 +1741,7 @@ class PDF(Icestupa):
             axis=1,
         )
 
-        pp = PdfPages(FOLDERS["output_folder"] + "paper/Figure_4.pdf")
+        pp = PdfPages(FOLDERS["output_folder"] + "Figure_4.pdf")
 
         fig, (ax1, ax2, ax3, ax4, ax5, ax6, ax7) = plt.subplots(
             nrows=7, ncols=1, sharex="col", sharey="row", figsize=(16, 14)
@@ -1838,7 +1806,7 @@ class PDF(Icestupa):
         plt.clf()
         pp.close()
 
-        pp = PdfPages(FOLDERS["output_folder"] + "paper/Figure_6.pdf")
+        pp = PdfPages(FOLDERS["output_folder"] + "Figure_6.pdf")
         fig = plt.figure(figsize=(8.27, 8.27))
         dfds = self.df[["When", "solid", "ppt", "dpt", "melted", "gas", "SA"]]
 
@@ -1992,7 +1960,7 @@ class PDF(Icestupa):
         plt.clf()
         pp.close()
 
-        pp = PdfPages(FOLDERS["output_folder"] + "paper/Figure_8.pdf")
+        pp = PdfPages(FOLDERS["output_folder"] + "Figure_8.pdf")
         fig = plt.figure()
         y1 = self.df.a
         y2 = self.df.f_cone
@@ -2024,7 +1992,7 @@ if __name__ == "__main__":
 
     # icestupa.derive_parameters()
 
-    # icestupa.read_input()
+    icestupa.read_input()
 
     # icestupa.melt_freeze()
 
@@ -2034,10 +2002,10 @@ if __name__ == "__main__":
 
     icestupa.summary()
 
-    # icestupa.print_input()
+    icestupa.print_input()
     icestupa.paper_figures()
 
-    # icestupa.print_output()
+    icestupa.print_output()
 
     total = time.time() - start
 

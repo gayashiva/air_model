@@ -3,7 +3,7 @@ from datetime import datetime
 
 DIRNAME = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SITE = "schwarzsee"
-OPTION = 'schwarzsee'
+OPTION = "schwarzsee"
 
 # SITE = input("Input the Field SITE Name: ") or SITE
 
@@ -21,7 +21,6 @@ if SITE == "schwarzsee":
     )
 
     FOUNTAIN = dict(
-
         fountain_off_date=datetime(2019, 3, 10, 18),
         dia_f=0.005,  # FOUNTAIN aperture diameter
         h_f=1.35,  # FOUNTAIN steps h_f
@@ -35,12 +34,10 @@ if SITE == "schwarzsee":
 
 if SITE == "schwarzsee_2020":
     FOLDERS = dict(
-        DIRNAME=os.path.abspath(os.path.join(
-            os.path.dirname(__file__), "..", "..")),
+        DIRNAME=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
         input_folder=os.path.join(DIRNAME, "data/interim/schwarzsee_2020/"),
         output_folder=os.path.join(DIRNAME, "data/processed/schwarzsee_2020/"),
-        sim_folder=os.path.join(
-            DIRNAME, "data/processed/schwarzsee_2020/simulations/"),
+        sim_folder=os.path.join(DIRNAME, "data/processed/schwarzsee_2020/simulations/"),
         data=os.path.join(DIRNAME, "data/raw/schwarzsee/CR6_DATA/CardConvert/"),
     )
 
@@ -74,7 +71,6 @@ if SITE == "guttannen":
     )
 
     FOUNTAIN = dict(
-
         fountain_off_date=datetime(2019, 3, 1),
         dia_f=0.005,  # FOUNTAIN aperture diameter
         h_f=3.93,  # FOUNTAIN steps h_f
@@ -113,10 +109,8 @@ if SITE == "guttannen":
     # )
 
 FOLDERS = dict(
-    raw_folder=os.path.join(DIRNAME, "data/raw/" + SITE['name'] + "/"),
-    input_folder=os.path.join(DIRNAME, "data/interim/" + SITE['name'] + "/"),
-    output_folder=os.path.join(DIRNAME, "data/processed/" + SITE['name'] + "/"),
-    sim_folder=os.path.join(
-        DIRNAME, "data/processed/" + SITE['name'] + "/simulations"
-    ),
+    raw_folder=os.path.join(DIRNAME, "data/" + SITE["name"] + "/raw/"),
+    input_folder=os.path.join(DIRNAME, "data/" + SITE["name"] + "/interim/"),
+    output_folder=os.path.join(DIRNAME, "data/" + SITE["name"] + "/processed/"),
+    sim_folder=os.path.join(DIRNAME, "data/" + SITE["name"] + "/processed/simulations"),
 )
