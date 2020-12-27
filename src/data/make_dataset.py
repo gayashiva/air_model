@@ -393,6 +393,7 @@ if __name__ == "__main__":
 
         # Extend data
         df_ERA5["Prec"] = 0
+        df_ERA5["Source"] = "ERA5"
         df_ERA5 = df_ERA5.reset_index()
         mask = (df_ERA5["When"] >= df_out["When"].iloc[-1]) & (
             df_ERA5["When"] <= datetime(2019, 5, 30)
