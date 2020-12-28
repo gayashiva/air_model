@@ -153,8 +153,6 @@ class Icestupa:
         else:
             self.r_mean = self.projectile_xy(v=v_old)
 
-        # print(self.r_mean)
-
         return self.r_mean
 
     def derive_parameters(self):
@@ -228,6 +226,7 @@ class Icestupa:
                 "e_a",
                 "vp_a",
                 "LW_in",
+                "Source",
             ]
         ]
 
@@ -390,9 +389,6 @@ class Icestupa:
 
     def summary(self):
 
-        # if self.df.isnull().values.any():
-        # print("Warning: Null values present")
-
         self.df = self.df[
             [
                 "When",
@@ -434,6 +430,7 @@ class Icestupa:
                 "r_ice",
                 "ppt",
                 "dpt",
+                "Source",
                 "s_cone",
                 "input",
                 "vp_ice",
@@ -641,7 +638,6 @@ class Icestupa:
                         * self.df.loc[i - 1, "r_ice"] ** 2
                         * FOUNTAIN["tree_height"]
                     )
-                    # print(self.hollow_V)
 
                 if SITE["name"] == "schwarzsee":
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
@@ -931,7 +927,6 @@ class Icestupa:
             ax.get_xticklabels(), rotation=45, horizontalalignment="right"
         )
         plt.show()
-
 
 class PDF(Icestupa):
     def print_input(self, filename="derived_parameters.pdf"):
@@ -1741,6 +1736,9 @@ class PDF(Icestupa):
             axis=1,
         )
 
+        mask = self.df.Source == "ERA5"
+        df_ERA5 = self.df[mask]
+
         pp = PdfPages(FOLDERS["output_folder"] + "Figure_4.pdf")
 
         fig, (ax1, ax2, ax3, ax4, ax5, ax6, ax7) = plt.subplots(
@@ -1748,6 +1746,7 @@ class PDF(Icestupa):
         )
 
         x = self.df.When
+        x_ERA5= df_ERA5.When
 
         y1 = self.df.Discharge
         ax1.plot(x, y1, "k-", linewidth=0.5)
@@ -1761,39 +1760,51 @@ class PDF(Icestupa):
             tl.set_color("b")
 
         y2 = self.df.T_a
+        y2_ERA5 = df_ERA5.T_a
         ax2.plot(x, y2, "k-", linewidth=0.5)
+        ax2.scatter(x_ERA5, y2_ERA5, marker='o', alpha=0.5, s=1)
         ax2.set_ylabel("Temperature [ea]")
         ax2.grid()
 
         y3 = self.df.SW_direct + self.df.SW_diffuse
+        y3_ERA5 = df_ERA5.SW_diffuse + df_ERA5.SW_direct
         ax3.plot(x, y3, "k-", linewidth=0.5)
+        ax3.scatter(x_ERA5, y3_ERA5, marker='o', alpha=0.5, s=1)
         ax3.set_ylabel("Global Rad.[$W\\,m^{-2}$]")
         ax3.grid()
 
         ax3t = ax3.twinx()
         ax3t.plot(x, self.df.SW_diffuse, "b-", linewidth=0.5)
+        ax3t.scatter(x_ERA5, df_ERA5.SW_diffuse, marker='o', alpha=0.5, s=1)
         ax3t.set_ylim(ax3.get_ylim())
         ax3t.set_ylabel("Diffuse Rad.[$W\\,m^{-2}$]", color="b")
         for tl in ax3t.get_yticklabels():
             tl.set_color("b")
 
         y4 = self.df.RH
+        y4_ERA5 = df_ERA5.RH
         ax4.plot(x, y4, "k-", linewidth=0.5)
+        ax4.scatter(x_ERA5, y4_ERA5, marker='o', alpha=0.5, s=1)
         ax4.set_ylabel("Humidity [$\\%$]")
         ax4.grid()
 
         y5 = self.df.p_a
+        y5_ERA5 = df_ERA5.p_a
         ax5.plot(x, y5, "k-", linewidth=0.5)
+        ax5.scatter(x_ERA5, y5_ERA5, marker='o', alpha=0.5, s=1)
         ax5.set_ylabel("Pressure [$hPa$]")
         ax5.grid()
 
         y6 = self.df.v_a
+        y6_ERA5 = df_ERA5.v_a
         ax6.plot(x, y6, "k-", linewidth=0.5)
+        ax6.scatter(x_ERA5, y6_ERA5, marker='o', alpha=0.5, s=1)
         ax6.set_ylabel("Wind [$m\\,s^{-1}$]")
         ax6.grid()
 
         y7 = self.df.cld
-        ax7.plot(x, y7, "k-", linewidth=0.5)
+        ax7.plot(x, y7, linestyle='-', color='#ADD9F4', linewidth=1)
+        # ax7.scatter(x, y7,  marker='o', alpha=0.5, s=1)
         ax7.set_ylabel("Cloudiness")
         ax7.grid()
 
@@ -1992,7 +2003,7 @@ if __name__ == "__main__":
 
     # icestupa.derive_parameters()
 
-    icestupa.read_input()
+    # icestupa.read_input()
 
     # icestupa.melt_freeze()
 
@@ -2002,10 +2013,10 @@ if __name__ == "__main__":
 
     icestupa.summary()
 
-    icestupa.print_input()
+    # icestupa.print_input()
     icestupa.paper_figures()
 
-    icestupa.print_output()
+    # icestupa.print_output()
 
     total = time.time() - start
 
