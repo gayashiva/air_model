@@ -226,7 +226,7 @@ class Icestupa:
                 "e_a",
                 "vp_a",
                 "LW_in",
-                "Source",
+                "missing",
             ]
         ]
 
@@ -430,7 +430,7 @@ class Icestupa:
                 "r_ice",
                 "ppt",
                 "dpt",
-                "Source",
+                "missing",
                 "s_cone",
                 "input",
                 "vp_ice",
@@ -1736,8 +1736,15 @@ class PDF(Icestupa):
             axis=1,
         )
 
-        mask = self.df.Source == "ERA5"
-        df_ERA5 = self.df[mask]
+        mask = self.df.missing == 1
+        nmask = self.df.missing == 0
+        df_ERA5 = self.df
+        # print(df_ERA5[nmask].head())
+        # df_ERA5 = df_ERA5.asfreq('5min')
+        # print(df_ERA5.asfreq('5min').head())
+        # df_ERA5 = df_ERA5.resample('5min')
+        # resultnan = df_ERA5[df_ERA5.isnull().any(axis=1)]
+        # print(resultnan)
 
         pp = PdfPages(FOLDERS["output_folder"] + "Figure_4.pdf")
 
@@ -1748,62 +1755,75 @@ class PDF(Icestupa):
         x = self.df.When
         x_ERA5= df_ERA5.When
 
+        # x_ERA5= x_ERA5.astype(str).tolist()
         y1 = self.df.Discharge
-        ax1.plot(x, y1, "k-", linewidth=0.5)
+        ax1.plot(x, y1,  linestyle='-', color='#284D58', linewidth=1)
         ax1.set_ylabel("Fountain Spray [$l\\, min^{-1}$]")
         ax1.grid()
 
         ax1t = ax1.twinx()
-        ax1t.plot(x, self.df.Prec * 1000, "b-", linewidth=0.5)
-        ax1t.set_ylabel("Precipitation [$mm\\, s^{-1}$]", color="b")
+        ax1t.plot(x, self.df.Prec * 1000, linestyle='-', color='#118ab2', linewidth=0.5)
+        ax1t.set_ylabel("Precipitation [$mm\\, s^{-1}$]", color="#118ab2")
         for tl in ax1t.get_yticklabels():
-            tl.set_color("b")
+            tl.set_color("#118ab2")
 
         y2 = self.df.T_a
+        df_ERA5.T_a[nmask] = np.NaN
         y2_ERA5 = df_ERA5.T_a
-        ax2.plot(x, y2, "k-", linewidth=0.5)
-        ax2.scatter(x_ERA5, y2_ERA5, marker='o', alpha=0.5, s=1)
-        ax2.set_ylabel("Temperature [ea]")
+        print(y2_ERA5.head())
+        # converted_dates = mdates.datestr2num(x_ERA5) 
+        # print(x_ERA5)
+        # ax2.axvspan(converted_dates)
+        # ax2.fill_betweenx(y2_ERA5, x_ERA5, x_ERA5.min(),
+        #                          facecolor='b',
+        #                          lw=2,
+        #                          edgecolor='b',
+        #                         )
+        # y2_ERA5 = df_ERA5.T_a
+        # ax2.plot(x, y2, linestyle='-', color='#284D58', linewidth=1)
+        ax2.plot(x_ERA5, y2_ERA5, linestyle='--', color='#e76f51', linewidth=1)
+        # ax2.scatter(x_ERA5, y2_ERA5, marker='o',color='#e76f51', alpha=0.5, s=1)
+        ax2.set_ylabel("Temperature [$\\degree C$]")
         ax2.grid()
 
         y3 = self.df.SW_direct + self.df.SW_diffuse
         y3_ERA5 = df_ERA5.SW_diffuse + df_ERA5.SW_direct
-        ax3.plot(x, y3, "k-", linewidth=0.5)
-        ax3.scatter(x_ERA5, y3_ERA5, marker='o', alpha=0.5, s=1)
+        # ax3.plot(x, y3,  linestyle='-', color='#284D58', linewidth=1)
+        # ax3.scatter(x_ERA5, y3_ERA5, marker='o',color='#e76f51', alpha=0.5, s=1)
         ax3.set_ylabel("Global Rad.[$W\\,m^{-2}$]")
         ax3.grid()
 
         ax3t = ax3.twinx()
         ax3t.plot(x, self.df.SW_diffuse, "b-", linewidth=0.5)
-        ax3t.scatter(x_ERA5, df_ERA5.SW_diffuse, marker='o', alpha=0.5, s=1)
+        # ax3t.scatter(x_ERA5, df_ERA5.SW_diffuse, marker='o',color='#118ab2', alpha=0.5, s=1)
         ax3t.set_ylim(ax3.get_ylim())
-        ax3t.set_ylabel("Diffuse Rad.[$W\\,m^{-2}$]", color="b")
+        ax3t.set_ylabel("Diffuse Rad.[$W\\,m^{-2}$]", color="#118ab2")
         for tl in ax3t.get_yticklabels():
-            tl.set_color("b")
+            tl.set_color("#118ab2")
 
         y4 = self.df.RH
         y4_ERA5 = df_ERA5.RH
-        ax4.plot(x, y4, "k-", linewidth=0.5)
-        ax4.scatter(x_ERA5, y4_ERA5, marker='o', alpha=0.5, s=1)
+        ax4.plot(x, y4,  linestyle='-', color='#284D58', linewidth=1)
+        # ax4.scatter(x_ERA5, y4_ERA5, marker='o',color='#e76f51', alpha=0.5, s=1)
         ax4.set_ylabel("Humidity [$\\%$]")
         ax4.grid()
 
         y5 = self.df.p_a
         y5_ERA5 = df_ERA5.p_a
-        ax5.plot(x, y5, "k-", linewidth=0.5)
-        ax5.scatter(x_ERA5, y5_ERA5, marker='o', alpha=0.5, s=1)
+        ax5.plot(x, y5, linestyle='-', color='#264653', linewidth=1)
+        # ax5.scatter(x_ERA5, y5_ERA5, marker='o',color='#e76f51', alpha=0.5, s=1)
         ax5.set_ylabel("Pressure [$hPa$]")
         ax5.grid()
 
         y6 = self.df.v_a
         y6_ERA5 = df_ERA5.v_a
-        ax6.plot(x, y6, "k-", linewidth=0.5)
-        ax6.scatter(x_ERA5, y6_ERA5, marker='o', alpha=0.5, s=1)
+        ax6.plot(x, y6, linestyle='-', color='#264653', linewidth=1)
+        # ax6.scatter(x_ERA5, y6_ERA5, marker='o', color='#e76f51', alpha=0.5, s=1)
         ax6.set_ylabel("Wind [$m\\,s^{-1}$]")
         ax6.grid()
 
         y7 = self.df.cld
-        ax7.plot(x, y7, linestyle='-', color='#ADD9F4', linewidth=1)
+        ax7.plot(x, y7, linestyle='-', color='#e76f51', linewidth=1)
         # ax7.scatter(x, y7,  marker='o', alpha=0.5, s=1)
         ax7.set_ylabel("Cloudiness")
         ax7.grid()
@@ -2003,7 +2023,7 @@ if __name__ == "__main__":
 
     # icestupa.derive_parameters()
 
-    # icestupa.read_input()
+    icestupa.read_input()
 
     # icestupa.melt_freeze()
 

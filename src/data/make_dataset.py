@@ -290,8 +290,8 @@ if __name__ == "__main__":
         # Fill from ERA5
         df_ERA5 = df_ERA5.set_index("When")
         df = df.set_index("When")
-        df["Source"] = "AWS"
-        df.loc[df["T_a"].isnull(), "Source"] = "ERA5"
+        df["missing"] = 0
+        df.loc[df["T_a"].isnull(), "missing"] = 1
         df.loc[df["T_a"].isnull(), ["T_a", "RH", "v_a", "p_a", "Discharge"]] = df_ERA5[
             ["T_a", "RH", "v_a", "p_a", "Discharge"]
         ]
@@ -361,7 +361,7 @@ if __name__ == "__main__":
                 "Prec",
                 "p_a",
                 "cld",
-                "Source",
+                "missing",
             ]
         ]
 
@@ -380,7 +380,7 @@ if __name__ == "__main__":
                         "Prec",
                         "p_a",
                         "cld",
-                        "Source",
+                        "missing",
                     ]
                 ]
                 .isnull()
@@ -393,7 +393,7 @@ if __name__ == "__main__":
 
         # Extend data
         df_ERA5["Prec"] = 0
-        df_ERA5["Source"] = "ERA5"
+        df_ERA5["missing"] = 1
         df_ERA5 = df_ERA5.reset_index()
         mask = (df_ERA5["When"] >= df_out["When"].iloc[-1]) & (
             df_ERA5["When"] <= datetime(2019, 5, 30)
@@ -429,7 +429,7 @@ if __name__ == "__main__":
                         "Prec",
                         "p_a",
                         "cld",
-                        "Source",
+                        "missing",
                     ]
                 ]
                 .isnull()
