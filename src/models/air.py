@@ -7,6 +7,7 @@ import math
 import time
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 from matplotlib.offsetbox import AnchoredText
 from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
@@ -1738,13 +1739,10 @@ class PDF(Icestupa):
 
         mask = self.df.missing == 1
         nmask = self.df.missing == 0
-        df_ERA5 = self.df
-        # print(df_ERA5[nmask].head())
-        # df_ERA5 = df_ERA5.asfreq('5min')
-        # print(df_ERA5.asfreq('5min').head())
-        # df_ERA5 = df_ERA5.resample('5min')
-        # resultnan = df_ERA5[df_ERA5.isnull().any(axis=1)]
-        # print(resultnan)
+        df_ERA5 = self.df.copy()
+        df_SZ = self.df.copy()
+        df_SZ.loc[mask, ['T_a','SW_direct', 'SW_diffuse', 'v_a', 'p_a', 'RH']] = np.NaN
+        df_ERA5.loc[nmask, ['T_a','SW_direct', 'SW_diffuse', 'v_a', 'p_a', 'RH']] = np.NaN
 
         pp = PdfPages(FOLDERS["output_folder"] + "Figure_4.pdf")
 
@@ -1753,9 +1751,7 @@ class PDF(Icestupa):
         )
 
         x = self.df.When
-        x_ERA5= df_ERA5.When
 
-        # x_ERA5= x_ERA5.astype(str).tolist()
         y1 = self.df.Discharge
         ax1.plot(x, y1,  linestyle='-', color='#284D58', linewidth=1)
         ax1.set_ylabel("Fountain Spray [$l\\, min^{-1}$]")
@@ -1768,65 +1764,57 @@ class PDF(Icestupa):
             tl.set_color("#118ab2")
 
         y2 = self.df.T_a
-        df_ERA5.T_a[nmask] = np.NaN
         y2_ERA5 = df_ERA5.T_a
-        print(y2_ERA5.head())
-        # converted_dates = mdates.datestr2num(x_ERA5) 
-        # print(x_ERA5)
-        # ax2.axvspan(converted_dates)
-        # ax2.fill_betweenx(y2_ERA5, x_ERA5, x_ERA5.min(),
-        #                          facecolor='b',
-        #                          lw=2,
-        #                          edgecolor='b',
-        #                         )
-        # y2_ERA5 = df_ERA5.T_a
-        # ax2.plot(x, y2, linestyle='-', color='#284D58', linewidth=1)
-        ax2.plot(x_ERA5, y2_ERA5, linestyle='--', color='#e76f51', linewidth=1)
-        # ax2.scatter(x_ERA5, y2_ERA5, marker='o',color='#e76f51', alpha=0.5, s=1)
+        ax2.plot(x, y2, linestyle='-', color='#284D58', linewidth=1)
+        ax2.plot(x, y2_ERA5, linestyle='-', color='#e76f51', linewidth=1)
         ax2.set_ylabel("Temperature [$\\degree C$]")
         ax2.grid()
 
         y3 = self.df.SW_direct + self.df.SW_diffuse
-        y3_ERA5 = df_ERA5.SW_diffuse + df_ERA5.SW_direct
+        # y3_ERA5 = df_ERA5.SW_diffuse + df_ERA5.SW_direct
+        lns1 = ax3.plot(x, y3, linestyle='-', color='#e76f51', linewidth=1,  label = 'Global Rad.')
         # ax3.plot(x, y3,  linestyle='-', color='#284D58', linewidth=1)
-        # ax3.scatter(x_ERA5, y3_ERA5, marker='o',color='#e76f51', alpha=0.5, s=1)
-        ax3.set_ylabel("Global Rad.[$W\\,m^{-2}$]")
+        ax3.set_ylabel("Radiation[$W\\,m^{-2}$]")
         ax3.grid()
 
         ax3t = ax3.twinx()
-        ax3t.plot(x, self.df.SW_diffuse, "b-", linewidth=0.5)
-        # ax3t.scatter(x_ERA5, df_ERA5.SW_diffuse, marker='o',color='#118ab2', alpha=0.5, s=1)
+        lns2 = ax3t.plot(x, self.df.SW_diffuse, color='#e76f51',linestyle=':', linewidth=1, label = 'Diffuse Rad.')
         ax3t.set_ylim(ax3.get_ylim())
-        ax3t.set_ylabel("Diffuse Rad.[$W\\,m^{-2}$]", color="#118ab2")
-        for tl in ax3t.get_yticklabels():
-            tl.set_color("#118ab2")
+        # added these three lines
+        lns = lns1+lns2
+        labs = [l.get_label() for l in lns]
+        ax3.legend(lns, labs, loc=0)
 
         y4 = self.df.RH
         y4_ERA5 = df_ERA5.RH
         ax4.plot(x, y4,  linestyle='-', color='#284D58', linewidth=1)
-        # ax4.scatter(x_ERA5, y4_ERA5, marker='o',color='#e76f51', alpha=0.5, s=1)
+        ax4.plot(x, y4_ERA5, linestyle='-', color='#e76f51', linewidth=1)
         ax4.set_ylabel("Humidity [$\\%$]")
         ax4.grid()
 
         y5 = self.df.p_a
         y5_ERA5 = df_ERA5.p_a
         ax5.plot(x, y5, linestyle='-', color='#264653', linewidth=1)
-        # ax5.scatter(x_ERA5, y5_ERA5, marker='o',color='#e76f51', alpha=0.5, s=1)
+        ax5.plot(x, y5_ERA5, linestyle='-', color='#e76f51', linewidth=1)
         ax5.set_ylabel("Pressure [$hPa$]")
         ax5.grid()
 
         y6 = self.df.v_a
         y6_ERA5 = df_ERA5.v_a
         ax6.plot(x, y6, linestyle='-', color='#264653', linewidth=1)
-        # ax6.scatter(x_ERA5, y6_ERA5, marker='o', color='#e76f51', alpha=0.5, s=1)
+        ax6.plot(x, y6_ERA5, linestyle='-', color='#e76f51', linewidth=1)
         ax6.set_ylabel("Wind [$m\\,s^{-1}$]")
         ax6.grid()
 
         y7 = self.df.cld
         ax7.plot(x, y7, linestyle='-', color='#e76f51', linewidth=1)
-        # ax7.scatter(x, y7,  marker='o', alpha=0.5, s=1)
         ax7.set_ylabel("Cloudiness")
         ax7.grid()
+
+        ERA5= mpatches.Patch(color='#e76f51', label='ERA5')
+        SZ= mpatches.Patch(color='#264653', label='Schwarzsee')
+        PLF= mpatches.Patch(color='#118ab2', label='Plaffeien')
+        ax1.legend(handles=[ERA5, SZ, PLF], loc="upper right", ncol=6)
 
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -1943,7 +1931,6 @@ class PDF(Icestupa):
         ax1 = z.plot.bar(stacked=True, edgecolor="black", linewidth=0.5, ax=ax1)
         ax1.xaxis.set_label_text("")
         ax1.grid(color="black", alpha=0.3, linewidth=0.5, which="major")
-        # plt.xlabel('Date')
         plt.ylabel("Energy Flux [$W\\,m^{-2}$]")
         plt.legend(loc="upper right", ncol=6)
         plt.ylim(-200, 200)
