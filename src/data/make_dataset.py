@@ -145,68 +145,81 @@ if __name__ == "__main__":
 
         # ERA5 begins
         df_in3 = pd.read_csv(
-            FOLDERS["raw_folder"] + SITE["name"] + "_ERA5.csv",
+            FOLDERS["raw_folder"] + "ERA5_" + SITE["name"] + ".csv",
             sep=",",
             header=0,
-            parse_dates=["dataDate"],
+            parse_dates=["When"],
         )
+        # df_in3 = pd.read_csv(
+        #     FOLDERS["raw_folder"] + SITE["name"] + "_ERA5.csv",
+        #     sep=",",
+        #     header=0,
+        #     parse_dates=["dataDate"],
+        # )
 
-        df_in3 = df_in3.drop(["Latitude", "Longitude"], axis=1)
-        df_in3["time"] = df_in3["validityTime"].replace(
-            [0, 100, 200, 300, 400, 500, 600, 700, 800, 900],
-            [
-                "0000",
-                "0100",
-                "0200",
-                "0300",
-                "0400",
-                "0500",
-                "0600",
-                "0700",
-                "0800",
-                "0900",
-            ],
-        )
-        df_in3["time"] = df_in3["time"].astype(str)
-        df_in3["time"] = df_in3["time"].str[0:2] + ":" + df_in3["time"].str[2:4]
-        df_in3["dataDate"] = df_in3["dataDate"].astype(str)
-        df_in3["When"] = df_in3["dataDate"] + " " + df_in3["time"]
-        df_in3["When"] = pd.to_datetime(df_in3["When"])
+        # df_in3 = df_in3.drop(["Latitude", "Longitude"], axis=1)
+        # df_in3["time"] = df_in3["validityTime"].replace(
+        #     [0, 100, 200, 300, 400, 500, 600, 700, 800, 900],
+        #     [
+        #         "0000",
+        #         "0100",
+        #         "0200",
+        #         "0300",
+        #         "0400",
+        #         "0500",
+        #         "0600",
+        #         "0700",
+        #         "0800",
+        #         "0900",
+        #     ],
+        # )
+        # df_in3["time"] = df_in3["time"].astype(str)
+        # df_in3["time"] = df_in3["time"].str[0:2] + ":" + df_in3["time"].str[2:4]
+        # df_in3["dataDate"] = df_in3["dataDate"].astype(str)
+        # df_in3["When"] = df_in3["dataDate"] + " " + df_in3["time"]
+        # df_in3["When"] = pd.to_datetime(df_in3["When"])
 
-        days = pd.date_range(
-            start=SITE["start_date"], end=df_in3["When"].iloc[-1], freq="1H"
-        )
-        df_out1 = pd.DataFrame({"When": days})
+        # days = pd.date_range(
+        #     start=SITE["start_date"], end=df_in3["When"].iloc[-1], freq="1H"
+        # )
+        # df_out1 = pd.DataFrame({"When": days})
+        # df_out1 = df_out1.set_index("When")
+        # df_in3 = df_in3.set_index("When")
 
-        df_out1 = df_out1.set_index("When")
-        df_in3 = df_in3.set_index("When")
-
+        df_out1 = df_in3
         time_steps = 60 * 60
-        df_out1["10u"] = df_in3.loc[df_in3.shortName == "10u", "Value"]
-        df_out1["10v"] = df_in3.loc[df_in3.shortName == "10v", "Value"]
-        df_out1["2d"] = df_in3.loc[df_in3.shortName == "2d", "Value"]
-        df_out1["2t"] = df_in3.loc[df_in3.shortName == "2t", "Value"]
-        df_out1["sp"] = df_in3.loc[df_in3.shortName == "sp", "Value"]
-        df_out1["tcc"] = df_in3.loc[df_in3.shortName == "tcc", "Value"]
-        df_out1["tp"] = df_in3.loc[df_in3.shortName == "tp", "Value"]
-        df_out1["ssrd"] = df_in3.loc[df_in3.shortName == "ssrd", "Value"] / time_steps
-        df_out1["strd"] = df_in3.loc[df_in3.shortName == "strd", "Value"] / time_steps
-        df_out1["fdir"] = df_in3.loc[df_in3.shortName == "fdir", "Value"] / time_steps
+        # df_out1["10u"] = df_in3.loc[df_in3.shortname == "10u", "value"]
+        # df_out1["10v"] = df_in3.loc[df_in3.shortname == "10v", "value"]
+        # df_out1["d2m"] = df_in3.loc[df_in3.shortname == "d2m", "value"]
+        # df_out1["t2m"] = df_in3.loc[df_in3.shortname == "t2m", "value"]
+        # df_out1["sp"] = df_in3.loc[df_in3.shortname == "sp", "value"]
+        # df_out1["tcc"] = df_in3.loc[df_in3.shortname == "tcc", "value"]
+        # df_out1["tp"] = df_in3.loc[df_in3.shortname == "tp", "value"]
+        # df_out1["ssrd"] = df_in3.loc[df_in3.shortName == "ssrd", "Value"]
+        # df_out1["strd"] = df_in3.loc[df_in3.shortName == "strd", "Value"]
+        # df_out1["fdir"] = df_in3.loc[df_in3.shortName == "fdir", "Value"]
+        print(df_out1["ssrd"].describe())
+        df_out1["ssrd"] /= time_steps
+        df_out1["strd"] /= time_steps
+        df_out1["fdir"] /= time_steps
+        print(df_out1["ssrd"].describe())
 
-        df_out1["v_a"] = np.sqrt(df_out1["10u"] ** 2 + df_out1["10v"] ** 2)
+        df_out1["v_a"] = np.sqrt(df_out1["u10"] ** 2 + df_out1["v10"] ** 2)
         df_out1["RH"] = 100 * (
-            np.exp((17.625 * df_out1["2d"]) / (243.04 + df_out1["2d"]))
-            / np.exp((17.625 * df_out1["2t"]) / (243.04 + df_out1["2t"]))
+            np.exp((17.625 * df_out1["d2m"]) / (243.04 + df_out1["d2m"]))
+            / np.exp((17.625 * df_out1["t2m"]) / (243.04 + df_out1["t2m"]))
         )
         df_out1["sp"] = df_out1["sp"] / 100
         df_out1["tp"] = df_out1["tp"]  # mm/s
         df_out1["SW_diffuse"] = df_out1["ssrd"] - df_out1["fdir"]
-        df_out1["2t"] = df_out1["2t"] - 273.15
+        print(df_out1["ssrd"].max())
+        df_out1["t2m"] = df_out1["t2m"] - 273.15
+        df_out1 = df_out1.set_index("When")
 
         # CSV output
         df_out1.rename(
             columns={
-                "2t": "T_a",
+                "t2m": "T_a",
                 "sp": "p_a",
                 "tcc": "cld",
                 "tp": "Prec",
