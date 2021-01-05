@@ -1737,12 +1737,19 @@ class PDF(Icestupa):
             axis=1,
         )
 
-        mask = self.df.missing == 1
-        nmask = self.df.missing == 0
+        mask = self.df.missing != 1
+        nmask = self.df.missing != 0
+        pmask = self.df.missing != 2
         df_ERA5 = self.df.copy()
+        df_ERA52 = self.df.copy()
         df_SZ = self.df.copy()
-        df_SZ.loc[mask, ['T_a','SW_direct', 'SW_diffuse', 'v_a', 'p_a', 'RH']] = np.NaN
-        df_ERA5.loc[nmask, ['T_a','SW_direct', 'SW_diffuse', 'v_a', 'p_a', 'RH']] = np.NaN
+        # df_PF = self.df.copy()
+        # df_PF2 = self.df.copy()
+        df_SZ.loc[nmask, ['T_a','SW_direct', 'SW_diffuse', 'v_a', 'p_a', 'RH']] = np.NaN
+        df_ERA5.loc[mask, ['T_a','SW_direct', 'SW_diffuse', 'v_a', 'p_a', 'RH']] = np.NaN
+        df_ERA52.loc[pmask, ['T_a','SW_direct', 'SW_diffuse', 'v_a', 'p_a', 'RH']] = np.NaN
+        # df_PF.loc[mask, ['T_a', 'v_a', 'p_a', 'RH']] = np.NaN
+        # df_PF2.loc[pmask, ['T_a', 'v_a', 'p_a', 'RH']] = np.NaN
 
         pp = PdfPages(FOLDERS["output_folder"] + "Figure_4.pdf")
 
@@ -1758,15 +1765,17 @@ class PDF(Icestupa):
         ax1.grid()
 
         ax1t = ax1.twinx()
-        ax1t.plot(x, self.df.Prec * 1000, linestyle='-', color='#118ab2', linewidth=0.5)
+        ax1t.plot(x, self.df.Prec * 1000, linestyle='-', color='#118ab2', linewidth=1)
         ax1t.set_ylabel("Precipitation [$mm\\, s^{-1}$]", color="#118ab2")
         for tl in ax1t.get_yticklabels():
             tl.set_color("#118ab2")
 
         y2 = self.df.T_a
         y2_ERA5 = df_ERA5.T_a
+        # y2_PF= df_PF.T_a
         ax2.plot(x, y2, linestyle='-', color='#284D58', linewidth=1)
         ax2.plot(x, y2_ERA5, linestyle='-', color='#e76f51', linewidth=1)
+        # ax2.plot(x, y2_PF, linestyle='-', color='#118ab2', linewidth=1)
         ax2.set_ylabel("Temperature [$\\degree C$]")
         ax2.grid()
 
@@ -1787,22 +1796,32 @@ class PDF(Icestupa):
 
         y4 = self.df.RH
         y4_ERA5 = df_ERA5.RH
+        # y4_PF= df_PF.RH
         ax4.plot(x, y4,  linestyle='-', color='#284D58', linewidth=1)
         ax4.plot(x, y4_ERA5, linestyle='-', color='#e76f51', linewidth=1)
+        # ax4.plot(x, y4_PF, linestyle='-', color='#118ab2', linewidth=1)
         ax4.set_ylabel("Humidity [$\\%$]")
         ax4.grid()
 
         y5 = self.df.p_a
         y5_ERA5 = df_ERA5.p_a
+        # y5_PF= df_PF.p_a
         ax5.plot(x, y5, linestyle='-', color='#264653', linewidth=1)
         ax5.plot(x, y5_ERA5, linestyle='-', color='#e76f51', linewidth=1)
+        # ax5.plot(x, y5_PF, linestyle='-', color='#118ab2', linewidth=1)
         ax5.set_ylabel("Pressure [$hPa$]")
         ax5.grid()
 
         y6 = self.df.v_a
         y6_ERA5 = df_ERA5.v_a
+        y6_ERA52 = df_ERA52.v_a
+        # y6_PF= df_PF.v_a
+        # y6_PF2= df_PF2.v_a
         ax6.plot(x, y6, linestyle='-', color='#264653', linewidth=1)
         ax6.plot(x, y6_ERA5, linestyle='-', color='#e76f51', linewidth=1)
+        ax6.plot(x, y6_ERA52, linestyle='-', color='#e76f51', linewidth=1)
+        # ax6.plot(x, y6_PF, linestyle='-', color='#118ab2', linewidth=1)
+        # ax6.plot(x, y6_PF2, linestyle='-', color='#118ab2', linewidth=1)
         ax6.set_ylabel("Wind [$m\\,s^{-1}$]")
         ax6.grid()
 
@@ -2028,7 +2047,7 @@ if __name__ == "__main__":
     icestupa = PDF()
 
     icestupa.derive_parameters()
-    icestupa.print_input()
+    # icestupa.print_input()
 
     # icestupa.read_input()
 

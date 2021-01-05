@@ -198,13 +198,13 @@ if __name__ == "__main__":
         # df_out1["ssrd"] = df_in3.loc[df_in3.shortName == "ssrd", "Value"]
         # df_out1["strd"] = df_in3.loc[df_in3.shortName == "strd", "Value"]
         # df_out1["fdir"] = df_in3.loc[df_in3.shortName == "fdir", "Value"]
-        print(df_out1["ssrd"].describe())
         df_out1["ssrd"] /= time_steps
         df_out1["strd"] /= time_steps
         df_out1["fdir"] /= time_steps
-        print(df_out1["ssrd"].describe())
 
         df_out1["v_a"] = np.sqrt(df_out1["u10"] ** 2 + df_out1["v10"] ** 2)
+        v_shear = 0.143
+        df_out1["v_a"] = df_out1["v_a"] * 0.2 ** v_shear
         df_out1["RH"] = 100 * (
             np.exp((17.625 * df_out1["d2m"]) / (243.04 + df_out1["d2m"]))
             / np.exp((17.625 * df_out1["t2m"]) / (243.04 + df_out1["t2m"]))
@@ -212,7 +212,6 @@ if __name__ == "__main__":
         df_out1["sp"] = df_out1["sp"] / 100
         df_out1["tp"] = df_out1["tp"]  # mm/s
         df_out1["SW_diffuse"] = df_out1["ssrd"] - df_out1["fdir"]
-        print(df_out1["ssrd"].max())
         df_out1["t2m"] = df_out1["t2m"] - 273.15
         df_out1 = df_out1.set_index("When")
 
@@ -305,11 +304,14 @@ if __name__ == "__main__":
         df = df.set_index("When")
         df["missing"] = 0
         df.loc[df["T_a"].isnull(), "missing"] = 1
+        df_ERA5["p_a"] += (df.p_a - df_ERA5.p_a).mean()
+
         df.loc[df["T_a"].isnull(), ["T_a", "RH", "v_a", "p_a", "Discharge"]] = df_ERA5[
             ["T_a", "RH", "v_a", "p_a", "Discharge"]
         ]
 
         df["v_a"] = df["v_a"].replace(0, np.NaN)
+        df.loc[df["v_a"].isnull(), "missing"] = 2
         df.loc[df["v_a"].isnull(), "v_a"] = df_ERA5["v_a"]
 
         df[["SW_direct", "SW_diffuse", "cld"]] = df_ERA5[
@@ -318,20 +320,21 @@ if __name__ == "__main__":
 
         # RMSE
 
-        print("RMSE Temp", ((df.T_a - df_ERA5.T_a) ** 2).mean() ** 0.5)
-        print("RMSE wind", ((df.v_a - df_ERA5.v_a) ** 2).mean() ** 0.5)
+        # print("RMSE Temp", ((df.T_a - df_ERA5.T_a) ** 2).mean() ** 0.5)
+        # print("RMSE wind", ((df.v_a - df_ERA5.v_a) ** 2).mean() ** 0.5)
+        # print("RMSE pressure", ((df.p_a - df_ERA5.p_a) ** 2).mean() ** 0.5)
 
-        slope, intercept, r_value1, p_value, std_err = stats.linregress(
-            df.T_a.values, df_in3.T_a.values
-        )
-        slope, intercept, r_value2, p_value, std_err = stats.linregress(
-            df.v_a.values, df_in3.v_a.values
-        )
+        # slope, intercept, r_value1, p_value, std_err = stats.linregress(
+        #     df.T_a.values, df_in3.T_a.values
+        # )
+        # slope, intercept, r_value2, p_value, std_err = stats.linregress(
+        #     df.v_a.values, df_in3.v_a.values
+        # )
 
-        print("R2 temp", r_value1 ** 2)
-        print("R2 wind", r_value2 ** 2)
+        # print("R2 temp", r_value1 ** 2)
+        # print("R2 wind", r_value2 ** 2)
 
-        # Add Precipitation data
+        # Fill from Plaffeien
         df_in2 = pd.read_csv(
             os.path.join(FOLDERS["raw_folder"], "plaffeien_aws.txt"),
             sep=";",
@@ -340,6 +343,11 @@ if __name__ == "__main__":
         df_in2["When"] = pd.to_datetime(df_in2["time"], format="%Y%m%d%H%M")
 
         df_in2["Prec"] = pd.to_numeric(df_in2["rre150z0"], errors="coerce")
+        df_in2["p_a"] = pd.to_numeric(df_in2["prestas0"], errors="coerce")
+        df_in2["RH"] = pd.to_numeric(df_in2["ure200s0"], errors="coerce")
+        df_in2["v_a"] = pd.to_numeric(df_in2["fkl010z0"], errors="coerce")
+        df_in2["T_a"] = pd.to_numeric(df_in2["tre200s0"], errors="coerce")
+
         df_in2["Prec"] = df_in2["Prec"] / (10 * 60)  # ppt rate mm/s
         df_in2 = (
             df_in2.set_index("When")
@@ -351,11 +359,19 @@ if __name__ == "__main__":
         mask = (df_in2["When"] >= SITE["start_date"]) & (
             df_in2["When"] <= SITE["end_date"]
         )
-        df_in3 = df_in2.loc[mask]
-        df_in3 = df_in3.set_index("When")
-        df["Prec"] = df_in3["Prec"]
+        df_in2 = df_in2.loc[mask]
+        df_in2 = df_in2.set_index("When")
+        df["Prec"] = df_in2["Prec"]
+
+        # df.loc[df["T_a"].isnull(), ["T_a", "RH", "v_a", "p_a"]] = df_in2[
+        #     ["T_a", "RH", "v_a", "p_a"]
+        # ]
+        # df["v_a"] = df["v_a"].replace(0, np.NaN)
+        # df.loc[df["v_a"].isnull(), "missing"] = 2
+        # df.loc[df["v_a"].isnull(), "v_a"] = df_in2["v_a"]
 
         df = df.reset_index()
+        df_in2 = df_in2.reset_index()
 
         """Discharge Rate"""
         df["Fountain"], df["Discharge"] = discharge_rate(df, FOUNTAIN)
