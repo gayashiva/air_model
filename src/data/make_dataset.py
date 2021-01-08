@@ -439,8 +439,9 @@ if __name__ == "__main__":
         df_ERA5 = df_ERA5.set_index("When")
 
         df_ERA5 = df_ERA5.drop(["LW_in"], axis=1)
+        df_ERA5["Prec"] = df_in2["Prec"]
         concat = pd.concat([df_out, df_ERA5])
-        concat["Prec"] = df_in2["Prec"]
+        concat.loc[concat["Prec"].isnull(), "Prec"] = 0
         concat = concat.reset_index()
 
         if concat.isnull().values.any():
