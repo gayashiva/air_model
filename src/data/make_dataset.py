@@ -150,54 +150,9 @@ if __name__ == "__main__":
             header=0,
             parse_dates=["When"],
         )
-        # df_in3 = pd.read_csv(
-        #     FOLDERS["raw_folder"] + SITE["name"] + "_ERA5.csv",
-        #     sep=",",
-        #     header=0,
-        #     parse_dates=["dataDate"],
-        # )
-
-        # df_in3 = df_in3.drop(["Latitude", "Longitude"], axis=1)
-        # df_in3["time"] = df_in3["validityTime"].replace(
-        #     [0, 100, 200, 300, 400, 500, 600, 700, 800, 900],
-        #     [
-        #         "0000",
-        #         "0100",
-        #         "0200",
-        #         "0300",
-        #         "0400",
-        #         "0500",
-        #         "0600",
-        #         "0700",
-        #         "0800",
-        #         "0900",
-        #     ],
-        # )
-        # df_in3["time"] = df_in3["time"].astype(str)
-        # df_in3["time"] = df_in3["time"].str[0:2] + ":" + df_in3["time"].str[2:4]
-        # df_in3["dataDate"] = df_in3["dataDate"].astype(str)
-        # df_in3["When"] = df_in3["dataDate"] + " " + df_in3["time"]
-        # df_in3["When"] = pd.to_datetime(df_in3["When"])
-
-        # days = pd.date_range(
-        #     start=SITE["start_date"], end=df_in3["When"].iloc[-1], freq="1H"
-        # )
-        # df_out1 = pd.DataFrame({"When": days})
-        # df_out1 = df_out1.set_index("When")
-        # df_in3 = df_in3.set_index("When")
 
         df_out1 = df_in3
         time_steps = 60 * 60
-        # df_out1["10u"] = df_in3.loc[df_in3.shortname == "10u", "value"]
-        # df_out1["10v"] = df_in3.loc[df_in3.shortname == "10v", "value"]
-        # df_out1["d2m"] = df_in3.loc[df_in3.shortname == "d2m", "value"]
-        # df_out1["t2m"] = df_in3.loc[df_in3.shortname == "t2m", "value"]
-        # df_out1["sp"] = df_in3.loc[df_in3.shortname == "sp", "value"]
-        # df_out1["tcc"] = df_in3.loc[df_in3.shortname == "tcc", "value"]
-        # df_out1["tp"] = df_in3.loc[df_in3.shortname == "tp", "value"]
-        # df_out1["ssrd"] = df_in3.loc[df_in3.shortName == "ssrd", "Value"]
-        # df_out1["strd"] = df_in3.loc[df_in3.shortName == "strd", "Value"]
-        # df_out1["fdir"] = df_in3.loc[df_in3.shortName == "fdir", "Value"]
         df_out1["ssrd"] /= time_steps
         df_out1["strd"] /= time_steps
         df_out1["fdir"] /= time_steps
@@ -213,12 +168,16 @@ if __name__ == "__main__":
         df_out1["tp"] = df_out1["tp"]  # mm/s
         df_out1["SW_diffuse"] = df_out1["ssrd"] - df_out1["fdir"]
         df_out1["t2m"] = df_out1["t2m"] - 273.15
+        df_out1["t2m_reanalysis-era5-land"] = (
+            df_out1["t2m_reanalysis-era5-land"] - 273.15
+        )
         df_out1 = df_out1.set_index("When")
 
         # CSV output
         df_out1.rename(
             columns={
                 "t2m": "T_a",
+                # "t2m_reanalysis-era5-land": "T_a",
                 "sp": "p_a",
                 "tcc": "cld",
                 "tp": "Prec",
@@ -304,7 +263,7 @@ if __name__ == "__main__":
         df = df.set_index("When")
         df["missing"] = 0
         df.loc[df["T_a"].isnull(), "missing"] = 1
-        df_ERA5["p_a"] += (df.p_a - df_ERA5.p_a).mean()
+        # df_ERA5["p_a"] += (df.p_a - df_ERA5.p_a).mean()
 
         df.loc[df["T_a"].isnull(), ["T_a", "RH", "v_a", "p_a", "Discharge"]] = df_ERA5[
             ["T_a", "RH", "v_a", "p_a", "Discharge"]
