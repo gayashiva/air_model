@@ -174,6 +174,7 @@ class Icestupa:
         s = 0
         f = 0
 
+        print("Creating model input file...")
         for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
 
             """ Vapour Pressure"""
@@ -617,8 +618,9 @@ class Icestupa:
 
         self.sum_T_s = 0  # weighted_sums
         self.sum_SA = 0  # weighted_sums
-
-        for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]):
+            
+        print("AIR simulation begins...")
+        for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]/2):
             i = row.Index
 
             # Initialize

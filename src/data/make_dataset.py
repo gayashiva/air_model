@@ -262,16 +262,17 @@ if __name__ == "__main__":
         df["missing"] = 0
         df.loc[df["T_a"].isnull(), "missing"] = 1
         # Correct ERA5
+        # v_shear = 0.143
+        # df_ERA5["v_a"] = df_ERA5["v_a"] * 0.2 ** v_shear
         df["v_a"] = df["v_a"].replace(0, np.NaN)
         print("RMSE Temp", ((df.T_a - df_ERA5.T_a)).mean())
         print("RMSE wind", ((df.v_a - df_ERA5.v_a)).mean())
+        print("RMSE wind", ((df.v_a - df_ERA5.v_a) ** 2).mean() ** 0.5)
         print("RMSE pressure", ((df.p_a - df_ERA5.p_a)).mean())
-        df_ERA5["p_a"] += (df.p_a - df_ERA5.p_a).mean()
-        df_ERA5["T_a"] += (df.T_a - df_ERA5.T_a).mean()
-        df_ERA5["v_a"] += (df.v_a - df_ERA5.v_a).mean()
-        df.loc[df["v_a"] < 0, "v_a"] = 0
-        # v_shear = 0.143
-        # df_out1["v_a"] = df_out1["v_a"] * 0.2 ** v_shear
+        # print("Sign", np.sign(((df.v_a - df_ERA5.v_a)).mean()))
+        df_ERA5["p_a"] += np.sign((df.p_a - df_ERA5.p_a).mean())*((df.p_a - df_ERA5.p_a) ** 2).mean() ** 0.5
+        df_ERA5["T_a"] += np.sign(((df.T_a - df_ERA5.T_a)).mean())*((df.T_a - df_ERA5.T_a) ** 2).mean() ** 0.5
+        df_ERA5["v_a"] += np.sign(((df.v_a - df_ERA5.v_a)).mean())*((df.v_a - df_ERA5.v_a) ** 2).mean() ** 0.5
 
         df.loc[df["T_a"].isnull(), ["T_a", "RH", "v_a", "p_a", "Discharge"]] = df_ERA5[
             ["T_a", "RH", "v_a", "p_a", "Discharge"]
@@ -279,7 +280,6 @@ if __name__ == "__main__":
 
         df.loc[df["v_a"].isnull(), "missing"] = 2
         df.loc[df["v_a"].isnull(), "v_a"] = df_ERA5["v_a"]
-        df.loc[df["v_a"] < 0, "v_a"] = 0
 
         df[["SW_direct", "SW_diffuse", "cld"]] = df_ERA5[
             ["SW_direct", "SW_diffuse", "cld"]
@@ -410,6 +410,7 @@ if __name__ == "__main__":
         df_ERA5["Prec"] = df_in2["Prec"]
         concat = pd.concat([df_out, df_ERA5])
         concat.loc[concat["Prec"].isnull(), "Prec"] = 0
+        concat.loc[concat["v_a"] < 0, "v_a"] = 0
         concat = concat.reset_index()
 
         if concat.isnull().values.any():
