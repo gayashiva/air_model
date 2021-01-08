@@ -618,7 +618,7 @@ class Icestupa:
         self.sum_T_s = 0  # weighted_sums
         self.sum_SA = 0  # weighted_sums
 
-        for row in self.df[1:-1].itertuples():
+        for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]):
             i = row.Index
 
             # Initialize

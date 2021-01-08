@@ -158,8 +158,6 @@ if __name__ == "__main__":
         df_out1["fdir"] /= time_steps
 
         df_out1["v_a"] = np.sqrt(df_out1["u10"] ** 2 + df_out1["v10"] ** 2)
-        v_shear = 0.143
-        df_out1["v_a"] = df_out1["v_a"] * 0.2 ** v_shear
         df_out1["RH"] = 100 * (
             np.exp((17.625 * df_out1["d2m"]) / (243.04 + df_out1["d2m"]))
             / np.exp((17.625 * df_out1["t2m"]) / (243.04 + df_out1["t2m"]))
@@ -263,15 +261,25 @@ if __name__ == "__main__":
         df = df.set_index("When")
         df["missing"] = 0
         df.loc[df["T_a"].isnull(), "missing"] = 1
-        # df_ERA5["p_a"] += (df.p_a - df_ERA5.p_a).mean()
+        # Correct ERA5
+        df["v_a"] = df["v_a"].replace(0, np.NaN)
+        print("RMSE Temp", ((df.T_a - df_ERA5.T_a)).mean())
+        print("RMSE wind", ((df.v_a - df_ERA5.v_a)).mean())
+        print("RMSE pressure", ((df.p_a - df_ERA5.p_a)).mean())
+        df_ERA5["p_a"] += (df.p_a - df_ERA5.p_a).mean()
+        df_ERA5["T_a"] += (df.T_a - df_ERA5.T_a).mean()
+        df_ERA5["v_a"] += (df.v_a - df_ERA5.v_a).mean()
+        df.loc[df["v_a"] < 0, "v_a"] = 0
+        # v_shear = 0.143
+        # df_out1["v_a"] = df_out1["v_a"] * 0.2 ** v_shear
 
         df.loc[df["T_a"].isnull(), ["T_a", "RH", "v_a", "p_a", "Discharge"]] = df_ERA5[
             ["T_a", "RH", "v_a", "p_a", "Discharge"]
         ]
 
-        df["v_a"] = df["v_a"].replace(0, np.NaN)
         df.loc[df["v_a"].isnull(), "missing"] = 2
         df.loc[df["v_a"].isnull(), "v_a"] = df_ERA5["v_a"]
+        df.loc[df["v_a"] < 0, "v_a"] = 0
 
         df[["SW_direct", "SW_diffuse", "cld"]] = df_ERA5[
             ["SW_direct", "SW_diffuse", "cld"]
@@ -320,10 +328,11 @@ if __name__ == "__main__":
         )
         df_in2 = df_in2.loc[mask]
         df_in2 = df_in2.set_index("When")
+        df_in2["Discharge"] = 0
         df["Prec"] = df_in2["Prec"]
 
-        # df.loc[df["T_a"].isnull(), ["T_a", "RH", "v_a", "p_a"]] = df_in2[
-        #     ["T_a", "RH", "v_a", "p_a"]
+        # df.loc[df["T_a"].isnull(), ["T_a", "RH", "p_a", "Discharge"]] = df_in2[
+        #     ["T_a", "RH", "p_a", "Discharge"]
         # ]
         # df["v_a"] = df["v_a"].replace(0, np.NaN)
         # df.loc[df["v_a"].isnull(), "missing"] = 2
