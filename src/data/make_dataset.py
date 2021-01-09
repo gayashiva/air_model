@@ -71,7 +71,7 @@ def e_sat(T, surface="water", a1=611.21, a3=17.502, a4=32.19):
         a1 = 611.21  # Pa
         a3 = 22.587  # NA
         a4 = -0.7  # K
-    return a1 * np.exp(a3 * (T- 273.16)/ (T - a4 ))
+    return a1 * np.exp(a3 * (T - 273.16) / (T - a4))
 
 
 if __name__ == "__main__":
@@ -165,26 +165,16 @@ if __name__ == "__main__":
         df_out1["ssrd"] /= time_steps
         df_out1["strd"] /= time_steps
         df_out1["fdir"] /= time_steps
-
         df_out1["v_a"] = np.sqrt(df_out1["u10"] ** 2 + df_out1["v10"] ** 2)
         # Derive RH
         df_out1["t2m"] -= 273.15
         df_out1["d2m"] -= 273.15
         df_out1["t2m_RH"] = df_out1["t2m"]
         df_out1["d2m_RH"] = df_out1["d2m"]
-        # Apply function numpy.square() to lambda
-        # to find the squares of the values of
-        # column whose column name is 'z'
         df_out1 = df_out1.apply(lambda x: e_sat(x) if x.name == "t2m_RH" else x)
         df_out1 = df_out1.apply(lambda x: e_sat(x) if x.name == "d2m_RH" else x)
         df_out1["RH"] = 100 * df_out1["d2m_RH"] / df_out1["t2m_RH"]
-        print(df_out1.RH.head())
-        # df_out1["RH"] = 100 * (
-        #     np.exp((17.625 * df_out1["d2m"]) / (243.04 + df_out1["d2m"]))
-        #     / np.exp((17.625 * df_out1["t2m"]) / (243.04 + df_out1["t2m"]))
-        # )
         df_out1["sp"] = df_out1["sp"] / 100
-        df_out1["tp"] = df_out1["tp"]  # mm/s
         df_out1["SW_diffuse"] = df_out1["ssrd"] - df_out1["fdir"]
         df_out1 = df_out1.set_index("When")
 
@@ -298,10 +288,10 @@ if __name__ == "__main__":
             np.sign(((df.v_a - df_ERA5.v_a)).mean())
             * ((df.v_a - df_ERA5.v_a) ** 2).mean() ** 0.5
         )
-        df_ERA5["RH"] += (
-            np.sign(((df.RH - df_ERA5.RH)).mean())
-            * ((df.RH - df_ERA5.RH) ** 2).mean() ** 0.5
-        )
+        # df_ERA5["RH"] += (
+        #     np.sign(((df.RH - df_ERA5.RH)).mean())
+        #     * ((df.RH - df_ERA5.RH) ** 2).mean() ** 0.5
+        # )
 
         df.loc[df["T_a"].isnull(), ["T_a", "RH", "v_a", "p_a", "Discharge"]] = df_ERA5[
             ["T_a", "RH", "v_a", "p_a", "Discharge"]
@@ -314,21 +304,25 @@ if __name__ == "__main__":
             ["SW_direct", "SW_diffuse", "cld"]
         ]
 
+        slope, intercept, r_value1, p_value, std_err = stats.linregress(
+            df.T_a.values, df_ERA5.T_a.values
+        )
+        slope, intercept, r_value2, p_value, std_err = stats.linregress(
+            df.v_a.values, df_ERA5.v_a.values
+        )
+        slope, intercept, r_value3, p_value, std_err = stats.linregress(
+            df.RH.values, df_ERA5.RH.values
+        )
+
+        print("R2 temp", r_value1 ** 2)
+        print("R2 wind", r_value2 ** 2)
+        print("R2 RH", r_value3 ** 2)
+
         # RMSE
 
         # print("RMSE Temp", ((df.T_a - df_ERA5.T_a) ** 2).mean() ** 0.5)
         # print("RMSE wind", ((df.v_a - df_ERA5.v_a) ** 2).mean() ** 0.5)
         # print("RMSE pressure", ((df.p_a - df_ERA5.p_a) ** 2).mean() ** 0.5)
-
-        # slope, intercept, r_value1, p_value, std_err = stats.linregress(
-        #     df.T_a.values, df_in3.T_a.values
-        # )
-        # slope, intercept, r_value2, p_value, std_err = stats.linregress(
-        #     df.v_a.values, df_in3.v_a.values
-        # )
-
-        # print("R2 temp", r_value1 ** 2)
-        # print("R2 wind", r_value2 ** 2)
 
         # Fill from Plaffeien
         df_in2 = pd.read_csv(
@@ -357,7 +351,6 @@ if __name__ == "__main__":
         )
         df_in2 = df_in2.loc[mask]
         df_in2 = df_in2.set_index("When")
-        df_in2["Discharge"] = 0
         df["Prec"] = df_in2["Prec"]
 
         # df.loc[df["T_a"].isnull(), ["T_a", "RH", "p_a", "Discharge"]] = df_in2[
@@ -418,6 +411,7 @@ if __name__ == "__main__":
 
         df_out.to_csv(FOLDERS["input_folder"] + "raw_input.csv")
 
+
         # Extend data
         df_ERA5["Prec"] = 0
         df_ERA5["missing"] = 1
@@ -442,6 +436,8 @@ if __name__ == "__main__":
         concat.loc[concat["Prec"].isnull(), "Prec"] = 0
         concat.loc[concat["v_a"] < 0, "v_a"] = 0
         concat = concat.reset_index()
+
+
 
         if concat.isnull().values.any():
             print("Warning: Null values present")
