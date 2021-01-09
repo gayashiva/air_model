@@ -65,6 +65,15 @@ def discharge_rate(df, FOUNTAIN):
     return df["Fountain"], df["Discharge"]
 
 
+def e_sat(T, surface="water", a1=611.21, a3=17.502, a4=32.19):
+    T += 273.16
+    if surface == "ice":
+        a1 = 611.21  # Pa
+        a3 = 22.587  # NA
+        a4 = -0.7  # K
+    return a1 * np.exp(a3 * (T- 273.16)/ (T - a4 ))
+
+
 if __name__ == "__main__":
 
     if SITE["name"] == "schwarzsee":
@@ -158,25 +167,31 @@ if __name__ == "__main__":
         df_out1["fdir"] /= time_steps
 
         df_out1["v_a"] = np.sqrt(df_out1["u10"] ** 2 + df_out1["v10"] ** 2)
+        # Derive RH
+        df_out1["t2m"] -= 273.15
+        df_out1["d2m"] -= 273.15
+        df_out1["t2m_RH"] = df_out1["t2m"]
+        df_out1["d2m_RH"] = df_out1["d2m"]
+        # Apply function numpy.square() to lambda
+        # to find the squares of the values of
+        # column whose column name is 'z'
+        df_out1 = df_out1.apply(lambda x: e_sat(x) if x.name == "t2m_RH" else x)
+        df_out1 = df_out1.apply(lambda x: e_sat(x) if x.name == "d2m_RH" else x)
+        df_out1["RH"] = 100 * df_out1["d2m_RH"] / df_out1["t2m_RH"]
+        print(df_out1.RH.head())
         # df_out1["RH"] = 100 * (
         #     np.exp((17.625 * df_out1["d2m"]) / (243.04 + df_out1["d2m"]))
         #     / np.exp((17.625 * df_out1["t2m"]) / (243.04 + df_out1["t2m"]))
         # )
-        df_out1["RH"] = 100 * df_out1["d2m"] / df_out1["t2m"]
         df_out1["sp"] = df_out1["sp"] / 100
         df_out1["tp"] = df_out1["tp"]  # mm/s
         df_out1["SW_diffuse"] = df_out1["ssrd"] - df_out1["fdir"]
-        df_out1["t2m"] = df_out1["t2m"] - 273.15
-        df_out1["t2m_reanalysis-era5-land"] = (
-            df_out1["t2m_reanalysis-era5-land"] - 273.15
-        )
         df_out1 = df_out1.set_index("When")
 
         # CSV output
         df_out1.rename(
             columns={
                 "t2m": "T_a",
-                # "t2m_reanalysis-era5-land": "T_a",
                 "sp": "p_a",
                 "tcc": "cld",
                 "tp": "Prec",
