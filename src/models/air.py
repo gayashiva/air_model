@@ -1753,7 +1753,7 @@ class PDF(Icestupa):
         # df_PF.loc[mask, ['T_a', 'v_a', 'p_a', 'RH']] = np.NaN
         # df_PF2.loc[pmask, ['T_a', 'v_a', 'p_a', 'RH']] = np.NaN
 
-        pp = PdfPages(FOLDERS["output_folder"] + "Figure_4.pdf")
+        pp = PdfPages(FOLDERS["output_folder"] + "Figure_3.pdf")
 
         fig, (ax1, ax2, ax3, ax4, ax5, ax6, ax7) = plt.subplots(
             nrows=7, ncols=1, sharex="col", sharey="row", figsize=(16, 14)

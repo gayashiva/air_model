@@ -158,10 +158,11 @@ if __name__ == "__main__":
         df_out1["fdir"] /= time_steps
 
         df_out1["v_a"] = np.sqrt(df_out1["u10"] ** 2 + df_out1["v10"] ** 2)
-        df_out1["RH"] = 100 * (
-            np.exp((17.625 * df_out1["d2m"]) / (243.04 + df_out1["d2m"]))
-            / np.exp((17.625 * df_out1["t2m"]) / (243.04 + df_out1["t2m"]))
-        )
+        # df_out1["RH"] = 100 * (
+        #     np.exp((17.625 * df_out1["d2m"]) / (243.04 + df_out1["d2m"]))
+        #     / np.exp((17.625 * df_out1["t2m"]) / (243.04 + df_out1["t2m"]))
+        # )
+        df_out1["RH"] = 100 * df_out1["d2m"] / df_out1["t2m"]
         df_out1["sp"] = df_out1["sp"] / 100
         df_out1["tp"] = df_out1["tp"]  # mm/s
         df_out1["SW_diffuse"] = df_out1["ssrd"] - df_out1["fdir"]
@@ -261,18 +262,31 @@ if __name__ == "__main__":
         df = df.set_index("When")
         df["missing"] = 0
         df.loc[df["T_a"].isnull(), "missing"] = 1
+        df["v_a"] = df["v_a"].replace(0, np.NaN)
         # Correct ERA5
         # v_shear = 0.143
         # df_ERA5["v_a"] = df_ERA5["v_a"] * 0.2 ** v_shear
-        df["v_a"] = df["v_a"].replace(0, np.NaN)
-        print("RMSE Temp", ((df.T_a - df_ERA5.T_a)).mean())
-        print("RMSE wind", ((df.v_a - df_ERA5.v_a)).mean())
-        print("RMSE wind", ((df.v_a - df_ERA5.v_a) ** 2).mean() ** 0.5)
-        print("RMSE pressure", ((df.p_a - df_ERA5.p_a)).mean())
+        # print("RMSE temp", ((df.T_a - df_ERA5.T_a) ** 2).mean() ** 0.5)
+        # print("RMSE wind", ((df.v_a - df_ERA5.v_a) ** 2).mean() ** 0.5)
+        # print("RMSE pressure", ((df.p_a - df_ERA5.p_a) ** 2).mean() ** 0.5)
+        # print("RMSE humidity", ((df.RH - df_ERA5.RH) ** 2).mean() ** 0.5)
         # print("Sign", np.sign(((df.v_a - df_ERA5.v_a)).mean()))
-        df_ERA5["p_a"] += np.sign((df.p_a - df_ERA5.p_a).mean())*((df.p_a - df_ERA5.p_a) ** 2).mean() ** 0.5
-        df_ERA5["T_a"] += np.sign(((df.T_a - df_ERA5.T_a)).mean())*((df.T_a - df_ERA5.T_a) ** 2).mean() ** 0.5
-        df_ERA5["v_a"] += np.sign(((df.v_a - df_ERA5.v_a)).mean())*((df.v_a - df_ERA5.v_a) ** 2).mean() ** 0.5
+        df_ERA5["p_a"] += (
+            np.sign((df.p_a - df_ERA5.p_a).mean())
+            * ((df.p_a - df_ERA5.p_a) ** 2).mean() ** 0.5
+        )
+        df_ERA5["T_a"] += (
+            np.sign(((df.T_a - df_ERA5.T_a)).mean())
+            * ((df.T_a - df_ERA5.T_a) ** 2).mean() ** 0.5
+        )
+        df_ERA5["v_a"] += (
+            np.sign(((df.v_a - df_ERA5.v_a)).mean())
+            * ((df.v_a - df_ERA5.v_a) ** 2).mean() ** 0.5
+        )
+        df_ERA5["RH"] += (
+            np.sign(((df.RH - df_ERA5.RH)).mean())
+            * ((df.RH - df_ERA5.RH) ** 2).mean() ** 0.5
+        )
 
         df.loc[df["T_a"].isnull(), ["T_a", "RH", "v_a", "p_a", "Discharge"]] = df_ERA5[
             ["T_a", "RH", "v_a", "p_a", "Discharge"]
@@ -385,6 +399,7 @@ if __name__ == "__main__":
             )
 
         df_out = df_out.round(5)
+        df_out.loc[df_out["v_a"] < 0, "v_a"] = 0
 
         df_out.to_csv(FOLDERS["input_folder"] + "raw_input.csv")
 
