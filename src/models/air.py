@@ -467,8 +467,8 @@ class Icestupa:
     def read_input(self):
 
         self.df = pd.read_hdf(FOLDERS["input_folder"] + "model_input_extended.h5", "df")
-        # self.TIME_STEP=30*60
-        # self.df = self.df.set_index('When').resample('30T').mean().reset_index()
+        # self.TIME_STEP=10*60
+        # self.df = self.df.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index()
 
         print(self.df.head())
 
@@ -1112,7 +1112,11 @@ class PDF(Icestupa):
     def print_output(self, filename="model_results.pdf"):
 
         if filename == "model_results.pdf":
-            filename = FOLDERS["output_folder"] + "model_results.pdf"
+            if self.TIME_STEP!= 5*60:
+                filename = FOLDERS["output_folder"] + "model_results_" + str(self.TIME_STEP) +".pdf"
+            else:
+                filename = FOLDERS["output_folder"] + "model_results" +".pdf"
+
 
         self.df = self.df.rename(
             {
@@ -1745,13 +1749,9 @@ class PDF(Icestupa):
         df_ERA5 = self.df.copy()
         df_ERA52 = self.df.copy()
         df_SZ = self.df.copy()
-        # df_PF = self.df.copy()
-        # df_PF2 = self.df.copy()
         df_SZ.loc[nmask, ['T_a','SW_direct', 'SW_diffuse', 'v_a', 'p_a', 'RH']] = np.NaN
         df_ERA5.loc[mask, ['T_a','SW_direct', 'SW_diffuse', 'v_a', 'p_a', 'RH']] = np.NaN
         df_ERA52.loc[pmask, ['T_a','SW_direct', 'SW_diffuse', 'v_a', 'p_a', 'RH']] = np.NaN
-        # df_PF.loc[mask, ['T_a', 'v_a', 'p_a', 'RH']] = np.NaN
-        # df_PF2.loc[pmask, ['T_a', 'v_a', 'p_a', 'RH']] = np.NaN
 
         pp = PdfPages(FOLDERS["output_folder"] + "Figure_3.pdf")
 
@@ -1774,17 +1774,13 @@ class PDF(Icestupa):
 
         y2 = self.df.T_a
         y2_ERA5 = df_ERA5.T_a
-        # y2_PF= df_PF.T_a
         ax2.plot(x, y2, linestyle='-', color='#284D58', linewidth=1)
         ax2.plot(x, y2_ERA5, linestyle='-', color='#e76f51', linewidth=1)
-        # ax2.plot(x, y2_PF, linestyle='-', color='#118ab2', linewidth=1)
         ax2.set_ylabel("Temperature [$\\degree C$]")
         ax2.grid()
 
         y3 = self.df.SW_direct + self.df.SW_diffuse
-        # y3_ERA5 = df_ERA5.SW_diffuse + df_ERA5.SW_direct
         lns1 = ax3.plot(x, y3, linestyle='-', color='#e76f51', linewidth=1,  label = 'Global Rad.')
-        # ax3.plot(x, y3,  linestyle='-', color='#284D58', linewidth=1)
         ax3.set_ylabel("Radiation[$W\\,m^{-2}$]")
         ax3.grid()
 
@@ -1798,32 +1794,24 @@ class PDF(Icestupa):
 
         y4 = self.df.RH
         y4_ERA5 = df_ERA5.RH
-        # y4_PF= df_PF.RH
         ax4.plot(x, y4,  linestyle='-', color='#284D58', linewidth=1)
         ax4.plot(x, y4_ERA5, linestyle='-', color='#e76f51', linewidth=1)
-        # ax4.plot(x, y4_PF, linestyle='-', color='#118ab2', linewidth=1)
         ax4.set_ylabel("Humidity [$\\%$]")
         ax4.grid()
 
         y5 = self.df.p_a
         y5_ERA5 = df_ERA5.p_a
-        # y5_PF= df_PF.p_a
         ax5.plot(x, y5, linestyle='-', color='#264653', linewidth=1)
         ax5.plot(x, y5_ERA5, linestyle='-', color='#e76f51', linewidth=1)
-        # ax5.plot(x, y5_PF, linestyle='-', color='#118ab2', linewidth=1)
         ax5.set_ylabel("Pressure [$hPa$]")
         ax5.grid()
 
         y6 = self.df.v_a
         y6_ERA5 = df_ERA5.v_a
         y6_ERA52 = df_ERA52.v_a
-        # y6_PF= df_PF.v_a
-        # y6_PF2= df_PF2.v_a
         ax6.plot(x, y6, linestyle='-', color='#264653', linewidth=1)
         ax6.plot(x, y6_ERA5, linestyle='-', color='#e76f51', linewidth=1)
         ax6.plot(x, y6_ERA52, linestyle='-', color='#e76f51', linewidth=1)
-        # ax6.plot(x, y6_PF, linestyle='-', color='#118ab2', linewidth=1)
-        # ax6.plot(x, y6_PF2, linestyle='-', color='#118ab2', linewidth=1)
         ax6.set_ylabel("Wind [$m\\,s^{-1}$]")
         ax6.grid()
 
@@ -2025,46 +2013,82 @@ class PDF(Icestupa):
         pp.close()
 
         pp = PdfPages(FOLDERS["output_folder"] + "Figure_7.pdf")
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
+        fig, (ax1, ax2) = plt.subplots(
+            nrows=2, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
+        )
+
         x = self.df.When
+
+        y1 = self.df.a
+        y2 = self.df.f_cone
+        ax1.plot(x, y1, color="#16697a")
+        ax1.set_ylabel("Albedo")
+        # ax1.set_xlabel("Days")
+        ax1t = ax1.twinx()
+        ax1t.plot(x, y2, color="#ff6d00", linewidth=0.5)
+        ax1t.set_ylabel("$f_{cone}$", color="#ff6d00")
+        for tl in ax1t.get_yticklabels():
+            tl.set_color("#ff6d00")
+        # ax1.grid()
+        ax1.set_ylim([0, 1])
+        ax1t.set_ylim([0, 1])
+
         y1 = self.df.T_s
         y2 = self.df.T_bulk
-        ax1.plot(x, y1, "k-",  linestyle='-', color='#264653', linewidth=0.5, label = "Surface")
-        ax1.set_ylabel("Temperature [$\\degree C$]")
-        ax1.plot(x, y2,  linestyle='-', color='#e76f51', linewidth=1, label = "Bulk")
-        ax1.legend()
+        ax2.plot(x, y1, "k-",  linestyle='-', color='#00b4d8', linewidth=0.5, label = "Surface")
+        ax2.set_ylabel("Temperature [$\\degree C$]")
+        ax2.plot(x, y2,  linestyle='-', color='#023e8a', linewidth=1, label = "Bulk")
+        ax2.set_ylim([-20, 1])
+        ax2.legend()
+
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.set_ylim([-20, 1])
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.close("all")
         pp.close()
+
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111)
+        # x = self.df.When
+        # y1 = self.df.T_s
+        # y2 = self.df.T_bulk
+        # ax1.plot(x, y1, "k-",  linestyle='-', color='#00b4d8', linewidth=0.5, label = "Surface")
+        # ax1.set_ylabel("Temperature [$\\degree C$]")
+        # ax1.plot(x, y2,  linestyle='-', color='#023e8a', linewidth=1, label = "Bulk")
+        # ax1.set_ylim([-20, 1])
+        # ax1.legend()
+        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        # fig.autofmt_xdate()
+        # pp.savefig(bbox_inches="tight")
+        # plt.close("all")
+        # pp.close()
 
 if __name__ == "__main__":
     start = time.time()
 
     icestupa = PDF()
 
-    icestupa.derive_parameters()
+    # icestupa.derive_parameters()
     # icestupa.print_input()
 
     # icestupa.read_input()
 
-    icestupa.melt_freeze()
+    # icestupa.melt_freeze()
 
-    # icestupa.read_output()
+    icestupa.read_output()
 
     # icestupa.corr_plot()
 
     icestupa.summary()
 
-    icestupa.print_input()
+    # icestupa.print_input()
     icestupa.paper_figures()
 
-    icestupa.print_output()
+    # icestupa.print_output()
 
     total = time.time() - start
 

@@ -3,7 +3,8 @@ import chaospy as cp
 import pandas as pd
 import math
 import sys
-sys.path.append('/home/surya/Programs/PycharmProjects/air_model')
+sys.path.append("/home/surya/Programs/Github/air_model")
+from src.data.config import SITE, FOUNTAIN, FOLDERS
 from src.models.air import Icestupa
 
 
@@ -28,10 +29,7 @@ class UQ_Icestupa(un.Model, Icestupa):
 
         super(UQ_Icestupa, self).__init__(labels=["Time (days)", "Ice Volume ($m^3$)"], interpolate=True)
 
-        data_store = pd.HDFStore(
-            "/home/surya/Programs/PycharmProjects/air_model/data/interim/schwarzsee/model_input_extended.h5")
-        self.df = data_store['df']
-        data_store.close()
+        self.df= pd.read_hdf(FOLDERS["input_folder"] + "model_input_extended.h5", "df")
 
     def run(self, **parameters):
 
