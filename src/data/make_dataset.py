@@ -16,6 +16,7 @@ import os
 import logging
 from src.data.config import SITE, FOLDERS, FOUNTAIN, OPTION
 from scipy import stats
+from sklearn.linear_model import LinearRegression
 
 start = time.time()
 
@@ -72,6 +73,12 @@ def e_sat(T, surface="water", a1=611.21, a3=17.502, a4=32.19):
         a3 = 22.587  # NA
         a4 = -0.7  # K
     return a1 * np.exp(a3 * (T - 273.16) / (T - a4))
+
+
+def linreg(X, Y):
+    mask = ~np.isnan(X) & ~np.isnan(Y)
+    slope, intercept, r_value, p_value, std_err = stats.linregress(X[mask], Y[mask])
+    return slope, intercept
 
 
 if __name__ == "__main__":
@@ -175,6 +182,7 @@ if __name__ == "__main__":
         df_out1 = df_out1.apply(lambda x: e_sat(x) if x.name == "d2m_RH" else x)
         df_out1["RH"] = 100 * df_out1["d2m_RH"] / df_out1["t2m_RH"]
         df_out1["sp"] = df_out1["sp"] / 100
+        df_out1["tp"] = df_out1["tp"] * 1000 / 3600  # mm/s
         df_out1["SW_diffuse"] = df_out1["ssrd"] - df_out1["fdir"]
         df_out1 = df_out1.set_index("When")
 
@@ -233,6 +241,7 @@ if __name__ == "__main__":
                 "LW_in",
                 "cld",
                 "p_a",
+                "Prec",
             ]
         ]
 
@@ -277,18 +286,55 @@ if __name__ == "__main__":
         # print("RMSE humidity", ((df.RH - df_ERA5.RH) ** 2).mean() ** 0.5)
         # print("Sign", np.sign(((df.v_a - df_ERA5.v_a)).mean()))
 
-        df_ERA5["p_a"] += (
-            np.sign((df.p_a - df_ERA5.p_a).mean())
-            * ((df.p_a - df_ERA5.p_a) ** 2).mean() ** 0.5
+        df_ERA5 = df_ERA5.reset_index()
+        mask = (df_ERA5["When"] >= SITE["start_date"]) & (
+            df_ERA5["When"] <= SITE["end_date"]
         )
-        df_ERA5["T_a"] += (
-            np.sign(((df.T_a - df_ERA5.T_a)).mean())
-            * ((df.T_a - df_ERA5.T_a) ** 2).mean() ** 0.5
-        )
-        df_ERA5["v_a"] += (
-            np.sign(((df.v_a - df_ERA5.v_a)).mean())
-            * ((df.v_a - df_ERA5.v_a) ** 2).mean() ** 0.5
-        )
+
+        for column in ["T_a", "RH", "v_a", "p_a"]:
+            Y = df[column].values.reshape(-1, 1)
+            X = df_ERA5[mask][column].values.reshape(-1, 1)
+            slope, intercept = linreg(X, Y)
+            print(column, slope, intercept)
+            df_ERA5[column] = slope * df_ERA5[column] + intercept
+
+        # Y = df["p_a"].values.reshape(-1, 1)  # values converts it into a numpy array
+        # X = df_ERA5[mask]["p_a"].values.reshape(-1, 1)
+        # slope, intercept = linreg(X, Y)
+        # print(slope, intercept)
+        # df_ERA5["p_a"] = slope * df_ERA5["p_a"] - intercept
+        # Y_pred = slope * Y + intercept
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111)
+        # ax1.scatter(X, Y, s=2)
+        # ax1.scatter(X, Y_pred, s=2, color="red")
+        # ax1.set_xlabel("Plf ppt")
+        # ax1.set_ylabel("ERA5 ppt")
+        # ax1.grid()
+        # lims = [
+        #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+        #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+        # ]
+        # # now plot both limits against eachother
+        # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+        # ax1.set_aspect("equal")
+        # ax1.set_xlim(lims)
+        # ax1.set_ylim(lims)
+        # plt.show()
+        df_ERA5 = df_ERA5.set_index("When")
+
+        # df_ERA5["p_a"] += (
+        #     np.sign((df.p_a - df_ERA5.p_a).mean())
+        #     * ((df.p_a - df_ERA5.p_a) ** 2).mean() ** 0.5
+        # )
+        # df_ERA5["T_a"] += (
+        #     np.sign(((df.T_a - df_ERA5.T_a)).mean())
+        #     * ((df.T_a - df_ERA5.T_a) ** 2).mean() ** 0.5
+        # )
+        # df_ERA5["v_a"] += (
+        #     np.sign(((df.v_a - df_ERA5.v_a)).mean())
+        #     * ((df.v_a - df_ERA5.v_a) ** 2).mean() ** 0.5
+        # )
         # df_ERA5["RH"] += (
         #     np.sign(((df.RH - df_ERA5.RH)).mean())
         #     * ((df.RH - df_ERA5.RH) ** 2).mean() ** 0.5
@@ -467,6 +513,76 @@ if __name__ == "__main__":
             FOLDERS["input_folder"] + "raw_input_extended.h5", key="df", mode="w"
         )
 
+        pp = PdfPages(FOLDERS["input_folder"] + "compare" + ".pdf")
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(df_out.p_a, df_in3.p_a, s=2)
+        ax1.set_xlabel("AWS p")
+        ax1.set_ylabel("ERA5 p")
+        ax1.grid()
+        lims = [
+            np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+            np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+        ]
+        # now plot both limits against eachother
+        ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+        ax1.set_aspect("equal")
+        ax1.set_xlim(lims)
+        ax1.set_ylim(lims)
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(df_out.v_a, df_in3.v_a, s=2)
+        ax1.set_xlabel("AWS v")
+        ax1.set_ylabel("ERA5 v")
+        ax1.grid()
+        lims = [
+            np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+            np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+        ]
+        # now plot both limits against eachother
+        ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+        ax1.set_aspect("equal")
+        ax1.set_xlim(lims)
+        ax1.set_ylim(lims)
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(df_out.T_a, df_in3.T_a, s=2)
+        ax1.set_xlabel("AWS T")
+        ax1.set_ylabel("ERA5 T")
+        ax1.grid()
+        lims = [
+            np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+            np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+        ]
+        # now plot both limits against eachother
+        ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+        ax1.set_aspect("equal")
+        ax1.set_xlim(lims)
+        ax1.set_ylim(lims)
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(df_in2.Prec, df_in3.Prec, s=2)
+        ax1.set_xlabel("Plf ppt")
+        ax1.set_ylabel("ERA5 ppt")
+        ax1.grid()
+        lims = [
+            np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+            np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+        ]
+        # now plot both limits against eachother
+        ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+        ax1.set_aspect("equal")
+        ax1.set_xlim(lims)
+        ax1.set_ylim(lims)
+        pp.savefig(bbox_inches="tight")
+        plt.clf()
+        pp.close()
         """
                 Parameter
                 ---------

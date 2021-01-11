@@ -1987,31 +1987,6 @@ class PDF(Icestupa):
         plt.clf()
         pp.close()
 
-        pp = PdfPages(FOLDERS["output_folder"] + "Figure_8.pdf")
-        fig = plt.figure()
-        y1 = self.df.a
-        y2 = self.df.f_cone
-        ax1 = fig.add_subplot(111)
-        ax1.plot(x, y1, "k-")
-        ax1.set_ylabel("Albedo")
-        # ax1.set_xlabel("Days")
-        ax1t = ax1.twinx()
-        ax1t.plot(x, y2, "b-", linewidth=0.5)
-        ax1t.set_ylabel("$f_{cone}$", color="b")
-        for tl in ax1t.get_yticklabels():
-            tl.set_color("b")
-        ax1.grid()
-
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        ax1.set_ylim([0, 1])
-        ax1t.set_ylim([0, 1])
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-        pp.close()
-
         pp = PdfPages(FOLDERS["output_folder"] + "Figure_7.pdf")
         fig, (ax1, ax2) = plt.subplots(
             nrows=2, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
@@ -2049,46 +2024,28 @@ class PDF(Icestupa):
         plt.close("all")
         pp.close()
 
-        # fig = plt.figure()
-        # ax1 = fig.add_subplot(111)
-        # x = self.df.When
-        # y1 = self.df.T_s
-        # y2 = self.df.T_bulk
-        # ax1.plot(x, y1, "k-",  linestyle='-', color='#00b4d8', linewidth=0.5, label = "Surface")
-        # ax1.set_ylabel("Temperature [$\\degree C$]")
-        # ax1.plot(x, y2,  linestyle='-', color='#023e8a', linewidth=1, label = "Bulk")
-        # ax1.set_ylim([-20, 1])
-        # ax1.legend()
-        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        # fig.autofmt_xdate()
-        # pp.savefig(bbox_inches="tight")
-        # plt.close("all")
-        # pp.close()
-
 if __name__ == "__main__":
     start = time.time()
 
     icestupa = PDF()
 
-    # icestupa.derive_parameters()
+    icestupa.derive_parameters()
     # icestupa.print_input()
 
     # icestupa.read_input()
 
-    # icestupa.melt_freeze()
+    icestupa.melt_freeze()
 
-    icestupa.read_output()
+    # icestupa.read_output()
 
     # icestupa.corr_plot()
 
     icestupa.summary()
 
-    # icestupa.print_input()
+    icestupa.print_input()
     icestupa.paper_figures()
 
-    # icestupa.print_output()
+    icestupa.print_output()
 
     total = time.time() - start
 
