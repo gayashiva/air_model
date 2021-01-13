@@ -53,8 +53,10 @@ class Icestupa:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
 
-        # input_file = FOLDERS["input_folder"] + "raw_input_extended.csv"
-        input_file = FOLDERS["input_folder"] + "raw_input_ERA5.csv"
+        if SITE["name"] == "schwarzsee":
+            input_file = FOLDERS["input_folder"] + "raw_input_extended.csv"
+        else:
+            input_file = FOLDERS["input_folder"] + "raw_input_ERA5.csv"
 
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
 
@@ -145,15 +147,15 @@ class Icestupa:
 
         return s, f
 
-    def spray_radius(self, r_mean=0, dia_f_new=0):
+    def spray_radius(self, r_mean=0):
 
-        Area_old = math.pi * math.pow(FOUNTAIN["dia_f"], 2) / 4
-        v_old = self.df["Discharge"].replace(0, np.NaN).mean() / (60 * 1000 * Area_old)
+        Area = math.pi * math.pow(FOUNTAIN["dia_f"], 2) / 4
+        v = self.df["Discharge"].replace(0, np.NaN).mean() / (60 * 1000 * Area)
 
         if r_mean != 0:
             self.r_mean = r_mean
         else:
-            self.r_mean = self.projectile_xy(v=v_old)
+            self.r_mean = self.projectile_xy(v=v)
 
         return self.r_mean
 
@@ -166,6 +168,7 @@ class Icestupa:
             if col in list(self.df.columns):
                 missing.remove(col)
             else:
+                print(col, "is missing")
                 self.df[col] = 0
 
         """Albedo Decay"""
@@ -233,9 +236,14 @@ class Icestupa:
             ]
         ]
 
-        self.df.to_hdf(
-            FOLDERS["input_folder"] + "model_input_extended.h5", key="df", mode="w"
-        )
+        if SITE["name"] == "schwarzsee":
+            self.df.to_hdf(
+                FOLDERS["input_folder"] + "model_input_extended.h5", key="df", mode="w"
+            )
+        else:
+            self.df.to_hdf(
+                FOLDERS["input_folder"] + "model_input_ERA5.h5", key="df", mode="w"
+            )
 
     def surface_area(self, i):
 
@@ -265,6 +273,7 @@ class Icestupa:
             self.df.loc[i, "s_cone"] = self.df.loc[i - 1, "s_cone"]
 
             # Ice Radius
+            # print(self.df.loc[i, "iceV"], self.df.loc[i, "s_cone"])
             self.df.loc[i, "r_ice"] = math.pow(
                 self.df.loc[i, "iceV"] / math.pi * (3 / self.df.loc[i, "s_cone"]), 1 / 3
             )
@@ -467,8 +476,12 @@ class Icestupa:
 
     def read_input(self):
 
-        self.df = pd.read_hdf(FOLDERS["input_folder"] + "model_input_extended.h5", "df")
-        # self.TIME_STEP=10*60
+        if SITE["name"] == "schwarzsee":
+            self.df = pd.read_hdf(FOLDERS["input_folder"] + "model_input_extended.h5", "df")
+        else:
+            self.df = pd.read_hdf(FOLDERS["input_folder"] + "model_input_ERA5.h5", "df")
+
+        # self.TIME_STEP=45*60
         # self.df = self.df.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index()
 
         print(self.df.head())
@@ -650,6 +663,7 @@ class Icestupa:
                 if SITE["name"] == "leh":
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.DX
+                    # self.r_mean = 3
 
                 self.df.loc[i - 1, "s_cone"] = (
                     self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
@@ -670,6 +684,7 @@ class Icestupa:
             ice_melted = (self.df.loc[i, "ice"] < 0.01) or (
                 self.df.loc[i, "T_s"] < -100
             )
+
             fountain_off = self.df.Discharge[i:].sum() == 0
             if ice_melted & fountain_off:
                 self.df.loc[i - 1, "meltwater"] += self.df.loc[i - 1, "ice"]
@@ -685,16 +700,16 @@ class Icestupa:
 
                 self.surface_area(i)
 
-                # Precipitation to ice quantity
-                if row.T_a < self.T_RAIN and row.Prec > 0:
-                    self.df.loc[i, "ppt"] = (
-                        self.RHO_W
-                        * row.Prec
-                        * self.TIME_STEP
-                        / 1000
-                        * math.pi
-                        * math.pow(self.df.loc[i, "r_ice"], 2)
-                    )
+                # # Precipitation to ice quantity
+                # if row.T_a < self.T_RAIN and row.Prec > 0:
+                #     self.df.loc[i, "ppt"] = (
+                #         self.RHO_W
+                #         * row.Prec
+                #         * self.TIME_STEP
+                #         / 1000
+                #         * math.pi
+                #         * math.pow(self.df.loc[i, "r_ice"], 2)
+                #     )
 
                 # Fountain water output
                 self.liquid = (
@@ -2042,10 +2057,10 @@ if __name__ == "__main__":
 
     icestupa = PDF()
 
-    # icestupa.derive_parameters()
+    icestupa.derive_parameters()
     # icestupa.print_input()
 
-    icestupa.read_input()
+    # icestupa.read_input()
 
     icestupa.melt_freeze()
 
@@ -2053,7 +2068,7 @@ if __name__ == "__main__":
 
     # icestupa.corr_plot()
 
-    icestupa.summary()
+    # icestupa.summary()
 
     icestupa.print_input()
     icestupa.paper_figures()

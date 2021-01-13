@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append("/home/surya/Programs/Github/air_model")
 import pandas as pd
 import numpy as np
@@ -24,9 +25,13 @@ def discharge_rate(df, FOUNTAIN):
 
     if OPTION == "schwarzsee":
         df["Fountain"] = 0  # Fountain run time
+        df["Discharge"] = 0  # Fountain run time
 
+        df_f = pd.read_csv(
+            "/home/surya/Programs/Github/air_model/data/schwarzsee/interim/raw_input_SZ.csv"
+        )
         df_nights = pd.read_csv(
-            os.path.join(FOLDERS["raw_folder"], "schwarzsee_fountain_time.txt"),
+            "/home/surya/Programs/Github/air_model/data/schwarzsee/raw/schwarzsee_fountain_time.txt",
             sep="\\s+",
         )
 
@@ -49,6 +54,8 @@ def discharge_rate(df, FOUNTAIN):
                 "Fountain",
             ] = 1
 
+        df.Discharge = df_f.Discharge * df.Fountain
+
     if OPTION == "temperature":
         mask = df["T_a"] < FOUNTAIN["crit_temp"]
         mask_index = df[mask].index
@@ -57,12 +64,7 @@ def discharge_rate(df, FOUNTAIN):
         mask_index = df[mask].index
         df.loc[mask_index, "Fountain"] = 0
 
-    if OPTION == "schwarzsee":
-        df.Discharge = df.Discharge * df.Fountain
-    else:
-        df.Discharge = FOUNTAIN["discharge"] * df.Fountain
-
-    return df["Fountain"], df["Discharge"]
+    return df["Discharge"]
 
 
 def e_sat(T, surface="water", a1=611.21, a3=17.502, a4=32.19):
@@ -81,108 +83,6 @@ def linreg(X, Y):
 
 
 if __name__ == "__main__":
-
-    if SITE["name"] == "leh":
-        # ERA5 begins
-        df_in3 = pd.read_csv(
-            FOLDERS["raw_folder"] + "ERA5_" + SITE["name"] + ".csv",
-            sep=",",
-            header=0,
-            parse_dates=["When"],
-        )
-
-        print(df_in3.head())
-        df_out1 = df_in3
-        time_steps = 60 * 60
-        df_out1["ssrd"] /= time_steps
-        df_out1["strd"] /= time_steps
-        df_out1["fdir"] /= time_steps
-        df_out1["v_a"] = np.sqrt(df_out1["u10"] ** 2 + df_out1["v10"] ** 2)
-        # Derive RH
-        df_out1["t2m"] -= 273.15
-        df_out1["d2m"] -= 273.15
-        df_out1["t2m_RH"] = df_out1["t2m"]
-        df_out1["d2m_RH"] = df_out1["d2m"]
-        df_out1 = df_out1.apply(lambda x: e_sat(x) if x.name == "t2m_RH" else x)
-        df_out1 = df_out1.apply(lambda x: e_sat(x) if x.name == "d2m_RH" else x)
-        df_out1["RH"] = 100 * df_out1["d2m_RH"] / df_out1["t2m_RH"]
-        df_out1["sp"] = df_out1["sp"] / 100
-        df_out1["tp"] = df_out1["tp"] * 1000 / 3600  # mm/s
-        df_out1["SW_diffuse"] = df_out1["ssrd"] - df_out1["fdir"]
-        df_out1 = df_out1.set_index("When")
-
-        # CSV output
-        df_out1.rename(
-            columns={
-                "t2m": "T_a",
-                "sp": "p_a",
-                "tcc": "cld",
-                "tp": "Prec",
-                "fdir": "SW_direct",
-                "strd": "LW_in",
-            },
-            inplace=True,
-        )
-
-        df_in3 = df_out1[
-            [
-                "T_a",
-                "RH",
-                "Prec",
-                "v_a",
-                "SW_direct",
-                "SW_diffuse",
-                "LW_in",
-                "cld",
-                "p_a",
-            ]
-        ]
-
-        df_in3 = df_in3.round(5)
-
-        upsampled = df_in3.resample("5T")
-        interpolated = upsampled.interpolate(method="linear")
-        interpolated = interpolated.reset_index()
-
-        interpolated["Discharge"] = 0
-        mask = (interpolated["T_a"] < FOUNTAIN["crit_temp"]) & (
-            interpolated["SW_direct"] < 100
-        )
-        mask_index = interpolated[mask].index
-        interpolated.loc[mask_index, "Discharge"] = 2 * 60
-        mask = interpolated["When"] >= FOUNTAIN["fountain_off_date"]
-        mask_index = interpolated[mask].index
-        interpolated.loc[mask_index, "Discharge"] = 0
-        interpolated["missing"] = 0
-        interpolated = interpolated.reset_index()
-
-        df_in3 = interpolated[
-            [
-                "When",
-                "T_a",
-                "RH",
-                "v_a",
-                "SW_direct",
-                "SW_diffuse",
-                "LW_in",
-                "cld",
-                "p_a",
-                "Prec",
-                "Discharge",
-                "missing",
-            ]
-        ]
-
-        df_in3 = df_in3.reset_index()
-        mask = (df_in3["When"] >= SITE["start_date"]) & (
-            df_in3["When"] <= SITE["end_date"]
-        )
-        df_in3 = df_in3.loc[mask]
-        df_in3 = df_in3.reset_index()
-
-        df_in3.to_csv(FOLDERS["input_folder"] + "raw_input_ERA5.csv")
-
-        # df_in3.loc[:, "Discharge"] = 0
 
     if SITE["name"] == "schwarzsee":
 
@@ -248,6 +148,32 @@ if __name__ == "__main__":
             ],
             on="When",
         )
+        print(df.head())
+
+        df_nights = pd.read_csv(
+            "/home/surya/Programs/Github/air_model/data/schwarzsee/raw/schwarzsee_fountain_time.txt",
+            sep="\\s+",
+        )
+
+        df_nights["Start"] = pd.to_datetime(
+            df_nights["Date"] + " " + df_nights["start"]
+        )
+        df_nights["End"] = pd.to_datetime(df_nights["Date"] + " " + df_nights["end"])
+        df_nights["Start"] = pd.to_datetime(
+            df_nights["Start"], format="%Y-%m-%d %H:%M:%S"
+        )
+        df_nights["End"] = pd.to_datetime(df_nights["End"], format="%Y-%m-%d %H:%M:%S")
+
+        df_nights["Date"] = pd.to_datetime(df_nights["Date"], format="%Y-%m-%d")
+
+        df["Fountain"] = 0
+        for i in range(0, df_nights.shape[0]):
+            df_nights.loc[i, "Start"] = df_nights.loc[i, "Start"] - pd.Timedelta(days=1)
+            df.loc[
+                (df["When"] >= df_nights.loc[i, "Start"])
+                & (df["When"] <= df_nights.loc[i, "End"]),
+                "Fountain",
+            ] = 1
 
         # CSV output
         df.rename(
@@ -259,6 +185,12 @@ if __name__ == "__main__":
             },
             inplace=True,
         )
+
+        df.Discharge = df.Fountain * df.Discharge
+        df.to_csv(FOLDERS["input_folder"] + "raw_input_SZ.csv")
+
+        plt.plot(df.When, df.Discharge)
+        plt.show()
 
         # ERA5 begins
         df_in3 = pd.read_csv(
@@ -476,9 +408,9 @@ if __name__ == "__main__":
         # print("R2 pressure", r_value4 ** 2)
 
         """Discharge Rate"""
-        df["Fountain"], df["Discharge"] = discharge_rate(df, FOUNTAIN)
+        # discharge_rate(df, FOUNTAIN)
 
-        df["Discharge"] = df["Discharge"] * df["Fountain"]
+        # df["Discharge"] = df["Discharge"] * df["Fountain"]
 
         df_out = df[
             [
@@ -548,6 +480,9 @@ if __name__ == "__main__":
         concat.loc[concat["v_a"] < 0, "v_a"] = 0
         concat = concat.reset_index()
 
+        # Comparisons
+        concat["Prec"] = 0
+
         if concat.isnull().values.any():
             print("Warning: Null values present")
             print(
@@ -574,77 +509,185 @@ if __name__ == "__main__":
         concat.to_hdf(
             FOLDERS["input_folder"] + "raw_input_extended.h5", key="df", mode="w"
         )
+    if SITE["name"] == "leh":
+        # ERA5 begins
+        df_in3 = pd.read_csv(
+            FOLDERS["raw_folder"] + "ERA5_" + SITE["name"] + ".csv",
+            sep=",",
+            header=0,
+            parse_dates=["When"],
+        )
 
-        pp = PdfPages(FOLDERS["input_folder"] + "compare" + ".pdf")
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.scatter(df_out.p_a, df_in3.p_a, s=2)
-        ax1.set_xlabel("AWS p")
-        ax1.set_ylabel("ERA5 p")
-        ax1.grid()
-        lims = [
-            np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-            np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-        ]
-        # now plot both limits against eachother
-        ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
-        ax1.set_aspect("equal")
-        ax1.set_xlim(lims)
-        ax1.set_ylim(lims)
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
+        print(df_in3.head())
+        df_out1 = df_in3
+        time_steps = 60 * 60
+        df_out1["ssrd"] /= time_steps
+        df_out1["strd"] /= time_steps
+        df_out1["fdir"] /= time_steps
+        df_out1["v_a"] = np.sqrt(df_out1["u10"] ** 2 + df_out1["v10"] ** 2)
+        # Derive RH
+        df_out1["t2m"] -= 273.15
+        df_out1["d2m"] -= 273.15
+        df_out1["t2m_RH"] = df_out1["t2m"]
+        df_out1["d2m_RH"] = df_out1["d2m"]
+        df_out1 = df_out1.apply(lambda x: e_sat(x) if x.name == "t2m_RH" else x)
+        df_out1 = df_out1.apply(lambda x: e_sat(x) if x.name == "d2m_RH" else x)
+        df_out1["RH"] = 100 * df_out1["d2m_RH"] / df_out1["t2m_RH"]
+        df_out1["sp"] = df_out1["sp"] / 100
+        df_out1["tp"] = df_out1["tp"] * 1000 / 3600  # mm/s
+        df_out1["SW_diffuse"] = df_out1["ssrd"] - df_out1["fdir"]
+        df_out1 = df_out1.set_index("When")
 
-        ax1 = fig.add_subplot(111)
-        ax1.scatter(df_out.v_a, df_in3.v_a, s=2)
-        ax1.set_xlabel("AWS v")
-        ax1.set_ylabel("ERA5 v")
-        ax1.grid()
-        lims = [
-            np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-            np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-        ]
-        # now plot both limits against eachother
-        ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
-        ax1.set_aspect("equal")
-        ax1.set_xlim(lims)
-        ax1.set_ylim(lims)
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
+        # CSV output
+        df_out1.rename(
+            columns={
+                "t2m": "T_a",
+                "sp": "p_a",
+                "tcc": "cld",
+                "tp": "Prec",
+                "fdir": "SW_direct",
+                "strd": "LW_in",
+            },
+            inplace=True,
+        )
 
-        ax1 = fig.add_subplot(111)
-        ax1.scatter(df_out.T_a, df_in3.T_a, s=2)
-        ax1.set_xlabel("AWS T")
-        ax1.set_ylabel("ERA5 T")
-        ax1.grid()
-        lims = [
-            np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-            np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+        df_in3 = df_out1[
+            [
+                "T_a",
+                "RH",
+                "Prec",
+                "v_a",
+                "SW_direct",
+                "SW_diffuse",
+                "LW_in",
+                "cld",
+                "p_a",
+            ]
         ]
-        # now plot both limits against eachother
-        ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
-        ax1.set_aspect("equal")
-        ax1.set_xlim(lims)
-        ax1.set_ylim(lims)
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
 
-        ax1 = fig.add_subplot(111)
-        ax1.scatter(df_in2.Prec, df_in3.Prec, s=2)
-        ax1.set_xlabel("Plf ppt")
-        ax1.set_ylabel("ERA5 ppt")
-        ax1.grid()
-        lims = [
-            np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-            np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+        df_in3 = df_in3.round(5)
+
+        upsampled = df_in3.resample("5T")
+        interpolated = upsampled.interpolate(method="linear")
+        interpolated = interpolated.reset_index()
+
+        # discharge_rate(interpolated, FOUNTAIN)
+        # mask = (interpolated["T_a"] < FOUNTAIN["crit_temp"]) & (
+        #     interpolated["SW_direct"] < 100
+        # )
+        # mask_index = interpolated[mask].index
+        # interpolated.loc[mask_index, "Discharge"] = FOUNTAIN["discharge"]
+        # mask = interpolated["When"] >= FOUNTAIN["fountain_off_date"]
+        # mask_index = interpolated[mask].index
+        # interpolated.loc[mask_index, "Discharge"] = 0
+        interpolated["missing"] = 0
+        interpolated = interpolated.reset_index()
+
+        # plt.plot(interpolated.Discharge)
+        # plt.show()
+
+        df_in3 = interpolated[
+            [
+                "When",
+                "T_a",
+                "RH",
+                "v_a",
+                "SW_direct",
+                "SW_diffuse",
+                # "LW_in",
+                "cld",
+                "p_a",
+                "Prec",
+                "Discharge",
+                "missing",
+            ]
         ]
-        # now plot both limits against eachother
-        ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
-        ax1.set_aspect("equal")
-        ax1.set_xlim(lims)
-        ax1.set_ylim(lims)
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
-        pp.close()
+
+        df_in3 = df_in3.reset_index()
+        mask = (df_in3["When"] >= SITE["start_date"]) & (
+            df_in3["When"] <= SITE["end_date"]
+        )
+        df_in3 = df_in3.loc[mask]
+        df_in3 = df_in3.reset_index()
+
+        # Corrections for Leh
+        df_in3["cld"] = 0
+        df_in3["RH"] = 30
+        # df_in3["v_a"] *= 4
+        df_in3["Prec"] = 0
+
+        df_in3.to_csv(FOLDERS["input_folder"] + "raw_input_ERA5.csv")
+
+        # pp = PdfPages(FOLDERS["input_folder"] + "compare" + ".pdf")
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(111)
+        # ax1.scatter(df_out.p_a, df_in3.p_a, s=2)
+        # ax1.set_xlabel("AWS p")
+        # ax1.set_ylabel("ERA5 p")
+        # ax1.grid()
+        # lims = [
+        #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+        #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+        # ]
+        # # now plot both limits against eachother
+        # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+        # ax1.set_aspect("equal")
+        # ax1.set_xlim(lims)
+        # ax1.set_ylim(lims)
+        # pp.savefig(bbox_inches="tight")
+        # plt.clf()
+
+        # ax1 = fig.add_subplot(111)
+        # ax1.scatter(df_out.v_a, df_in3.v_a, s=2)
+        # ax1.set_xlabel("AWS v")
+        # ax1.set_ylabel("ERA5 v")
+        # ax1.grid()
+        # lims = [
+        #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+        #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+        # ]
+        # # now plot both limits against eachother
+        # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+        # ax1.set_aspect("equal")
+        # ax1.set_xlim(lims)
+        # ax1.set_ylim(lims)
+        # pp.savefig(bbox_inches="tight")
+        # plt.clf()
+
+        # ax1 = fig.add_subplot(111)
+        # ax1.scatter(df_out.T_a, df_in3.T_a, s=2)
+        # ax1.set_xlabel("AWS T")
+        # ax1.set_ylabel("ERA5 T")
+        # ax1.grid()
+        # lims = [
+        #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+        #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+        # ]
+        # # now plot both limits against eachother
+        # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+        # ax1.set_aspect("equal")
+        # ax1.set_xlim(lims)
+        # ax1.set_ylim(lims)
+        # pp.savefig(bbox_inches="tight")
+        # plt.clf()
+
+        # ax1 = fig.add_subplot(111)
+        # ax1.scatter(df_in2.Prec, df_in3.Prec, s=2)
+        # ax1.set_xlabel("Plf ppt")
+        # ax1.set_ylabel("ERA5 ppt")
+        # ax1.grid()
+        # lims = [
+        #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+        #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+        # ]
+        # # now plot both limits against eachother
+        # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+        # ax1.set_aspect("equal")
+        # ax1.set_xlim(lims)
+        # ax1.set_ylim(lims)
+        # pp.savefig(bbox_inches="tight")
+        # plt.clf()
+        # pp.close()
         """
                 Parameter
                 ---------
