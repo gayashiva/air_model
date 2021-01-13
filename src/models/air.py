@@ -663,7 +663,6 @@ class Icestupa:
                 if SITE["name"] == "leh":
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.DX
-                    # self.r_mean = 3
 
                 self.df.loc[i - 1, "s_cone"] = (
                     self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
@@ -700,16 +699,16 @@ class Icestupa:
 
                 self.surface_area(i)
 
-                # # Precipitation to ice quantity
-                # if row.T_a < self.T_RAIN and row.Prec > 0:
-                #     self.df.loc[i, "ppt"] = (
-                #         self.RHO_W
-                #         * row.Prec
-                #         * self.TIME_STEP
-                #         / 1000
-                #         * math.pi
-                #         * math.pow(self.df.loc[i, "r_ice"], 2)
-                #     )
+                # Precipitation to ice quantity
+                if row.T_a < self.T_RAIN and row.Prec > 0:
+                    self.df.loc[i, "ppt"] = (
+                        self.RHO_W
+                        * row.Prec
+                        * self.TIME_STEP
+                        / 1000
+                        * math.pi
+                        * math.pow(self.df.loc[i, "r_ice"], 2)
+                    )
 
                 # Fountain water output
                 self.liquid = (
@@ -1800,17 +1799,16 @@ class PDF(Icestupa):
         ax2.grid()
 
         y3 = self.df.SW_direct 
-        lns1 = ax3.plot(x, y3, linestyle='-', color='#e76f51', linewidth=1,  label = 'Shortwave Direct')
+        lns1 = ax3.plot(x, y3, linestyle='--', color='#e76f51', linewidth=0.5,  label = 'Shortwave Direct')
+        lns2 = ax3.plot(x, self.df.SW_diffuse, color='#e76f51',linestyle=':', linewidth=2, label = 'Shortwave Diffuse')
+        lns3 = ax3.plot(x, self.df.LW_in, color='#e76f51',linestyle='-', linewidth=1, label = 'Longwave')
         ax3.set_ylabel("Radiation[$W\\,m^{-2}$]")
         ax3.grid()
 
-        ax3t = ax3.twinx()
-        lns2 = ax3t.plot(x, self.df.SW_diffuse, color='#e76f51',linestyle=':', linewidth=1, label = 'Shortwave Diffuse')
-        ax3t.set_ylim(ax3.get_ylim())
         # added these three lines
-        lns = lns1+lns2
+        lns = lns1+lns2+lns3
         labs = [l.get_label() for l in lns]
-        ax3.legend(lns, labs, loc=0)
+        ax3.legend(lns, labs, loc='best')
 
         y4 = self.df.RH
         y4_ERA5 = df_ERA5.RH
@@ -1844,14 +1842,8 @@ class PDF(Icestupa):
         SZ= mpatches.Patch(color='#264653', label='Schwarzsee data')
         PLF= mpatches.Patch(color='#118ab2', label='Plaffeien data')
 
-        # fig.subplots_adjust(bottom=0.3, wspace=0.33)
-        # fig.subplots_adjust(top=0.3, wspace=0.33)
         ax1.legend(handles = [ERA5, SZ, PLF], bbox_to_anchor=(0,1.02,1,0.2), loc="lower left",
                 mode="expand", borderaxespad=1, ncol=4, fancybox=True)
-
-        # ax1.legend(handles = [ERA5, SZ, PLF], loc='upper center', 
-        #              bbox_to_anchor=(0.5, -0.2),fancybox=False, shadow=False, ncol=6)
-        # fig.legend(handles=[ERA5, SZ, PLF], loc="lower center", ncol=6)
 
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -1864,7 +1856,7 @@ class PDF(Icestupa):
 
         pp = PdfPages(FOLDERS["output_folder"] + "Figure_6.pdf")
         fig = plt.figure(figsize=(8.27, 8.27))
-        dfds = self.df[["When", "solid", "ppt", "dpt", "melted", "gas", "SA"]]
+        dfds = self.df[["When", "solid", "ppt", "dpt", "melted", "gas", "SA", "iceV"]]
 
         with pd.option_context("mode.chained_assignment", None):
             for i in range( 1, dfds.shape[0]):
@@ -1961,10 +1953,12 @@ class PDF(Icestupa):
                     dfds2.loc[i, "label"] = dfds2.When[i]
         dfds2 = dfds2.set_index("label")
         y3 = dfds2["SA"]
+        y4 = dfds2["iceV"]
+
 
         z = dfd[["$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
 
-        ax1 = fig.add_subplot(3, 1, 1)
+        ax1 = fig.add_subplot(4, 1, 1)
         ax1 = z.plot.bar(stacked=True, edgecolor="black", linewidth=0.5, ax=ax1)
         ax1.xaxis.set_label_text("")
         ax1.grid(color="black", alpha=0.3, linewidth=0.5, which="major")
@@ -1978,7 +1972,7 @@ class PDF(Icestupa):
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
         ax1.add_artist(at)
 
-        ax2 = fig.add_subplot(3, 1, 2)
+        ax2 = fig.add_subplot(4, 1, 2)
         y2.plot(
             kind="bar",
             stacked=True,
@@ -1999,18 +1993,31 @@ class PDF(Icestupa):
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
         ax2.add_artist(at)
 
-        ax3 = fig.add_subplot(3, 1, 3)
+        ax3 = fig.add_subplot(4, 1, 3)
         ax3 = y3.plot.bar(
             y="SA", linewidth=0.5, edgecolor="black", color="xkcd:grey", ax=ax3
         )
         ax3.xaxis.set_label_text("")
         ax3.set_ylabel("Surface Area ($m^2$)")
         ax3.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
+        x_axis = ax3.axes.get_xaxis()
+        x_axis.set_visible(False)
         at = AnchoredText("(c)", prop=dict(size=10), frameon=True, loc="upper left")
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
         ax3.add_artist(at)
-        plt.tight_layout()
+
+        ax4 = fig.add_subplot(4, 1, 4)
+        ax4 = y4.plot.bar(
+            y="iceV", linewidth=0.5, edgecolor="black", color="#D9E9FA", ax=ax4
+        )
+        ax4.xaxis.set_label_text("")
+        ax4.set_ylabel("Ice Volume($m^3$)")
+        ax4.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
+        at = AnchoredText("(d)", prop=dict(size=10), frameon=True, loc="upper left")
+        at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+        ax4.add_artist(at)
         plt.xticks(rotation=45)
+        plt.tight_layout()
         pp.savefig(bbox_inches="tight")
         plt.clf()
         pp.close()
@@ -2057,18 +2064,18 @@ if __name__ == "__main__":
 
     icestupa = PDF()
 
-    icestupa.derive_parameters()
+    # icestupa.derive_parameters()
     # icestupa.print_input()
 
-    # icestupa.read_input()
+    icestupa.read_input()
 
-    icestupa.melt_freeze()
+    # icestupa.melt_freeze()
 
-    # icestupa.read_output()
+    icestupa.read_output()
 
     # icestupa.corr_plot()
 
-    # icestupa.summary()
+    icestupa.summary()
 
     icestupa.print_input()
     icestupa.paper_figures()

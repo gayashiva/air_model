@@ -38,35 +38,6 @@ def discharge_rate(df, FOUNTAIN):
         df.loc[mask_index, "Discharge"] = 0
         df = df.reset_index()
 
-        # df_f = pd.read_csv(
-        #     "/home/surya/Programs/Github/air_model/data/schwarzsee/interim/raw_input_SZ.csv"
-        # )
-        # df_nights = pd.read_csv(
-        #     "/home/surya/Programs/Github/air_model/data/schwarzsee/raw/schwarzsee_fountain_time.txt",
-        #     sep="\\s+",
-        # )
-
-        # df_nights["Start"] = pd.to_datetime(
-        #     df_nights["Date"] + " " + df_nights["start"]
-        # )
-        # df_nights["End"] = pd.to_datetime(df_nights["Date"] + " " + df_nights["end"])
-        # df_nights["Start"] = pd.to_datetime(
-        #     df_nights["Start"], format="%Y-%m-%d %H:%M:%S"
-        # )
-        # df_nights["End"] = pd.to_datetime(df_nights["End"], format="%Y-%m-%d %H:%M:%S")
-
-        # df_nights["Date"] = pd.to_datetime(df_nights["Date"], format="%Y-%m-%d")
-
-        # for i in range(0, df_nights.shape[0]):
-        #     df_nights.loc[i, "Start"] = df_nights.loc[i, "Start"] - pd.Timedelta(days=1)
-        #     df.loc[
-        #         (df["When"] >= df_nights.loc[i, "Start"])
-        #         & (df["When"] <= df_nights.loc[i, "End"]),
-        #         "Fountain",
-        #     ] = 1
-
-        # df.Discharge = df_f.Discharge * df.Fountain
-
     if OPTION == "temperature":
         mask = df["T_a"] < FOUNTAIN["crit_temp"]
         mask_index = df[mask].index
@@ -200,9 +171,6 @@ if __name__ == "__main__":
 
         df.Discharge = df.Fountain * df.Discharge
         df.to_csv(FOLDERS["input_folder"] + "raw_input_SZ.csv")
-
-        # plt.plot(df.When, df.Discharge)
-        # plt.show()
 
         # ERA5 begins
         df_in3 = pd.read_csv(
@@ -345,8 +313,8 @@ if __name__ == "__main__":
         df.loc[df["v_a"].isnull(), "missing"] = 2
         df.loc[df["v_a"].isnull(), "v_a"] = df_ERA5["v_a"]
 
-        df[["SW_direct", "SW_diffuse", "cld"]] = df_ERA5[
-            ["SW_direct", "SW_diffuse", "cld"]
+        df[["SW_direct", "SW_diffuse", "cld", "LW_in"]] = df_ERA5[
+            ["SW_direct", "SW_diffuse", "cld", "LW_in"]
         ]
 
         # Fill from Plaffeien
@@ -426,6 +394,7 @@ if __name__ == "__main__":
                 "p_a",
                 "cld",
                 "missing",
+                "LW_in",
             ]
         ]
 
@@ -474,15 +443,12 @@ if __name__ == "__main__":
         df_out = df_out.set_index("When")
         df_ERA5 = df_ERA5.set_index("When")
 
-        df_ERA5 = df_ERA5.drop(["LW_in"], axis=1)
+        # df_ERA5 = df_ERA5.drop(["LW_in"], axis=1)
         df_ERA5["Prec"] = df_in2["Prec"]
         concat = pd.concat([df_out, df_ERA5])
         concat.loc[concat["Prec"].isnull(), "Prec"] = 0
         concat.loc[concat["v_a"] < 0, "v_a"] = 0
         concat = concat.reset_index()
-
-        # Comparisons
-        concat["Prec"] = 0
 
         if concat.isnull().values.any():
             print("Warning: Null values present")
@@ -510,6 +476,7 @@ if __name__ == "__main__":
         concat.to_hdf(
             FOLDERS["input_folder"] + "raw_input_extended.h5", key="df", mode="w"
         )
+
     if SITE["name"] == "leh":
         # ERA5 begins
         df_in3 = pd.read_csv(
@@ -573,19 +540,8 @@ if __name__ == "__main__":
         interpolated = interpolated.reset_index()
 
         interpolated["Discharge"] = discharge_rate(interpolated, FOUNTAIN)
-        # mask = (interpolated["T_a"] < FOUNTAIN["crit_temp"]) & (
-        #     interpolated["SW_direct"] < 100
-        # )
-        # mask_index = interpolated[mask].index
-        # interpolated.loc[mask_index, "Discharge"] = FOUNTAIN["discharge"]
-        # mask = interpolated["When"] >= FOUNTAIN["fountain_off_date"]
-        # mask_index = interpolated[mask].index
-        # interpolated.loc[mask_index, "Discharge"] = 0
         interpolated["missing"] = 0
         interpolated = interpolated.reset_index()
-
-        # plt.plot(interpolated.When, interpolated.Discharge)
-        # plt.show()
 
         df_in3 = interpolated[
             [
@@ -614,7 +570,7 @@ if __name__ == "__main__":
         # Corrections for Leh
         df_in3["cld"] = 0
         df_in3["RH"] = 30
-        # df_in3["v_a"] *= 4
+        df_in3["v_a"] *= 4
         df_in3["Prec"] = 0
 
         df_in3.to_csv(FOLDERS["input_folder"] + "raw_input_ERA5.csv")
