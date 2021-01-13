@@ -53,7 +53,8 @@ class Icestupa:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
 
-        input_file = FOLDERS["input_folder"] + "raw_input_extended.csv"
+        # input_file = FOLDERS["input_folder"] + "raw_input_extended.csv"
+        input_file = FOLDERS["input_folder"] + "raw_input_ERA5.csv"
 
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
 
@@ -643,6 +644,10 @@ class Icestupa:
                     )
 
                 if SITE["name"] == "schwarzsee":
+                    self.df.loc[i - 1, "r_ice"] = self.spray_radius()
+                    self.df.loc[i - 1, "h_ice"] = self.DX
+
+                if SITE["name"] == "leh":
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.DX
 
@@ -1756,7 +1761,7 @@ class PDF(Icestupa):
         pp = PdfPages(FOLDERS["output_folder"] + "Figure_3.pdf")
 
         fig, (ax1, ax2, ax3, ax4, ax5, ax6, ax7) = plt.subplots(
-            nrows=7, ncols=1, sharex="col", sharey="row", figsize=(16, 14)
+            nrows=7, ncols=1, sharex="col", sharey="row", figsize=(12, 14)
         )
 
         x = self.df.When
@@ -1779,13 +1784,13 @@ class PDF(Icestupa):
         ax2.set_ylabel("Temperature [$\\degree C$]")
         ax2.grid()
 
-        y3 = self.df.SW_direct + self.df.SW_diffuse
-        lns1 = ax3.plot(x, y3, linestyle='-', color='#e76f51', linewidth=1,  label = 'Global Rad.')
+        y3 = self.df.SW_direct 
+        lns1 = ax3.plot(x, y3, linestyle='-', color='#e76f51', linewidth=1,  label = 'Shortwave Direct')
         ax3.set_ylabel("Radiation[$W\\,m^{-2}$]")
         ax3.grid()
 
         ax3t = ax3.twinx()
-        lns2 = ax3t.plot(x, self.df.SW_diffuse, color='#e76f51',linestyle=':', linewidth=1, label = 'Diffuse Rad.')
+        lns2 = ax3t.plot(x, self.df.SW_diffuse, color='#e76f51',linestyle=':', linewidth=1, label = 'Shortwave Diffuse')
         ax3t.set_ylim(ax3.get_ylim())
         # added these three lines
         lns = lns1+lns2
@@ -1812,18 +1817,26 @@ class PDF(Icestupa):
         ax6.plot(x, y6, linestyle='-', color='#264653', linewidth=1)
         ax6.plot(x, y6_ERA5, linestyle='-', color='#e76f51', linewidth=1)
         ax6.plot(x, y6_ERA52, linestyle='-', color='#e76f51', linewidth=1)
-        ax6.set_ylabel("Wind [$m\\,s^{-1}$]")
+        ax6.set_ylabel("Wind speed [$m\\,s^{-1}$]")
         ax6.grid()
 
         y7 = self.df.cld
         ax7.plot(x, y7, linestyle='-', color='#e76f51', linewidth=1)
-        ax7.set_ylabel("Cloudiness")
+        ax7.set_ylabel("Cloudiness []")
         ax7.grid()
 
-        ERA5= mpatches.Patch(color='#e76f51', label='ERA5')
-        SZ= mpatches.Patch(color='#264653', label='Schwarzsee')
-        PLF= mpatches.Patch(color='#118ab2', label='Plaffeien')
-        ax1.legend(handles=[ERA5, SZ, PLF], loc="upper right", ncol=6)
+        ERA5= mpatches.Patch(color='#e76f51', label='ERA5 data')
+        SZ= mpatches.Patch(color='#264653', label='Schwarzsee data')
+        PLF= mpatches.Patch(color='#118ab2', label='Plaffeien data')
+
+        # fig.subplots_adjust(bottom=0.3, wspace=0.33)
+        # fig.subplots_adjust(top=0.3, wspace=0.33)
+        ax1.legend(handles = [ERA5, SZ, PLF], bbox_to_anchor=(0,1.02,1,0.2), loc="lower left",
+                mode="expand", borderaxespad=1, ncol=4, fancybox=True)
+
+        # ax1.legend(handles = [ERA5, SZ, PLF], loc='upper center', 
+        #              bbox_to_anchor=(0.5, -0.2),fancybox=False, shadow=False, ncol=6)
+        # fig.legend(handles=[ERA5, SZ, PLF], loc="lower center", ncol=6)
 
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -2029,10 +2042,10 @@ if __name__ == "__main__":
 
     icestupa = PDF()
 
-    icestupa.derive_parameters()
+    # icestupa.derive_parameters()
     # icestupa.print_input()
 
-    # icestupa.read_input()
+    icestupa.read_input()
 
     icestupa.melt_freeze()
 

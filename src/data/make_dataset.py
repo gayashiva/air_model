@@ -1,5 +1,4 @@
 import sys
-
 sys.path.append("/home/surya/Programs/Github/air_model")
 import pandas as pd
 import numpy as np
@@ -82,6 +81,108 @@ def linreg(X, Y):
 
 
 if __name__ == "__main__":
+
+    if SITE["name"] == "leh":
+        # ERA5 begins
+        df_in3 = pd.read_csv(
+            FOLDERS["raw_folder"] + "ERA5_" + SITE["name"] + ".csv",
+            sep=",",
+            header=0,
+            parse_dates=["When"],
+        )
+
+        print(df_in3.head())
+        df_out1 = df_in3
+        time_steps = 60 * 60
+        df_out1["ssrd"] /= time_steps
+        df_out1["strd"] /= time_steps
+        df_out1["fdir"] /= time_steps
+        df_out1["v_a"] = np.sqrt(df_out1["u10"] ** 2 + df_out1["v10"] ** 2)
+        # Derive RH
+        df_out1["t2m"] -= 273.15
+        df_out1["d2m"] -= 273.15
+        df_out1["t2m_RH"] = df_out1["t2m"]
+        df_out1["d2m_RH"] = df_out1["d2m"]
+        df_out1 = df_out1.apply(lambda x: e_sat(x) if x.name == "t2m_RH" else x)
+        df_out1 = df_out1.apply(lambda x: e_sat(x) if x.name == "d2m_RH" else x)
+        df_out1["RH"] = 100 * df_out1["d2m_RH"] / df_out1["t2m_RH"]
+        df_out1["sp"] = df_out1["sp"] / 100
+        df_out1["tp"] = df_out1["tp"] * 1000 / 3600  # mm/s
+        df_out1["SW_diffuse"] = df_out1["ssrd"] - df_out1["fdir"]
+        df_out1 = df_out1.set_index("When")
+
+        # CSV output
+        df_out1.rename(
+            columns={
+                "t2m": "T_a",
+                "sp": "p_a",
+                "tcc": "cld",
+                "tp": "Prec",
+                "fdir": "SW_direct",
+                "strd": "LW_in",
+            },
+            inplace=True,
+        )
+
+        df_in3 = df_out1[
+            [
+                "T_a",
+                "RH",
+                "Prec",
+                "v_a",
+                "SW_direct",
+                "SW_diffuse",
+                "LW_in",
+                "cld",
+                "p_a",
+            ]
+        ]
+
+        df_in3 = df_in3.round(5)
+
+        upsampled = df_in3.resample("5T")
+        interpolated = upsampled.interpolate(method="linear")
+        interpolated = interpolated.reset_index()
+
+        interpolated["Discharge"] = 0
+        mask = (interpolated["T_a"] < FOUNTAIN["crit_temp"]) & (
+            interpolated["SW_direct"] < 100
+        )
+        mask_index = interpolated[mask].index
+        interpolated.loc[mask_index, "Discharge"] = 2 * 60
+        mask = interpolated["When"] >= FOUNTAIN["fountain_off_date"]
+        mask_index = interpolated[mask].index
+        interpolated.loc[mask_index, "Discharge"] = 0
+        interpolated["missing"] = 0
+        interpolated = interpolated.reset_index()
+
+        df_in3 = interpolated[
+            [
+                "When",
+                "T_a",
+                "RH",
+                "v_a",
+                "SW_direct",
+                "SW_diffuse",
+                "LW_in",
+                "cld",
+                "p_a",
+                "Prec",
+                "Discharge",
+                "missing",
+            ]
+        ]
+
+        df_in3 = df_in3.reset_index()
+        mask = (df_in3["When"] >= SITE["start_date"]) & (
+            df_in3["When"] <= SITE["end_date"]
+        )
+        df_in3 = df_in3.loc[mask]
+        df_in3 = df_in3.reset_index()
+
+        df_in3.to_csv(FOLDERS["input_folder"] + "raw_input_ERA5.csv")
+
+        # df_in3.loc[:, "Discharge"] = 0
 
     if SITE["name"] == "schwarzsee":
 
@@ -295,50 +396,9 @@ if __name__ == "__main__":
             Y = df[column].values.reshape(-1, 1)
             X = df_ERA5[mask][column].values.reshape(-1, 1)
             slope, intercept = linreg(X, Y)
-            print(column, slope, intercept)
             df_ERA5[column] = slope * df_ERA5[column] + intercept
 
-        # Y = df["p_a"].values.reshape(-1, 1)  # values converts it into a numpy array
-        # X = df_ERA5[mask]["p_a"].values.reshape(-1, 1)
-        # slope, intercept = linreg(X, Y)
-        # print(slope, intercept)
-        # df_ERA5["p_a"] = slope * df_ERA5["p_a"] - intercept
-        # Y_pred = slope * Y + intercept
-        # fig = plt.figure()
-        # ax1 = fig.add_subplot(111)
-        # ax1.scatter(X, Y, s=2)
-        # ax1.scatter(X, Y_pred, s=2, color="red")
-        # ax1.set_xlabel("Plf ppt")
-        # ax1.set_ylabel("ERA5 ppt")
-        # ax1.grid()
-        # lims = [
-        #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-        #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-        # ]
-        # # now plot both limits against eachother
-        # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
-        # ax1.set_aspect("equal")
-        # ax1.set_xlim(lims)
-        # ax1.set_ylim(lims)
-        # plt.show()
         df_ERA5 = df_ERA5.set_index("When")
-
-        # df_ERA5["p_a"] += (
-        #     np.sign((df.p_a - df_ERA5.p_a).mean())
-        #     * ((df.p_a - df_ERA5.p_a) ** 2).mean() ** 0.5
-        # )
-        # df_ERA5["T_a"] += (
-        #     np.sign(((df.T_a - df_ERA5.T_a)).mean())
-        #     * ((df.T_a - df_ERA5.T_a) ** 2).mean() ** 0.5
-        # )
-        # df_ERA5["v_a"] += (
-        #     np.sign(((df.v_a - df_ERA5.v_a)).mean())
-        #     * ((df.v_a - df_ERA5.v_a) ** 2).mean() ** 0.5
-        # )
-        # df_ERA5["RH"] += (
-        #     np.sign(((df.RH - df_ERA5.RH)).mean())
-        #     * ((df.RH - df_ERA5.RH) ** 2).mean() ** 0.5
-        # )
 
         df.loc[df["T_a"].isnull(), ["T_a", "RH", "v_a", "p_a", "Discharge"]] = df_ERA5[
             ["T_a", "RH", "v_a", "p_a", "Discharge"]
@@ -350,12 +410,6 @@ if __name__ == "__main__":
         df[["SW_direct", "SW_diffuse", "cld"]] = df_ERA5[
             ["SW_direct", "SW_diffuse", "cld"]
         ]
-
-        # RMSE
-
-        # print("RMSE Temp", ((df.T_a - df_ERA5.T_a) ** 2).mean() ** 0.5)
-        # print("RMSE wind", ((df.v_a - df_ERA5.v_a) ** 2).mean() ** 0.5)
-        # print("RMSE pressure", ((df.p_a - df_ERA5.p_a) ** 2).mean() ** 0.5)
 
         # Fill from Plaffeien
         df_in2 = pd.read_csv(
@@ -384,6 +438,7 @@ if __name__ == "__main__":
         )
         df_in2 = df_in2.loc[mask]
         df_in2 = df_in2.set_index("When")
+
         df["Prec"] = df_in2["Prec"]
         df = df.reset_index()
         df_in2 = df_in2.reset_index()
@@ -395,23 +450,30 @@ if __name__ == "__main__":
         # df.loc[df["v_a"].isnull(), "missing"] = 2
         # df.loc[df["v_a"].isnull(), "v_a"] = df_in2["v_a"]
 
-        slope, intercept, r_value1, p_value, std_err = stats.linregress(
-            df.T_a.values, df_in3.T_a.values
-        )
-        slope, intercept, r_value2, p_value, std_err = stats.linregress(
-            df.v_a.values, df_in3.v_a.values
-        )
-        slope, intercept, r_value3, p_value, std_err = stats.linregress(
-            df.RH.values, df_in3.RH.values
-        )
-        slope, intercept, r_value4, p_value, std_err = stats.linregress(
-            df.p_a.values, df_in3.p_a.values
-        )
+        for column in ["T_a", "RH", "v_a", "p_a"]:
 
-        print("R2 temp", r_value1 ** 2)
-        print("R2 wind", r_value2 ** 2)
-        print("R2 RH", r_value3 ** 2)
-        print("R2 pressure", r_value4 ** 2)
+            slope, intercept, r_value, p_value, std_err = stats.linregress(
+                df[column].values, df_in3[column].values
+            )
+            print("ERA5", column, r_value)
+            slope, intercept, r_value, p_value, std_err = stats.linregress(
+                df[column].values, df_in2[column].values
+            )
+            print("Plf", column, r_value)
+        # slope, intercept, r_value2, p_value, std_err = stats.linregress(
+        #     df.v_a.values, df_in3.v_a.values
+        # )
+        # slope, intercept, r_value3, p_value, std_err = stats.linregress(
+        #     df.RH.values, df_in3.RH.values
+        # )
+        # slope, intercept, r_value4, p_value, std_err = stats.linregress(
+        #     df.p_a.values, df_in3.p_a.values
+        # )
+
+        # print("R2 temp", r_value1 ** 2)
+        # print("R2 wind", r_value2 ** 2)
+        # print("R2 RH", r_value3 ** 2)
+        # print("R2 pressure", r_value4 ** 2)
 
         """Discharge Rate"""
         df["Fountain"], df["Discharge"] = discharge_rate(df, FOUNTAIN)
