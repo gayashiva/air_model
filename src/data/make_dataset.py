@@ -24,37 +24,48 @@ start = time.time()
 def discharge_rate(df, FOUNTAIN):
 
     if OPTION == "schwarzsee":
-        df["Fountain"] = 0  # Fountain run time
-        df["Discharge"] = 0  # Fountain run time
-
         df_f = pd.read_csv(
             "/home/surya/Programs/Github/air_model/data/schwarzsee/interim/raw_input_SZ.csv"
         )
-        df_nights = pd.read_csv(
-            "/home/surya/Programs/Github/air_model/data/schwarzsee/raw/schwarzsee_fountain_time.txt",
-            sep="\\s+",
-        )
+        df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")
+        df_f = df_f.set_index("When")
+        df = df.set_index("When")
+        mask = df_f["Discharge"] != 0
+        mask_index = df_f[mask].index
+        df.loc[mask_index, "Discharge"] = df_f["Discharge"]
+        mask = df_f["Discharge"] == 0
+        mask_index = df_f[mask].index
+        df.loc[mask_index, "Discharge"] = 0
+        df = df.reset_index()
 
-        df_nights["Start"] = pd.to_datetime(
-            df_nights["Date"] + " " + df_nights["start"]
-        )
-        df_nights["End"] = pd.to_datetime(df_nights["Date"] + " " + df_nights["end"])
-        df_nights["Start"] = pd.to_datetime(
-            df_nights["Start"], format="%Y-%m-%d %H:%M:%S"
-        )
-        df_nights["End"] = pd.to_datetime(df_nights["End"], format="%Y-%m-%d %H:%M:%S")
+        # df_f = pd.read_csv(
+        #     "/home/surya/Programs/Github/air_model/data/schwarzsee/interim/raw_input_SZ.csv"
+        # )
+        # df_nights = pd.read_csv(
+        #     "/home/surya/Programs/Github/air_model/data/schwarzsee/raw/schwarzsee_fountain_time.txt",
+        #     sep="\\s+",
+        # )
 
-        df_nights["Date"] = pd.to_datetime(df_nights["Date"], format="%Y-%m-%d")
+        # df_nights["Start"] = pd.to_datetime(
+        #     df_nights["Date"] + " " + df_nights["start"]
+        # )
+        # df_nights["End"] = pd.to_datetime(df_nights["Date"] + " " + df_nights["end"])
+        # df_nights["Start"] = pd.to_datetime(
+        #     df_nights["Start"], format="%Y-%m-%d %H:%M:%S"
+        # )
+        # df_nights["End"] = pd.to_datetime(df_nights["End"], format="%Y-%m-%d %H:%M:%S")
 
-        for i in range(0, df_nights.shape[0]):
-            df_nights.loc[i, "Start"] = df_nights.loc[i, "Start"] - pd.Timedelta(days=1)
-            df.loc[
-                (df["When"] >= df_nights.loc[i, "Start"])
-                & (df["When"] <= df_nights.loc[i, "End"]),
-                "Fountain",
-            ] = 1
+        # df_nights["Date"] = pd.to_datetime(df_nights["Date"], format="%Y-%m-%d")
 
-        df.Discharge = df_f.Discharge * df.Fountain
+        # for i in range(0, df_nights.shape[0]):
+        #     df_nights.loc[i, "Start"] = df_nights.loc[i, "Start"] - pd.Timedelta(days=1)
+        #     df.loc[
+        #         (df["When"] >= df_nights.loc[i, "Start"])
+        #         & (df["When"] <= df_nights.loc[i, "End"]),
+        #         "Fountain",
+        #     ] = 1
+
+        # df.Discharge = df_f.Discharge * df.Fountain
 
     if OPTION == "temperature":
         mask = df["T_a"] < FOUNTAIN["crit_temp"]
@@ -150,6 +161,7 @@ if __name__ == "__main__":
         )
         print(df.head())
 
+        # Include Spray time
         df_nights = pd.read_csv(
             "/home/surya/Programs/Github/air_model/data/schwarzsee/raw/schwarzsee_fountain_time.txt",
             sep="\\s+",
@@ -189,8 +201,8 @@ if __name__ == "__main__":
         df.Discharge = df.Fountain * df.Discharge
         df.to_csv(FOLDERS["input_folder"] + "raw_input_SZ.csv")
 
-        plt.plot(df.When, df.Discharge)
-        plt.show()
+        # plt.plot(df.When, df.Discharge)
+        # plt.show()
 
         # ERA5 begins
         df_in3 = pd.read_csv(
@@ -253,15 +265,17 @@ if __name__ == "__main__":
         interpolated = interpolated.reset_index()
 
         interpolated["Discharge"] = 0
-        mask = (interpolated["T_a"] < FOUNTAIN["crit_temp"]) & (
-            interpolated["SW_direct"] < 100
-        )
-        mask_index = interpolated[mask].index
-        interpolated.loc[mask_index, "Discharge"] = 2 * 60
-        mask = interpolated["When"] >= FOUNTAIN["fountain_off_date"]
-        mask_index = interpolated[mask].index
-        interpolated.loc[mask_index, "Discharge"] = 0
-        interpolated = interpolated.reset_index()
+        interpolated["Discharge"] = discharge_rate(interpolated, FOUNTAIN)
+
+        # mask = (interpolated["T_a"] < FOUNTAIN["crit_temp"]) & (
+        #     interpolated["SW_direct"] < 100
+        # )
+        # mask_index = interpolated[mask].index
+        # interpolated.loc[mask_index, "Discharge"] = 2 * 60
+        # mask = interpolated["When"] >= FOUNTAIN["fountain_off_date"]
+        # mask_index = interpolated[mask].index
+        # interpolated.loc[mask_index, "Discharge"] = 0
+        # interpolated = interpolated.reset_index()
 
         df_in3 = interpolated[
             [
@@ -310,14 +324,6 @@ if __name__ == "__main__":
         df["missing"] = 0
         df.loc[df["T_a"].isnull(), "missing"] = 1
         df["v_a"] = df["v_a"].replace(0, np.NaN)
-        # Correct ERA5
-        # v_shear = 0.143
-        # df_ERA5["v_a"] = df_ERA5["v_a"] * 0.2 ** v_shear
-        # print("RMSE temp", ((df.T_a - df_ERA5.T_a) ** 2).mean() ** 0.5)
-        # print("RMSE wind", ((df.v_a - df_ERA5.v_a) ** 2).mean() ** 0.5)
-        # print("RMSE pressure", ((df.p_a - df_ERA5.p_a) ** 2).mean() ** 0.5)
-        # print("RMSE humidity", ((df.RH - df_ERA5.RH) ** 2).mean() ** 0.5)
-        # print("Sign", np.sign(((df.v_a - df_ERA5.v_a)).mean()))
 
         df_ERA5 = df_ERA5.reset_index()
         mask = (df_ERA5["When"] >= SITE["start_date"]) & (
@@ -406,11 +412,6 @@ if __name__ == "__main__":
         # print("R2 wind", r_value2 ** 2)
         # print("R2 RH", r_value3 ** 2)
         # print("R2 pressure", r_value4 ** 2)
-
-        """Discharge Rate"""
-        # discharge_rate(df, FOUNTAIN)
-
-        # df["Discharge"] = df["Discharge"] * df["Fountain"]
 
         df_out = df[
             [
@@ -571,7 +572,7 @@ if __name__ == "__main__":
         interpolated = upsampled.interpolate(method="linear")
         interpolated = interpolated.reset_index()
 
-        # discharge_rate(interpolated, FOUNTAIN)
+        interpolated["Discharge"] = discharge_rate(interpolated, FOUNTAIN)
         # mask = (interpolated["T_a"] < FOUNTAIN["crit_temp"]) & (
         #     interpolated["SW_direct"] < 100
         # )
@@ -583,7 +584,7 @@ if __name__ == "__main__":
         interpolated["missing"] = 0
         interpolated = interpolated.reset_index()
 
-        # plt.plot(interpolated.Discharge)
+        # plt.plot(interpolated.When, interpolated.Discharge)
         # plt.show()
 
         df_in3 = interpolated[
