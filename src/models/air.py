@@ -1750,6 +1750,13 @@ class PDF(Icestupa):
         pp.close()
 
     def paper_figures(self):
+        CB91_Blue = '#2CBDFE'
+        CB91_Green = '#47DBCD'
+        CB91_Pink = '#F3A0F2'
+        CB91_Purple = '#9D2EC5'
+        CB91_Violet = '#661D98'
+        CB91_Amber = '#F5B14C'
+        # grey = '#ced4da'
         self.df = self.df.rename(
             {
                 "SW": "$q_{SW}$",
@@ -1764,13 +1771,25 @@ class PDF(Icestupa):
 
         mask = self.df.missing != 1
         nmask = self.df.missing != 0
+        ymask = self.df.missing == 1
         pmask = self.df.missing != 2
         df_ERA5 = self.df.copy()
         df_ERA52 = self.df.copy()
         df_SZ = self.df.copy()
-        df_SZ.loc[nmask, ['T_a','SW_direct', 'SW_diffuse', 'v_a', 'p_a', 'RH']] = np.NaN
-        df_ERA5.loc[mask, ['T_a','SW_direct', 'SW_diffuse', 'v_a', 'p_a', 'RH']] = np.NaN
-        df_ERA52.loc[pmask, ['T_a','SW_direct', 'SW_diffuse', 'v_a', 'p_a', 'RH']] = np.NaN
+        df_SZ.loc[ymask, ['When', 'T_a','SW_direct', 'SW_diffuse', 'v_a', 'p_a', 'RH']] = np.NaN
+        df_ERA5.loc[mask, ['When', 'T_a','SW_direct', 'SW_diffuse', 'v_a', 'p_a', 'RH']] = np.NaN
+        df_ERA52.loc[pmask, ['When','T_a','SW_direct', 'SW_diffuse', 'v_a', 'p_a', 'RH']] = np.NaN
+
+        events = np.split(df_ERA5.When, np.where(np.isnan(df_ERA5.When.values))[0])
+# removing NaN entries
+        events = [ev[~np.isnan(ev.values)] for ev in events if not isinstance(ev, np.ndarray)]
+# removing empty DataFrames
+        events = [ev for ev in events if not ev.empty]
+        events2 = np.split(df_ERA52.When, np.where(np.isnan(df_ERA52.When.values))[0])
+# removing NaN entries
+        events2 = [ev[~np.isnan(ev.values)] for ev in events2 if not isinstance(ev, np.ndarray)]
+# removing empty DataFrames
+        events2 = [ev for ev in events2 if not ev.empty]
 
         pp = PdfPages(FOLDERS["output_folder"] + "Figure_3.pdf")
 
@@ -1783,67 +1802,90 @@ class PDF(Icestupa):
         y1 = self.df.Discharge
         ax1.plot(x, y1,  linestyle='-', color='#284D58', linewidth=1)
         ax1.set_ylabel("Fountain Spray [$l\\, min^{-1}$]")
-        ax1.grid()
+        # ax1.grid()
 
         ax1t = ax1.twinx()
-        ax1t.plot(x, self.df.Prec * 1000, linestyle='-', color='#118ab2', linewidth=1)
-        ax1t.set_ylabel("Precipitation [$mm\\, s^{-1}$]", color="#118ab2")
+        # ax1t.plot(x, self.df.Prec * 1000, linestyle='--', color='#118ab2', linewidth=1)
+        ax1t.plot(x, self.df.Prec * 1000, linestyle='-' ,color=CB91_Blue, label = 'Plaffeien')
+        ax1t.set_ylabel("Precipitation [$mm\\, s^{-1}$]", color=CB91_Blue)
         for tl in ax1t.get_yticklabels():
-            tl.set_color("#118ab2")
+            tl.set_color(CB91_Blue)
 
-        y2 = self.df.T_a
+        y2 = df_SZ.T_a
         y2_ERA5 = df_ERA5.T_a
         ax2.plot(x, y2, linestyle='-', color='#284D58', linewidth=1)
-        ax2.plot(x, y2_ERA5, linestyle='-', color='#e76f51', linewidth=1)
+        # ax2.plot(x, y2_ERA5, linestyle='-', color='#e76f51', linewidth=1)
+        for ev in events:
+            ax2.axvspan(ev.head(1).values, ev.tail(1).values, facecolor='xkcd:grey', alpha=0.25)
+        ax2.plot(x, y2_ERA5, linestyle='-',color='#284D58')
         ax2.set_ylabel("Temperature [$\\degree C$]")
-        ax2.grid()
+        # ax2.grid()
 
         y3 = self.df.SW_direct 
-        lns1 = ax3.plot(x, y3, linestyle='--', color='#e76f51', linewidth=0.5,  label = 'Shortwave Direct')
-        lns2 = ax3.plot(x, self.df.SW_diffuse, color='#e76f51',linestyle=':', linewidth=2, label = 'Shortwave Diffuse')
-        lns3 = ax3.plot(x, self.df.LW_in, color='#e76f51',linestyle='-', linewidth=1, label = 'Longwave')
+        # lns1 = ax3.plot(x, y3, linestyle='--', color='#e76f51', linewidth=0.5,  label = 'Shortwave Direct')
+        # lns2 = ax3.plot(x, self.df.SW_diffuse, color='#e76f51',linestyle=':', linewidth=2, label = 'Shortwave Diffuse')
+        # lns3 = ax3.plot(x, self.df.LW_in, color='#e76f51',linestyle='-', linewidth=1, label = 'Longwave')
+        lns1 = ax3.plot(x, self.df.SW_diffuse, linestyle='-', label = 'Shortwave Diffuse', color=CB91_Amber)
+        lns2 = ax3.plot(x, y3, linestyle='-', label = 'Shortwave Direct', color=CB91_Amber)
+        lns3 = ax3.plot(x, self.df.LW_in,linestyle='-', label = 'Longwave', color=CB91_Green)
+        ax3.axvspan(self.df.When.head(1).values, self.df.When.tail(1).values,facecolor='grey', alpha=0.25)
         ax3.set_ylabel("Radiation[$W\\,m^{-2}$]")
-        ax3.grid()
+        # ax3.grid()
 
         # added these three lines
         lns = lns1+lns2+lns3
         labs = [l.get_label() for l in lns]
-        ax3.legend(lns, labs, loc='best')
+        ax3.legend(lns, labs,ncol=3, loc='best')
 
-        y4 = self.df.RH
+        y4 = df_SZ.RH
         y4_ERA5 = df_ERA5.RH
         ax4.plot(x, y4,  linestyle='-', color='#284D58', linewidth=1)
-        ax4.plot(x, y4_ERA5, linestyle='-', color='#e76f51', linewidth=1)
+        # ax4.plot(x, y4_ERA5, linestyle='-', color='#e76f51', linewidth=1)
+        ax4.plot(x, y4_ERA5, linestyle='-',color='#284D58')
+        for ev in events:
+            ax4.axvspan(ev.head(1).values, ev.tail(1).values, facecolor='grey', alpha=0.25)
         ax4.set_ylabel("Humidity [$\\%$]")
-        ax4.grid()
+        # ax4.grid()
 
-        y5 = self.df.p_a
+        y5 = df_SZ.p_a
         y5_ERA5 = df_ERA5.p_a
         ax5.plot(x, y5, linestyle='-', color='#264653', linewidth=1)
-        ax5.plot(x, y5_ERA5, linestyle='-', color='#e76f51', linewidth=1)
+        # ax5.plot(x, y5_ERA5, linestyle='-', color='#e76f51', linewidth=1)
+        ax5.plot(x, y5_ERA5, linestyle='-',color='#284D58')
+        for ev in events:
+            ax5.axvspan(ev.head(1).values, ev.tail(1).values, facecolor='grey', alpha=0.25)
         ax5.set_ylabel("Pressure [$hPa$]")
-        ax5.grid()
+        # ax5.grid()
 
-        y6 = self.df.v_a
+        y6 = df_SZ.v_a
         y6_ERA5 = df_ERA5.v_a
         y6_ERA52 = df_ERA52.v_a
-        ax6.plot(x, y6, linestyle='-', color='#264653', linewidth=1)
-        ax6.plot(x, y6_ERA5, linestyle='-', color='#e76f51', linewidth=1)
-        ax6.plot(x, y6_ERA52, linestyle='-', color='#e76f51', linewidth=1)
+        ax6.plot(x, y6, linestyle='-', color='#264653', linewidth=1, label = 'Schwarzsee')
+        # ax6.plot(x, y6_ERA5, linestyle='-', color='#e76f51', linewidth=1)
+        # ax6.plot(x, y6_ERA52, linestyle='-', color='#e76f51', linewidth=1)
+        ax6.plot(x, y6_ERA5, linestyle='-',color='#284D58')
+        ax6.plot(x, y6_ERA52, linestyle='-',color='#284D58')
+        for ev in events:
+            ax6.axvspan(ev.head(1).values, ev.tail(1).values, facecolor='grey', alpha=0.25)
+        for ev in events2:
+            ax6.axvspan(ev.head(1).values, ev.tail(1).values, facecolor='grey', alpha=0.25)
         ax6.set_ylabel("Wind speed [$m\\,s^{-1}$]")
-        ax6.grid()
+        # ax6.grid()
 
         y7 = self.df.cld
-        ax7.plot(x, y7, linestyle='-', color='#e76f51', linewidth=1)
+        # ax7.plot(x, y7, linestyle='-', color='#e76f51', linewidth=1)
+        ax7.plot(x, y7, linestyle='-',color='#284D58', label = "ERA5")
         ax7.set_ylabel("Cloudiness []")
-        ax7.grid()
+        ax7.axvspan(self.df.When.head(1).values, self.df.When.tail(1).values,facecolor='grey', alpha=0.25)
+        # ax7.grid()
 
-        ERA5= mpatches.Patch(color='#e76f51', label='ERA5 data')
+        ERA5= mpatches.Patch(color='grey', alpha=0.25, label='ERA5 data')
         SZ= mpatches.Patch(color='#264653', label='Schwarzsee data')
-        PLF= mpatches.Patch(color='#118ab2', label='Plaffeien data')
+        PLF= mpatches.Patch(color=CB91_Blue, label='Plaffeien data')
 
-        ax1.legend(handles = [ERA5, SZ, PLF], bbox_to_anchor=(0,1.02,1,0.2), loc="lower left",
-                mode="expand", borderaxespad=1, ncol=4, fancybox=True)
+
+        ax1.legend(handles = [ERA5, PLF], bbox_to_anchor=(0,1.02,1,0.2), loc="lower left",
+                 borderaxespad=1, ncol=4, fancybox=True)
 
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -2064,14 +2106,14 @@ if __name__ == "__main__":
 
     icestupa = PDF()
 
-    # icestupa.derive_parameters()
-    # icestupa.print_input()
+    icestupa.derive_parameters()
+    icestupa.print_input()
 
-    icestupa.read_input()
+    # icestupa.read_input()
 
-    # icestupa.melt_freeze()
+    icestupa.melt_freeze()
 
-    icestupa.read_output()
+    # icestupa.read_output()
 
     # icestupa.corr_plot()
 
