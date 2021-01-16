@@ -163,7 +163,7 @@ class Icestupa:
 
         self.get_solar()
 
-        missing = ["a", "e_a", "vp_a", "LW_in"]
+        missing = ["a", "vp_a", "LW_in"]
         for col in missing:
             if col in list(self.df.columns):
                 missing.remove(col)
@@ -209,7 +209,7 @@ class Icestupa:
                     self.df.loc[row.Index, "e_a"]
                     * self.STEFAN_BOLTZMAN
                     * math.pow(row.T_a + 273.15, 4)
-                )
+                    )
 
             s, f = self.albedo(row, s, f)
 
@@ -229,7 +229,7 @@ class Icestupa:
                 "p_a",
                 "cld",
                 "a",
-                "e_a",
+                # "e_a",
                 "vp_a",
                 "LW_in",
                 "missing",
@@ -415,7 +415,7 @@ class Icestupa:
                 "p_a",
                 "cld",
                 "a",
-                "e_a",
+                # "e_a",
                 "vp_a",
                 "LW_in",
                 "T_s",
@@ -527,7 +527,7 @@ class Icestupa:
         print(
             f"When {self.df.When.iloc[-1]},M_U {self.df.unfrozen_water.iloc[-1]}, M_solid {self.df.ice.iloc[-1]}, M_gas {self.df.vapour.iloc[-1]}, M_liquid {self.df.meltwater.iloc[-1]}"
         )
-        print("AE", self.df["e_a"].mean())
+        # print("AE", self.df["e_a"].mean())
         print(f"Temperature of spray", self.df.loc[self.df["TotalE"] < 0, "T_a"].mean())
         print(f"Temperature minimum", self.df["T_a"].min())
         print(f"Energy mean", self.df["TotalE"].mean())
@@ -570,9 +570,9 @@ class Icestupa:
         print(
             f"Range of SW {dfd.SW.min()}-{dfd.SW.max()}, LW {dfd.LW.min()}-{dfd.LW.max()}, Qs {dfd.Qs.min()}-{dfd.Qs.max()}, Ql {dfd.Ql.min()}-{dfd.Ql.max()}, Qf {dfd.Qf.min()}-{dfd.Qf.max()}, Qg {dfd.Qg.min()}-{dfd.Qg.max()}"
         )
-        print(
-            f"Mean of emissivity {self.df.e_a.mean()}, Range of f_cone {self.df.e_a.min()}-{self.df.e_a.max()}"
-        )
+        # print(
+        #     f"Mean of emissivity {self.df.e_a.mean()}, Range of f_cone {self.df.e_a.min()}-{self.df.e_a.max()}"
+        # )
         print(f"Max SA {self.df.SA.max()}")
         print(
             f"M_input {self.df.input.iloc[-1]}, M_R {self.df.ppt.sum()}, M_D {self.df.dpt.sum()}, M_F {self.df.Discharge.sum() * 5 + self.df.iceV.iloc[0] * self.RHO_I}"
@@ -634,7 +634,7 @@ class Icestupa:
         self.sum_SA = 0  # weighted_sums
             
         print("AIR simulation begins...")
-        for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]/2):
+        for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]):
             i = row.Index
 
             # Initialize
@@ -1270,8 +1270,8 @@ class PDF(Icestupa):
         pp.savefig(bbox_inches="tight")
         plt.close("all")
 
-        fig, (ax1, ax2, ax3, ax4) = plt.subplots(
-            nrows=4, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
+        fig, (ax1, ax3, ax4) = plt.subplots(
+            nrows=3, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
         )
 
         x = self.df.When
@@ -1290,17 +1290,17 @@ class PDF(Icestupa):
         ax1.set_ylim([0, 1])
         ax1t.set_ylim([0, 1])
 
-        y1 = self.df.e_a
-        y2 = self.df.cld
-        ax2.plot(x, y1, "k-")
-        ax2.set_ylabel("Atmospheric Emissivity")
-        # ax1.set_xlabel("Days")
-        ax2t = ax2.twinx()
-        ax2t.plot(x, y2, "b-", linewidth=0.5)
-        ax2t.set_ylabel("Cloudiness", color="b")
-        for tl in ax2t.get_yticklabels():
-            tl.set_color("b")
-        ax2.grid()
+        # y1 = self.df.e_a
+        # y2 = self.df.cld
+        # ax2.plot(x, y1, "k-")
+        # ax2.set_ylabel("Atmospheric Emissivity")
+        # # ax1.set_xlabel("Days")
+        # ax2t = ax2.twinx()
+        # ax2t.plot(x, y2, "b-", linewidth=0.5)
+        # ax2t.set_ylabel("Cloudiness", color="b")
+        # for tl in ax2t.get_yticklabels():
+        #     tl.set_color("b")
+        # ax2.grid()
 
         y3 = self.df.vp_a - self.df.vp_ice
         ax3.plot(x, y3, "k-", linewidth=0.5)
@@ -1621,8 +1621,8 @@ class PDF(Icestupa):
         pp.savefig(bbox_inches="tight")
         plt.close("all")
 
-        fig, (ax1, ax2, ax3, ax4) = plt.subplots(
-            nrows=4, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
+        fig, (ax1,ax3, ax4) = plt.subplots(
+            nrows=3, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
         )
 
         x = self.df.When
@@ -1639,17 +1639,17 @@ class PDF(Icestupa):
             tl.set_color("b")
         ax1.grid()
 
-        y1 = self.df.e_a
-        y2 = self.df.cld
-        ax2.plot(x, y1, "k-")
-        ax2.set_ylabel("Atmospheric Emissivity")
-        # ax1.set_xlabel("Days")
-        ax2t = ax2.twinx()
-        ax2t.plot(x, y2, "b-", linewidth=0.5)
-        ax2t.set_ylabel("Cloudiness", color="b")
-        for tl in ax2t.get_yticklabels():
-            tl.set_color("b")
-        ax2.grid()
+        # y1 = self.df.e_a
+        # y2 = self.df.cld
+        # ax2.plot(x, y1, "k-")
+        # ax2.set_ylabel("Atmospheric Emissivity")
+        # # ax1.set_xlabel("Days")
+        # ax2t = ax2.twinx()
+        # ax2t.plot(x, y2, "b-", linewidth=0.5)
+        # ax2t.set_ylabel("Cloudiness", color="b")
+        # for tl in ax2t.get_yticklabels():
+        #     tl.set_color("b")
+        # ax2.grid()
 
         y3 = self.df.vp_a - self.df.vp_ice
         ax3.plot(x, y3, "k-", linewidth=0.5)
@@ -1793,8 +1793,8 @@ class PDF(Icestupa):
 
         pp = PdfPages(FOLDERS["output_folder"] + "Figure_3.pdf")
 
-        fig, (ax1, ax2, ax3, ax4, ax5, ax6, ax7) = plt.subplots(
-            nrows=7, ncols=1, sharex="col", sharey="row", figsize=(12, 14)
+        fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
+            nrows=6, ncols=1, sharex="col", sharey="row", figsize=(12, 14)
         )
 
         x = self.df.When
@@ -1806,8 +1806,8 @@ class PDF(Icestupa):
 
         ax1t = ax1.twinx()
         # ax1t.plot(x, self.df.Prec * 1000, linestyle='--', color='#118ab2', linewidth=1)
-        ax1t.plot(x, self.df.Prec * 1000, linestyle='-' ,color=CB91_Blue, label = 'Plaffeien')
-        ax1t.set_ylabel("Precipitation [$mm\\, s^{-1}$]", color=CB91_Blue)
+        ax1t.plot(x, self.df.Prec * 1000 * self.TIME_STEP, linestyle='-' ,color=CB91_Blue, label = 'Plaffeien')
+        ax1t.set_ylabel("Precipitation [$mm$]", color=CB91_Blue)
         for tl in ax1t.get_yticklabels():
             tl.set_color(CB91_Blue)
 
@@ -1825,8 +1825,8 @@ class PDF(Icestupa):
         # lns1 = ax3.plot(x, y3, linestyle='--', color='#e76f51', linewidth=0.5,  label = 'Shortwave Direct')
         # lns2 = ax3.plot(x, self.df.SW_diffuse, color='#e76f51',linestyle=':', linewidth=2, label = 'Shortwave Diffuse')
         # lns3 = ax3.plot(x, self.df.LW_in, color='#e76f51',linestyle='-', linewidth=1, label = 'Longwave')
-        lns1 = ax3.plot(x, self.df.SW_diffuse, linestyle='-', label = 'Shortwave Diffuse', color=CB91_Amber)
         lns2 = ax3.plot(x, y3, linestyle='-', label = 'Shortwave Direct', color=CB91_Amber)
+        lns1 = ax3.plot(x, self.df.SW_diffuse, linestyle='-', label = 'Shortwave Diffuse', color=CB91_Blue)
         lns3 = ax3.plot(x, self.df.LW_in,linestyle='-', label = 'Longwave', color=CB91_Green)
         ax3.axvspan(self.df.When.head(1).values, self.df.When.tail(1).values,facecolor='grey', alpha=0.25)
         ax3.set_ylabel("Radiation[$W\\,m^{-2}$]")
@@ -1872,20 +1872,20 @@ class PDF(Icestupa):
         ax6.set_ylabel("Wind speed [$m\\,s^{-1}$]")
         # ax6.grid()
 
-        y7 = self.df.cld
-        # ax7.plot(x, y7, linestyle='-', color='#e76f51', linewidth=1)
-        ax7.plot(x, y7, linestyle='-',color='#284D58', label = "ERA5")
-        ax7.set_ylabel("Cloudiness []")
-        ax7.axvspan(self.df.When.head(1).values, self.df.When.tail(1).values,facecolor='grey', alpha=0.25)
-        # ax7.grid()
+        # y7 = self.df.cld
+        # # ax7.plot(x, y7, linestyle='-', color='#e76f51', linewidth=1)
+        # ax7.plot(x, y7, linestyle='-',color='#284D58', label = "ERA5")
+        # ax7.set_ylabel("Cloudiness []")
+        # ax7.axvspan(self.df.When.head(1).values, self.df.When.tail(1).values,facecolor='grey', alpha=0.25)
+        # # ax7.grid()
 
-        ERA5= mpatches.Patch(color='grey', alpha=0.25, label='ERA5 data')
-        SZ= mpatches.Patch(color='#264653', label='Schwarzsee data')
-        PLF= mpatches.Patch(color=CB91_Blue, label='Plaffeien data')
+        # ERA5= mpatches.Patch(color='grey', alpha=0.25, label='ERA5 data')
+        # SZ= mpatches.Patch(color='#264653', label='Schwarzsee data')
+        # PLF= mpatches.Patch(color=CB91_Blue, label='Plaffeien data')
 
 
-        ax1.legend(handles = [ERA5, PLF], bbox_to_anchor=(0,1.02,1,0.2), loc="lower left",
-                 borderaxespad=1, ncol=4, fancybox=True)
+        # ax1.legend(handles = [ERA5, PLF], bbox_to_anchor=(0,1.02,1,0.2), loc="lower left",
+        #          borderaxespad=1, ncol=4, fancybox=True)
 
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -1897,8 +1897,8 @@ class PDF(Icestupa):
         pp.close()
 
         pp = PdfPages(FOLDERS["output_folder"] + "Figure_6.pdf")
-        fig = plt.figure(figsize=(8.27, 8.27))
-        dfds = self.df[["When", "solid", "ppt", "dpt", "melted", "gas", "SA", "iceV"]]
+        fig = plt.figure(figsize=(12, 14))
+        dfds = self.df[["When", "solid", "ppt", "dpt", "melted", "gas", "SA", "iceV", "Discharge"]]
 
         with pd.option_context("mode.chained_assignment", None):
             for i in range( 1, dfds.shape[0]):
@@ -1935,9 +1935,9 @@ class PDF(Icestupa):
             columns={
                 "solid": "Ice",
                 "ppt": "Snow",
-                "dpt": "Vapour condensation/deposition",
+                "dpt": "Vapour cond./dep.",
                 "melted": "Melt",
-                "gas": "Vapour sublimation/evaporation",
+                "gas": "Vapour sub./evap.",
             }
         )
 
@@ -1945,8 +1945,8 @@ class PDF(Icestupa):
             [
                 "Ice",
                 "Snow",
-                "Vapour condensation/deposition",
-                "Vapour sublimation/evaporation",
+                "Vapour cond./dep.",
+                "Vapour sub./evap.",
                 "Melt",
             ]
         ]
@@ -1996,46 +1996,63 @@ class PDF(Icestupa):
         dfds2 = dfds2.set_index("label")
         y3 = dfds2["SA"]
         y4 = dfds2["iceV"]
+        y0 = dfds["Discharge"] * 5/1000
 
 
         z = dfd[["$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
 
-        ax1 = fig.add_subplot(4, 1, 1)
+        ax0 = fig.add_subplot(5, 1, 1)
+        ax0 = y0.plot.bar(
+            y="Discharge", linewidth=0.5, edgecolor="black", color="#0C70DE", ax=ax0
+        )
+        ax0.xaxis.set_label_text("")
+        ax0.set_ylabel("Discharge ($m^3$)")
+        ax0.grid(axis="y", color="#0C70DE", alpha=0.3, linewidth=0.5, which="major")
+        at = AnchoredText("(a)", prop=dict(size=10), frameon=True, loc="upper left")
+        at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+        x_axis = ax0.axes.get_xaxis()
+        x_axis.set_visible(False)
+        ax0.add_artist(at)
+
+        ax1 = fig.add_subplot(5, 1, 2)
         ax1 = z.plot.bar(stacked=True, edgecolor="black", linewidth=0.5, ax=ax1)
         ax1.xaxis.set_label_text("")
         ax1.grid(color="black", alpha=0.3, linewidth=0.5, which="major")
         plt.ylabel("Energy Flux [$W\\,m^{-2}$]")
-        plt.legend(loc="upper right", ncol=6)
-        plt.ylim(-200, 200)
-        plt.xticks(rotation=45)
+        # plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left",
+        #            mode="expand", borderaxespad=0, ncol=6)
+        plt.legend(loc="upper center", ncol=6)
+        plt.ylim(-125, 125)
         x_axis = ax1.axes.get_xaxis()
         x_axis.set_visible(False)
-        at = AnchoredText("(a)", prop=dict(size=10), frameon=True, loc="upper left")
+        at = AnchoredText("(b)", prop=dict(size=10), frameon=True, loc="upper left")
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
         ax1.add_artist(at)
 
-        ax2 = fig.add_subplot(4, 1, 2)
+        ax2 = fig.add_subplot(5, 1, 3)
         y2.plot(
             kind="bar",
             stacked=True,
             edgecolor="black",
             linewidth=0.5,
-            color=["#D9E9FA", "#00DBFD", "#EA9010", "#006C67", "#0C70DE"],
+            color=["#D9E9FA", CB91_Blue, "#EA9010", "#006C67", "#0C70DE"],
             ax=ax2,
         )
         plt.ylabel("Thickness ($m$ w. e.)")
         plt.xticks(rotation=45)
-        plt.legend(loc="upper right", ncol=3)
-        ax2.set_ylim(-0.04, 0.04)
+        # plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left",
+        #            mode="expand", borderaxespad=0, ncol=6)
+        plt.legend(loc="upper center", ncol=6)
+        ax2.set_ylim(-0.03, 0.03)
         ax2.yaxis.set_minor_locator(AutoMinorLocator())
         ax2.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
         x_axis = ax2.axes.get_xaxis()
         x_axis.set_visible(False)
-        at = AnchoredText("(b)", prop=dict(size=10), frameon=True, loc="upper left")
+        at = AnchoredText("(c)", prop=dict(size=10), frameon=True, loc="upper left")
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
         ax2.add_artist(at)
 
-        ax3 = fig.add_subplot(4, 1, 3)
+        ax3 = fig.add_subplot(5, 1, 4)
         ax3 = y3.plot.bar(
             y="SA", linewidth=0.5, edgecolor="black", color="xkcd:grey", ax=ax3
         )
@@ -2044,18 +2061,18 @@ class PDF(Icestupa):
         ax3.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
         x_axis = ax3.axes.get_xaxis()
         x_axis.set_visible(False)
-        at = AnchoredText("(c)", prop=dict(size=10), frameon=True, loc="upper left")
+        at = AnchoredText("(d)", prop=dict(size=10), frameon=True, loc="upper left")
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
         ax3.add_artist(at)
 
-        ax4 = fig.add_subplot(4, 1, 4)
+        ax4 = fig.add_subplot(5, 1, 5)
         ax4 = y4.plot.bar(
             y="iceV", linewidth=0.5, edgecolor="black", color="#D9E9FA", ax=ax4
         )
         ax4.xaxis.set_label_text("")
         ax4.set_ylabel("Ice Volume($m^3$)")
         ax4.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
-        at = AnchoredText("(d)", prop=dict(size=10), frameon=True, loc="upper left")
+        at = AnchoredText("(e)", prop=dict(size=10), frameon=True, loc="upper left")
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
         ax4.add_artist(at)
         plt.xticks(rotation=45)
@@ -2106,23 +2123,22 @@ if __name__ == "__main__":
 
     icestupa = PDF()
 
-    icestupa.derive_parameters()
-    icestupa.print_input()
+    # icestupa.derive_parameters()
 
-    # icestupa.read_input()
+    icestupa.read_input()
 
-    icestupa.melt_freeze()
+    # icestupa.melt_freeze()
 
-    # icestupa.read_output()
+    icestupa.read_output()
 
     # icestupa.corr_plot()
 
     icestupa.summary()
 
-    icestupa.print_input()
+    # icestupa.print_input()
     icestupa.paper_figures()
 
-    icestupa.print_output()
+    # icestupa.print_output()
 
     total = time.time() - start
 

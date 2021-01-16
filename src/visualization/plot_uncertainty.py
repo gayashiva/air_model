@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import sys
-sys.path.append('/home/surya/Programs/PycharmProjects/air_model')
+
+sys.path.append("/home/surya/Programs/Github/air_model")
 import numpy as np
 import pandas as pd
 import math
@@ -8,15 +9,14 @@ from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.colors
 import uncertainpy as un
 import statistics as st
-from src.data.config import site, dates, folders
-from datetime import datetime
+from datetime import datetime, timedelta
+from src.data.config import SITE, FOUNTAIN, FOLDERS
 import matplotlib.dates as mdates
 
+input = FOLDERS["sim_folder"] + "/"
+figures = FOLDERS["sim_folder"] + "/"
 
-input = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/"
-figures = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/"
-
-names = "full"
+names = "full_gauss"
 variance = []
 mean = []
 evaluations = []
@@ -27,19 +27,28 @@ data.load(filename1)
 # print(data)
 
 eval = data["max_volume"].evaluations
-print(f"95 percent confidence interval caused by {names} is {round(2 * st.stdev(eval),2)}")
+print(
+    f"95 percent confidence interval caused by {names} is {round(2 * st.stdev(eval),2)}"
+)
 
 print(data["max_volume"].mean)
 
-df = pd.read_hdf(folders["output_folder"] + "model_output.h5", "df")
+df = pd.read_hdf(FOLDERS["output_folder"] + "model_output.h5", "df")
 
-df = df.set_index('When').resample('1H').mean().reset_index()
+df = df.set_index("When").resample("1H").mean().reset_index()
 
-days = pd.date_range(start=datetime(2019, 1, 30, 20), end=datetime(2019, 4, 8,1), freq="1H")
+# start=datetime(2019, 1, 30, 20)
+# end= start + timedelta(hours = 65*24)
+days = pd.date_range(
+    start=datetime(2019, 1, 30, 20),
+    end=datetime(2019, 1, 30, 20) + timedelta(hours=75 * 24 - 1),
+    freq="1H",
+)
 
 data = data["UQ_Icestupa"]
+# print(len(data.percentile_5))
 
-data['When'] = days
+data["When"] = days
 
 # data['When'] = data['When'] +  pd.to_timedelta(data.time, unit='D')
 
@@ -47,8 +56,12 @@ data['When'] = days
 
 # data = data.set_index("When").resample("5T").mean()
 
-
-
+CB91_Blue = "#2CBDFE"
+CB91_Green = "#47DBCD"
+CB91_Pink = "#F3A0F2"
+CB91_Purple = "#9D2EC5"
+CB91_Violet = "#661D98"
+CB91_Amber = "#F5B14C"
 
 fig, ax = plt.subplots()
 
@@ -59,15 +72,19 @@ fig, ax = plt.subplots()
 ax.set_ylabel("Ice Volume[$m^3$]")
 
 
-ax.fill_between(data["When"],
-                         data.percentile_5,
-                         data.percentile_95, color='gray', alpha=0.2, label = "90% prediction interval")
+ax.fill_between(
+    data["When"],
+    data.percentile_5,
+    data.percentile_95,
+    color="xkcd:gray",
+    alpha=0.2,
+    label="90% prediction interval",
+)
 
 
 x = df.When
 y1 = df.iceV
 
-ax.plot(x, y1, "b-", label = "Modelled Ice Volume", linewidth=0.5)
 # ax1.set_xlabel("Days")
 
 # Include Validation line segment 1
@@ -89,6 +106,7 @@ ax.plot(
 )
 ax.scatter(datetime(2019, 3, 10, 18), 0.1295, color="green", marker="o")
 
+ax.plot(x, y1, "b-", label="Modelled Ice Volume", linewidth=1, color=CB91_Blue)
 ax.set_ylim(bottom=0)
 plt.legend()
 # plt.legend(["Mean", "90% prediction interval", "Std", "Validation Measurement"], loc="best")
