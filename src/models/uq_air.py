@@ -47,11 +47,11 @@ class UQ_Icestupa(un.Model, Icestupa):
         self.set_parameters(**parameters)
         print(parameters.values())
 
-        if "dia_f" or "h_f" or "T_w" in parameters.keys():  # todo change to general
-            FOUNTAIN["dia_f"] = dia_f
-            FOUNTAIN["h_f"] = h_f
-            FOUNTAIN["T_w"] = T_w
-            SITE["h_aws"] = h_aws
+        # if "dia_f" or "h_f" or "T_w" in parameters.keys():  # todo change to general
+        #     FOUNTAIN["dia_f"] = dia_f
+        #     FOUNTAIN["h_f"] = h_f
+        #     FOUNTAIN["T_w"] = T_w
+        #     SITE["h_aws"] = h_aws
 
         if "dia_f" or "h_f" in parameters.keys():  # todo change to general
             """ Fountain Spray radius """
@@ -69,8 +69,8 @@ class UQ_Icestupa(un.Model, Icestupa):
             s = 0
             f = 0
 
-            for row in self.df[1:].itertuples():
-                s, f = self.albedo(row, s, f)
+        for row in self.df[1:].itertuples():
+            s, f = self.albedo(row, s, f)
 
         self.melt_freeze()
 
@@ -85,7 +85,7 @@ class UQ_Icestupa(un.Model, Icestupa):
         print("Ice Mass Remaining", self.df["ice"].iloc[-1])
         print("Meltwater", self.df["meltwater"].iloc[-1])
         print("Ppt", self.df["ppt"].sum())
-        print("Number of days", self.df.index[-1] * self.TIME_STEP / (60 * 24))
+        print("Number of days", self.df.index[-1] * self.TIME_STEP / (60 * 60 * 24))
         print("\n")
 
         self.df = self.df.set_index("When").resample("1H").mean().reset_index()
@@ -113,13 +113,14 @@ T_DECAY = 10
 
 interval = 0.05
 
-ie_dist = uniform(IE, interval)
+# ie_dist = uniform(IE, interval)
+ie_dist = cp.Uniform(0.949, 0.993)
 a_i_dist = uniform(A_I, interval)
 a_s_dist = uniform(A_S, interval)
 
 t_decay_dist = cp.Uniform(1, 22)
-# T_rain_dist = cp.Uniform(0, 2)
-T_rain_dist = uniform(1, 1)
+T_rain_dist = cp.Uniform(0, 2)
+# T_rain_dist = uniform(1, 1)
 
 dia_f = 0.005
 h_f = 1.35
@@ -136,38 +137,43 @@ T_w_dist = cp.Uniform(0, 9)
 dx_dist = cp.Uniform(0.001, 0.01)
 time_steps_dist = cp.Uniform(5 * 60, 30 * 60)
 
-parameters_single = {
-    "IE": ie_dist,
-    # "A_I": a_i_dist,
-    # "A_S": a_s_dist,
-    # "T_DECAY": t_decay_dist,
-    "T_RAIN": T_rain_dist,
-    # "dia_f": dia_f_dist,
-    # "h_f": h_f_dist,
-    # "h_aws": h_aws_dist,
-    # "T_w": T_w_dist,
-    # "DX": dx_dist
-    # "TIME_STEP": time_steps_dist
-}
+# parameters_single = {
+#     "IE": ie_dist,
+#     "A_I": a_i_dist,
+#     "A_S": a_s_dist,
+#     "T_DECAY": t_decay_dist,
+#     "T_RAIN": T_rain_dist,
+#     "dia_f": dia_f_dist,
+#     "h_f": h_f_dist,
+#     "h_aws": h_aws_dist,
+#     "T_w": T_w_dist,
+#     "DX": dx_dist,
+#     "TIME_STEP": time_steps_dist,
+# }
 
-# # Create the parameters
-# for k,v in parameters_single.items():
-#     print(k,v)
-#     parameters = un.Parameters({k:v})
-
+# Create the parameters
+# for k, v in parameters_single.items():
+#     print(k, v)
+#     parameters = un.Parameters({k: v})
 
 #     # Initialize the model
 #     model = UQ_Icestupa()
 
 #     # Set up the uncertainty quantification
-#     UQ = un.UncertaintyQuantification(model=model,
-#                                       parameters=parameters,
-#                                       features=features,
-#                                       CPUs=6,
-#                                       )
+#     UQ = un.UncertaintyQuantification(
+#         model=model,
+#         parameters=parameters,
+#         features=features,
+#         CPUs=4,
+#     )
 
 #     # Perform the uncertainty quantification using # polynomial chaos with point collocation (by default) data =
-#     UQ.quantify(seed=10, data_folder = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/data/", figure_folder="/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/figures/", filename=k)
+#     data = UQ.quantify(
+#         seed=10,
+#         data_folder=FOLDERS["sim_folder"],
+#         figure_folder=FOLDERS["sim_folder"],
+#         filename=k,
+#     )
 
 parameters = {
     "IE": ie_dist,
@@ -183,7 +189,7 @@ UQ = un.UncertaintyQuantification(
     model=model,
     parameters=parameters,
     features=features,
-    CPUs=6,
+    CPUs=4,
 )
 
 # Perform the uncertainty quantification using
@@ -192,5 +198,5 @@ data = UQ.quantify(
     seed=10,
     data_folder=FOLDERS["sim_folder"],
     figure_folder=FOLDERS["sim_folder"],
-    filename="full_gauss",
+    filename="full",
 )

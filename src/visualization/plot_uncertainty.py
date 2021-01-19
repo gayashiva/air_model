@@ -16,7 +16,7 @@ import matplotlib.dates as mdates
 input = FOLDERS["sim_folder"] + "/"
 figures = FOLDERS["sim_folder"] + "/"
 
-names = "full_gauss"
+names = "full"
 variance = []
 mean = []
 evaluations = []
@@ -116,4 +116,9 @@ ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
 ax.xaxis.set_minor_locator(mdates.DayLocator())
 fig.autofmt_xdate()
 plt.savefig(figures + "uncertainty.jpg", bbox_inches="tight", dpi=300)
+plt.savefig(
+    "/home/surya/Documents/AIR_Manuscript/Figures/Figure_8.jpg",
+    bbox_inches="tight",
+    dpi=300,
+)
 # plt.show()

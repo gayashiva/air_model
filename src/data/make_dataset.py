@@ -330,6 +330,8 @@ if __name__ == "__main__":
         df_in2["RH"] = pd.to_numeric(df_in2["ure200s0"], errors="coerce")
         df_in2["v_a"] = pd.to_numeric(df_in2["fkl010z0"], errors="coerce")
         df_in2["T_a"] = pd.to_numeric(df_in2["tre200s0"], errors="coerce")
+        df_in2["SW_g"] = pd.to_numeric(df_in2["gre000z0"], errors="coerce")
+        print(df_in2.SW_g.head())
 
         df_in2["Prec"] = df_in2["Prec"] / (10 * 60)  # ppt rate mm/s
         df_in2 = (
@@ -575,86 +577,92 @@ if __name__ == "__main__":
 
         df_in3.to_csv(FOLDERS["input_folder"] + "raw_input_ERA5.csv")
 
-        # pp = PdfPages(FOLDERS["input_folder"] + "compare" + ".pdf")
-        # fig = plt.figure()
-        # ax1 = fig.add_subplot(111)
-        # ax1.scatter(df_out.p_a, df_in3.p_a, s=2)
-        # ax1.set_xlabel("AWS p")
-        # ax1.set_ylabel("ERA5 p")
-        # ax1.grid()
-        # lims = [
-        #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-        #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-        # ]
-        # # now plot both limits against eachother
-        # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
-        # ax1.set_aspect("equal")
-        # ax1.set_xlim(lims)
-        # ax1.set_ylim(lims)
-        # pp.savefig(bbox_inches="tight")
-        # plt.clf()
+    df_in3["SW_g"] = df_in3["SW_diffuse"] + df_in3["SW_direct"]
+    slope, intercept, r_value1, p_value, std_err = stats.linregress(
+        df_in2.SW_g.values, df_in3.SW_g.values
+    )
+    print("R2 temp", r_value1 ** 2)
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    ax1.scatter(df_in2.SW_g, df_in3.SW_g, s=2)
+    ax1.set_ylabel("ERA5 Global Solar radiation [$W\\,m^{-2}$]")
+    ax1.set_xlabel("Plaffeien Global Solar radiation [$W\\,m^{-2}$]")
+    ax1.grid()
+    lims = [
+        np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+        np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+    ]
+    # now plot both limits against eachother
+    ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+    ax1.set_aspect("equal")
+    ax1.set_xlim(lims)
+    ax1.set_ylim(lims)
+    # pp.savefig(bbox_inches="tight")
+    plt.savefig(FOLDERS["input_folder"] + "compare.jpg", dpi=300, bbox_inches="tight")
+    plt.clf()
 
-        # ax1 = fig.add_subplot(111)
-        # ax1.scatter(df_out.v_a, df_in3.v_a, s=2)
-        # ax1.set_xlabel("AWS v")
-        # ax1.set_ylabel("ERA5 v")
-        # ax1.grid()
-        # lims = [
-        #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-        #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-        # ]
-        # # now plot both limits against eachother
-        # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
-        # ax1.set_aspect("equal")
-        # ax1.set_xlim(lims)
-        # ax1.set_ylim(lims)
-        # pp.savefig(bbox_inches="tight")
-        # plt.clf()
+    # ax1 = fig.add_subplot(111)
+    # ax1.scatter(df_out.v_a, df_in3.v_a, s=2)
+    # ax1.set_xlabel("AWS v")
+    # ax1.set_ylabel("ERA5 v")
+    # ax1.grid()
+    # lims = [
+    #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+    #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+    # ]
+    # # now plot both limits against eachother
+    # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+    # ax1.set_aspect("equal")
+    # ax1.set_xlim(lims)
+    # ax1.set_ylim(lims)
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
 
-        # ax1 = fig.add_subplot(111)
-        # ax1.scatter(df_out.T_a, df_in3.T_a, s=2)
-        # ax1.set_xlabel("AWS T")
-        # ax1.set_ylabel("ERA5 T")
-        # ax1.grid()
-        # lims = [
-        #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-        #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-        # ]
-        # # now plot both limits against eachother
-        # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
-        # ax1.set_aspect("equal")
-        # ax1.set_xlim(lims)
-        # ax1.set_ylim(lims)
-        # pp.savefig(bbox_inches="tight")
-        # plt.clf()
+    # ax1 = fig.add_subplot(111)
+    # ax1.scatter(df_out.T_a, df_in3.T_a, s=2)
+    # ax1.set_xlabel("AWS T")
+    # ax1.set_ylabel("ERA5 T")
+    # ax1.grid()
+    # lims = [
+    #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+    #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+    # ]
+    # # now plot both limits against eachother
+    # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+    # ax1.set_aspect("equal")
+    # ax1.set_xlim(lims)
+    # ax1.set_ylim(lims)
+    # pp.savefig(bbox_inches="tight")
+    # plt.clf()
 
-        # ax1 = fig.add_subplot(111)
-        # ax1.scatter(df_in2.Prec, df_in3.Prec, s=2)
-        # ax1.set_xlabel("Plf ppt")
-        # ax1.set_ylabel("ERA5 ppt")
-        # ax1.grid()
-        # lims = [
-        #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-        #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-        # ]
-        # # now plot both limits against eachother
-        # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
-        # ax1.set_aspect("equal")
-        # ax1.set_xlim(lims)
-        # ax1.set_ylim(lims)
-        # pp.savefig(bbox_inches="tight")
-        # plt.clf()
-        # pp.close()
-        """
-                Parameter
-                ---------
-                          Unit                                 Description
-                oli000z0
-                prestas0  hPa                                  Pressure at station level (QFE); current value
-                gre000z0  W/m²                                 Global radiation; ten minutes mean
-                pva200s0  hPa                                  Vapour pressure 2 m above ground; current value
-                rre150z0  mm                                   Precipitation; ten minutes total
-                ure200s0  %                                    Relative air humidity 2 m above ground;
-                fkl010z0  m/s                                  Wind speed scalar; ten minutes mean
-                tre200s0  °C                                   Air temperature 2 m above ground; current
-        """
+    # ax1 = fig.add_subplot(111)
+    # ax1.scatter(df_in2.Prec, df_in3.Prec, s=2)
+    # ax1.set_xlabel("Plf ppt")
+    # ax1.set_ylabel("ERA5 ppt")
+    # ax1.grid()
+    # lims = [
+    #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+    #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+    # ]
+    # # now plot both limits against eachother
+    # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+    # ax1.set_aspect("equal")
+    # ax1.set_xlim(lims)
+    # ax1.set_ylim(lims)
+    # pp.savefig(bbox_inches="tight")
+
+    # plt.clf()
+    # pp.close()
+    """
+            Parameter
+            ---------
+                      Unit                                 Description
+            oli000z0
+            prestas0  hPa                                  Pressure at station level (QFE); current value
+            gre000z0  W/m²                                 Global radiation; ten minutes mean
+            pva200s0  hPa                                  Vapour pressure 2 m above ground; current value
+            rre150z0  mm                                   Precipitation; ten minutes total
+            ure200s0  %                                    Relative air humidity 2 m above ground;
+            fkl010z0  m/s                                  Wind speed scalar; ten minutes mean
+            tre200s0  °C                                   Air temperature 2 m above ground; current
+    """
