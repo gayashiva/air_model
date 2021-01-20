@@ -25,7 +25,19 @@ def draw_plot(data, edge_color, fill_color, labels):
 input = FOLDERS["sim_folder"] + "/"
 output = FOLDERS["sim_folder"] + "/"
 
-names = ["T_RAIN", "IE", "A_I", "A_S", "T_DECAY", "dia_f", "h_f", "h_aws", "T_w", "DX"]
+names = [
+    "full",
+    "T_RAIN",
+    "IE",
+    "A_I",
+    "A_S",
+    "T_DECAY",
+    "dia_f",
+    "h_f",
+    "h_aws",
+    "T_w",
+    "DX",
+]
 variance = []
 mean = []
 evaluations = []

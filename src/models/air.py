@@ -1829,7 +1829,7 @@ class PDF(Icestupa):
         # pp = PdfPages(FOLDERS["output_folder"] + "Figure_3.pdf")
 
         fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
-            nrows=6, ncols=1, sharex="col", sharey="row", figsize=(12, 14)
+            nrows=6, ncols=1, sharex="col", sharey="row", figsize=(12, 18)
         )
 
         x = self.df.When
@@ -2204,18 +2204,18 @@ if __name__ == "__main__":
 
     # icestupa.derive_parameters()
 
-    # icestupa.read_input()
+    icestupa.read_input()
 
     # icestupa.melt_freeze()
 
     icestupa.read_output()
 
-    icestupa.corr_plot()
+    # icestupa.corr_plot()
 
-    icestupa.summary()
+    # icestupa.summary()
 
     # icestupa.print_input()
-    # icestupa.paper_figures()
+    icestupa.paper_figures()
 
     # icestupa.print_output()
 
