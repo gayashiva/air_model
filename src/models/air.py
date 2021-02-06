@@ -14,7 +14,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import seaborn as sns
 
-sys.path.append("/home/surya/Programs/Github/air_model")
+sys.path.append("/home/suryab/PhD/air_model")
 from src.data.config import SITE, FOUNTAIN, FOLDERS
 from pvlib import location
 
@@ -2212,10 +2212,10 @@ if __name__ == "__main__":
 
     # icestupa.corr_plot()
 
-    # icestupa.summary()
+    icestupa.summary()
 
     # icestupa.print_input()
-    icestupa.paper_figures()
+    # icestupa.paper_figures()
 
     # icestupa.print_output()
 

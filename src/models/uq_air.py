@@ -4,7 +4,7 @@ import pandas as pd
 import math
 import sys
 
-sys.path.append("/home/surya/Programs/Github/air_model")
+sys.path.append("/home/suryab/PhD/air_model")
 from src.data.config import SITE, FOUNTAIN, FOLDERS
 from src.models.air import Icestupa
 

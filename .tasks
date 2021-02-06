@@ -1,5 +1,5 @@
 [file-run]
-command:python=/home/surya/Programs/anaconda3/envs/air_model/bin/python  "$(VIM_RELNAME)"
+command:python=python  "$(VIM_RELNAME)"
 output=terminal
 cwd=$(VIM_ROOT)
 save=2

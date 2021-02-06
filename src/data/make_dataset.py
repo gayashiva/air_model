@@ -1,6 +1,6 @@
 import sys
 
-sys.path.append("/home/surya/Programs/Github/air_model")
+sys.path.append("/home/suryab/PhD/air_model")
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
