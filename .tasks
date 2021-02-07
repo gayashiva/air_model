@@ -1,5 +1,14 @@
-[file-run]
+
+[file-run:debug]
 command:python=python  "$(VIM_RELNAME)"
 output=terminal
 cwd=$(VIM_ROOT)
 save=2
+[file-run:release]
+command:python=:JupyterRunFile
+output=terminal
+cwd=$(VIM_ROOT)
+save=2
+[project-build]
+command:python=jupyter qtconsole &
+output=vim

@@ -13,8 +13,11 @@ from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import seaborn as sns
-
-sys.path.append("/home/suryab/PhD/air_model")
+print(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+)
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+# sys.path.append("/home/suryab/PhD/air_model")
+# sys.path.append("/home/suryab/PhD/air_model")
 from src.data.config import SITE, FOUNTAIN, FOLDERS
 from pvlib import location
 
