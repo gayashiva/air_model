@@ -482,13 +482,13 @@ class Icestupa:
 
         Duration = self.df.index[-1] * 5 / (60 * 24)
 
-        logger.info("\nIce Volume Max", float(self.df["iceV"].max()))
-        logger.info("Fountain efficiency", Efficiency)
-        logger.info("Ice Mass Remaining", self.df["ice"].iloc[-1])
-        logger.info("Meltwater", self.df["meltwater"].iloc[-1])
-        logger.info("Ppt", self.df["ppt"].sum())
-        logger.info("Deposition", self.df["dpt"].sum())
-        logger.info("Duration", Duration)
+        print("\nIce Volume Max", float(self.df["iceV"].max()))
+        print("Fountain efficiency", Efficiency)
+        print("Ice Mass Remaining", self.df["ice"].iloc[-1])
+        print("Meltwater", self.df["meltwater"].iloc[-1])
+        print("Ppt", self.df["ppt"].sum())
+        print("Deposition", self.df["dpt"].sum())
+        print("Duration", Duration)
 
         # Full Output
         filename4 = FOLDERS["output_folder"] + "model_results.csv"
@@ -2188,7 +2188,7 @@ if __name__ == "__main__":
         fmt="%(levelname)s %(message)s",
         logger=logger,
     )
-    logger.error('Model begins')
+    logger.info('Model begins')
 
     icestupa = PDF()
 
