@@ -1,6 +1,4 @@
 import sys
-
-sys.path.append("/home/suryab/PhD/air_model")
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -17,6 +15,7 @@ import logging
 from src.data.config import SITE, FOLDERS, FOUNTAIN, OPTION
 from scipy import stats
 from sklearn.linear_model import LinearRegression
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
 start = time.time()
 

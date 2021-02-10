@@ -13,13 +13,14 @@ from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import seaborn as sns
-print(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-)
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
-# sys.path.append("/home/suryab/PhD/air_model")
-# sys.path.append("/home/suryab/PhD/air_model")
-from src.data.config import SITE, FOUNTAIN, FOLDERS
 from pvlib import location
+dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+sys.path.append(dirname)
+from src.data.config import SITE, FOUNTAIN, FOLDERS
+# from src.data.logging import setup_logging
+import logging
+import coloredlogs
 
 pd.plotting.register_matplotlib_converters()
 
@@ -89,7 +90,7 @@ class Icestupa:
         }
         for var in parameters:
             if parameters[var]:
-                print(var, "->", parameters[var])
+                logger.info(var, "->", parameters[var])
                 FOUNTAIN[var] = parameters[var]
 
     def get_solar(self):
@@ -191,7 +192,7 @@ class Icestupa:
             if col in list(self.df.columns):
                 missing.remove(col)
             else:
-                print(col, "is missing")
+                logger.info(col, "is missing")
                 self.df[col] = 0
 
         """Albedo Decay"""
@@ -201,7 +202,7 @@ class Icestupa:
         s = 0
         f = 0
 
-        print("Creating model input file...")
+        logger.info("Creating model input file...")
         for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
 
             """ Vapour Pressure"""
@@ -296,7 +297,7 @@ class Icestupa:
             self.df.loc[i, "s_cone"] = self.df.loc[i - 1, "s_cone"]
 
             # Ice Radius
-            # print(self.df.loc[i, "iceV"], self.df.loc[i, "s_cone"])
+            # logger.info(self.df.loc[i, "iceV"], self.df.loc[i, "s_cone"])
             self.df.loc[i, "r_ice"] = math.pow(
                 self.df.loc[i, "iceV"] / math.pi * (3 / self.df.loc[i, "s_cone"]), 1 / 3
             )
@@ -378,7 +379,7 @@ class Icestupa:
         )
 
         if np.isnan(self.df.loc[i, "LW"]):
-            print(
+            logger.info(
                 f"LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
             )
 
@@ -419,7 +420,7 @@ class Icestupa:
         )
 
         # if np.isnan(self.df.loc[i, "TotalE"]) :
-        #     print(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}, SA {self.df.SA[i]}")
+        #     logger.info(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}, SA {self.df.SA[i]}")
 
     def summary(self):
 
@@ -482,13 +483,13 @@ class Icestupa:
 
         Duration = self.df.index[-1] * 5 / (60 * 24)
 
-        print("\nIce Volume Max", float(self.df["iceV"].max()))
-        print("Fountain efficiency", Efficiency)
-        print("Ice Mass Remaining", self.df["ice"].iloc[-1])
-        print("Meltwater", self.df["meltwater"].iloc[-1])
-        print("Ppt", self.df["ppt"].sum())
-        print("Deposition", self.df["dpt"].sum())
-        print("Duration", Duration)
+        logger.info("\nIce Volume Max", float(self.df["iceV"].max()))
+        logger.info("Fountain efficiency", Efficiency)
+        logger.info("Ice Mass Remaining", self.df["ice"].iloc[-1])
+        logger.info("Meltwater", self.df["meltwater"].iloc[-1])
+        logger.info("Ppt", self.df["ppt"].sum())
+        logger.info("Deposition", self.df["dpt"].sum())
+        logger.info("Duration", Duration)
 
         # Full Output
         filename4 = FOLDERS["output_folder"] + "model_results.csv"
@@ -508,59 +509,43 @@ class Icestupa:
         # self.TIME_STEP=15*60
         # self.df = self.df.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index()
 
-        print(self.df.head())
+        logger.info(self.df.head())
 
         if self.df.isnull().values.any():
-            print("Warning: Null values present")
+            logger.info("Warning: Null values present")
 
     def read_output(self):
 
         self.df = pd.read_hdf(FOLDERS["output_folder"] + "model_output.h5", "df")
 
         if self.df.isnull().values.any():
-            print("Warning: Null values present")
-            # print(self.df.columns)
-            # print(self.df[['s_cone']].isnull().sum())
-            # print(self.df[self.df['s_cone'].isnull()])
+            logger.info("Warning: Null values present")
+            # logger.info(self.df.columns)
+            # logger.info(self.df[['s_cone']].isnull().sum())
+            # logger.info(self.df[self.df['s_cone'].isnull()])
 
         # Table outputs
         f_off = self.df.index[self.df.Discharge.astype(bool)].tolist()
         f_off = f_off[-1] + 1
-        print(
-            "When",
-            self.df.When.iloc[f_off],
-            "M_U",
-            self.df.unfrozen_water.iloc[f_off],
-            "M_solid",
-            self.df.ice.iloc[f_off],
-            "M_gas",
-            self.df.vapour.iloc[f_off],
-            "M_liquid",
-            self.df.meltwater.iloc[f_off],
-            "M_R",
-            self.df.ppt[: f_off + 1].sum(),
-            "M_D",
-            self.df.dpt[: f_off + 1].sum(),
-            "M_F",
-            self.df.Discharge[: f_off + 1].sum() * 5
-            + self.df.iceV.iloc[0] * self.RHO_I,
+        logger.info(
+            "When %s \n M_U %.2f\n M_solid %.2f\n M_gas %.2f\n M_liquid %.2f\n M_R %.2f\n M_D %.2f\n M_F %.2f\n" %(self.df.When.iloc[f_off], self.df.unfrozen_water.iloc[f_off], self.df.ice.iloc[f_off], self.df.vapour.iloc[f_off], self.df.meltwater.iloc[f_off], self.df.ppt[: f_off + 1].sum(), self.df.dpt[: f_off + 1].sum(), self.df.Discharge[: f_off + 1].sum() * 5+ self.df.iceV.iloc[0] * self.RHO_I)
         )
-        print(
+        logger.info(
             f"M_input {self.df.input.iloc[-1]}, M_R {self.df.ppt.sum()}, M_D {self.df.dpt.sum()}, M_F {self.df.Discharge.sum() * 5 + self.df.iceV.iloc[0] * self.RHO_I}"
         )
-        print(
+        logger.info(
             f"When {self.df.When.iloc[-1]},M_U {self.df.unfrozen_water.iloc[-1]}, M_solid {self.df.ice.iloc[-1]}, M_gas {self.df.vapour.iloc[-1]}, M_liquid {self.df.meltwater.iloc[-1]}"
         )
-        # print("AE", self.df["e_a"].mean())
-        print(f"Temperature of spray", self.df.loc[self.df["TotalE"] < 0, "T_a"].mean())
-        print(f"Temperature minimum", self.df["T_a"].min())
-        print(f"Energy mean", self.df["TotalE"].mean())
+        # logger.info("AE", self.df["e_a"].mean())
+        logger.info(f"Temperature of spray : %.2f" %(self.df.loc[self.df["TotalE"] < 0, "T_a"].mean()))
+        logger.info(f"Temperature minimum : {self.df.T_a.min()}")
+        logger.info(f"Energy mean : {self.df.TotalE.mean()}")
 
         dfd = self.df.set_index("When").resample("D").mean().reset_index()
 
         dfd["Global"] = dfd["SW_diffuse"] + dfd["SW_direct"]
-        print("Global max", dfd["Global"].max(), "SW max", dfd.SW.max())
-        print("Nonzero Qf", self.df.Qf.astype(bool).sum(axis=0))
+        logger.info(f"Global max: {dfd.Global.max()}\n SW max: {dfd.SW.max()}")
+        logger.info(f"Nonzero Qf: {self.df.Qf.astype(bool).sum(axis=0)}")
         Total = (
             dfd.SW.abs().sum()
             + dfd.LW.abs().sum()
@@ -571,42 +556,39 @@ class Icestupa:
             + dfd["$q_{melt}$"].abs().sum()
             + dfd["$q_{T}$"].abs().sum()
         )
-        print(
-            "Qmelt",
-            dfd["$q_{melt}$"].abs().sum() / Total,
-            "Qt",
-            dfd["$q_{T}$"].abs().sum() / Total,
+        logger.info("Qmelt: %.2f, Qt: %.2f" %(dfd["$q_{melt}$"].mean(), dfd["$q_{T}$"].mean()))
+        logger.info(
+            "Qmelt: %.2f \n Qt: %.2f" %(dfd["$q_{melt}$"].abs().sum() / Total, dfd["$q_{T}$"].abs().sum() / Total)
         )
-        print("Qmelt", dfd["$q_{melt}$"].mean(), "Qt", dfd["$q_{T}$"].mean())
-        print(
+        logger.info(
             f"% of SW {dfd.SW.abs().sum()/Total}, LW {dfd.LW.abs().sum()/Total}, Qs {dfd.Qs.abs().sum()/Total}, Ql {dfd.Ql.abs().sum()/Total}, Qf {dfd.Qf.abs().sum()/Total}, Qg {dfd.Qg.abs().sum()/Total}"
         )
 
-        # print(
+        # logger.info(
         #     f"Mean of SW {self.df.SW.mean()}, LW {self.df.LW.mean()}, Qs {self.df.Qs.mean()}, Ql {self.df.Ql.mean()}, Qf {self.df.Qf.mean()}, Qg {self.df.Qg.mean()}"
         # )
-        # print(
+        # logger.info(
         #     f"Range of SW {self.df.SW.min()}-{self.df.SW.max()}, LW {self.df.LW.min()}-{self.df.LW.max()}, Qs {self.df.Qs.min()}-{self.df.Qs.max()}, Ql {self.df.Ql.min()}-{self.df.Ql.max()}, Qf {self.df.Qf.min()}-{self.df.Qf.max()}, Qg {self.df.Qg.min()}-{self.df.Qg.max()}"
         # )
-        print(
+        logger.info(
             f"Mean of SW {dfd.SW.mean()}, LW {dfd.LW.mean()}, Qs {dfd.Qs.mean()}, Ql {dfd.Ql.mean()}, Qf {dfd.Qf.mean()}, Qg {dfd.Qg.mean()}"
         )
-        print(
+        logger.info(
             f"Range of SW {dfd.SW.min()}-{dfd.SW.max()}, LW {dfd.LW.min()}-{dfd.LW.max()}, Qs {dfd.Qs.min()}-{dfd.Qs.max()}, Ql {dfd.Ql.min()}-{dfd.Ql.max()}, Qf {dfd.Qf.min()}-{dfd.Qf.max()}, Qg {dfd.Qg.min()}-{dfd.Qg.max()}"
         )
-        # print(
+        # logger.info(
         #     f"Mean of emissivity {self.df.e_a.mean()}, Range of f_cone {self.df.e_a.min()}-{self.df.e_a.max()}"
         # )
-        print(f"Max SA {self.df.SA.max()}")
-        print(
+        logger.info(f"Max SA {self.df.SA.max()}")
+        logger.info(
             f"M_input {self.df.input.iloc[-1]}, M_R {self.df.ppt.sum()}, M_D {self.df.dpt.sum()}, M_F {self.df.Discharge.sum() * 5 + self.df.iceV.iloc[0] * self.RHO_I}"
         )
-        print(
+        logger.info(
             f"Max_growth {self.df.solid.max() / 5}, average_discharge {self.df.Discharge.replace(0, np.NaN).mean()}"
         )
 
-        print(f"Duration {self.df.index[-1] * 5 / (60 * 24)}")
-        print(f"Ended {self.df.When.iloc[-1]}")
+        logger.info(f"Duration {self.df.index[-1] * 5 / (60 * 24)}")
+        logger.info(f"Ended {self.df.When.iloc[-1]}")
 
         # Output for manim
         filename2 = os.path.join(
@@ -657,7 +639,7 @@ class Icestupa:
         self.sum_T_s = 0  # weighted_sums
         self.sum_SA = 0  # weighted_sums
 
-        print("AIR simulation begins...")
+        logger.info("AIR simulation begins...")
         for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]):
             i = row.Index
 
@@ -902,7 +884,7 @@ class Icestupa:
                     + self.df.loc[i, "ppt"]
                 ) / (self.df.loc[i, "SA"] * self.RHO_I)
 
-                # print(self.df.loc[i, "When"], self.df.loc[i, "ice"])
+                # logger.info(self.df.loc[i, "When"], self.df.loc[i, "ice"])
 
                 self.liquid = [0] * 1
 
@@ -948,12 +930,12 @@ class Icestupa:
             ]
         ]
 
-        print(
+        logger.info(
             data.drop("$q_{net}$", axis=1).apply(
                 lambda x: x.corr(data["$q_{net}$"]) ** 2
             )
         )
-        print(
+        logger.info(
             data.drop("$\\Delta M_{ice}$", axis=1).apply(
                 lambda x: x.corr(data["$\\Delta M_{ice}$"]) ** 2
             )
@@ -2202,6 +2184,13 @@ class PDF(Icestupa):
 
 if __name__ == "__main__":
     start = time.time()
+    logger = logging.getLogger(__name__)
+    print(logger)
+    coloredlogs.install(
+        fmt="%(levelname)s %(message)s",
+        logger=logger,
+    )
+    logger.error('Model begins')
 
     icestupa = PDF()
 
@@ -2215,7 +2204,7 @@ if __name__ == "__main__":
 
     # icestupa.corr_plot()
 
-    icestupa.summary()
+    # icestupa.summary()
 
     # icestupa.print_input()
     # icestupa.paper_figures()
@@ -2224,4 +2213,4 @@ if __name__ == "__main__":
 
     total = time.time() - start
 
-    print("Total time : ", total / 60)
+    logger.info("Total time  : %.2f", total / 60)

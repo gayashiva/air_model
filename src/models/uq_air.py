@@ -4,7 +4,9 @@ import pandas as pd
 import math
 import sys
 
-sys.path.append("/home/suryab/PhD/air_model")
+sys.path.append(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+)
 from src.data.config import SITE, FOUNTAIN, FOLDERS
 from src.models.air import Icestupa
 

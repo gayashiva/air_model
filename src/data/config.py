@@ -1,13 +1,73 @@
 import os
+import sys
 from datetime import datetime
+import argparse
+from distutils.util import strtobool
+
+dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+sys.path.append(dirname)
+# from src.data.logging import setup_logging
+import logging
 
 DIRNAME = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SITE = "schwarzsee"
 OPTION = "schwarzsee"
 
 # SITE = input("Input the Field SITE Name: ") or SITE
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="""
+    This script is going to create an employee profile. 
+    """
+    )
+    parser.add_argument(
+        "site",
+        choices=["schwarzsee", "guttannen", "leh"],
+        help="Location",
+    )
+
+    parser.add_argument(
+        "--d",
+        default=False,
+        type=strtobool,
+        help="Do you want to debug? (default: %(default)s)",
+    )
+
+    args = parser.parse_args()
+    DEBUG = args.d
+    SITE = args.site
+
+    if DEBUG:
+        print("Debugging Site : " + str(SITE))
+    else:
+        print("Site : " + str(SITE))
+
+    # parser.add_argument("--address", help="Address of Employee")
+
+    # NAME = args.name
+    # TITLE = args.title
+    # ADDRESS = args.address
+
+    # print("Name : " + NAME)
+    # print("Job Title : " + TITLE)
+    # print("Address : " + ADDRESS)
+    # parser.add_argument("--isFullTime", default=True, type=strtobool, help="Is this Employee Full Time? (default: %(default)s)")
+
+    # FULLTIME = args.isFullTime
+
+    # if FULLTIME:
+    #     print(NAME + " is a full time employee.")
+    # else:
+    #     print(NAME + " is not a full time employee.")
+
 
 print("SITE is", SITE)
+# setup_logging()
+# logger = logging.getLogger(__name__)
+# print(logger)
+# logger.info("Config begins")
+
 
 if SITE == "schwarzsee":
     SITE = dict(
@@ -103,31 +163,6 @@ if SITE == "guttannen":
         tree_height=1.93,
         tree_radius=4.13 / 2,
     )
-    # FOLDERS = dict(
-    # DIRNAME=os.path.abspath(os.path.join(os.path.DIRNAME(__file__), "..", "..")),
-    # input_folder=os.path.join(DIRNAME, "data/interim/guttannen/"),
-    # output_folder=os.path.join(DIRNAME, "data/processed/guttannen/"),
-    # data_file=os.path.join(DIRNAME, "data/raw/guttannen/" + SITE + "_2020.txt"),
-    # )
-
-    # dates = dict(
-    # start_date=datetime(2020, 1, 1, 18),
-    # end_date=datetime(2020, 5, 1),
-    # error_date=datetime(2020, 1, 19),
-    # fountain_off_date=datetime(2020, 3, 1),
-    # )
-    # FOUNTAIN = dict(
-    # aperture_f=0.005,  # FOUNTAIN aperture diameter
-    # theta_f=0,
-    # h_f=3.93,  # FOUNTAIN steps h_f
-    # discharge=3.58,  # FOUNTAIN on discharge
-    # crit_temp=1,  # FOUNTAIN runtime temperature
-    # latitude=46.649999,
-    # longitude=8.283333,
-    # utc_offset=1,
-    # tree_height=1.93,
-    # tree_radius=4.13 / 2,
-    # )
 
 FOLDERS = dict(
     raw_folder=os.path.join(DIRNAME, "data/" + SITE["name"] + "/raw/"),
