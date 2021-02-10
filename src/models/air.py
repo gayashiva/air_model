@@ -18,7 +18,6 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 
 sys.path.append(dirname)
 from src.data.config import SITE, FOUNTAIN, FOLDERS
-# from src.data.logging import setup_logging
 import logging
 import coloredlogs
 
@@ -2185,7 +2184,6 @@ class PDF(Icestupa):
 if __name__ == "__main__":
     start = time.time()
     logger = logging.getLogger(__name__)
-    print(logger)
     coloredlogs.install(
         fmt="%(levelname)s %(message)s",
         logger=logger,

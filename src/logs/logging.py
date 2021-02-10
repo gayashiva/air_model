@@ -1,18 +1,15 @@
-import yaml
 import os
-import sys
-from logging import config
+import yaml
+import logging.config
 import logging
 import coloredlogs
 
-dirname = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
-sys.path.append(dirname)
-from src.logs.logging import setup_logging
+dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 
 def setup_logging(
-    default_path=dirname + "/src/logs/logging.yaml",
+    default_path=dirname + "/src/data/logging.yaml",
     default_level=logging.INFO,
     env_key="LOG_CFG",
 ):
@@ -29,7 +26,7 @@ def setup_logging(
             try:
                 config = yaml.safe_load(f.read())
                 logging.config.dictConfig(config)
-
+                coloredlogs.install()
             except Exception as e:
                 print(e)
                 print("Error in Logging Configuration. Using default configs")
@@ -39,7 +36,3 @@ def setup_logging(
         logging.basicConfig(level=default_level)
         coloredlogs.install(level=default_level)
         print("Failed to load configuration file. Using default configs")
-
-
-# Should be the first statement in the module to avoid circular dependency issues.
-setup_logging()
