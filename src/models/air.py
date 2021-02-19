@@ -418,8 +418,8 @@ class Icestupa:
             + self.df.loc[i, "Qg"]
         )
 
-        # if np.isnan(self.df.loc[i, "TotalE"]) :
-        #     logger.info(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}, SA {self.df.SA[i]}")
+        if np.isnan(self.df.loc[i, "TotalE"]) :
+            logger.error(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}, SA {self.df.SA[i]}")
 
     def summary(self):
 
@@ -437,7 +437,6 @@ class Icestupa:
                 "p_a",
                 "cld",
                 "a",
-                # "e_a",
                 "vp_a",
                 "LW_in",
                 "T_s",
@@ -464,6 +463,7 @@ class Icestupa:
                 "r_ice",
                 "ppt",
                 "dpt",
+                "cdt",
                 "missing",
                 "s_cone",
                 "input",
@@ -526,16 +526,15 @@ class Icestupa:
         # Table outputs
         f_off = self.df.index[self.df.Discharge.astype(bool)].tolist()
         f_off = f_off[-1] + 1
-        logger.info(
-            "When %s \n M_U %.2f\n M_solid %.2f\n M_gas %.2f\n M_liquid %.2f\n M_R %.2f\n M_D %.2f\n M_F %.2f\n" %(self.df.When.iloc[f_off], self.df.unfrozen_water.iloc[f_off], self.df.ice.iloc[f_off], self.df.vapour.iloc[f_off], self.df.meltwater.iloc[f_off], self.df.ppt[: f_off + 1].sum(), self.df.dpt[: f_off + 1].sum(), self.df.Discharge[: f_off + 1].sum() * 5+ self.df.iceV.iloc[0] * self.RHO_I)
+        logger.warning(
+            "When %s \n M_U %.2f\n M_solid %.2f\n M_gas %.2f\n M_liquid %.2f\n M_R %.2f\n M_D %.2f\n M_C %.2f\n M_F %.2f\n" %(self.df.When.iloc[f_off], self.df.unfrozen_water.iloc[f_off], self.df.ice.iloc[f_off], self.df.vapour.iloc[f_off], self.df.meltwater.iloc[f_off], self.df.ppt[: f_off + 1].sum(), self.df.dpt[: f_off + 1].sum(), self.df.cdt[: f_off + 1].sum(), self.df.Discharge[: f_off + 1].sum() * 5+ self.df.iceV.iloc[0] * self.RHO_I)
         )
         logger.info(
-            f"M_input {self.df.input.iloc[-1]}, M_R {self.df.ppt.sum()}, M_D {self.df.dpt.sum()}, M_F {self.df.Discharge.sum() * 5 + self.df.iceV.iloc[0] * self.RHO_I}"
+            f"M_input {self.df.input.iloc[-1]}\n M_R {self.df.ppt.sum()}\n M_D {self.df.dpt.sum()}\n M_C {self.df.cdt.sum()}\n M_F {self.df.Discharge.sum() * 5 + self.df.iceV.iloc[0] * self.RHO_I}\n"
         )
         logger.info(
-            f"When {self.df.When.iloc[-1]},M_U {self.df.unfrozen_water.iloc[-1]}, M_solid {self.df.ice.iloc[-1]}, M_gas {self.df.vapour.iloc[-1]}, M_liquid {self.df.meltwater.iloc[-1]}"
+            f"When {self.df.When.iloc[-1]}\n M_U {self.df.unfrozen_water.iloc[-1]},\n M_solid {self.df.ice.iloc[-1]},\n M_gas {self.df.vapour.iloc[-1]},\n M_liquid {self.df.meltwater.iloc[-1]}"
         )
-        # logger.info("AE", self.df["e_a"].mean())
         logger.info(f"Temperature of spray : %.2f" %(self.df.loc[self.df["TotalE"] < 0, "T_a"].mean()))
         logger.info(f"Temperature minimum : {self.df.T_a.min()}")
         logger.info(f"Energy mean : {self.df.TotalE.mean()}")
@@ -583,11 +582,12 @@ class Icestupa:
             f"M_input {self.df.input.iloc[-1]}, M_R {self.df.ppt.sum()}, M_D {self.df.dpt.sum()}, M_F {self.df.Discharge.sum() * 5 + self.df.iceV.iloc[0] * self.RHO_I}"
         )
         logger.info(
-            f"Max_growth {self.df.solid.max() / 5}, average_discharge {self.df.Discharge.replace(0, np.NaN).mean()}"
+            f"Max_growth {self.df.solid.max() / 5}, Mean_growth {self.df.solid.replace(0,np.NaN).mean() / 5},average_discharge {self.df.Discharge.replace(0, np.NaN).mean()}"
         )
 
         logger.info(f"Duration {self.df.index[-1] * 5 / (60 * 24)}")
         logger.info(f"Ended {self.df.When.iloc[-1]}")
+        logger.warning(f"Evaporation/Condensation: %.2f, Sublimation/Deposition: %.2f" %(self.df.loc[self.df["RH"] > 60, "RH"].count()/self.df.index[-1], self.df.loc[self.df["RH"] <= 60, "RH"].count()/self.df.index[-1]))
 
         # Output for manim
         filename2 = os.path.join(
@@ -624,6 +624,7 @@ class Icestupa:
             "r_ice",
             "ppt",
             "dpt",
+            "cdt",
             "$q_{T}$",
             "$q_{melt}$",
         ]
@@ -727,8 +728,9 @@ class Icestupa:
                 self.df.loc[i, "$q_{T}$"] = self.df.loc[i, "Ql"]
 
                 if self.df.loc[i, "Ql"] < 0:
+                    # Sublimation
                     if self.df.loc[i, "RH"] < 60:
-                        L = self.L_S  # Sublimation
+                        L = self.L_S  
                         self.df.loc[i, "gas"] -= (
                             self.df.loc[i, "$q_{T}$"]
                             * self.TIME_STEP
@@ -743,6 +745,7 @@ class Icestupa:
                             * self.df.loc[i, "SA"]
                             / L
                         )
+                    # Evaporation
                     else:
                         L = self.L_E
                         self.df.loc[i, "gas"] -= (
@@ -760,14 +763,25 @@ class Icestupa:
                             / L
                         )
 
-                else:  # Deposition
-
-                    self.df.loc[i, "dpt"] += (
-                        self.df.loc[i, "$q_{T}$"]
-                        * self.TIME_STEP
-                        * self.df.loc[i, "SA"]
-                        / self.L_S
-                    )
+                else:  
+                    # Deposition
+                    if self.df.loc[i, "RH"] < 60:
+                        L = self.L_S  
+                        self.df.loc[i, "dpt"] += (
+                            self.df.loc[i, "$q_{T}$"]
+                            * self.TIME_STEP
+                            * self.df.loc[i, "SA"]
+                            / self.L_S
+                        )
+                    # Condensation
+                    else:
+                        L = self.L_E  
+                        self.df.loc[i, "cdt"] += (
+                            self.df.loc[i, "$q_{T}$"]
+                            * self.TIME_STEP
+                            * self.df.loc[i, "SA"]
+                            / self.L_S
+                        )
 
                 if self.df.loc[i, "TotalE"] < 0 and self.liquid > 0:
 
@@ -846,12 +860,16 @@ class Icestupa:
                         / (self.L_F)
                     )
 
+                # Vaporization from atmosphere
+                # self.df.loc[i, "vap"] = self.df.loc[i, "dpt"] + self.df.loc[i, "cdt"]
+
                 """ Quantities of all phases """
                 self.df.loc[i + 1, "T_s"] = (
                     self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]
                 )
                 self.df.loc[i + 1, "meltwater"] = (
                     self.df.loc[i, "meltwater"] + self.df.loc[i, "melted"]
+                    + self.df.loc[i, "cdt"]
                 )
                 self.df.loc[i + 1, "ice"] = (
                     self.df.loc[i, "ice"]
@@ -874,6 +892,7 @@ class Icestupa:
                     self.df.loc[i, "input"]
                     + self.df.loc[i, "ppt"]
                     + self.df.loc[i, "dpt"]
+                    + self.df.loc[i, "cdt"]
                     + self.df.loc[i, "Discharge"] * 5
                 )
                 self.df.loc[i + 1, "thickness"] = (
@@ -886,6 +905,9 @@ class Icestupa:
                 # logger.info(self.df.loc[i, "When"], self.df.loc[i, "ice"])
 
                 self.liquid = [0] * 1
+        self.summary()
+
+
 
     def corr_plot(self):
 
@@ -2184,6 +2206,7 @@ class PDF(Icestupa):
 if __name__ == "__main__":
     start = time.time()
     logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
     coloredlogs.install(
         fmt="%(levelname)s %(message)s",
         logger=logger,
