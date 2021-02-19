@@ -526,7 +526,7 @@ class Icestupa:
         # Table outputs
         f_off = self.df.index[self.df.Discharge.astype(bool)].tolist()
         f_off = f_off[-1] + 1
-        logger.warning(
+        logger.info(
             "When %s \n M_U %.2f\n M_solid %.2f\n M_gas %.2f\n M_liquid %.2f\n M_R %.2f\n M_D %.2f\n M_C %.2f\n M_F %.2f\n" %(self.df.When.iloc[f_off], self.df.unfrozen_water.iloc[f_off], self.df.ice.iloc[f_off], self.df.vapour.iloc[f_off], self.df.meltwater.iloc[f_off], self.df.ppt[: f_off + 1].sum(), self.df.dpt[: f_off + 1].sum(), self.df.cdt[: f_off + 1].sum(), self.df.Discharge[: f_off + 1].sum() * 5+ self.df.iceV.iloc[0] * self.RHO_I)
         )
         logger.info(
@@ -556,7 +556,7 @@ class Icestupa:
         )
         logger.info("Qmelt: %.2f, Qt: %.2f" %(dfd["$q_{melt}$"].mean(), dfd["$q_{T}$"].mean()))
         logger.info(
-            "Qmelt: %.2f \n Qt: %.2f" %(dfd["$q_{melt}$"].abs().sum() / Total, dfd["$q_{T}$"].abs().sum() / Total)
+            "Percent of Qmelt: %.2f \n Qt: %.8f" %(dfd["$q_{melt}$"].abs().sum() / Total, dfd["$q_{T}$"].abs().sum() / Total)
         )
         logger.info(
             f"% of SW {dfd.SW.abs().sum()/Total}, LW {dfd.LW.abs().sum()/Total}, Qs {dfd.Qs.abs().sum()/Total}, Ql {dfd.Ql.abs().sum()/Total}, Qf {dfd.Qf.abs().sum()/Total}, Qg {dfd.Qg.abs().sum()/Total}"
@@ -587,7 +587,7 @@ class Icestupa:
 
         logger.info(f"Duration {self.df.index[-1] * 5 / (60 * 24)}")
         logger.info(f"Ended {self.df.When.iloc[-1]}")
-        logger.warning(f"Evaporation/Condensation: %.2f, Sublimation/Deposition: %.2f" %(self.df.loc[self.df["RH"] > 60, "RH"].count()/self.df.index[-1], self.df.loc[self.df["RH"] <= 60, "RH"].count()/self.df.index[-1]))
+        logger.info(f"Evaporation/Condensation: %.2f, Sublimation/Deposition: %.2f" %(self.df.loc[self.df["RH"] > 60, "RH"].count()/self.df.index[-1], self.df.loc[self.df["RH"] <= 60, "RH"].count()/self.df.index[-1]))
 
         # Output for manim
         filename2 = os.path.join(
@@ -599,6 +599,7 @@ class Icestupa:
 
     def melt_freeze(self):
 
+        logger = logging.getLogger(__name__)
         col = [
             "T_s",  # Surface Temperature
             "T_bulk",  # Bulk Temperature
@@ -905,7 +906,7 @@ class Icestupa:
                 # logger.info(self.df.loc[i, "When"], self.df.loc[i, "ice"])
 
                 self.liquid = [0] * 1
-        self.summary()
+        # self.summary()
 
 
 
@@ -1972,7 +1973,7 @@ class PDF(Icestupa):
         # pp = PdfPages(FOLDERS["output_folder"] + "Figure_6.pdf")
         fig = plt.figure(figsize=(12, 14))
         dfds = self.df[
-            ["When", "solid", "ppt", "dpt", "melted", "gas", "SA", "iceV", "Discharge"]
+            ["When", "solid", "ppt", "dpt", "cdt", "melted", "gas", "SA", "iceV", "Discharge"]
         ]
 
         with pd.option_context("mode.chained_assignment", None):
@@ -1985,6 +1986,7 @@ class PDF(Icestupa):
                 dfds.loc[i, "gas"] *= -1 / (self.df.loc[i, "SA"] * self.RHO_I)
                 dfds.loc[i, "ppt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
                 dfds.loc[i, "dpt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
+                dfds.loc[i, "cdt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
 
         dfds = dfds.set_index("When").resample("D").sum().reset_index()
         dfds["When"] = dfds["When"].dt.strftime("%b %d")
@@ -2012,11 +2014,12 @@ class PDF(Icestupa):
             columns={
                 "solid": "Ice",
                 "ppt": "Snow",
-                "dpt": "Vapour cond./dep.",
+                # "dpt": "Vapour cond./dep.",
                 "melted": "Melt",
                 "gas": "Vapour sub./evap.",
             }
         )
+        dfds["Vapour cond./dep."] = dfds["dpt"] + dfds["cdt"]
 
         y2 = dfds[
             [

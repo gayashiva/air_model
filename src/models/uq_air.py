@@ -3,6 +3,9 @@ import chaospy as cp
 import pandas as pd
 import math
 import sys
+import os
+import logging
+import coloredlogs
 
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -43,6 +46,13 @@ class UQ_Icestupa(un.Model, Icestupa):
             .mean()
             .reset_index()
         )
+        # logger = logging.getLogger(__name__)
+        # logger.setLevel(logging.INFO)
+        # coloredlogs.install(
+        #     fmt="%(levelname)s %(message)s",
+        #     logger=logger,
+        # )
+        # logger.info("Model begins")
 
     def run(self, **parameters):
 
@@ -139,66 +149,66 @@ T_w_dist = cp.Uniform(0, 9)
 dx_dist = cp.Uniform(0.001, 0.01)
 time_steps_dist = cp.Uniform(5 * 60, 30 * 60)
 
-# parameters_single = {
-#     "IE": ie_dist,
-#     "A_I": a_i_dist,
-#     "A_S": a_s_dist,
-#     "T_DECAY": t_decay_dist,
-#     "T_RAIN": T_rain_dist,
-#     "dia_f": dia_f_dist,
-#     "h_f": h_f_dist,
-#     "h_aws": h_aws_dist,
-#     "T_w": T_w_dist,
-#     "DX": dx_dist,
-#     "TIME_STEP": time_steps_dist,
-# }
-
-# Create the parameters
-# for k, v in parameters_single.items():
-#     print(k, v)
-#     parameters = un.Parameters({k: v})
-
-#     # Initialize the model
-#     model = UQ_Icestupa()
-
-#     # Set up the uncertainty quantification
-#     UQ = un.UncertaintyQuantification(
-#         model=model,
-#         parameters=parameters,
-#         features=features,
-#         CPUs=4,
-#     )
-
-#     # Perform the uncertainty quantification using # polynomial chaos with point collocation (by default) data =
-#     data = UQ.quantify(
-#         seed=10,
-#         data_folder=FOLDERS["sim_folder"],
-#         figure_folder=FOLDERS["sim_folder"],
-#         filename=k,
-#     )
-
-parameters = {
+parameters_single = {
     "IE": ie_dist,
+    "A_I": a_i_dist,
+    "A_S": a_s_dist,
+    "T_DECAY": t_decay_dist,
     "T_RAIN": T_rain_dist,
+    "dia_f": dia_f_dist,
+    "h_f": h_f_dist,
+    "h_aws": h_aws_dist,
+    "T_w": T_w_dist,
+    "DX": dx_dist,
+    "TIME_STEP": time_steps_dist,
 }
-parameters = un.Parameters(parameters)
 
-# Initialize the model
-model = UQ_Icestupa()
+Create the parameters
+for k, v in parameters_single.items():
+    print(k, v)
+    parameters = un.Parameters({k: v})
 
-# Set up the uncertainty quantification
-UQ = un.UncertaintyQuantification(
-    model=model,
-    parameters=parameters,
-    features=features,
-    CPUs=4,
-)
+    # Initialize the model
+    model = UQ_Icestupa()
 
-# Perform the uncertainty quantification using
-# polynomial chaos with point collocation (by default)
-data = UQ.quantify(
-    seed=10,
-    data_folder=FOLDERS["sim_folder"],
-    figure_folder=FOLDERS["sim_folder"],
-    filename="full",
-)
+    # Set up the uncertainty quantification
+    UQ = un.UncertaintyQuantification(
+        model=model,
+        parameters=parameters,
+        features=features,
+        CPUs=4,
+    )
+
+    # Perform the uncertainty quantification using # polynomial chaos with point collocation (by default) data =
+    data = UQ.quantify(
+        seed=10,
+        data_folder=FOLDERS["sim_folder"],
+        figure_folder=FOLDERS["sim_folder"],
+        filename=k,
+    )
+
+# parameters = {
+#     "IE": ie_dist,
+#     "T_RAIN": T_rain_dist,
+# }
+# parameters = un.Parameters(parameters)
+
+# # Initialize the model
+# model = UQ_Icestupa()
+
+# # Set up the uncertainty quantification
+# UQ = un.UncertaintyQuantification(
+#     model=model,
+#     parameters=parameters,
+#     features=features,
+#     CPUs=2,
+# )
+
+# # Perform the uncertainty quantification using
+# # polynomial chaos with point collocation (by default)
+# data = UQ.quantify(
+#     seed=10,
+#     data_folder=FOLDERS["sim_folder"],
+#     figure_folder=FOLDERS["sim_folder"],
+#     filename="full",
+# )

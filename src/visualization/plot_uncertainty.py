@@ -1,7 +1,10 @@
 import matplotlib.pyplot as plt
 import sys
+import os
 
-sys.path.append("/home/surya/Programs/Github/air_model")
+sys.path.append(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+)
 import numpy as np
 import pandas as pd
 import math
@@ -116,9 +119,5 @@ ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
 ax.xaxis.set_minor_locator(mdates.DayLocator())
 fig.autofmt_xdate()
 plt.savefig(figures + "uncertainty.jpg", bbox_inches="tight", dpi=300)
-plt.savefig(
-    "/home/surya/Documents/AIR_Manuscript/Figures/Figure_8.jpg",
-    bbox_inches="tight",
-    dpi=300,
-)
+plt.savefig(FOLDERS["output_folder"] + "jpg/Figure_8.jpg", dpi=300, bbox_inches="tight")
 # plt.show()
