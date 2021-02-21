@@ -23,6 +23,13 @@ import coloredlogs
 
 pd.plotting.register_matplotlib_converters()
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+coloredlogs.install(
+    fmt="%(name)s %(levelname)s %(message)s",
+    logger=logger,
+)
+logger.info('Model begins')
 
 class Icestupa:
     """Physical Constants"""
@@ -79,6 +86,14 @@ class Icestupa:
                 header=0,
                 parse_dates=["When"],
             )
+
+        # logger = logging.getLogger(__name__)
+        # logger.setLevel(logging.INFO)
+        # coloredlogs.install(
+        #     fmt="%(levelname)s %(message)s",
+        #     logger=logger,
+        # )
+        # logger.info('Model begins')
 
     def config_update(self):
         parameters = {
@@ -598,8 +613,8 @@ class Icestupa:
         self.df[cols].to_csv(filename2, sep=",")
 
     def melt_freeze(self):
+        # logger = logging.getLogger()
 
-        logger = logging.getLogger(__name__)
         col = [
             "T_s",  # Surface Temperature
             "T_bulk",  # Bulk Temperature
@@ -2211,7 +2226,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
     coloredlogs.install(
-        fmt="%(levelname)s %(message)s",
+        fmt="%(name)s %(levelname)s %(message)s",
         logger=logger,
     )
     logger.info('Model begins')

@@ -7,8 +7,12 @@ import matplotlib.colors
 import uncertainpy as un
 import statistics as st
 import sys
+import os
 
-sys.path.append("/home/surya/Programs/Github/air_model")
+sys.path.append(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+)
+
 from src.data.config import SITE, FOUNTAIN, FOLDERS
 
 
@@ -26,7 +30,7 @@ input = FOLDERS["sim_folder"] + "/"
 output = FOLDERS["sim_folder"] + "/"
 
 names = [
-    "full",
+    # "full",
     "T_RAIN",
     "IE",
     "A_I",
@@ -75,8 +79,8 @@ ax.set_xlabel("Parameter")
 ax.set_ylabel("Sensitivity of Maximum Ice Volume [$m^3$]")
 ax.grid(axis="y")
 plt.savefig(output + "sensitivities.jpg", bbox_inches="tight", dpi=300)
-# plt.savefig(
-#     "/home/surya/Documents/AIR_Manuscript/Figures/Figure_9.jpg",
-#     bbox_inches="tight",
-#     dpi=300,
-# )
+plt.savefig(
+    FOLDERS["output_folder"] + "jpg/Figure_9.jpg",
+    bbox_inches="tight",
+    dpi=300,
+)
