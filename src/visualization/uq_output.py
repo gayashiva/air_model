@@ -30,7 +30,7 @@ input = FOLDERS["sim_folder"] + "/"
 output = FOLDERS["sim_folder"] + "/"
 
 names = [
-    # "full",
+    "full",
     "T_RAIN",
     "IE",
     "A_I",

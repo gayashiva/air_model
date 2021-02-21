@@ -5,7 +5,9 @@ import math
 from pandas.plotting import register_matplotlib_converters
 
 register_matplotlib_converters()
-sys.path.append("/home/surya/Programs/Github/air_model")
+sys.path.append(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+)
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,26 +20,17 @@ from src.models.air import Icestupa
 
 
 class Discharge_Icestupa(Icestupa):
-    def __init__(self):
+    # def __init__(self):
 
-        # data_store = pd.HDFStore("/home/surya/Programs/PycharmProjects/air_model/data/interim/schwarzsee/model_input.h5")
-        # self.df = data_store['df']
-        # data_store.close()
-
-        self.df = pd.read_hdf(FOLDERS["input_folder"] + "model_input_extended.h5", "df")
+    #     self.df = pd.read_hdf(FOLDERS["input_folder"] + "model_input_extended.h5", "df")
 
     def run(self, experiment):
 
-        print(experiment)
+        self.df = pd.read_hdf(FOLDERS["input_folder"] + "model_input_extended.h5", "df")
         key = experiment.get("dia_f")
-
         self.dia_f = key
 
-        # self.print_input(filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/")
-
         self.melt_freeze()
-
-        # self.print_output(filename = "/home/surya/Programs/PycharmProjects/air_model/data/processed/schwarzsee/simulations/discharge_output.pdf")
 
         Max_IceV = self.df["iceV"].max()
         Efficiency = (
@@ -105,7 +98,7 @@ df_out = pd.DataFrame()
 results = []
 
 if __name__ == "__main__":
-    with Pool(6) as executor:
+    with Pool(2) as executor:
 
         for (
             key,

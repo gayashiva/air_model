@@ -66,8 +66,6 @@ class Icestupa:
     h_f = 0
     h_aws = 0
 
-    """Miscellaneous"""
-    STATE = 0
 
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
@@ -87,13 +85,6 @@ class Icestupa:
                 parse_dates=["When"],
             )
 
-        # logger = logging.getLogger(__name__)
-        # logger.setLevel(logging.INFO)
-        # coloredlogs.install(
-        #     fmt="%(levelname)s %(message)s",
-        #     logger=logger,
-        # )
-        # logger.info('Model begins')
 
     def config_update(self):
         parameters = {
@@ -104,7 +95,7 @@ class Icestupa:
         }
         for var in parameters:
             if parameters[var]:
-                logger.info(var, "->", parameters[var])
+                logger.info(f"%s, ->, %.3f" %(var, parameters[var]))
                 FOUNTAIN[var] = parameters[var]
 
     def get_solar(self):
@@ -613,7 +604,6 @@ class Icestupa:
         self.df[cols].to_csv(filename2, sep=",")
 
     def melt_freeze(self):
-        # logger = logging.getLogger()
 
         col = [
             "T_s",  # Surface Temperature
@@ -649,19 +639,16 @@ class Icestupa:
             self.df[column] = 0
 
         self.liquid = [0] * 1
-
-        self.start = -10
-
-        self.sum_T_s = 0  # weighted_sums
-        self.sum_SA = 0  # weighted_sums
+        STATE = 0
+        start = 0
 
         logger.info("AIR simulation begins...")
         for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]):
             i = row.Index
 
             # Initialize
-            if self.df.Discharge[i] > 0 and self.STATE == 0:
-                self.STATE = 1
+            if self.df.Discharge[i] > 0 and STATE == 0:
+                STATE = 1
 
                 if SITE["name"] == "guttannen":
                     # self.df.loc[i - 1, "r_ice"] = self.spray_radius()
@@ -715,7 +702,7 @@ class Icestupa:
                 self.df = self.df.reset_index(drop=True)
                 break
 
-            if self.STATE == 1:
+            if STATE == 1:
 
                 if SITE["name"] == "guttannen" and i != self.start + 1:
                     self.df.loc[i, "iceV"] += self.hollow_V
@@ -737,8 +724,10 @@ class Icestupa:
                 self.liquid = (
                     row.Discharge * (1 - FOUNTAIN["ftl"]) * self.TIME_STEP / 60
                 )
-
-                self.energy_balance(row)
+                if self.df.loc[i,'SA']:
+                    self.energy_balance(row)
+                else:
+                    logger.error("SA zero")
 
                 # Latent Heat
                 self.df.loc[i, "$q_{T}$"] = self.df.loc[i, "Ql"]
@@ -2223,13 +2212,13 @@ class PDF(Icestupa):
 
 if __name__ == "__main__":
     start = time.time()
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    coloredlogs.install(
-        fmt="%(name)s %(levelname)s %(message)s",
-        logger=logger,
-    )
-    logger.info('Model begins')
+    # logger = logging.getLogger(__name__)
+    # logger.setLevel(logging.INFO)
+    # coloredlogs.install(
+    #     fmt="%(name)s %(levelname)s %(message)s",
+    #     logger=logger,
+    # )
+    # logger.info('Model begins')
 
     icestupa = PDF()
 
