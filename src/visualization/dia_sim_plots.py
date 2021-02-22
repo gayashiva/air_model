@@ -6,8 +6,11 @@ from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 
 import sys
+import os
 
-sys.path.append("/home/surya/Programs/Github/air_model")
+sys.path.append(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+)
 from src.data.config import SITE, FOUNTAIN, FOLDERS
 
 plt.rcParams["figure.figsize"] = (10, 7)
@@ -33,6 +36,7 @@ print(df[df["dia_f"] < 0.0051]["water_stored"])
 print(df[df["dia_f"] < 0.0051]["avg_freeze_rate"])
 
 print(df[df["dia_f"] < 0.0051]["Duration"])
+print(df[df["dia_f"] < 0.0051]["Efficiency"])
 
 cmap = plt.cm.rainbow  # define the colormap
 norm = mpl.colors.Normalize(vmin=0, vmax=3.6)
@@ -73,9 +77,7 @@ cbar.set_label("Average Freeze Rate [$l\\, min^{-1}$]")
 
 pp.savefig(bbox_inches="tight")
 plt.savefig(
-    "/home/surya/Documents/AIR_Manuscript/Figures/Figure_10.jpg",
-    bbox_inches="tight",
-    dpi=300,
+    FOLDERS["output_folder"] + "jpg/Figure_10.jpg", dpi=300, bbox_inches="tight"
 )
 plt.clf()
 

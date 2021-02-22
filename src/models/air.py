@@ -546,6 +546,7 @@ class Icestupa:
         logger.info(f"Energy mean : {self.df.TotalE.mean()}")
 
         dfd = self.df.set_index("When").resample("D").mean().reset_index()
+        dfh = self.df.set_index("When").resample("H").mean().reset_index()
 
         dfd["Global"] = dfd["SW_diffuse"] + dfd["SW_direct"]
         logger.info(f"Global max: {dfd.Global.max()}\n SW max: {dfd.SW.max()}")
@@ -568,21 +569,12 @@ class Icestupa:
             f"% of SW {dfd.SW.abs().sum()/Total}, LW {dfd.LW.abs().sum()/Total}, Qs {dfd.Qs.abs().sum()/Total}, Ql {dfd.Ql.abs().sum()/Total}, Qf {dfd.Qf.abs().sum()/Total}, Qg {dfd.Qg.abs().sum()/Total}"
         )
 
-        # logger.info(
-        #     f"Mean of SW {self.df.SW.mean()}, LW {self.df.LW.mean()}, Qs {self.df.Qs.mean()}, Ql {self.df.Ql.mean()}, Qf {self.df.Qf.mean()}, Qg {self.df.Qg.mean()}"
-        # )
-        # logger.info(
-        #     f"Range of SW {self.df.SW.min()}-{self.df.SW.max()}, LW {self.df.LW.min()}-{self.df.LW.max()}, Qs {self.df.Qs.min()}-{self.df.Qs.max()}, Ql {self.df.Ql.min()}-{self.df.Ql.max()}, Qf {self.df.Qf.min()}-{self.df.Qf.max()}, Qg {self.df.Qg.min()}-{self.df.Qg.max()}"
-        # )
         logger.info(
             f"Mean of SW {dfd.SW.mean()}, LW {dfd.LW.mean()}, Qs {dfd.Qs.mean()}, Ql {dfd.Ql.mean()}, Qf {dfd.Qf.mean()}, Qg {dfd.Qg.mean()}"
         )
         logger.info(
             f"Range of SW {dfd.SW.min()}-{dfd.SW.max()}, LW {dfd.LW.min()}-{dfd.LW.max()}, Qs {dfd.Qs.min()}-{dfd.Qs.max()}, Ql {dfd.Ql.min()}-{dfd.Ql.max()}, Qf {dfd.Qf.min()}-{dfd.Qf.max()}, Qg {dfd.Qg.min()}-{dfd.Qg.max()}"
         )
-        # logger.info(
-        #     f"Mean of emissivity {self.df.e_a.mean()}, Range of f_cone {self.df.e_a.min()}-{self.df.e_a.max()}"
-        # )
         logger.info(f"Max SA {self.df.SA.max()}")
         logger.info(
             f"M_input {self.df.input.iloc[-1]}, M_R {self.df.ppt.sum()}, M_D {self.df.dpt.sum()}, M_F {self.df.Discharge.sum() * 5 + self.df.iceV.iloc[0] * self.RHO_I}"
@@ -594,6 +586,7 @@ class Icestupa:
         logger.info(f"Duration {self.df.index[-1] * 5 / (60 * 24)}")
         logger.info(f"Ended {self.df.When.iloc[-1]}")
         logger.info(f"Evaporation/Condensation: %.2f, Sublimation/Deposition: %.2f" %(self.df.loc[self.df["RH"] > 60, "RH"].count()/self.df.index[-1], self.df.loc[self.df["RH"] <= 60, "RH"].count()/self.df.index[-1]))
+        logger.warning(f"Q_net below zero time: %.2f, Fountain time: %.2f" %(dfh.loc[dfh["TotalE"] < 0, "TotalE"].count() , dfh.loc[dfh["Discharge"] >0, "Discharge"].count()))
 
         # Output for manim
         filename2 = os.path.join(
@@ -2230,7 +2223,7 @@ if __name__ == "__main__":
 
     icestupa.read_output()
 
-    # icestupa.corr_plot()
+    icestupa.corr_plot()
 
     # icestupa.summary()
 
