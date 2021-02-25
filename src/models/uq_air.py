@@ -11,7 +11,7 @@ sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
 from src.data.config import SITE, FOUNTAIN, FOLDERS
-from src.models.air import Icestupa
+from src.models.air import Icestupa, PDF
 
 
 def uniform(parameter, interval):

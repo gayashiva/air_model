@@ -1,4 +1,5 @@
 import pandas as pd
+import streamlit as st
 import sys
 from datetime import datetime
 from tqdm import tqdm
@@ -24,7 +25,7 @@ import coloredlogs
 pd.plotting.register_matplotlib_converters()
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.ERROR)
 coloredlogs.install(
     fmt="%(name)s %(levelname)s %(message)s",
     logger=logger,
@@ -192,12 +193,12 @@ class Icestupa:
 
         self.get_solar()
 
-        missing = ["a", "vp_a", "LW_in"]
-        for col in missing:
+        unknown = ["a", "vp_a", "LW_in"]
+        for col in unknown:
             if col in list(self.df.columns):
-                missing.remove(col)
+                unknown.remove(col)
             else:
-                logger.info(col, "is missing")
+                logger.info(col, "is unknown")
                 self.df[col] = 0
 
         """Albedo Decay"""
@@ -211,7 +212,7 @@ class Icestupa:
         for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
 
             """ Vapour Pressure"""
-            if "vp_a" in missing:
+            if "vp_a" in unknown:
                 self.df.loc[row.Index, "vp_a"] = (
                     6.107
                     * math.pow(
@@ -225,7 +226,7 @@ class Icestupa:
                 )
 
             """LW incoming"""
-            if "LW_in" in missing:
+            if "LW_in" in unknown:
 
                 self.df.loc[row.Index, "e_a"] = (
                     1.24
@@ -1778,7 +1779,7 @@ class PDF(Icestupa):
 
         pp.close()
 
-    def paper_figures(self):
+    def paper_figures(self, output="none"):
         CB91_Blue = "#2CBDFE"
         CB91_Green = "#47DBCD"
         CB91_Pink = "#F3A0F2"
@@ -1830,8 +1831,6 @@ class PDF(Icestupa):
         # removing empty DataFrames
         events2 = [ev for ev in events2 if not ev.empty]
 
-        # pp = PdfPages(FOLDERS["output_folder"] + "Figure_3.pdf")
-
         fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
             nrows=6, ncols=1, sharex="col", sharey="row", figsize=(12, 18)
         )
@@ -1841,10 +1840,8 @@ class PDF(Icestupa):
         y1 = self.df.Discharge
         ax1.plot(x, y1, linestyle="-", color="#284D58", linewidth=1)
         ax1.set_ylabel("Fountain Spray [$l\\, min^{-1}$]")
-        # ax1.grid()
 
         ax1t = ax1.twinx()
-        # ax1t.plot(x, self.df.Prec * 1000, linestyle='--', color='#118ab2', linewidth=1)
         ax1t.plot(
             x,
             self.df.Prec * 1000 * self.TIME_STEP,
@@ -1859,19 +1856,14 @@ class PDF(Icestupa):
         y2 = df_SZ.T_a
         y2_ERA5 = df_ERA5.T_a
         ax2.plot(x, y2, linestyle="-", color="#284D58", linewidth=1)
-        # ax2.plot(x, y2_ERA5, linestyle='-', color='#e76f51', linewidth=1)
         for ev in events:
             ax2.axvspan(
                 ev.head(1).values, ev.tail(1).values, facecolor="xkcd:grey", alpha=0.25
             )
         ax2.plot(x, y2_ERA5, linestyle="-", color="#284D58")
         ax2.set_ylabel("Temperature [$\\degree C$]")
-        # ax2.grid()
 
         y3 = self.df.SW_direct
-        # lns1 = ax3.plot(x, y3, linestyle='--', color='#e76f51', linewidth=0.5,  label = 'Shortwave Direct')
-        # lns2 = ax3.plot(x, self.df.SW_diffuse, color='#e76f51',linestyle=':', linewidth=2, label = 'Shortwave Diffuse')
-        # lns3 = ax3.plot(x, self.df.LW_in, color='#e76f51',linestyle='-', linewidth=1, label = 'Longwave')
         lns2 = ax3.plot(
             x, y3, linestyle="-", label="Shortwave Direct", color=CB91_Amber
         )
@@ -1892,7 +1884,6 @@ class PDF(Icestupa):
             alpha=0.25,
         )
         ax3.set_ylabel("Radiation [$W\\,m^{-2}$]")
-        # ax3.grid()
 
         # added these three lines
         lns = lns1 + lns2 + lns3
@@ -1902,33 +1893,27 @@ class PDF(Icestupa):
         y4 = df_SZ.RH
         y4_ERA5 = df_ERA5.RH
         ax4.plot(x, y4, linestyle="-", color="#284D58", linewidth=1)
-        # ax4.plot(x, y4_ERA5, linestyle='-', color='#e76f51', linewidth=1)
         ax4.plot(x, y4_ERA5, linestyle="-", color="#284D58")
         for ev in events:
             ax4.axvspan(
                 ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25
             )
         ax4.set_ylabel("Humidity [$\\%$]")
-        # ax4.grid()
 
         y5 = df_SZ.p_a
         y5_ERA5 = df_ERA5.p_a
         ax5.plot(x, y5, linestyle="-", color="#264653", linewidth=1)
-        # ax5.plot(x, y5_ERA5, linestyle='-', color='#e76f51', linewidth=1)
         ax5.plot(x, y5_ERA5, linestyle="-", color="#284D58")
         for ev in events:
             ax5.axvspan(
                 ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25
             )
         ax5.set_ylabel("Pressure [$hPa$]")
-        # ax5.grid()
 
         y6 = df_SZ.v_a
         y6_ERA5 = df_ERA5.v_a
         y6_ERA52 = df_ERA52.v_a
         ax6.plot(x, y6, linestyle="-", color="#264653", linewidth=1, label="Schwarzsee")
-        # ax6.plot(x, y6_ERA5, linestyle='-', color='#e76f51', linewidth=1)
-        # ax6.plot(x, y6_ERA52, linestyle='-', color='#e76f51', linewidth=1)
         ax6.plot(x, y6_ERA5, linestyle="-", color="#284D58")
         ax6.plot(x, y6_ERA52, linestyle="-", color="#284D58")
         for ev in events:
@@ -1940,21 +1925,6 @@ class PDF(Icestupa):
                 ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25
             )
         ax6.set_ylabel("Wind speed [$m\\,s^{-1}$]")
-        # ax6.grid()
-
-        # y7 = self.df.cld
-        # # ax7.plot(x, y7, linestyle='-', color='#e76f51', linewidth=1)
-        # ax7.plot(x, y7, linestyle='-',color='#284D58', label = "ERA5")
-        # ax7.set_ylabel("Cloudiness []")
-        # ax7.axvspan(self.df.When.head(1).values, self.df.When.tail(1).values,facecolor='grey', alpha=0.25)
-        # # ax7.grid()
-
-        # ERA5= mpatches.Patch(color='grey', alpha=0.25, label='ERA5 data')
-        # SZ= mpatches.Patch(color='#264653', label='Schwarzsee data')
-        # PLF= mpatches.Patch(color=CB91_Blue, label='Plaffeien data')
-
-        # ax1.legend(handles = [ERA5, PLF], bbox_to_anchor=(0,1.02,1,0.2), loc="lower left",
-        #          borderaxespad=1, ncol=4, fancybox=True)
 
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
@@ -1963,11 +1933,11 @@ class PDF(Icestupa):
         plt.savefig(
             FOLDERS["output_folder"] + "jpg/Figure_3.jpg", dpi=300, bbox_inches="tight"
         )
-        # pp.savefig(bbox_inches="tight")
+        # plt.show()
+        st.pyplot(fig)
+        fig1 = fig
         plt.clf()
-        # pp.close()
 
-        # pp = PdfPages(FOLDERS["output_folder"] + "Figure_6.pdf")
         fig = plt.figure(figsize=(12, 14))
         dfds = self.df[
             ["When", "solid", "ppt", "dpt", "cdt", "melted", "gas", "SA", "iceV", "Discharge"]
@@ -2011,7 +1981,6 @@ class PDF(Icestupa):
             columns={
                 "solid": "Ice",
                 "ppt": "Snow",
-                # "dpt": "Vapour cond./dep.",
                 "melted": "Melt",
                 "gas": "Vapour sub./evap.",
             }
@@ -2095,8 +2064,6 @@ class PDF(Icestupa):
         ax1.xaxis.set_label_text("")
         ax1.grid(color="black", alpha=0.3, linewidth=0.5, which="major")
         plt.ylabel("Energy Flux [$W\\,m^{-2}$]")
-        # plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left",
-        #            mode="expand", borderaxespad=0, ncol=6)
         plt.legend(loc="upper center", ncol=6)
         plt.ylim(-125, 125)
         x_axis = ax1.axes.get_xaxis()
@@ -2116,8 +2083,6 @@ class PDF(Icestupa):
         )
         plt.ylabel("Thickness ($m$ w. e.)")
         plt.xticks(rotation=45)
-        # plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left",
-        #            mode="expand", borderaxespad=0, ncol=6)
         plt.legend(loc="upper center", ncol=6)
         ax2.set_ylim(-0.03, 0.03)
         ax2.yaxis.set_minor_locator(AutoMinorLocator())
@@ -2153,14 +2118,16 @@ class PDF(Icestupa):
         ax4.add_artist(at)
         plt.xticks(rotation=45)
         plt.tight_layout()
-        # pp.savefig(bbox_inches="tight")
-        plt.savefig(
-            FOLDERS["output_folder"] + "jpg/Figure_6.jpg", dpi=300, bbox_inches="tight"
-        )
-        plt.clf()
-        # pp.close()
+        if output == 'paper':
+            plt.savefig(
+                FOLDERS["output_folder"] + "jpg/Figure_6.jpg", dpi=300, bbox_inches="tight"
+            )
+        if output == 'web':
+            st.pyplot(fig)
 
-        # pp = PdfPages(FOLDERS["output_folder"] + "Figure_7.pdf")
+        fig2 = fig
+        plt.clf()
+
         fig, (ax1, ax2) = plt.subplots(
             nrows=2, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
         )
@@ -2171,13 +2138,11 @@ class PDF(Icestupa):
         y2 = self.df.f_cone
         ax1.plot(x, y1, color="#16697a")
         ax1.set_ylabel("Albedo")
-        # ax1.set_xlabel("Days")
         ax1t = ax1.twinx()
         ax1t.plot(x, y2, color="#ff6d00", linewidth=0.5)
         ax1t.set_ylabel("$f_{cone}$", color="#ff6d00")
         for tl in ax1t.get_yticklabels():
             tl.set_color("#ff6d00")
-        # ax1.grid()
         ax1.set_ylim([0, 1])
         ax1t.set_ylim([0, 1])
 
@@ -2195,40 +2160,34 @@ class PDF(Icestupa):
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
-        plt.savefig(
-            FOLDERS["output_folder"] + "jpg/Figure_7.jpg", dpi=300, bbox_inches="tight"
-        )
-        # pp.savefig(bbox_inches="tight")
+        # plt.savefig(
+        #     FOLDERS["output_folder"] + "jpg/Figure_7.jpg", dpi=300, bbox_inches="tight"
+        # )
+        fig3 = fig
         plt.close("all")
-        # pp.close()
+        return fig1, fig2, fig3
 
 
 if __name__ == "__main__":
     start = time.time()
-    # logger = logging.getLogger(__name__)
-    # logger.setLevel(logging.INFO)
-    # coloredlogs.install(
-    #     fmt="%(name)s %(levelname)s %(message)s",
-    #     logger=logger,
-    # )
-    # logger.info('Model begins')
 
     icestupa = PDF()
+    icestupa.web()
 
     # icestupa.derive_parameters()
 
-    icestupa.read_input()
+    # icestupa.read_input()
 
     # icestupa.melt_freeze()
 
     icestupa.read_output()
 
-    icestupa.corr_plot()
+    # icestupa.corr_plot()
 
     icestupa.summary()
 
     # icestupa.print_input()
-    # icestupa.paper_figures()
+    icestupa.paper_figures()
 
     # icestupa.print_output()
 
