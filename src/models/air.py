@@ -2225,7 +2225,7 @@ if __name__ == "__main__":
 
     icestupa.corr_plot()
 
-    # icestupa.summary()
+    icestupa.summary()
 
     # icestupa.print_input()
     # icestupa.paper_figures()
