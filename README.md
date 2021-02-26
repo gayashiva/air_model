@@ -1,11 +1,12 @@
-![Artificial Ice Reservoirs](https://github.com/Gayashiva/air_model/blob/master/reports/figures/AIR_logo.png)
-Format: ![Alt Text](url)
+<!-- ![Artificial Ice Reservoirs](https://github.com/Gayashiva/air_model/blob/master/reports/figures/AIR_logo.png) -->
+
+<a href="url"><img src="https://github.com/Gayashiva/air_model/blob/master/reports/figures/AIR_logo.png" align="left" height="48" width="48" ></a>
+
+<!-- Format: ![Alt Text](url) -->
 
 # Artificial Ice Reservoirs
 
 A physical model that predicts the meltwater quantity and survival duration of artificial ice reservoirs (aka Icestupas)
-
-<!-- <img src="https://github.com/Gayashiva/air_model/blob/master/reports/figures/AIR_logo.png" width="250"> -->
 
 ## Project Organization
 
