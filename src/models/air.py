@@ -18,14 +18,14 @@ from pvlib import location
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 sys.path.append(dirname)
-from src.data.config import SITE, FOUNTAIN, FOLDERS
+# from src.data.config import SITE, FOUNTAIN, FOLDERS
 import logging
 import coloredlogs
 
 pd.plotting.register_matplotlib_converters()
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.ERROR)
+logger.setLevel(logging.INFO)
 coloredlogs.install(
     fmt="%(name)s %(levelname)s %(message)s",
     logger=logger,
@@ -68,17 +68,36 @@ class Icestupa:
     h_aws = 0
 
 
-    def __init__(self, **kwds):
-        self.__dict__.update(kwds)
+    # def __init__(self, **kwds):
+    def __init__(self, *initial_data, **kwargs):
+        for dictionary in initial_data:
+            for key in dictionary:
+                setattr(self, key, dictionary[key])
+                # print(key, dictionary[key])
+                logger.info(f"%s, ->, %s" %(key, str(dictionary[key])))
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
 
-        if SITE["name"] == "schwarzsee":
+        # self.__dict__.update(kwds)
+        # for key, value in kwds.iteritems():
+        #     print(self, key, value)
+
+        FOLDERS = dict(
+            raw_folder=os.path.join(dirname, "data/" + self.name + "/raw/"),
+            input_folder=os.path.join(dirname, "data/" + self.name + "/interim/"),
+            output_folder=os.path.join(dirname, "data/" + self.name + "/processed/"),
+            sim_folder=os.path.join(
+                dirname, "data/" + self.name + "/processed/simulations"
+            ),
+        )
+        if self.name == "schwarzsee":
             input_file = FOLDERS["input_folder"] + "raw_input_extended.csv"
         else:
             input_file = FOLDERS["input_folder"] + "raw_input_ERA5.csv"
 
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
 
-        if SITE["name"] == "guttannen":
+        if self.name == "guttannen":
             self.df_cam = pd.read_csv(
                 FOLDERS["input_folder"] + "cam.csv",
                 sep=",",
@@ -87,27 +106,27 @@ class Icestupa:
             )
 
 
-    def config_update(self):
-        parameters = {
-            "dia_f": self.dia_f,
-            "T_w": self.T_w,
-            "h_f": self.h_f,
-            "h_aws": self.h_aws,
-        }
-        for var in parameters:
-            if parameters[var]:
-                logger.info(f"%s, ->, %.3f" %(var, parameters[var]))
-                FOUNTAIN[var] = parameters[var]
+    # def config_update(self):
+    #     parameters = {
+    #         "dia_f": self.dia_f,
+    #         "T_w": self.T_w,
+    #         "h_f": self.h_f,
+    #         "h_aws": self.h_aws,
+    #     }
+    #     for var in parameters:
+    #         if parameters[var]:
+    #             logger.info(f"%s, ->, %.3f" %(var, parameters[var]))
+    #             FOUNTAIN[var] = parameters[var]
 
     def get_solar(self):
 
         self.df["ghi"] = self.df["SW_direct"] + self.df["SW_diffuse"]
         self.df["dif"] = self.df["SW_diffuse"]
 
-        site_location = location.Location(SITE["latitude"], SITE["longitude"])
+        site_location = location.Location(self.latitude, self.longitude)
 
         times = pd.date_range(
-            start=SITE["start_date"], end=self.df["When"].iloc[-1], freq="5T"
+            start=self.start_date, end=self.df["When"].iloc[-1], freq="5T"
         )
         clearsky = site_location.get_clearsky(times)
         # Get solar azimuth and zenith to pass to the transposition function
@@ -131,13 +150,13 @@ class Icestupa:
 
     def projectile_xy(self, v, h=0):
         if h == 0:
-            hs = FOUNTAIN["h_f"]
+            hs = self.h_f
         else:
             hs = h
         g = 9.81
         data_xy = []
         t = 0.0
-        theta_f = math.radians(FOUNTAIN["theta_f"])
+        theta_f = math.radians(self.theta_f)
         while True:
             # now calculate the height y
             y = hs + (t * v * math.sin(theta_f)) - (g * t * t) / 2
@@ -179,7 +198,7 @@ class Icestupa:
         return s, f
 
     def spray_radius(self, r_mean=0):
-        Area = math.pi * math.pow(FOUNTAIN["dia_f"], 2) / 4
+        Area = math.pi * math.pow(self.dia_f, 2) / 4
         v = self.df["Discharge"].replace(0, np.NaN).mean() / (60 * 1000 * Area)
 
         if r_mean != 0:
@@ -266,13 +285,13 @@ class Icestupa:
             ]
         ]
 
-        if SITE["name"] == "schwarzsee":
+        if self.name == "schwarzsee":
             self.df.to_hdf(
-                FOLDERS["input_folder"] + "model_input_extended.h5", key="df", mode="w"
+                self.FOLDERS["input_folder"] + "model_input_extended.h5", key="df", mode="w"
             )
         else:
             self.df.to_hdf(
-                FOLDERS["input_folder"] + "model_input_ERA5.h5", key="df", mode="w"
+                self.FOLDERS["input_folder"] + "model_input_ERA5.h5", key="df", mode="w"
             )
 
     def surface_area(self, i):
@@ -358,7 +377,7 @@ class Icestupa:
             * math.pow(self.VAN_KARMAN, 2)
             * self.df.loc[i, "v_a"]
             * (row.vp_a - self.df.loc[i, "vp_ice"])
-            / ((np.log(SITE["h_aws"] / self.Z_I)) ** 2)
+            / ((np.log(self.h_aws / self.Z_I)) ** 2)
         )
 
         # Sensible Heat Qs
@@ -370,7 +389,7 @@ class Icestupa:
             * math.pow(self.VAN_KARMAN, 2)
             * self.df.loc[i, "v_a"]
             * (self.df.loc[i, "T_a"] - self.df.loc[i, "T_s"])
-            / ((np.log(SITE["h_aws"] / self.Z_I)) ** 2)
+            / ((np.log(self.h_aws / self.Z_I)) ** 2)
         )
 
         # Short Wave Radiation SW
@@ -393,7 +412,7 @@ class Icestupa:
             self.df.loc[i, "Qf"] = (
                 (self.df.loc[i - 1, "solid"])
                 * self.C_W
-                * FOUNTAIN["T_w"]
+                * self.T_w
                 / (self.TIME_STEP * self.df.loc[i, "SA"])
             )
 
@@ -498,19 +517,19 @@ class Icestupa:
         print("Duration", Duration)
 
         # Full Output
-        filename4 = FOLDERS["output_folder"] + "model_results.csv"
+        filename4 = self.FOLDERS["output_folder"] + "model_results.csv"
         self.df.to_csv(filename4, sep=",")
 
-        self.df.to_hdf(FOLDERS["output_folder"] + "model_output.h5", key="df", mode="w")
+        self.df.to_hdf(self.FOLDERS["output_folder"] + "model_output.h5", key="df", mode="w")
 
     def read_input(self):
 
-        if SITE["name"] == "schwarzsee":
+        if self.name == "schwarzsee":
             self.df = pd.read_hdf(
-                FOLDERS["input_folder"] + "model_input_extended.h5", "df"
+                self.FOLDERS["input_folder"] + "model_input_extended.h5", "df"
             )
         else:
-            self.df = pd.read_hdf(FOLDERS["input_folder"] + "model_input_ERA5.h5", "df")
+            self.df = pd.read_hdf(self.FOLDERS["input_folder"] + "model_input_ERA5.h5", "df")
 
         # self.TIME_STEP=15*60
         # self.df = self.df.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index()
@@ -522,7 +541,7 @@ class Icestupa:
 
     def read_output(self):
 
-        self.df = pd.read_hdf(FOLDERS["output_folder"] + "model_output.h5", "df")
+        self.df = pd.read_hdf(self.FOLDERS["output_folder"] + "model_output.h5", "df")
 
         if self.df.isnull().values.any():
             logger.info("Warning: Null values present")
@@ -591,9 +610,9 @@ class Icestupa:
 
         # Output for manim
         filename2 = os.path.join(
-            FOLDERS["output_folder"], SITE["name"] + "_model_gif.csv"
+            self.FOLDERS["output_folder"], self.name + "_model_gif.csv"
         )
-        self.df["h_f"] = FOUNTAIN["h_f"]
+        self.df["h_f"] = self.h_f
         cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
         self.df[cols].to_csv(filename2, sep=",")
 
@@ -644,7 +663,7 @@ class Icestupa:
             if self.df.Discharge[i] > 0 and STATE == 0:
                 STATE = 1
 
-                if SITE["name"] == "guttannen":
+                if self.name == "guttannen":
                     # self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     # self.df.loc[i - 1, "h_ice"] = self.DX
                     self.spray_radius()
@@ -654,17 +673,17 @@ class Icestupa:
                     self.hollow_V = (
                         math.pi
                         / 3
-                        # * FOUNTAIN['tree_radius'] **2
+                        # * self.tree_radius **2
                         * self.df.loc[i - 1, "r_ice"] ** 2
-                        * FOUNTAIN["tree_height"]
+                        * self.tree_height
                     )
 
-                if SITE["name"] == "schwarzsee":
-                    self.config_update()
+                if self.name == "schwarzsee":
+                    # self.config_update()
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.DX
 
-                if SITE["name"] == "leh":
+                if self.name == "leh":
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.DX
 
@@ -698,7 +717,7 @@ class Icestupa:
 
             if STATE == 1:
 
-                if SITE["name"] == "guttannen" and i != self.start + 1:
+                if self.name == "guttannen" and i != self.start + 1:
                     self.df.loc[i, "iceV"] += self.hollow_V
 
                 self.surface_area(i)
@@ -716,7 +735,7 @@ class Icestupa:
 
                 # Fountain water output
                 self.liquid = (
-                    row.Discharge * (1 - FOUNTAIN["ftl"]) * self.TIME_STEP / 60
+                    row.Discharge * (1 - self.ftl) * self.TIME_STEP / 60
                 )
                 if self.df.loc[i,'SA']:
                     self.energy_balance(row)
@@ -979,11 +998,11 @@ class Icestupa:
 class PDF(Icestupa):
     def print_input(self, filename="derived_parameters.pdf"):
         if filename == "derived_parameters.pdf":
-            filename = FOLDERS["input_folder"]
+            filename = self.FOLDERS["input_folder"]
 
         """Input Plots"""
 
-        filename = FOLDERS["input_folder"] + "data.pdf"
+        filename = self.FOLDERS["input_folder"] + "data.pdf"
 
         pp = PdfPages(filename)
 
@@ -1159,13 +1178,13 @@ class PDF(Icestupa):
         if filename == "model_results.pdf":
             if self.TIME_STEP != 5 * 60:
                 filename = (
-                    FOLDERS["output_folder"]
+                    self.FOLDERS["output_folder"]
                     + "model_results_"
                     + str(self.TIME_STEP)
                     + ".pdf"
                 )
             else:
-                filename = FOLDERS["output_folder"] + "model_results" + ".pdf"
+                filename = self.FOLDERS["output_folder"] + "model_results" + ".pdf"
 
         self.df = self.df.rename(
             {
@@ -1475,7 +1494,7 @@ class PDF(Icestupa):
     def print_output_guttannen(self, filename="model_results.pdf"):
 
         if filename == "model_results.pdf":
-            filename = FOLDERS["output_folder"] + "model_results.pdf"
+            filename = self.FOLDERS["output_folder"] + "model_results.pdf"
 
         self.df = self.df.rename(
             {
@@ -1489,7 +1508,7 @@ class PDF(Icestupa):
             axis=1,
         )
 
-        df_temp = pd.read_csv(FOLDERS["input_folder"] + "lumtemp.csv")
+        df_temp = pd.read_csv(self.FOLDERS["input_folder"] + "lumtemp.csv")
 
         df_temp["When"] = pd.to_datetime(df_temp["When"])
 
@@ -1931,7 +1950,7 @@ class PDF(Icestupa):
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
         plt.savefig(
-            FOLDERS["output_folder"] + "jpg/Figure_3.jpg", dpi=300, bbox_inches="tight"
+            self.FOLDERS["output_folder"] + "jpg/Figure_3.jpg", dpi=300, bbox_inches="tight"
         )
         # plt.show()
         st.pyplot(fig)
@@ -2120,7 +2139,7 @@ class PDF(Icestupa):
         plt.tight_layout()
         if output == 'paper':
             plt.savefig(
-                FOLDERS["output_folder"] + "jpg/Figure_6.jpg", dpi=300, bbox_inches="tight"
+                self.FOLDERS["output_folder"] + "jpg/Figure_6.jpg", dpi=300, bbox_inches="tight"
             )
         if output == 'web':
             st.pyplot(fig)
@@ -2161,7 +2180,7 @@ class PDF(Icestupa):
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
         # plt.savefig(
-        #     FOLDERS["output_folder"] + "jpg/Figure_7.jpg", dpi=300, bbox_inches="tight"
+        #     self.FOLDERS["output_folder"] + "jpg/Figure_7.jpg", dpi=300, bbox_inches="tight"
         # )
         fig3 = fig
         plt.close("all")
@@ -2171,12 +2190,11 @@ class PDF(Icestupa):
 if __name__ == "__main__":
     start = time.time()
 
-    icestupa = PDF()
-    icestupa.web()
+    icestupa = PDF(SITE, FOUNTAIN)
 
     # icestupa.derive_parameters()
 
-    # icestupa.read_input()
+    icestupa.read_input()
 
     # icestupa.melt_freeze()
 
@@ -2184,10 +2202,10 @@ if __name__ == "__main__":
 
     # icestupa.corr_plot()
 
-    icestupa.summary()
+    # icestupa.summary()
 
     # icestupa.print_input()
-    icestupa.paper_figures()
+    # icestupa.paper_figures()
 
     # icestupa.print_output()
 
