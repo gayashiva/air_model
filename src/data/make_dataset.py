@@ -24,7 +24,7 @@ def discharge_rate(df, FOUNTAIN):
 
     if OPTION == "schwarzsee":
         df_f = pd.read_csv(
-            "/home/surya/Programs/Github/air_model/data/schwarzsee/interim/raw_input_SZ.csv"
+            "data/schwarzsee/interim/raw_input_SZ.csv"
         )
         df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")
         df_f = df_f.set_index("When")

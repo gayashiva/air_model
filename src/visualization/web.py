@@ -24,18 +24,20 @@ sys.path.append(dirname)
 import re
 import base64
 
-# from src.data.config import SITE, FOUNTAIN, FOLDERS
 import logging
 import coloredlogs
 from src.models.air import Icestupa
 
 
-@st.cache(allow_output_mutation=True)
-def load_data():
+# @st.cache(allow_output_mutation=True)
+def load_data(trigger="Schwarzsee"):
     SITE, FOUNTAIN = config(location)
+    FOUNTAIN["trigger"] = trigger
     icestupa = Icestupa(SITE, FOUNTAIN)
     icestupa.read_output()
-    return icestupa.df
+    # st.write(icestupa.df.Discharge.head())
+    # st.write(icestupa.trigger)
+    return icestupa.df, SITE, FOUNTAIN
 
 
 def download_csv(name, df):
@@ -182,53 +184,60 @@ def config(location="Schwarzsee"):
 
 input_full_names = dict(
     Discharge="Fountain Spray ($l\\, min^{-1}$)",
-    T_a="Temperature [$\\degree C$]",
-    RH="Humidity [$\\%$]",
-    p_a="Pressure [$hPa$]",
-    SW_direct="Shortwave Direct [$W\\,m^{-2}$]",
-    SW_diffuse="Shortwave Diffuse [$W\\,m^{-2}$]",
-    Prec="Precipitation [$mm$]",
-    v_a="Wind speed [$m\\,s^{-1}$]",
-    iceV="Ice Volume",
-    ice="Ice Mass",
+    T_a="Temperature ($\\degree C$)",
+    RH="Humidity ($\\%$)",
+    p_a="Pressure ($hPa$)",
+    SW_direct="Shortwave Direct ($W\\,m^{-2}$)",
+    SW_diffuse="Shortwave Diffuse ($W\\,m^{-2}$)",
+    LW_in="Longwave Radiation ($W\\,m^{-2}$)",
+    Prec="Precipitation ($mm$)",
+    v_a="Wind speed ($m\\,s^{-1}$)",
 )
 output_full_names = dict(
     iceV="Ice Volume",
     ice="Ice Mass",
+    a="Albedo",
+    thickness="Ice thickness",
 )
 print(input_full_names.keys())
 if __name__ == "__main__":
-    location = st.sidebar.selectbox("Select Location", ("Schwarzsee", "Guttannen"))
-    fountain = st.sidebar.selectbox(
-        "Select Discharge Rate", ("Schwarzsee", "Air temperature", "Energy Balance")
+    location = st.sidebar.radio("Select Location", ("Schwarzsee", "Guttannen"))
+    fountain = st.sidebar.radio(
+        "Select Discharge Trigger", ("Schwarzsee", "Temperature", "Energy Balance")
     )
 
-    st.header(
-        "**%s** with fountain discharge rate determined from **%s**"
-        % (location, fountain)
-    )
-    df_i = load_data()
+    st.header("**%s** with fountain discharge trigger **%s**" % (location, fountain))
+    df_i, SITE, FOUNTAIN = load_data(fountain)
+
     df = df_filter("Move sliders to filter dataframe", df_i)
 
+    column_1, column_2 = st.beta_columns(2)
+    with column_1:
+        st.header("Location")
+        st.write(SITE)
+
+    with column_2:
+        st.header("Fountain")
+        st.write(FOUNTAIN)
+
     df = df.set_index("When")
-    variable = st.multiselect("Choose input variable", (df.columns), ["iceV"])
+    variable = st.sidebar.multiselect(
+        "Choose input/output variables", (df.columns.tolist()), ["Discharge"]
+    )
     if not variable:
         st.error("Please select at least one variable.")
     else:
         data = df[variable]
         for v in variable:
-            st.header(input_full_names[v])
-            # st.markdown(download_csv(full_names[v], df[v]), unsafe_allow_html=True)
-            st.line_chart(df[v])
+            if v in input_full_names.keys():
+                st.header("Input %s" % (input_full_names[v]))
+                # st.markdown(download_csv(full_names[v], df[v]), unsafe_allow_html=True)
+                st.line_chart(df[v])
+            if v in output_full_names.keys():
+                st.header("Output %s" % (output_full_names[v]))
+                # st.markdown(download_csv(full_names[v], df[v]), unsafe_allow_html=True)
+                st.line_chart(df[v])
 
-        # column_1, column_2 = st.beta_columns(2)
-        # with column_1:
-        #     st.header("Data Frame")
-        #     st.write(data)
-
-        # with column_2:
-        #     st.header("Chart")
-        #     st.line_chart(data)
 # df["When"] = df["When"].dt.tz_localize(
 #     "UTC"
 # )  # Hardcoded as workaround to  https://github.com/streamlit/streamlit/issues/1061

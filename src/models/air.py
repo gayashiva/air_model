@@ -15,10 +15,11 @@ from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import seaborn as sns
 from pvlib import location
+
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 sys.path.append(dirname)
-# from src.data.config import SITE, FOUNTAIN, FOLDERS
+from src.data.config import SITE, FOUNTAIN, FOLDERS
 import logging
 import coloredlogs
 
@@ -30,7 +31,8 @@ coloredlogs.install(
     fmt="%(name)s %(levelname)s %(message)s",
     logger=logger,
 )
-logger.info('Model begins')
+logger.info("Model begins")
+
 
 class Icestupa:
     """Physical Constants"""
@@ -66,20 +68,22 @@ class Icestupa:
     T_w = 0
     h_f = 0
     h_aws = 0
-
+    trigger = 'Schwarzsee'
 
     def __init__(self, *initial_data, **kwargs):
         for dictionary in initial_data:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
-                logger.info(f"%s -> %s" %(key, str(dictionary[key])))
+                logger.info(f"%s -> %s" % (key, str(dictionary[key])))
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
-        self.raw_folder=os.path.join(dirname, "data/" + self.name + "/raw/")
-        self.input_folder=os.path.join(dirname, "data/" + self.name + "/interim/")
-        self.output_folder=os.path.join(dirname, "data/" + self.name + "/processed/")
-        self.sim_folder=os.path.join(dirname, "data/" + self.name + "/processed/simulations")
+        self.raw_folder = os.path.join(dirname, "data/" + self.name + "/raw/")
+        self.input_folder = os.path.join(dirname, "data/" + self.name + "/interim/")
+        self.output_folder = os.path.join(dirname, "data/" + self.name + "/processed/")
+        self.sim_folder = os.path.join(
+            dirname, "data/" + self.name + "/processed/simulations"
+        )
 
         if self.name == "schwarzsee":
             input_file = self.input_folder + "raw_input_extended.csv"
@@ -95,7 +99,6 @@ class Icestupa:
                 header=0,
                 parse_dates=["When"],
             )
-
 
     # def config_update(self):
     #     parameters = {
@@ -202,6 +205,7 @@ class Icestupa:
     def derive_parameters(self):
 
         self.get_solar()
+        self.discharge_rate()
 
         unknown = ["a", "vp_a", "LW_in"]
         for col in unknown:
@@ -269,21 +273,45 @@ class Icestupa:
                 "p_a",
                 "cld",
                 "a",
-                # "e_a",
                 "vp_a",
                 "LW_in",
                 "missing",
             ]
         ]
 
-        if self.name == "schwarzsee":
+        if self.trigger == "Schwarzsee":
             self.df.to_hdf(
                 self.input_folder + "model_input_extended.h5", key="df", mode="w"
             )
         else:
             self.df.to_hdf(
-                self.input_folder + "model_input_ERA5.h5", key="df", mode="w"
+                self.input_folder + "model_input_" + self.trigger + ".h5", key="df", mode="w"
             )
+
+    def discharge_rate(self):
+
+        # if self.trigger == "Schwarzsee":
+        #     df_f = pd.read_csv("data/schwarzsee/interim/raw_input_extended.csv")
+        #     df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")
+        #     df_f = df_f.set_index("When")
+        #     self.df = self.df.set_index("When")
+        #     mask = df_f["Discharge"] != 0
+        #     mask_index = df_f[mask].index
+        #     self.df.loc[mask_index, "Discharge"] = df_f["Discharge"]
+        #     mask = df_f["Discharge"] == 0
+        #     mask_index = df_f[mask].index
+        #     self.df.loc[mask_index, "Discharge"] = 0
+        #     self.df = df.reset_index(drop=True)
+
+        if self.trigger == "Temperature":
+            logger.warning(self.df.Discharge.head())
+            mask = self.df["T_a"] < self.crit_temp
+            mask_index = self.df[mask].index
+            self.df.loc[mask_index, "Discharge"] = 1 * self.discharge
+            mask = self.df["When"] >= self.fountain_off_date
+            mask_index = self.df[mask].index
+            self.df.loc[mask_index, "Discharge"] = 0
+            logger.warning(self.df.Discharge.head())
 
     def surface_area(self, i):
 
@@ -435,8 +463,10 @@ class Icestupa:
             + self.df.loc[i, "Qg"]
         )
 
-        if np.isnan(self.df.loc[i, "TotalE"]) :
-            logger.error(f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}, SA {self.df.SA[i]}")
+        if np.isnan(self.df.loc[i, "TotalE"]):
+            logger.error(
+                f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}, SA {self.df.SA[i]}"
+            )
 
     def summary(self):
 
@@ -508,22 +538,24 @@ class Icestupa:
         print("Duration", Duration)
 
         # Full Output
-        filename4 = self.output_folder + "model_results.csv"
+        filename4 = self.output_folder + "model_results_" + self.trigger + ".csv"
         self.df.to_csv(filename4, sep=",")
+        self.df.to_hdf(self.output_folder + "model_output_" + self.trigger + ".h5", key="df", mode="w")
+        # else:
+        #     filename4 = self.output_folder + "model_results.csv"
+        #     self.df.to_csv(filename4, sep=",")
 
-        self.df.to_hdf(self.output_folder + "model_output.h5", key="df", mode="w")
+        #     self.df.to_hdf(self.output_folder + "model_output.h5", key="df", mode="w")
 
     def read_input(self):
 
-        if self.name == "schwarzsee":
-            self.df = pd.read_hdf(
-                self.input_folder + "model_input_extended.h5", "df"
-            )
-        else:
-            self.df = pd.read_hdf(self.input_folder + "model_input_ERA5.h5", "df")
+        # if self.name == "schwarzsee":
+        #     self.df = pd.read_hdf(self.input_folder + "model_input_extended.h5", "df")
+        # else:
+        self.df = pd.read_hdf(self.input_folder + "model_input_"+ self.trigger +".h5", "df")
 
         # self.TIME_STEP=15*60
-        # self.df = self.df.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index()
+        # self.df = self.df.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index(drop=True)
 
         logger.info(self.df.head())
 
@@ -532,7 +564,7 @@ class Icestupa:
 
     def read_output(self):
 
-        self.df = pd.read_hdf(self.output_folder + "model_output.h5", "df")
+        self.df = pd.read_hdf(self.output_folder + "model_output_"+ self.trigger + ".h5", "df")
 
         if self.df.isnull().values.any():
             logger.info("Warning: Null values present")
@@ -544,7 +576,19 @@ class Icestupa:
         f_off = self.df.index[self.df.Discharge.astype(bool)].tolist()
         f_off = f_off[-1] + 1
         logger.info(
-            "When %s \n M_U %.2f\n M_solid %.2f\n M_gas %.2f\n M_liquid %.2f\n M_R %.2f\n M_D %.2f\n M_C %.2f\n M_F %.2f\n" %(self.df.When.iloc[f_off], self.df.unfrozen_water.iloc[f_off], self.df.ice.iloc[f_off], self.df.vapour.iloc[f_off], self.df.meltwater.iloc[f_off], self.df.ppt[: f_off + 1].sum(), self.df.dpt[: f_off + 1].sum(), self.df.cdt[: f_off + 1].sum(), self.df.Discharge[: f_off + 1].sum() * 5+ self.df.iceV.iloc[0] * self.RHO_I)
+            "When %s \n M_U %.2f\n M_solid %.2f\n M_gas %.2f\n M_liquid %.2f\n M_R %.2f\n M_D %.2f\n M_C %.2f\n M_F %.2f\n"
+            % (
+                self.df.When.iloc[f_off],
+                self.df.unfrozen_water.iloc[f_off],
+                self.df.ice.iloc[f_off],
+                self.df.vapour.iloc[f_off],
+                self.df.meltwater.iloc[f_off],
+                self.df.ppt[: f_off + 1].sum(),
+                self.df.dpt[: f_off + 1].sum(),
+                self.df.cdt[: f_off + 1].sum(),
+                self.df.Discharge[: f_off + 1].sum() * 5
+                + self.df.iceV.iloc[0] * self.RHO_I,
+            )
         )
         logger.info(
             f"M_input {self.df.input.iloc[-1]}\n M_R {self.df.ppt.sum()}\n M_D {self.df.dpt.sum()}\n M_C {self.df.cdt.sum()}\n M_F {self.df.Discharge.sum() * 5 + self.df.iceV.iloc[0] * self.RHO_I}\n"
@@ -552,12 +596,15 @@ class Icestupa:
         logger.info(
             f"When {self.df.When.iloc[-1]}\n M_U {self.df.unfrozen_water.iloc[-1]},\n M_solid {self.df.ice.iloc[-1]},\n M_gas {self.df.vapour.iloc[-1]},\n M_liquid {self.df.meltwater.iloc[-1]}"
         )
-        logger.info(f"Temperature of spray : %.2f" %(self.df.loc[self.df["TotalE"] < 0, "T_a"].mean()))
+        logger.info(
+            f"Temperature of spray : %.2f"
+            % (self.df.loc[self.df["TotalE"] < 0, "T_a"].mean())
+        )
         logger.info(f"Temperature minimum : {self.df.T_a.min()}")
         logger.info(f"Energy mean : {self.df.TotalE.mean()}")
 
-        dfd = self.df.set_index("When").resample("D").mean().reset_index()
-        dfh = self.df.set_index("When").resample("H").mean().reset_index()
+        dfd = self.df.set_index("When").resample("D").mean().reset_index(drop=True)
+        dfh = self.df.set_index("When").resample("H").mean().reset_index(drop=True)
 
         dfd["Global"] = dfd["SW_diffuse"] + dfd["SW_direct"]
         logger.info(f"Global max: {dfd.Global.max()}\n SW max: {dfd.SW.max()}")
@@ -572,9 +619,15 @@ class Icestupa:
             + dfd["$q_{melt}$"].abs().sum()
             + dfd["$q_{T}$"].abs().sum()
         )
-        logger.info("Qmelt: %.2f, Qt: %.2f" %(dfd["$q_{melt}$"].mean(), dfd["$q_{T}$"].mean()))
         logger.info(
-            "Percent of Qmelt: %.2f \n Qt: %.8f" %(dfd["$q_{melt}$"].abs().sum() / Total, dfd["$q_{T}$"].abs().sum() / Total)
+            "Qmelt: %.2f, Qt: %.2f" % (dfd["$q_{melt}$"].mean(), dfd["$q_{T}$"].mean())
+        )
+        logger.info(
+            "Percent of Qmelt: %.2f \n Qt: %.8f"
+            % (
+                dfd["$q_{melt}$"].abs().sum() / Total,
+                dfd["$q_{T}$"].abs().sum() / Total,
+            )
         )
         logger.info(
             f"% of SW {dfd.SW.abs().sum()/Total}, LW {dfd.LW.abs().sum()/Total}, Qs {dfd.Qs.abs().sum()/Total}, Ql {dfd.Ql.abs().sum()/Total}, Qf {dfd.Qf.abs().sum()/Total}, Qg {dfd.Qg.abs().sum()/Total}"
@@ -596,13 +649,23 @@ class Icestupa:
 
         logger.info(f"Duration {self.df.index[-1] * 5 / (60 * 24)}")
         logger.info(f"Ended {self.df.When.iloc[-1]}")
-        logger.info(f"Evaporation/Condensation: %.2f, Sublimation/Deposition: %.2f" %(self.df.loc[self.df["RH"] > 60, "RH"].count()/self.df.index[-1], self.df.loc[self.df["RH"] <= 60, "RH"].count()/self.df.index[-1]))
-        logger.warning(f"Q_net below zero time: %.2f, Fountain time: %.2f" %(dfh.loc[dfh["TotalE"] < 0, "TotalE"].count() , dfh.loc[dfh["Discharge"] >0, "Discharge"].count()))
+        logger.info(
+            f"Evaporation/Condensation: %.2f, Sublimation/Deposition: %.2f"
+            % (
+                self.df.loc[self.df["RH"] > 60, "RH"].count() / self.df.index[-1],
+                self.df.loc[self.df["RH"] <= 60, "RH"].count() / self.df.index[-1],
+            )
+        )
+        logger.warning(
+            f"Q_net below zero time: %.2f, Fountain time: %.2f"
+            % (
+                dfh.loc[dfh["TotalE"] < 0, "TotalE"].count(),
+                dfh.loc[dfh["Discharge"] > 0, "Discharge"].count(),
+            )
+        )
 
         # Output for manim
-        filename2 = os.path.join(
-            self.output_folder, self.name + "_model_gif.csv"
-        )
+        filename2 = os.path.join(self.output_folder, self.name + "_model_gif.csv")
         self.df["h_f"] = self.h_f
         cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
         self.df[cols].to_csv(filename2, sep=",")
@@ -725,10 +788,8 @@ class Icestupa:
                     )
 
                 # Fountain water output
-                self.liquid = (
-                    row.Discharge * (1 - self.ftl) * self.TIME_STEP / 60
-                )
-                if self.df.loc[i,'SA']:
+                self.liquid = row.Discharge * (1 - self.ftl) * self.TIME_STEP / 60
+                if self.df.loc[i, "SA"]:
                     self.energy_balance(row)
                 else:
                     logger.error("SA zero")
@@ -739,7 +800,7 @@ class Icestupa:
                 if self.df.loc[i, "Ql"] < 0:
                     # Sublimation
                     if self.df.loc[i, "RH"] < 60:
-                        L = self.L_S  
+                        L = self.L_S
                         self.df.loc[i, "gas"] -= (
                             self.df.loc[i, "$q_{T}$"]
                             * self.TIME_STEP
@@ -772,10 +833,10 @@ class Icestupa:
                             / L
                         )
 
-                else:  
+                else:
                     # Deposition
                     if self.df.loc[i, "RH"] < 60:
-                        L = self.L_S  
+                        L = self.L_S
                         self.df.loc[i, "dpt"] += (
                             self.df.loc[i, "$q_{T}$"]
                             * self.TIME_STEP
@@ -784,7 +845,7 @@ class Icestupa:
                         )
                     # Condensation
                     else:
-                        L = self.L_E  
+                        L = self.L_E
                         self.df.loc[i, "cdt"] += (
                             self.df.loc[i, "$q_{T}$"]
                             * self.TIME_STEP
@@ -877,7 +938,8 @@ class Icestupa:
                     self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]
                 )
                 self.df.loc[i + 1, "meltwater"] = (
-                    self.df.loc[i, "meltwater"] + self.df.loc[i, "melted"]
+                    self.df.loc[i, "meltwater"]
+                    + self.df.loc[i, "melted"]
                     + self.df.loc[i, "cdt"]
                 )
                 self.df.loc[i + 1, "ice"] = (
@@ -914,9 +976,6 @@ class Icestupa:
                 # logger.info(self.df.loc[i, "When"], self.df.loc[i, "ice"])
 
                 self.liquid = [0] * 1
-        # self.summary()
-
-
 
     def corr_plot(self):
 
@@ -993,7 +1052,7 @@ class PDF(Icestupa):
 
         """Input Plots"""
 
-        filename = self.input_folder + "data.pdf"
+        filename = self.input_folder + "data" + self.trigger + ".pdf"
 
         pp = PdfPages(filename)
 
@@ -1169,10 +1228,7 @@ class PDF(Icestupa):
         if filename == "model_results.pdf":
             if self.TIME_STEP != 5 * 60:
                 filename = (
-                    self.output_folder
-                    + "model_results_"
-                    + str(self.TIME_STEP)
-                    + ".pdf"
+                    self.output_folder + "model_results_" + str(self.TIME_STEP) + ".pdf"
                 )
             else:
                 filename = self.output_folder + "model_results" + ".pdf"
@@ -1359,7 +1415,7 @@ class PDF(Icestupa):
         pp.savefig(bbox_inches="tight")
         plt.close("all")
 
-        dfd = self.df.set_index("When").resample("D").mean().reset_index()
+        dfd = self.df.set_index("When").resample("D").mean().reset_index(drop=True)
         dfd["Discharge"] = dfd["Discharge"] == 0
         dfd["Discharge"] = dfd["Discharge"].astype(int)
         dfd["Discharge"] = dfd["Discharge"].astype(str)
@@ -1708,7 +1764,7 @@ class PDF(Icestupa):
         pp.savefig(bbox_inches="tight")
         plt.close("all")
 
-        dfd = self.df.set_index("When").resample("D").mean().reset_index()
+        dfd = self.df.set_index("When").resample("D").mean().reset_index(drop=True)
         dfd["Discharge"] = dfd["Discharge"] == 0
         dfd["Discharge"] = dfd["Discharge"].astype(int)
         dfd["Discharge"] = dfd["Discharge"].astype(str)
@@ -1739,8 +1795,8 @@ class PDF(Icestupa):
             dfds["negative"] = dfds.loc[dfds.thickness < 0, "thickness"]
             dfds["positive"] = dfds.loc[dfds.thickness >= 0, "thickness"]
 
-        dfds1 = dfds.set_index("When").resample("D").sum().reset_index()
-        dfds2 = dfds.set_index("When").resample("D").mean().reset_index()
+        dfds1 = dfds.set_index("When").resample("D").sum().reset_index(drop=True)
+        dfds2 = dfds.set_index("When").resample("D").mean().reset_index(drop=True)
 
         dfds2["When"] = dfds2["When"].dt.strftime("%b %d")
         dfds2["label"] = " "
@@ -1950,7 +2006,18 @@ class PDF(Icestupa):
 
         fig = plt.figure(figsize=(12, 14))
         dfds = self.df[
-            ["When", "solid", "ppt", "dpt", "cdt", "melted", "gas", "SA", "iceV", "Discharge"]
+            [
+                "When",
+                "solid",
+                "ppt",
+                "dpt",
+                "cdt",
+                "melted",
+                "gas",
+                "SA",
+                "iceV",
+                "Discharge",
+            ]
         ]
 
         with pd.option_context("mode.chained_assignment", None):
@@ -1965,7 +2032,7 @@ class PDF(Icestupa):
                 dfds.loc[i, "dpt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
                 dfds.loc[i, "cdt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
 
-        dfds = dfds.set_index("When").resample("D").sum().reset_index()
+        dfds = dfds.set_index("When").resample("D").sum().reset_index(drop=True)
         dfds["When"] = dfds["When"].dt.strftime("%b %d")
 
         dfds["label"] = " "
@@ -2007,7 +2074,7 @@ class PDF(Icestupa):
             ]
         ]
 
-        dfd = self.df.set_index("When").resample("D").mean().reset_index()
+        dfd = self.df.set_index("When").resample("D").mean().reset_index(drop=True)
         dfd["When"] = dfd["When"].dt.strftime("%b %d")
 
         dfd["label"] = " "
@@ -2030,7 +2097,7 @@ class PDF(Icestupa):
 
         dfd = dfd.set_index("label")
 
-        dfds2 = self.df.set_index("When").resample("D").mean().reset_index()
+        dfds2 = self.df.set_index("When").resample("D").mean().reset_index(drop=True)
         dfds2["When"] = dfds2["When"].dt.strftime("%b %d")
         dfds2["label"] = " "
         labels = [
@@ -2128,11 +2195,11 @@ class PDF(Icestupa):
         ax4.add_artist(at)
         plt.xticks(rotation=45)
         plt.tight_layout()
-        if output == 'paper':
+        if output == "paper":
             plt.savefig(
                 self.output_folder + "jpg/Figure_6.jpg", dpi=300, bbox_inches="tight"
             )
-        if output == 'web':
+        if output == "web":
             st.pyplot(fig)
 
         fig2 = fig
@@ -2183,17 +2250,17 @@ if __name__ == "__main__":
 
     icestupa = PDF(SITE, FOUNTAIN)
 
-    # icestupa.derive_parameters()
+    icestupa.derive_parameters()
 
-    icestupa.read_input()
+    # icestupa.read_input()
 
-    # icestupa.melt_freeze()
+    icestupa.melt_freeze()
 
-    icestupa.read_output()
+    # icestupa.read_output()
 
     # icestupa.corr_plot()
 
-    # icestupa.summary()
+    icestupa.summary()
 
     # icestupa.print_input()
     # icestupa.paper_figures()
