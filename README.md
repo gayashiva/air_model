@@ -1,9 +1,9 @@
 # Artificial Ice Reservoirs
 
+![Image of Yaktocat](https://github.com/Gayashiva/air_model/blob/master/reports/figures/AIR_logo.png)
 A physical model that predicts the meltwater quantity and survival duration of artificial ice reservoirs (aka Icestupas)
-<img src="https://github.com/Gayashiva/air_model/blob/master/reports/figures/AIR_logo.png" width="250">
 
-# A python toolbox for uncertainty quantification and sensitivity analysis tailored towards computational neuroscience.
+<!-- <img src="https://github.com/Gayashiva/air_model/blob/master/reports/figures/AIR_logo.png" width="250"> -->
 
 ## Project Organization
 
