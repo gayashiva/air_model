@@ -199,11 +199,11 @@ output_full_names = dict(
     a="Albedo",
     thickness="Ice thickness",
 )
-print(input_full_names.keys())
+
 if __name__ == "__main__":
     location = st.sidebar.radio("Select Location", ("Schwarzsee", "Guttannen"))
     fountain = st.sidebar.radio(
-        "Select Discharge Trigger", ("Schwarzsee", "Temperature", "Energy Balance")
+        "Select Discharge Trigger", ("Schwarzsee", "Temperature", "NetEnergy")
     )
 
     st.header("**%s** with fountain discharge trigger **%s**" % (location, fountain))
@@ -222,7 +222,7 @@ if __name__ == "__main__":
 
     df = df.set_index("When")
     variable = st.sidebar.multiselect(
-        "Choose input/output variables", (df.columns.tolist()), ["Discharge"]
+        "Choose input/output variables", (df.columns.tolist()), ["Discharge", "iceV"]
     )
     if not variable:
         st.error("Please select at least one variable.")

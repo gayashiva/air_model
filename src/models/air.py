@@ -26,7 +26,7 @@ import coloredlogs
 pd.plotting.register_matplotlib_converters()
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.INFO)
 coloredlogs.install(
     fmt="%(name)s %(levelname)s %(message)s",
     logger=logger,
@@ -68,7 +68,7 @@ class Icestupa:
     T_w = 0
     h_f = 0
     h_aws = 0
-    trigger = 'Schwarzsee'
+    trigger = 'NetEnergy'
 
     def __init__(self, *initial_data, **kwargs):
         for dictionary in initial_data:
@@ -99,18 +99,6 @@ class Icestupa:
                 header=0,
                 parse_dates=["When"],
             )
-
-    # def config_update(self):
-    #     parameters = {
-    #         "dia_f": self.dia_f,
-    #         "T_w": self.T_w,
-    #         "h_f": self.h_f,
-    #         "h_aws": self.h_aws,
-    #     }
-    #     for var in parameters:
-    #         if parameters[var]:
-    #             logger.info(f"%s, ->, %.3f" %(var, parameters[var]))
-    #             FOUNTAIN[var] = parameters[var]
 
     def get_solar(self):
 
@@ -202,10 +190,72 @@ class Icestupa:
 
         return self.r_mean
 
+    def discharge_rate(self):
+
+        if self.trigger == "Temperature":
+            self.df.Discharge = 0
+            mask = self.df["T_a"] < self.crit_temp
+            mask_index = self.df[mask].index
+            self.df.loc[mask_index, "Discharge"] = 1 * self.discharge
+            mask = self.df["When"] >= self.fountain_off_date
+            mask_index = self.df[mask].index
+            self.df.loc[mask_index, "Discharge"] = 0
+            logger.info(self.df.Discharge.head())
+
+        if self.trigger == "NetEnergy":
+            
+            col = [
+                "T_s",  # Surface Temperature
+                "T_bulk",  # Bulk Temperature
+                "f_cone",
+                "TotalE",
+                "SW",
+                "LW",
+                "Qs",
+                "Ql",
+                "Qf",
+                "Qg",
+                "ppt",
+                "dpt",
+                "cdt",
+            ]
+
+            for column in col:
+                self.df[column] = 0
+
+            self.df.Discharge = 0
+            logger.info("Calculating discharge from energy trigger ...")
+            for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]):
+                self.energy_balance(row, mode='trigger')
+            mask = self.df["TotalE"] < 0
+            mask_index = self.df[mask].index
+            self.df.loc[mask_index, "Discharge"] = 1 * self.discharge
+            mask = self.df["When"] >= self.fountain_off_date
+            mask_index = self.df[mask].index
+            self.df.loc[mask_index, "Discharge"] = 0
+
+            col = [
+                "T_s",  # Surface Temperature
+                "T_bulk",  # Bulk Temperature
+                "f_cone",
+                "TotalE",
+                "SW",
+                "LW",
+                "Qs",
+                "Ql",
+                "Qf",
+                "Qg",
+                "ppt",
+                "dpt",
+                "cdt",
+            ]
+            self.df.drop(columns=col)
+
+            logger.info(self.df.Discharge.head())
+
     def derive_parameters(self):
 
         self.get_solar()
-        self.discharge_rate()
 
         unknown = ["a", "vp_a", "LW_in"]
         for col in unknown:
@@ -257,6 +307,8 @@ class Icestupa:
 
             s, f = self.albedo(row, s, f)
 
+        self.discharge_rate()
+
         self.df = self.df.round(5)
 
         self.df = self.df[
@@ -287,31 +339,6 @@ class Icestupa:
             self.df.to_hdf(
                 self.input_folder + "model_input_" + self.trigger + ".h5", key="df", mode="w"
             )
-
-    def discharge_rate(self):
-
-        # if self.trigger == "Schwarzsee":
-        #     df_f = pd.read_csv("data/schwarzsee/interim/raw_input_extended.csv")
-        #     df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")
-        #     df_f = df_f.set_index("When")
-        #     self.df = self.df.set_index("When")
-        #     mask = df_f["Discharge"] != 0
-        #     mask_index = df_f[mask].index
-        #     self.df.loc[mask_index, "Discharge"] = df_f["Discharge"]
-        #     mask = df_f["Discharge"] == 0
-        #     mask_index = df_f[mask].index
-        #     self.df.loc[mask_index, "Discharge"] = 0
-        #     self.df = df.reset_index(drop=True)
-
-        if self.trigger == "Temperature":
-            logger.warning(self.df.Discharge.head())
-            mask = self.df["T_a"] < self.crit_temp
-            mask_index = self.df[mask].index
-            self.df.loc[mask_index, "Discharge"] = 1 * self.discharge
-            mask = self.df["When"] >= self.fountain_off_date
-            mask_index = self.df[mask].index
-            self.df.loc[mask_index, "Discharge"] = 0
-            logger.warning(self.df.Discharge.head())
 
     def surface_area(self, i):
 
@@ -373,8 +400,15 @@ class Icestupa:
             * math.sin(self.df.loc[i, "sea"])
         ) / self.df.loc[i, "SA"]
 
-    def energy_balance(self, row):
+    def energy_balance(self, row, mode='normal'):
         i = row.Index
+
+        if mode == 'trigger':
+            self.df.loc[i, "T_s"] = 0
+            self.df.loc[i, "Qf"] = 0
+            self.df.loc[i, "Qg"] = 0
+            self.liquid = 0
+            self.df.loc[i, "f_cone"] = 1
 
         self.df.loc[i, "vp_ice"] = (
             (
@@ -427,7 +461,7 @@ class Icestupa:
                 f"LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
             )
 
-        if self.liquid > 0:
+        if self.liquid > 0 :
             self.df.loc[i, "Qf"] = (
                 (self.df.loc[i - 1, "solid"])
                 * self.C_W
@@ -443,16 +477,17 @@ class Icestupa:
                 / self.TIME_STEP
             )
 
-        self.df.loc[i, "Qg"] = (
-            self.K_I
-            * (self.df.loc[i, "T_bulk"] - self.df.loc[i, "T_s"])
-            / (self.df.loc[i, "r_ice"] / 2)
-        )
+        if mode == 'normal':
+            self.df.loc[i, "Qg"] = (
+                self.K_I
+                * (self.df.loc[i, "T_bulk"] - self.df.loc[i, "T_s"])
+                / (self.df.loc[i, "r_ice"] / 2)
+            )
 
-        # Bulk Temperature
-        self.df.loc[i + 1, "T_bulk"] = self.df.loc[i, "T_bulk"] - self.df.loc[
-            i, "Qg"
-        ] * self.TIME_STEP * self.df.loc[i, "SA"] / (self.df.loc[i, "ice"] * self.C_I)
+            # Bulk Temperature
+            self.df.loc[i + 1, "T_bulk"] = self.df.loc[i, "T_bulk"] - self.df.loc[
+                i, "Qg"
+            ] * self.TIME_STEP * self.df.loc[i, "SA"] / (self.df.loc[i, "ice"] * self.C_I)
 
         # Total Energy W/m2
         self.df.loc[i, "TotalE"] = (
