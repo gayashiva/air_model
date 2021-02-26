@@ -25,7 +25,7 @@ import coloredlogs
 pd.plotting.register_matplotlib_converters()
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.WARNING)
 coloredlogs.install(
     fmt="%(name)s %(levelname)s %(message)s",
     logger=logger,
@@ -68,38 +68,29 @@ class Icestupa:
     h_aws = 0
 
 
-    # def __init__(self, **kwds):
     def __init__(self, *initial_data, **kwargs):
         for dictionary in initial_data:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
-                # print(key, dictionary[key])
-                logger.info(f"%s, ->, %s" %(key, str(dictionary[key])))
+                logger.info(f"%s -> %s" %(key, str(dictionary[key])))
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
-        # self.__dict__.update(kwds)
-        # for key, value in kwds.iteritems():
-        #     print(self, key, value)
+        self.raw_folder=os.path.join(dirname, "data/" + self.name + "/raw/")
+        self.input_folder=os.path.join(dirname, "data/" + self.name + "/interim/")
+        self.output_folder=os.path.join(dirname, "data/" + self.name + "/processed/")
+        self.sim_folder=os.path.join(dirname, "data/" + self.name + "/processed/simulations")
 
-        FOLDERS = dict(
-            raw_folder=os.path.join(dirname, "data/" + self.name + "/raw/"),
-            input_folder=os.path.join(dirname, "data/" + self.name + "/interim/"),
-            output_folder=os.path.join(dirname, "data/" + self.name + "/processed/"),
-            sim_folder=os.path.join(
-                dirname, "data/" + self.name + "/processed/simulations"
-            ),
-        )
         if self.name == "schwarzsee":
-            input_file = FOLDERS["input_folder"] + "raw_input_extended.csv"
+            input_file = self.input_folder + "raw_input_extended.csv"
         else:
-            input_file = FOLDERS["input_folder"] + "raw_input_ERA5.csv"
+            input_file = self.input_folder + "raw_input_ERA5.csv"
 
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
 
         if self.name == "guttannen":
             self.df_cam = pd.read_csv(
-                FOLDERS["input_folder"] + "cam.csv",
+                self.input_folder + "cam.csv",
                 sep=",",
                 header=0,
                 parse_dates=["When"],
@@ -287,11 +278,11 @@ class Icestupa:
 
         if self.name == "schwarzsee":
             self.df.to_hdf(
-                self.FOLDERS["input_folder"] + "model_input_extended.h5", key="df", mode="w"
+                self.input_folder + "model_input_extended.h5", key="df", mode="w"
             )
         else:
             self.df.to_hdf(
-                self.FOLDERS["input_folder"] + "model_input_ERA5.h5", key="df", mode="w"
+                self.input_folder + "model_input_ERA5.h5", key="df", mode="w"
             )
 
     def surface_area(self, i):
@@ -517,19 +508,19 @@ class Icestupa:
         print("Duration", Duration)
 
         # Full Output
-        filename4 = self.FOLDERS["output_folder"] + "model_results.csv"
+        filename4 = self.output_folder + "model_results.csv"
         self.df.to_csv(filename4, sep=",")
 
-        self.df.to_hdf(self.FOLDERS["output_folder"] + "model_output.h5", key="df", mode="w")
+        self.df.to_hdf(self.output_folder + "model_output.h5", key="df", mode="w")
 
     def read_input(self):
 
         if self.name == "schwarzsee":
             self.df = pd.read_hdf(
-                self.FOLDERS["input_folder"] + "model_input_extended.h5", "df"
+                self.input_folder + "model_input_extended.h5", "df"
             )
         else:
-            self.df = pd.read_hdf(self.FOLDERS["input_folder"] + "model_input_ERA5.h5", "df")
+            self.df = pd.read_hdf(self.input_folder + "model_input_ERA5.h5", "df")
 
         # self.TIME_STEP=15*60
         # self.df = self.df.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index()
@@ -541,7 +532,7 @@ class Icestupa:
 
     def read_output(self):
 
-        self.df = pd.read_hdf(self.FOLDERS["output_folder"] + "model_output.h5", "df")
+        self.df = pd.read_hdf(self.output_folder + "model_output.h5", "df")
 
         if self.df.isnull().values.any():
             logger.info("Warning: Null values present")
@@ -610,7 +601,7 @@ class Icestupa:
 
         # Output for manim
         filename2 = os.path.join(
-            self.FOLDERS["output_folder"], self.name + "_model_gif.csv"
+            self.output_folder, self.name + "_model_gif.csv"
         )
         self.df["h_f"] = self.h_f
         cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
@@ -998,11 +989,11 @@ class Icestupa:
 class PDF(Icestupa):
     def print_input(self, filename="derived_parameters.pdf"):
         if filename == "derived_parameters.pdf":
-            filename = self.FOLDERS["input_folder"]
+            filename = self.input_folder
 
         """Input Plots"""
 
-        filename = self.FOLDERS["input_folder"] + "data.pdf"
+        filename = self.input_folder + "data.pdf"
 
         pp = PdfPages(filename)
 
@@ -1178,13 +1169,13 @@ class PDF(Icestupa):
         if filename == "model_results.pdf":
             if self.TIME_STEP != 5 * 60:
                 filename = (
-                    self.FOLDERS["output_folder"]
+                    self.output_folder
                     + "model_results_"
                     + str(self.TIME_STEP)
                     + ".pdf"
                 )
             else:
-                filename = self.FOLDERS["output_folder"] + "model_results" + ".pdf"
+                filename = self.output_folder + "model_results" + ".pdf"
 
         self.df = self.df.rename(
             {
@@ -1494,7 +1485,7 @@ class PDF(Icestupa):
     def print_output_guttannen(self, filename="model_results.pdf"):
 
         if filename == "model_results.pdf":
-            filename = self.FOLDERS["output_folder"] + "model_results.pdf"
+            filename = self.output_folder + "model_results.pdf"
 
         self.df = self.df.rename(
             {
@@ -1508,7 +1499,7 @@ class PDF(Icestupa):
             axis=1,
         )
 
-        df_temp = pd.read_csv(self.FOLDERS["input_folder"] + "lumtemp.csv")
+        df_temp = pd.read_csv(self.input_folder + "lumtemp.csv")
 
         df_temp["When"] = pd.to_datetime(df_temp["When"])
 
@@ -1950,7 +1941,7 @@ class PDF(Icestupa):
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
         plt.savefig(
-            self.FOLDERS["output_folder"] + "jpg/Figure_3.jpg", dpi=300, bbox_inches="tight"
+            self.output_folder + "jpg/Figure_3.jpg", dpi=300, bbox_inches="tight"
         )
         # plt.show()
         st.pyplot(fig)
@@ -2139,7 +2130,7 @@ class PDF(Icestupa):
         plt.tight_layout()
         if output == 'paper':
             plt.savefig(
-                self.FOLDERS["output_folder"] + "jpg/Figure_6.jpg", dpi=300, bbox_inches="tight"
+                self.output_folder + "jpg/Figure_6.jpg", dpi=300, bbox_inches="tight"
             )
         if output == 'web':
             st.pyplot(fig)
@@ -2180,7 +2171,7 @@ class PDF(Icestupa):
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
         # plt.savefig(
-        #     self.FOLDERS["output_folder"] + "jpg/Figure_7.jpg", dpi=300, bbox_inches="tight"
+        #     self.output_folder + "jpg/Figure_7.jpg", dpi=300, bbox_inches="tight"
         # )
         fig3 = fig
         plt.close("all")
