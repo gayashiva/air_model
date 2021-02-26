@@ -1,10 +1,11 @@
-Artificial Ice Reservoirs
-==============================
+# Artificial Ice Reservoirs
 
 A physical model that predicts the meltwater quantity and survival duration of artificial ice reservoirs (aka Icestupas)
+<img src="https://github.com/Gayashiva/air_model/blob/master/reports/figures/AIR_logo.png" width="700">
 
-Project Organization
-------------
+# A python toolbox for uncertainty quantification and sensitivity analysis tailored towards computational neuroscience.
+
+## Project Organization
 
     ├── LICENSE
     ├── Makefile           <- Makefile with commands like `make data` or `make train`
@@ -51,7 +52,6 @@ Project Organization
     │
     └── tox.ini            <- tox file with settings for running tox; see tox.testrun.org
 
-
---------
+---
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
