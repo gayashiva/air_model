@@ -289,21 +289,21 @@ class Icestupa:
                     / 100
                 )
 
-            """LW incoming"""
-            if "LW_in" in unknown:
+            # """LW incoming"""
+            # if "LW_in" in unknown:
 
-                self.df.loc[row.Index, "e_a"] = (
-                    1.24
-                    * math.pow(
-                        abs(self.df.loc[row.Index, "vp_a"] / (row.T_a + 273.15)), 1 / 7
-                    )
-                ) * (1 + 0.22 * math.pow(self.df.loc[row.Index, "cld"], 2))
+            #     self.df.loc[row.Index, "e_a"] = (
+            #         1.24
+            #         * math.pow(
+            #             abs(self.df.loc[row.Index, "vp_a"] / (row.T_a + 273.15)), 1 / 7
+            #         )
+            #     ) * (1 + 0.22 * math.pow(self.df.loc[row.Index, "cld"], 2))
 
-                self.df.loc[row.Index, "LW_in"] = (
-                    self.df.loc[row.Index, "e_a"]
-                    * self.STEFAN_BOLTZMAN
-                    * math.pow(row.T_a + 273.15, 4)
-                )
+            #     self.df.loc[row.Index, "LW_in"] = (
+            #         self.df.loc[row.Index, "e_a"]
+            #         * self.STEFAN_BOLTZMAN
+            #         * math.pow(row.T_a + 273.15, 4)
+            #     )
 
             s, f = self.albedo(row, s, f)
 
@@ -323,7 +323,7 @@ class Icestupa:
                 "SW_diffuse",
                 "Prec",
                 "p_a",
-                "cld",
+                # "cld",
                 "a",
                 "vp_a",
                 "LW_in",
@@ -517,7 +517,7 @@ class Icestupa:
                 "SW_diffuse",
                 "Prec",
                 "p_a",
-                "cld",
+                # "cld",
                 "a",
                 "vp_a",
                 "LW_in",
@@ -965,9 +965,6 @@ class Icestupa:
                         / (self.L_F)
                     )
 
-                # Vaporization from atmosphere
-                # self.df.loc[i, "vap"] = self.df.loc[i, "dpt"] + self.df.loc[i, "cdt"]
-
                 """ Quantities of all phases """
                 self.df.loc[i + 1, "T_s"] = (
                     self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]
@@ -1140,16 +1137,16 @@ class PDF(Icestupa):
         ax6.set_ylabel("Wind [$m\\,s^{-1}$]")
         ax6.grid()
 
-        y7 = self.df.cld
-        ax7.plot(x, y7, "k-", linewidth=0.5)
-        ax7.set_ylabel("Cloudiness")
-        ax7.grid()
+        # y7 = self.df.cld
+        # ax7.plot(x, y7, "k-", linewidth=0.5)
+        # ax7.set_ylabel("Cloudiness")
+        # ax7.grid()
 
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
+        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        # fig.autofmt_xdate()
+        # pp.savefig(bbox_inches="tight")
 
         plt.clf()
 
@@ -1243,17 +1240,17 @@ class PDF(Icestupa):
         pp.savefig(bbox_inches="tight")
         plt.clf()
 
-        ax1 = fig.add_subplot(111)
-        y6 = self.df.cld
-        ax1.plot(x, y6, "k-", linewidth=0.5)
-        ax1.set_ylabel("Cloudiness")
+        # ax1 = fig.add_subplot(111)
+        # y6 = self.df.cld
+        # ax1.plot(x, y6, "k-", linewidth=0.5)
+        # ax1.set_ylabel("Cloudiness")
 
-        ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        fig.autofmt_xdate()
-        pp.savefig(bbox_inches="tight")
-        plt.clf()
+        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        # fig.autofmt_xdate()
+        # pp.savefig(bbox_inches="tight")
+        # plt.clf()
 
         plt.close("all")
         pp.close()
@@ -1769,18 +1766,6 @@ class PDF(Icestupa):
         for tl in ax1t.get_yticklabels():
             tl.set_color("b")
         ax1.grid()
-
-        # y1 = self.df.e_a
-        # y2 = self.df.cld
-        # ax2.plot(x, y1, "k-")
-        # ax2.set_ylabel("Atmospheric Emissivity")
-        # # ax1.set_xlabel("Days")
-        # ax2t = ax2.twinx()
-        # ax2t.plot(x, y2, "b-", linewidth=0.5)
-        # ax2t.set_ylabel("Cloudiness", color="b")
-        # for tl in ax2t.get_yticklabels():
-        #     tl.set_color("b")
-        # ax2.grid()
 
         y3 = self.df.vp_a - self.df.vp_ice
         ax3.plot(x, y3, "k-", linewidth=0.5)
