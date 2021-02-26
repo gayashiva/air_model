@@ -211,14 +211,14 @@ if __name__ == "__main__":
 
     df = df_filter("Move sliders to filter dataframe", df_i)
 
-    column_1, column_2 = st.beta_columns(2)
-    with column_1:
-        st.header("Location")
-        st.write(SITE)
+    # column_1, column_2 = st.beta_columns(2)
+    # with column_1:
+    #     st.header("Location")
+    #     st.write(SITE)
 
-    with column_2:
-        st.header("Fountain")
-        st.write(FOUNTAIN)
+    # with column_2:
+    #     st.header("Fountain")
+    #     st.write(FOUNTAIN)
 
     df = df.set_index("When")
     variable = st.sidebar.multiselect(
