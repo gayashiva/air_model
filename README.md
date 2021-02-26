@@ -1,6 +1,6 @@
 <!-- ![Artificial Ice Reservoirs](https://github.com/Gayashiva/air_model/blob/master/reports/figures/AIR_logo.png) -->
 
-<a href="url"><img src="https://github.com/Gayashiva/air_model/blob/master/reports/figures/AIR_logo.png" align="left" height="48" width="48" ></a>
+<a href="url"><img src="https://github.com/Gayashiva/air_model/blob/master/reports/figures/AIR_logo.png" align="left" height="148" width="148" ></a>
 
 <!-- Format: ![Alt Text](url) -->
 
