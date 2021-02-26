@@ -1,4 +1,5 @@
 ![Artificial Ice Reservoirs](https://github.com/Gayashiva/air_model/blob/master/reports/figures/AIR_logo.png)
+Format: ![Alt Text](url)
 
 # Artificial Ice Reservoirs
 
