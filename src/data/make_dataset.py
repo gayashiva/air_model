@@ -23,6 +23,111 @@ from src.data.config import SITE, FOLDERS, FOUNTAIN, OPTION
 start = time.time()
 
 
+def field(site="schwarzsee"):
+    if site == "schwarzsee":
+        df_in = pd.read_csv(
+            FOLDERS["raw_folder"] + SITE["name"] + "_aws.txt",
+            header=None,
+            encoding="latin-1",
+            skiprows=7,
+            sep="\\s+",
+            names=[
+                "Date",
+                "Time",
+                "Discharge",
+                "Wind Direction",
+                "Wind Speed",
+                "Maximum Wind Speed",
+                "Temperature",
+                "Humidity",
+                "Pressure",
+                "Pluviometer",
+            ],
+        )
+
+        df_in = df_in.drop(["Pluviometer"], axis=1)
+
+        df_in["When"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
+        df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+
+        # Correct datetime errors
+        for i in tqdm(range(1, df_in.shape[0])):
+            if str(df_in.loc[i, "When"].year) != "2019":
+                df_in.loc[i, "When"] = df_in.loc[i - 1, "When"] + pd.Timedelta(
+                    minutes=5
+                )
+
+        df_in = df_in.set_index("When").resample("5T").last().reset_index()
+
+        mask = (df_in["When"] >= SITE["start_date"]) & (
+            df_in["When"] <= SITE["end_date"]
+        )
+        df_in = df_in.loc[mask]
+        df_in = df_in.reset_index()
+
+        days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="5T")
+        days = pd.DataFrame({"When": days})
+
+        df = pd.merge(
+            days,
+            df_in[
+                [
+                    "When",
+                    "Discharge",
+                    "Wind Speed",
+                    "Maximum Wind Speed",
+                    "Wind Direction",
+                    "Temperature",
+                    "Humidity",
+                    "Pressure",
+                ]
+            ],
+            on="When",
+        )
+
+        # Include Spray time
+        df_nights = pd.read_csv(
+            FOLDERS["raw_folder"] + "schwarzsee_fountain_time.txt",
+            sep="\\s+",
+        )
+
+        df_nights["Start"] = pd.to_datetime(
+            df_nights["Date"] + " " + df_nights["start"]
+        )
+        df_nights["End"] = pd.to_datetime(df_nights["Date"] + " " + df_nights["end"])
+        df_nights["Start"] = pd.to_datetime(
+            df_nights["Start"], format="%Y-%m-%d %H:%M:%S"
+        )
+        df_nights["End"] = pd.to_datetime(df_nights["End"], format="%Y-%m-%d %H:%M:%S")
+
+        df_nights["Date"] = pd.to_datetime(df_nights["Date"], format="%Y-%m-%d")
+
+        df["Fountain"] = 0
+
+        for i in range(0, df_nights.shape[0]):
+            df_nights.loc[i, "Start"] = df_nights.loc[i, "Start"] - pd.Timedelta(days=1)
+            df.loc[
+                (df["When"] >= df_nights.loc[i, "Start"])
+                & (df["When"] <= df_nights.loc[i, "End"]),
+                "Fountain",
+            ] = 1
+
+        # CSV output
+        df.rename(
+            columns={
+                "Wind Speed": "v_a",
+                "Temperature": "T_a",
+                "Humidity": "RH",
+                "Pressure": "p_a",
+            },
+            inplace=True,
+        )
+
+        df.Discharge = df.Fountain * df.Discharge
+        df.to_csv(FOLDERS["input_folder"] + SITE["name"] + "_input_field.csv")
+        return df
+
+
 def era5(df):
     df_in3 = pd.read_csv(
         # FOLDERS["raw_folder"] + "ERA5_" + SITE["name"] + ".csv",
@@ -81,8 +186,8 @@ def era5(df):
     interpolated = upsampled.interpolate(method="linear")
     interpolated = interpolated.reset_index()
 
-    interpolated["Discharge"] = 0
-    interpolated["Discharge"] = discharge_rate(interpolated, FOUNTAIN)
+    # interpolated["Discharge"] = 0
+    # interpolated["Discharge"] = discharge_rate(interpolated, FOUNTAIN)
 
     df_in3 = interpolated[
         [
@@ -116,17 +221,19 @@ def era5(df):
             "LW_in",
             "p_a",
             "Prec",
-            "Discharge",
+            # "Discharge",
         ]
     ]
-    df_ERA5.loc[:, "Discharge"] = 0
+    # df_ERA5.loc[:, "Discharge"] = 0
     return df_ERA5, df_in3
 
 
 def discharge_rate(df, FOUNTAIN):
 
     if OPTION == "schwarzsee":
-        df_f = pd.read_csv("data/schwarzsee/interim/raw_input_SZ.csv")
+        df_f = pd.read_csv(
+            "data/schwarzsee/interim/" + SITE["name"] + "_input_field.csv"
+        )
         df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")
         df_f = df_f.set_index("When")
         df = df.set_index("When")
@@ -166,281 +273,176 @@ def linreg(X, Y):
 
 if __name__ == "__main__":
 
-    if SITE["name"] == "schwarzsee":
+    df = field(site=SITE["name"])
 
-        # read files
-        df_in = pd.read_csv(
-            FOLDERS["raw_folder"] + SITE["name"] + "_aws.txt",
-            header=None,
-            encoding="latin-1",
-            skiprows=7,
-            sep="\\s+",
-            names=[
-                "Date",
-                "Time",
-                "Discharge",
-                "Wind Direction",
-                "Wind Speed",
-                "Maximum Wind Speed",
-                "Temperature",
-                "Humidity",
-                "Pressure",
-                "Pluviometer",
-            ],
+    df_ERA5, df_in3 = era5(df)
+
+    df_ERA5 = df_ERA5.set_index("When")
+    df = df.set_index("When")
+    df["missing"] = 0
+    df.loc[df["T_a"].isnull(), "missing"] = 1
+    df["v_a"] = df["v_a"].replace(0, np.NaN)
+
+    df_ERA5 = df_ERA5.reset_index()
+    mask = (df_ERA5["When"] >= SITE["start_date"]) & (
+        df_ERA5["When"] <= SITE["end_date"]
+    )
+
+    # Fit ERA5 to field data
+    for column in ["T_a", "RH", "v_a", "p_a"]:
+        Y = df[column].values.reshape(-1, 1)
+        X = df_ERA5[mask][column].values.reshape(-1, 1)
+        slope, intercept = linreg(X, Y)
+        df_ERA5[column] = slope * df_ERA5[column] + intercept
+
+    df_ERA5 = df_ERA5.set_index("When")
+
+    # Fill from ERA5
+    df.loc[df["T_a"].isnull(), ["T_a", "RH", "v_a", "p_a", "Discharge"]] = df_ERA5[
+        ["T_a", "RH", "v_a", "p_a", "Discharge"]
+    ]
+
+    df.loc[df["v_a"].isnull(), "missing"] = 2
+    df.loc[df["v_a"].isnull(), "v_a"] = df_ERA5["v_a"]
+
+    df[["SW_direct", "SW_diffuse", "LW_in"]] = df_ERA5[
+        ["SW_direct", "SW_diffuse", "LW_in"]
+    ]
+
+    # Fill precipitation from Plaffeien
+    df_in2 = pd.read_csv(
+        os.path.join(FOLDERS["raw_folder"], "plaffeien_aws.txt"),
+        sep=";",
+        skiprows=2,
+    )
+    df_in2["When"] = pd.to_datetime(df_in2["time"], format="%Y%m%d%H%M")
+
+    df_in2["Prec"] = pd.to_numeric(df_in2["rre150z0"], errors="coerce")
+    df_in2["p_a"] = pd.to_numeric(df_in2["prestas0"], errors="coerce")
+    df_in2["RH"] = pd.to_numeric(df_in2["ure200s0"], errors="coerce")
+    df_in2["v_a"] = pd.to_numeric(df_in2["fkl010z0"], errors="coerce")
+    df_in2["T_a"] = pd.to_numeric(df_in2["tre200s0"], errors="coerce")
+    df_in2["SW_g"] = pd.to_numeric(df_in2["gre000z0"], errors="coerce")
+
+    df_in2["Prec"] = df_in2["Prec"] / (10 * 60)  # ppt rate mm/s
+    df_in2 = (
+        df_in2.set_index("When")
+        .resample("5T")
+        .interpolate(method="linear")
+        .reset_index()
+    )
+
+    mask = (df_in2["When"] >= SITE["start_date"]) & (df_in2["When"] <= SITE["end_date"])
+    df_in2 = df_in2.loc[mask]
+    df_in2 = df_in2.set_index("When")
+
+    df["Prec"] = df_in2["Prec"]
+    df = df.reset_index()
+    df_in2 = df_in2.reset_index()
+
+    # Compare ERA5 and field data
+    for column in ["T_a", "RH", "v_a", "p_a"]:
+
+        slope, intercept, r_value, p_value, std_err = stats.linregress(
+            df[column].values, df_in3[column].values
         )
-
-        # Drop
-        df_in = df_in.drop(["Pluviometer"], axis=1)
-
-        # Datetime
-        df_in["When"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
-        df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
-
-        # Correct datetime errors
-        for i in tqdm(range(1, df_in.shape[0])):
-            if str(df_in.loc[i, "When"].year) != "2019":
-                df_in.loc[i, "When"] = df_in.loc[i - 1, "When"] + pd.Timedelta(
-                    minutes=5
-                )
-
-        df_in = df_in.set_index("When").resample("5T").last().reset_index()
-
-        mask = (df_in["When"] >= SITE["start_date"]) & (
-            df_in["When"] <= SITE["end_date"]
+        print("ERA5", column, r_value)
+        slope, intercept, r_value, p_value, std_err = stats.linregress(
+            df[column].values, df_in2[column].values
         )
-        df_in = df_in.loc[mask]
-        df_in = df_in.reset_index()
+        print("Plf", column, r_value)
 
-        days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="5T")
-        days = pd.DataFrame({"When": days})
+    df_out = df[
+        [
+            "When",
+            "T_a",
+            "RH",
+            "v_a",
+            # "Discharge",
+            "SW_direct",
+            "SW_diffuse",
+            "Prec",
+            "p_a",
+            "missing",
+            "LW_in",
+        ]
+    ]
 
-        df = pd.merge(
-            days,
-            df_in[
+    if df_out.isnull().values.any():
+        print("Warning: Null values present")
+        print(
+            df[
                 [
                     "When",
-                    "Discharge",
-                    "Wind Speed",
-                    "Maximum Wind Speed",
-                    "Wind Direction",
-                    "Temperature",
-                    "Humidity",
-                    "Pressure",
+                    "T_a",
+                    "RH",
+                    "v_a",
+                    # "Discharge",
+                    "SW_direct",
+                    "SW_diffuse",
+                    "Prec",
+                    "p_a",
+                    "missing",
                 ]
-            ],
-            on="When",
-        )
-        print(df.head())
-
-        # Include Spray time
-        df_nights = pd.read_csv(
-            FOLDERS["raw_folder"] + "schwarzsee_fountain_time.txt",
-            sep="\\s+",
-        )
-
-        df_nights["Start"] = pd.to_datetime(
-            df_nights["Date"] + " " + df_nights["start"]
-        )
-        df_nights["End"] = pd.to_datetime(df_nights["Date"] + " " + df_nights["end"])
-        df_nights["Start"] = pd.to_datetime(
-            df_nights["Start"], format="%Y-%m-%d %H:%M:%S"
-        )
-        df_nights["End"] = pd.to_datetime(df_nights["End"], format="%Y-%m-%d %H:%M:%S")
-
-        df_nights["Date"] = pd.to_datetime(df_nights["Date"], format="%Y-%m-%d")
-
-        df["Fountain"] = 0
-        for i in range(0, df_nights.shape[0]):
-            df_nights.loc[i, "Start"] = df_nights.loc[i, "Start"] - pd.Timedelta(days=1)
-            df.loc[
-                (df["When"] >= df_nights.loc[i, "Start"])
-                & (df["When"] <= df_nights.loc[i, "End"]),
-                "Fountain",
-            ] = 1
-
-        # CSV output
-        df.rename(
-            columns={
-                "Wind Speed": "v_a",
-                "Temperature": "T_a",
-                "Humidity": "RH",
-                "Pressure": "p_a",
-            },
-            inplace=True,
-        )
-
-        df.Discharge = df.Fountain * df.Discharge
-        df.to_csv(FOLDERS["input_folder"] + SITE["name"] + "_input_field.csv")
-
-        df_ERA5, df_in3 = era5(df)
-
-        # Fill from ERA5
-        df_ERA5 = df_ERA5.set_index("When")
-        df = df.set_index("When")
-        df["missing"] = 0
-        df.loc[df["T_a"].isnull(), "missing"] = 1
-        df["v_a"] = df["v_a"].replace(0, np.NaN)
-
-        df_ERA5 = df_ERA5.reset_index()
-        mask = (df_ERA5["When"] >= SITE["start_date"]) & (
-            df_ERA5["When"] <= SITE["end_date"]
-        )
-
-        for column in ["T_a", "RH", "v_a", "p_a"]:
-            Y = df[column].values.reshape(-1, 1)
-            X = df_ERA5[mask][column].values.reshape(-1, 1)
-            slope, intercept = linreg(X, Y)
-            df_ERA5[column] = slope * df_ERA5[column] + intercept
-
-        df_ERA5 = df_ERA5.set_index("When")
-
-        df.loc[df["T_a"].isnull(), ["T_a", "RH", "v_a", "p_a", "Discharge"]] = df_ERA5[
-            ["T_a", "RH", "v_a", "p_a", "Discharge"]
-        ]
-
-        df.loc[df["v_a"].isnull(), "missing"] = 2
-        df.loc[df["v_a"].isnull(), "v_a"] = df_ERA5["v_a"]
-
-        df[["SW_direct", "SW_diffuse", "LW_in"]] = df_ERA5[
-            ["SW_direct", "SW_diffuse", "LW_in"]
-        ]
-
-        # Fill precipitation from Plaffeien
-        df_in2 = pd.read_csv(
-            os.path.join(FOLDERS["raw_folder"], "plaffeien_aws.txt"),
-            sep=";",
-            skiprows=2,
-        )
-        df_in2["When"] = pd.to_datetime(df_in2["time"], format="%Y%m%d%H%M")
-
-        df_in2["Prec"] = pd.to_numeric(df_in2["rre150z0"], errors="coerce")
-        df_in2["p_a"] = pd.to_numeric(df_in2["prestas0"], errors="coerce")
-        df_in2["RH"] = pd.to_numeric(df_in2["ure200s0"], errors="coerce")
-        df_in2["v_a"] = pd.to_numeric(df_in2["fkl010z0"], errors="coerce")
-        df_in2["T_a"] = pd.to_numeric(df_in2["tre200s0"], errors="coerce")
-        df_in2["SW_g"] = pd.to_numeric(df_in2["gre000z0"], errors="coerce")
-
-        df_in2["Prec"] = df_in2["Prec"] / (10 * 60)  # ppt rate mm/s
-        df_in2 = (
-            df_in2.set_index("When")
-            .resample("5T")
-            .interpolate(method="linear")
-            .reset_index()
-        )
-
-        mask = (df_in2["When"] >= SITE["start_date"]) & (
-            df_in2["When"] <= SITE["end_date"]
-        )
-        df_in2 = df_in2.loc[mask]
-        df_in2 = df_in2.set_index("When")
-
-        df["Prec"] = df_in2["Prec"]
-        df = df.reset_index()
-        df_in2 = df_in2.reset_index()
-
-        for column in ["T_a", "RH", "v_a", "p_a"]:
-
-            slope, intercept, r_value, p_value, std_err = stats.linregress(
-                df[column].values, df_in3[column].values
-            )
-            print("ERA5", column, r_value)
-            slope, intercept, r_value, p_value, std_err = stats.linregress(
-                df[column].values, df_in2[column].values
-            )
-            print("Plf", column, r_value)
-
-        df_out = df[
-            [
-                "When",
-                "T_a",
-                "RH",
-                "v_a",
-                "Discharge",
-                "SW_direct",
-                "SW_diffuse",
-                "Prec",
-                "p_a",
-                "missing",
-                "LW_in",
             ]
-        ]
+            .isnull()
+            .sum()
+        )
 
-        if df_out.isnull().values.any():
-            print("Warning: Null values present")
-            print(
-                df[
-                    [
-                        "When",
-                        "T_a",
-                        "RH",
-                        "v_a",
-                        "Discharge",
-                        "SW_direct",
-                        "SW_diffuse",
-                        "Prec",
-                        "p_a",
-                        "missing",
-                    ]
+    df_out = df_out.round(5)
+    df_out.loc[df_out["v_a"] < 0, "v_a"] = 0
+
+    # Extend data
+    df_ERA5["Prec"] = 0
+    df_ERA5["missing"] = 1
+    df_ERA5 = df_ERA5.reset_index()
+    mask = (df_ERA5["When"] >= df_out["When"].iloc[-1]) & (
+        df_ERA5["When"] <= datetime(2019, 5, 30)
+    )
+    df_ERA5 = df_ERA5.loc[mask]
+
+    mask = (df_in2["When"] >= SITE["start_date"]) & (
+        df_in2["When"] <= df_ERA5["When"].iloc[-1]
+    )
+    df_in2 = df_in2.loc[mask]
+    df_in2 = df_in2.set_index("When")
+
+    df_out = df_out.set_index("When")
+    df_ERA5 = df_ERA5.set_index("When")
+
+    df_ERA5["Prec"] = df_in2["Prec"]
+    concat = pd.concat([df_out, df_ERA5])
+    concat.loc[concat["Prec"].isnull(), "Prec"] = 0
+    concat.loc[concat["v_a"] < 0, "v_a"] = 0
+    concat = concat.reset_index()
+
+    if concat.isnull().values.any():
+        print("Warning: Null values present")
+        print(
+            concat[
+                [
+                    "When",
+                    "T_a",
+                    "RH",
+                    "v_a",
+                    # "Discharge",
+                    "SW_direct",
+                    "SW_diffuse",
+                    "Prec",
+                    "p_a",
+                    "missing",
                 ]
-                .isnull()
-                .sum()
-            )
-
-        df_out = df_out.round(5)
-        df_out.loc[df_out["v_a"] < 0, "v_a"] = 0
-
-        # Extend data
-        df_ERA5["Prec"] = 0
-        df_ERA5["missing"] = 1
-        df_ERA5 = df_ERA5.reset_index()
-        mask = (df_ERA5["When"] >= df_out["When"].iloc[-1]) & (
-            df_ERA5["When"] <= datetime(2019, 5, 30)
+            ]
+            .isnull()
+            .sum()
         )
-        df_ERA5 = df_ERA5.loc[mask]
 
-        mask = (df_in2["When"] >= SITE["start_date"]) & (
-            df_in2["When"] <= df_ERA5["When"].iloc[-1]
-        )
-        df_in2 = df_in2.loc[mask]
-        df_in2 = df_in2.set_index("When")
-
-        df_out = df_out.set_index("When")
-        df_ERA5 = df_ERA5.set_index("When")
-
-        # df_ERA5 = df_ERA5.drop(["LW_in"], axis=1)
-        df_ERA5["Prec"] = df_in2["Prec"]
-        concat = pd.concat([df_out, df_ERA5])
-        concat.loc[concat["Prec"].isnull(), "Prec"] = 0
-        concat.loc[concat["v_a"] < 0, "v_a"] = 0
-        concat = concat.reset_index()
-
-        if concat.isnull().values.any():
-            print("Warning: Null values present")
-            print(
-                concat[
-                    [
-                        "When",
-                        "T_a",
-                        "RH",
-                        "v_a",
-                        "Discharge",
-                        "SW_direct",
-                        "SW_diffuse",
-                        "Prec",
-                        "p_a",
-                        "missing",
-                    ]
-                ]
-                .isnull()
-                .sum()
-            )
-
-        concat.to_csv(FOLDERS["input_folder"] + SITE["name"] + "_input_mixed.csv")
-        concat.to_hdf(
-            FOLDERS["input_folder"] + SITE["name"] + "_input_mixed.h5",
-            key="df",
-            mode="w",
-        )
+    concat.to_csv(FOLDERS["input_folder"] + SITE["name"] + "_input_mixed.csv")
+    concat.to_hdf(
+        FOLDERS["input_folder"] + SITE["name"] + "_input_mixed.h5",
+        key="df",
+        mode="w",
+    )
 
     # fig = plt.figure()
     # ax1 = fig.add_subplot(111)
