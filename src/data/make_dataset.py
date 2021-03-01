@@ -14,119 +14,119 @@ import os
 import logging
 from scipy import stats
 from sklearn.linear_model import LinearRegression
-dirname=sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+
+dirname = sys.path.append(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+)
 from src.data.config import SITE, FOLDERS, FOUNTAIN, OPTION
 
 start = time.time()
 
-def era5():
-        # ERA5 begins
-        df_in3 = pd.read_csv(
-            # FOLDERS["raw_folder"] + "ERA5_" + SITE["name"] + ".csv",
-            "/home/suryab/work/ERA5/results/schwarzsee_2019.csv",
-            sep=",",
-            header=0,
-            parse_dates=["When"],
-        )
 
-        time_steps = 60 * 60
-        df_in3["ssrd"] /= time_steps
-        df_in3["strd"] /= time_steps
-        df_in3["fdir"] /= time_steps
-        df_in3["v_a"] = np.sqrt(df_in3["u10"] ** 2 + df_in3["v10"] ** 2)
-        # Derive RH
-        df_in3["t2m"] -= 273.15
-        df_in3["d2m"] -= 273.15
-        df_in3["t2m_RH"] = df_in3["t2m"]
-        df_in3["d2m_RH"] = df_in3["d2m"]
-        df_in3 = df_in3.apply(lambda x: e_sat(x) if x.name == "t2m_RH" else x)
-        df_in3 = df_in3.apply(lambda x: e_sat(x) if x.name == "d2m_RH" else x)
-        df_in3["RH"] = 100 * df_in3["d2m_RH"] / df_in3["t2m_RH"]
-        df_in3["sp"] = df_in3["sp"] / 100
-        df_in3["tp"] = df_in3["tp"] * 1000 / 3600  # mm/s
-        df_in3["SW_diffuse"] = df_in3["ssrd"] - df_in3["fdir"]
-        df_in3 = df_in3.set_index("When")
+def era5(df):
+    df_in3 = pd.read_csv(
+        # FOLDERS["raw_folder"] + "ERA5_" + SITE["name"] + ".csv",
+        "/home/suryab/work/ERA5/results/schwarzsee_2019.csv",
+        sep=",",
+        header=0,
+        parse_dates=["When"],
+    )
 
-        # CSV output
-        df_in3.rename(
-            columns={
-                "t2m": "T_a",
-                "sp": "p_a",
-                "tp": "Prec",
-                "fdir": "SW_direct",
-                "strd": "LW_in",
-            },
-            inplace=True,
-        )
+    time_steps = 60 * 60
+    df_in3["ssrd"] /= time_steps
+    df_in3["strd"] /= time_steps
+    df_in3["fdir"] /= time_steps
+    df_in3["v_a"] = np.sqrt(df_in3["u10"] ** 2 + df_in3["v10"] ** 2)
+    # Derive RH
+    df_in3["t2m"] -= 273.15
+    df_in3["d2m"] -= 273.15
+    df_in3["t2m_RH"] = df_in3["t2m"]
+    df_in3["d2m_RH"] = df_in3["d2m"]
+    df_in3 = df_in3.apply(lambda x: e_sat(x) if x.name == "t2m_RH" else x)
+    df_in3 = df_in3.apply(lambda x: e_sat(x) if x.name == "d2m_RH" else x)
+    df_in3["RH"] = 100 * df_in3["d2m_RH"] / df_in3["t2m_RH"]
+    df_in3["sp"] = df_in3["sp"] / 100
+    df_in3["tp"] = df_in3["tp"] * 1000 / 3600  # mm/s
+    df_in3["SW_diffuse"] = df_in3["ssrd"] - df_in3["fdir"]
+    df_in3 = df_in3.set_index("When")
 
-        df_in3 = df_in3[
-            [
-                "T_a",
-                "RH",
-                "Prec",
-                "v_a",
-                "SW_direct",
-                "SW_diffuse",
-                "LW_in",
-                "p_a",
-            ]
+    # CSV output
+    df_in3.rename(
+        columns={
+            "t2m": "T_a",
+            "sp": "p_a",
+            "tp": "Prec",
+            "fdir": "SW_direct",
+            "strd": "LW_in",
+        },
+        inplace=True,
+    )
+
+    df_in3 = df_in3[
+        [
+            "T_a",
+            "RH",
+            "Prec",
+            "v_a",
+            "SW_direct",
+            "SW_diffuse",
+            "LW_in",
+            "p_a",
         ]
+    ]
 
-        df_in3 = df_in3.round(5)
+    df_in3 = df_in3.round(5)
 
-        upsampled = df_in3.resample("5T")
-        interpolated = upsampled.interpolate(method="linear")
-        interpolated = interpolated.reset_index()
+    upsampled = df_in3.resample("5T")
+    interpolated = upsampled.interpolate(method="linear")
+    interpolated = interpolated.reset_index()
 
-        interpolated["Discharge"] = 0
-        interpolated["Discharge"] = discharge_rate(interpolated, FOUNTAIN)
+    interpolated["Discharge"] = 0
+    interpolated["Discharge"] = discharge_rate(interpolated, FOUNTAIN)
 
-        df_in3 = interpolated[
-            [
-                "When",
-                "T_a",
-                "RH",
-                "v_a",
-                "SW_direct",
-                "SW_diffuse",
-                "LW_in",
-                "p_a",
-                "Prec",
-            ]
+    df_in3 = interpolated[
+        [
+            "When",
+            "T_a",
+            "RH",
+            "v_a",
+            "SW_direct",
+            "SW_diffuse",
+            "LW_in",
+            "p_a",
+            "Prec",
         ]
+    ]
 
-        df_in3 = df_in3.reset_index()
-        mask = (df_in3["When"] >= SITE["start_date"]) & (
-            df_in3["When"] <= SITE["end_date"]
-        )
-        df_in3 = df_in3.loc[mask]
-        df_in3 = df_in3.reset_index()
+    df_in3 = df_in3.reset_index()
+    mask = (df_in3["When"] >= SITE["start_date"]) & (df_in3["When"] <= SITE["end_date"])
+    df_in3 = df_in3.loc[mask]
+    df_in3 = df_in3.reset_index()
 
-        df_in3.to_csv(FOLDERS["input_folder"] + "raw_input_ERA5.csv")
+    df_in3.to_csv(FOLDERS["input_folder"] + SITE["name"] + "_input_ERA5.csv")
 
-        df_ERA5 = interpolated[
-            [
-                "When",
-                "T_a",
-                "v_a",
-                "RH",
-                "SW_direct",
-                "SW_diffuse",
-                "LW_in",
-                "p_a",
-                "Prec",
-                "Discharge",
-            ]
+    df_ERA5 = interpolated[
+        [
+            "When",
+            "T_a",
+            "v_a",
+            "RH",
+            "SW_direct",
+            "SW_diffuse",
+            "LW_in",
+            "p_a",
+            "Prec",
+            "Discharge",
         ]
-        df_ERA5.loc[:, "Discharge"] = 0
-        return df_ERA5, df_in3
+    ]
+    df_ERA5.loc[:, "Discharge"] = 0
+    return df_ERA5, df_in3
+
 
 def discharge_rate(df, FOUNTAIN):
 
     if OPTION == "schwarzsee":
-        df_f = pd.read_csv(
-            "data/schwarzsee/interim/raw_input_SZ.csv"
-        )
+        df_f = pd.read_csv("data/schwarzsee/interim/raw_input_SZ.csv")
         df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")
         df_f = df_f.set_index("When")
         df = df.set_index("When")
@@ -233,8 +233,8 @@ if __name__ == "__main__":
         print(df.head())
 
         # Include Spray time
-        df_nights = pd.read_csv(FOLDERS["raw_folder"] + 
-            "schwarzsee_fountain_time.txt",
+        df_nights = pd.read_csv(
+            FOLDERS["raw_folder"] + "schwarzsee_fountain_time.txt",
             sep="\\s+",
         )
 
@@ -270,9 +270,9 @@ if __name__ == "__main__":
         )
 
         df.Discharge = df.Fountain * df.Discharge
-        df.to_csv(FOLDERS["input_folder"] + "raw_input_SZ.csv")
+        df.to_csv(FOLDERS["input_folder"] + SITE["name"] + "_input_field.csv")
 
-        df_ERA5, df_in3 = era5()
+        df_ERA5, df_in3 = era5(df)
 
         # Fill from ERA5
         df_ERA5 = df_ERA5.set_index("When")
@@ -319,7 +319,6 @@ if __name__ == "__main__":
         df_in2["v_a"] = pd.to_numeric(df_in2["fkl010z0"], errors="coerce")
         df_in2["T_a"] = pd.to_numeric(df_in2["tre200s0"], errors="coerce")
         df_in2["SW_g"] = pd.to_numeric(df_in2["gre000z0"], errors="coerce")
-        print(df_in2.SW_g.head())
 
         df_in2["Prec"] = df_in2["Prec"] / (10 * 60)  # ppt rate mm/s
         df_in2 = (
@@ -361,7 +360,6 @@ if __name__ == "__main__":
                 "SW_diffuse",
                 "Prec",
                 "p_a",
-                # "cld",
                 "missing",
                 "LW_in",
             ]
@@ -381,7 +379,6 @@ if __name__ == "__main__":
                         "SW_diffuse",
                         "Prec",
                         "p_a",
-                        # "cld",
                         "missing",
                     ]
                 ]
@@ -391,8 +388,6 @@ if __name__ == "__main__":
 
         df_out = df_out.round(5)
         df_out.loc[df_out["v_a"] < 0, "v_a"] = 0
-
-        df_out.to_csv(FOLDERS["input_folder"] + "raw_input.csv")
 
         # Extend data
         df_ERA5["Prec"] = 0
@@ -433,7 +428,6 @@ if __name__ == "__main__":
                         "SW_diffuse",
                         "Prec",
                         "p_a",
-                        # "cld",
                         "missing",
                     ]
                 ]
@@ -441,132 +435,31 @@ if __name__ == "__main__":
                 .sum()
             )
 
-        concat.to_csv(FOLDERS["input_folder"] + "raw_input_extended.csv")
+        concat.to_csv(FOLDERS["input_folder"] + SITE["name"] + "_input_mixed.csv")
         concat.to_hdf(
-            FOLDERS["input_folder"] + "raw_input_extended.h5", key="df", mode="w"
+            FOLDERS["input_folder"] + SITE["name"] + "_input_mixed.h5",
+            key="df",
+            mode="w",
         )
 
-    if SITE["name"] == "leh":
-        # ERA5 begins
-        df_in3 = pd.read_csv(
-            FOLDERS["raw_folder"] + "ERA5_" + SITE["name"] + ".csv",
-            sep=",",
-            header=0,
-            parse_dates=["When"],
-        )
-
-        print(df_in3.head())
-        df_out1 = df_in3
-        time_steps = 60 * 60
-        df_out1["ssrd"] /= time_steps
-        df_out1["strd"] /= time_steps
-        df_out1["fdir"] /= time_steps
-        df_out1["v_a"] = np.sqrt(df_out1["u10"] ** 2 + df_out1["v10"] ** 2)
-        # Derive RH
-        df_out1["t2m"] -= 273.15
-        df_out1["d2m"] -= 273.15
-        df_out1["t2m_RH"] = df_out1["t2m"]
-        df_out1["d2m_RH"] = df_out1["d2m"]
-        df_out1 = df_out1.apply(lambda x: e_sat(x) if x.name == "t2m_RH" else x)
-        df_out1 = df_out1.apply(lambda x: e_sat(x) if x.name == "d2m_RH" else x)
-        df_out1["RH"] = 100 * df_out1["d2m_RH"] / df_out1["t2m_RH"]
-        df_out1["sp"] = df_out1["sp"] / 100
-        df_out1["tp"] = df_out1["tp"] * 1000 / 3600  # mm/s
-        df_out1["SW_diffuse"] = df_out1["ssrd"] - df_out1["fdir"]
-        df_out1 = df_out1.set_index("When")
-
-        # CSV output
-        df_out1.rename(
-            columns={
-                "t2m": "T_a",
-                "sp": "p_a",
-                # "tcc": "cld",
-                "tp": "Prec",
-                "fdir": "SW_direct",
-                "strd": "LW_in",
-            },
-            inplace=True,
-        )
-
-        df_in3 = df_out1[
-            [
-                "T_a",
-                "RH",
-                "Prec",
-                "v_a",
-                "SW_direct",
-                "SW_diffuse",
-                "LW_in",
-                # "cld",
-                "p_a",
-            ]
-        ]
-
-        df_in3 = df_in3.round(5)
-
-        upsampled = df_in3.resample("5T")
-        interpolated = upsampled.interpolate(method="linear")
-        interpolated = interpolated.reset_index()
-
-        interpolated["Discharge"] = discharge_rate(interpolated, FOUNTAIN)
-        interpolated["missing"] = 0
-        interpolated = interpolated.reset_index()
-
-        df_in3 = interpolated[
-            [
-                "When",
-                "T_a",
-                "RH",
-                "v_a",
-                "SW_direct",
-                "SW_diffuse",
-                # "LW_in",
-                # "cld",
-                "p_a",
-                "Prec",
-                "Discharge",
-                "missing",
-            ]
-        ]
-
-        df_in3 = df_in3.reset_index()
-        mask = (df_in3["When"] >= SITE["start_date"]) & (
-            df_in3["When"] <= SITE["end_date"]
-        )
-        df_in3 = df_in3.loc[mask]
-        df_in3 = df_in3.reset_index()
-
-        # Corrections for Leh
-        # df_in3["cld"] = 0
-        df_in3["RH"] = 30
-        df_in3["v_a"] *= 4
-        df_in3["Prec"] = 0
-
-        df_in3.to_csv(FOLDERS["input_folder"] + "raw_input_ERA5.csv")
-
-    df_in3["SW_g"] = df_in3["SW_diffuse"] + df_in3["SW_direct"]
-    slope, intercept, r_value1, p_value, std_err = stats.linregress(
-        df_in2.SW_g.values, df_in3.SW_g.values
-    )
-    print("R2 temp", r_value1 ** 2)
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-    ax1.scatter(df_in2.SW_g, df_in3.SW_g, s=2)
-    ax1.set_ylabel("ERA5 Global Solar radiation [$W\\,m^{-2}$]")
-    ax1.set_xlabel("Plaffeien Global Solar radiation [$W\\,m^{-2}$]")
-    ax1.grid()
-    lims = [
-        np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-        np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-    ]
-    # now plot both limits against eachother
-    ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
-    ax1.set_aspect("equal")
-    ax1.set_xlim(lims)
-    ax1.set_ylim(lims)
-    # pp.savefig(bbox_inches="tight")
-    plt.savefig(FOLDERS["input_folder"] + "compare.jpg", dpi=300, bbox_inches="tight")
-    plt.clf()
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(111)
+    # ax1.scatter(df_in2.SW_g, df_in3.SW_g, s=2)
+    # ax1.set_ylabel("ERA5 Global Solar radiation [$W\\,m^{-2}$]")
+    # ax1.set_xlabel("Plaffeien Global Solar radiation [$W\\,m^{-2}$]")
+    # ax1.grid()
+    # lims = [
+    #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+    #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+    # ]
+    # # now plot both limits against eachother
+    # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+    # ax1.set_aspect("equal")
+    # ax1.set_xlim(lims)
+    # ax1.set_ylim(lims)
+    # # pp.savefig(bbox_inches="tight")
+    # plt.savefig(FOLDERS["input_folder"] + "compare.jpg", dpi=300, bbox_inches="tight")
+    # plt.clf()
 
     # ax1 = fig.add_subplot(111)
     # ax1.scatter(df_out.v_a, df_in3.v_a, s=2)
