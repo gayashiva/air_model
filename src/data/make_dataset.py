@@ -12,13 +12,114 @@ from pathlib import Path
 from tqdm import tqdm
 import os
 import logging
-from src.data.config import SITE, FOLDERS, FOUNTAIN, OPTION
 from scipy import stats
 from sklearn.linear_model import LinearRegression
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+dirname=sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+from src.data.config import SITE, FOLDERS, FOUNTAIN, OPTION
 
 start = time.time()
 
+def era5():
+        # ERA5 begins
+        df_in3 = pd.read_csv(
+            # FOLDERS["raw_folder"] + "ERA5_" + SITE["name"] + ".csv",
+            "/home/suryab/work/ERA5/results/schwarzsee_2019.csv",
+            sep=",",
+            header=0,
+            parse_dates=["When"],
+        )
+
+        time_steps = 60 * 60
+        df_in3["ssrd"] /= time_steps
+        df_in3["strd"] /= time_steps
+        df_in3["fdir"] /= time_steps
+        df_in3["v_a"] = np.sqrt(df_in3["u10"] ** 2 + df_in3["v10"] ** 2)
+        # Derive RH
+        df_in3["t2m"] -= 273.15
+        df_in3["d2m"] -= 273.15
+        df_in3["t2m_RH"] = df_in3["t2m"]
+        df_in3["d2m_RH"] = df_in3["d2m"]
+        df_in3 = df_in3.apply(lambda x: e_sat(x) if x.name == "t2m_RH" else x)
+        df_in3 = df_in3.apply(lambda x: e_sat(x) if x.name == "d2m_RH" else x)
+        df_in3["RH"] = 100 * df_in3["d2m_RH"] / df_in3["t2m_RH"]
+        df_in3["sp"] = df_in3["sp"] / 100
+        df_in3["tp"] = df_in3["tp"] * 1000 / 3600  # mm/s
+        df_in3["SW_diffuse"] = df_in3["ssrd"] - df_in3["fdir"]
+        df_in3 = df_in3.set_index("When")
+
+        # CSV output
+        df_in3.rename(
+            columns={
+                "t2m": "T_a",
+                "sp": "p_a",
+                "tp": "Prec",
+                "fdir": "SW_direct",
+                "strd": "LW_in",
+            },
+            inplace=True,
+        )
+
+        df_in3 = df_in3[
+            [
+                "T_a",
+                "RH",
+                "Prec",
+                "v_a",
+                "SW_direct",
+                "SW_diffuse",
+                "LW_in",
+                "p_a",
+            ]
+        ]
+
+        df_in3 = df_in3.round(5)
+
+        upsampled = df_in3.resample("5T")
+        interpolated = upsampled.interpolate(method="linear")
+        interpolated = interpolated.reset_index()
+
+        interpolated["Discharge"] = 0
+        interpolated["Discharge"] = discharge_rate(interpolated, FOUNTAIN)
+
+        df_in3 = interpolated[
+            [
+                "When",
+                "T_a",
+                "RH",
+                "v_a",
+                "SW_direct",
+                "SW_diffuse",
+                "LW_in",
+                "p_a",
+                "Prec",
+            ]
+        ]
+
+        df_in3 = df_in3.reset_index()
+        mask = (df_in3["When"] >= SITE["start_date"]) & (
+            df_in3["When"] <= SITE["end_date"]
+        )
+        df_in3 = df_in3.loc[mask]
+        df_in3 = df_in3.reset_index()
+
+        df_in3.to_csv(FOLDERS["input_folder"] + "raw_input_ERA5.csv")
+
+        df_ERA5 = interpolated[
+            [
+                "When",
+                "T_a",
+                "v_a",
+                "RH",
+                "SW_direct",
+                "SW_diffuse",
+                "LW_in",
+                "p_a",
+                "Prec",
+                "Discharge",
+            ]
+        ]
+        df_ERA5.loc[:, "Discharge"] = 0
+        return df_ERA5, df_in3
 
 def discharge_rate(df, FOUNTAIN):
 
@@ -132,8 +233,8 @@ if __name__ == "__main__":
         print(df.head())
 
         # Include Spray time
-        df_nights = pd.read_csv(
-            "/home/surya/Programs/Github/air_model/data/schwarzsee/raw/schwarzsee_fountain_time.txt",
+        df_nights = pd.read_csv(FOLDERS["raw_folder"] + 
+            "schwarzsee_fountain_time.txt",
             sep="\\s+",
         )
 
@@ -171,119 +272,7 @@ if __name__ == "__main__":
         df.Discharge = df.Fountain * df.Discharge
         df.to_csv(FOLDERS["input_folder"] + "raw_input_SZ.csv")
 
-        # ERA5 begins
-        df_in3 = pd.read_csv(
-            FOLDERS["raw_folder"] + "ERA5_" + SITE["name"] + ".csv",
-            sep=",",
-            header=0,
-            parse_dates=["When"],
-        )
-
-        df_out1 = df_in3
-        time_steps = 60 * 60
-        df_out1["ssrd"] /= time_steps
-        df_out1["strd"] /= time_steps
-        df_out1["fdir"] /= time_steps
-        df_out1["v_a"] = np.sqrt(df_out1["u10"] ** 2 + df_out1["v10"] ** 2)
-        # Derive RH
-        df_out1["t2m"] -= 273.15
-        df_out1["d2m"] -= 273.15
-        df_out1["t2m_RH"] = df_out1["t2m"]
-        df_out1["d2m_RH"] = df_out1["d2m"]
-        df_out1 = df_out1.apply(lambda x: e_sat(x) if x.name == "t2m_RH" else x)
-        df_out1 = df_out1.apply(lambda x: e_sat(x) if x.name == "d2m_RH" else x)
-        df_out1["RH"] = 100 * df_out1["d2m_RH"] / df_out1["t2m_RH"]
-        df_out1["sp"] = df_out1["sp"] / 100
-        df_out1["tp"] = df_out1["tp"] * 1000 / 3600  # mm/s
-        df_out1["SW_diffuse"] = df_out1["ssrd"] - df_out1["fdir"]
-        df_out1 = df_out1.set_index("When")
-
-        # CSV output
-        df_out1.rename(
-            columns={
-                "t2m": "T_a",
-                "sp": "p_a",
-                "tcc": "cld",
-                "tp": "Prec",
-                "fdir": "SW_direct",
-                "strd": "LW_in",
-            },
-            inplace=True,
-        )
-
-        df_in3 = df_out1[
-            [
-                "T_a",
-                "RH",
-                "Prec",
-                "v_a",
-                "SW_direct",
-                "SW_diffuse",
-                "LW_in",
-                "cld",
-                "p_a",
-            ]
-        ]
-
-        df_in3 = df_in3.round(5)
-
-        upsampled = df_in3.resample("5T")
-        interpolated = upsampled.interpolate(method="linear")
-        interpolated = interpolated.reset_index()
-
-        interpolated["Discharge"] = 0
-        interpolated["Discharge"] = discharge_rate(interpolated, FOUNTAIN)
-
-        # mask = (interpolated["T_a"] < FOUNTAIN["crit_temp"]) & (
-        #     interpolated["SW_direct"] < 100
-        # )
-        # mask_index = interpolated[mask].index
-        # interpolated.loc[mask_index, "Discharge"] = 2 * 60
-        # mask = interpolated["When"] >= FOUNTAIN["fountain_off_date"]
-        # mask_index = interpolated[mask].index
-        # interpolated.loc[mask_index, "Discharge"] = 0
-        # interpolated = interpolated.reset_index()
-
-        df_in3 = interpolated[
-            [
-                "When",
-                "T_a",
-                "RH",
-                "v_a",
-                "SW_direct",
-                "SW_diffuse",
-                "LW_in",
-                "cld",
-                "p_a",
-                "Prec",
-            ]
-        ]
-
-        df_in3 = df_in3.reset_index()
-        mask = (df_in3["When"] >= SITE["start_date"]) & (
-            df_in3["When"] <= SITE["end_date"]
-        )
-        df_in3 = df_in3.loc[mask]
-        df_in3 = df_in3.reset_index()
-
-        df_in3.to_csv(FOLDERS["input_folder"] + "raw_input_ERA5.csv")
-
-        df_ERA5 = interpolated[
-            [
-                "When",
-                "T_a",
-                "v_a",
-                "RH",
-                "SW_direct",
-                "SW_diffuse",
-                "LW_in",
-                "cld",
-                "p_a",
-                "Prec",
-                "Discharge",
-            ]
-        ]
-        df_ERA5.loc[:, "Discharge"] = 0
+        df_ERA5, df_in3 = era5()
 
         # Fill from ERA5
         df_ERA5 = df_ERA5.set_index("When")
@@ -312,11 +301,11 @@ if __name__ == "__main__":
         df.loc[df["v_a"].isnull(), "missing"] = 2
         df.loc[df["v_a"].isnull(), "v_a"] = df_ERA5["v_a"]
 
-        df[["SW_direct", "SW_diffuse", "cld", "LW_in"]] = df_ERA5[
-            ["SW_direct", "SW_diffuse", "cld", "LW_in"]
+        df[["SW_direct", "SW_diffuse", "LW_in"]] = df_ERA5[
+            ["SW_direct", "SW_diffuse", "LW_in"]
         ]
 
-        # Fill from Plaffeien
+        # Fill precipitation from Plaffeien
         df_in2 = pd.read_csv(
             os.path.join(FOLDERS["raw_folder"], "plaffeien_aws.txt"),
             sep=";",
@@ -350,13 +339,6 @@ if __name__ == "__main__":
         df = df.reset_index()
         df_in2 = df_in2.reset_index()
 
-        # df.loc[df["T_a"].isnull(), ["T_a", "RH", "p_a", "Discharge"]] = df_in2[
-        #     ["T_a", "RH", "p_a", "Discharge"]
-        # ]
-        # df["v_a"] = df["v_a"].replace(0, np.NaN)
-        # df.loc[df["v_a"].isnull(), "missing"] = 2
-        # df.loc[df["v_a"].isnull(), "v_a"] = df_in2["v_a"]
-
         for column in ["T_a", "RH", "v_a", "p_a"]:
 
             slope, intercept, r_value, p_value, std_err = stats.linregress(
@@ -367,20 +349,6 @@ if __name__ == "__main__":
                 df[column].values, df_in2[column].values
             )
             print("Plf", column, r_value)
-        # slope, intercept, r_value2, p_value, std_err = stats.linregress(
-        #     df.v_a.values, df_in3.v_a.values
-        # )
-        # slope, intercept, r_value3, p_value, std_err = stats.linregress(
-        #     df.RH.values, df_in3.RH.values
-        # )
-        # slope, intercept, r_value4, p_value, std_err = stats.linregress(
-        #     df.p_a.values, df_in3.p_a.values
-        # )
-
-        # print("R2 temp", r_value1 ** 2)
-        # print("R2 wind", r_value2 ** 2)
-        # print("R2 RH", r_value3 ** 2)
-        # print("R2 pressure", r_value4 ** 2)
 
         df_out = df[
             [
@@ -393,7 +361,7 @@ if __name__ == "__main__":
                 "SW_diffuse",
                 "Prec",
                 "p_a",
-                "cld",
+                # "cld",
                 "missing",
                 "LW_in",
             ]
@@ -413,7 +381,7 @@ if __name__ == "__main__":
                         "SW_diffuse",
                         "Prec",
                         "p_a",
-                        "cld",
+                        # "cld",
                         "missing",
                     ]
                 ]
@@ -465,7 +433,7 @@ if __name__ == "__main__":
                         "SW_diffuse",
                         "Prec",
                         "p_a",
-                        "cld",
+                        # "cld",
                         "missing",
                     ]
                 ]
@@ -512,7 +480,7 @@ if __name__ == "__main__":
             columns={
                 "t2m": "T_a",
                 "sp": "p_a",
-                "tcc": "cld",
+                # "tcc": "cld",
                 "tp": "Prec",
                 "fdir": "SW_direct",
                 "strd": "LW_in",
@@ -529,7 +497,7 @@ if __name__ == "__main__":
                 "SW_direct",
                 "SW_diffuse",
                 "LW_in",
-                "cld",
+                # "cld",
                 "p_a",
             ]
         ]
@@ -553,7 +521,7 @@ if __name__ == "__main__":
                 "SW_direct",
                 "SW_diffuse",
                 # "LW_in",
-                "cld",
+                # "cld",
                 "p_a",
                 "Prec",
                 "Discharge",
@@ -569,7 +537,7 @@ if __name__ == "__main__":
         df_in3 = df_in3.reset_index()
 
         # Corrections for Leh
-        df_in3["cld"] = 0
+        # df_in3["cld"] = 0
         df_in3["RH"] = 30
         df_in3["v_a"] *= 4
         df_in3["Prec"] = 0

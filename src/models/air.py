@@ -100,6 +100,145 @@ class Icestupa:
                 parse_dates=["When"],
             )
 
+    def get_parameter_metadata(self, parameter):
+        return {
+            "Discharge": {
+                "name": "Fountain Spray",
+                "kind": "Input",
+                "units": "($l\\, min^{-1}$)",
+            },
+            "T_a": {
+                "name": "Temperature",
+                "kind": "Input",
+                "units": "($\\degree C$)",
+            },
+            "RH": {
+                "name": "Relative Humidity",
+                "kind": "Input",
+                "units": "($\\%$)",
+            },
+            "p_a": {
+                "name": "Pressure",
+                "kind": "Input",
+                "units": "($hPa$)",
+            },
+            "SW_direct": {
+                "name": "Shortwave Direct",
+                "kind": "Input",
+                "units": "($W\\,m^{-2}$)",
+            },
+            "SW_diffuse": {
+                "name": "Shortwave Diffuse",
+                "kind": "Input",
+                "units": "($W\\,m^{-2}$)",
+            },
+            "LW_in": {
+                "name": "Longwave",
+                "kind": "Input",
+                "units": "($W\\,m^{-2}$)",
+            },
+            "Prec": {
+                "name": "Precipitation",
+                "kind": "Input",
+                "units": "($mm$)",
+            },
+            "v_a": {
+                "name": "Wind Speed",
+                "kind": "Input",
+                "units": "($m\\,s^{-1}$)",
+            },
+            "iceV": {
+                "name": "Ice Volume",
+                "kind": "Output",
+                "units": "($m^3$)",
+            },
+            "ice": {
+                "name": "Ice Mass",
+                "kind": "Output",
+                "units": "($kg$)",
+            },
+            "a": {
+                "name": "Albedo",
+                "kind": "Output",
+                "units": "()",
+            },
+            "f_cone": {
+                "name": "Solar Surface Area Fraction",
+                "kind": "Output",
+                "units": "()",
+            },
+            "s_cone": {
+                "name": "Ice Cone Slope",
+                "kind": "Output",
+                "units": "()",
+            },
+            "h_ice": {
+                "name": "Ice Cone Height",
+                "kind": "Output",
+                "units": "($m$)",
+            },
+            "r_ice": {
+                "name": "Ice Cone Radius",
+                "kind": "Output",
+                "units": "($m$)",
+            },
+            "T_s": {
+                "name": "Surface Temperature",
+                "kind": "Output",
+                "units": "($\\degree C$)",
+            },
+            "T_bulk": {
+                "name": "Bulk Temperature",
+                "kind": "Output",
+                "units": "($\\degree C$)",
+            },
+            "sea": {
+                "name": "Solar Elevation Angle",
+                "kind": "Output",
+                "units": "($\\degree$)",
+            },
+            "TotalE": {
+                "name": "Net Energy",
+                "kind": "Output",
+                "units": "($W\\,m^{-2}$)",
+            },
+            "ppt": {
+                "name": "Snow Accumulation",
+                "kind": "Output",
+                "units": "($kg$)",
+            },
+            "cdt": {
+                "name": "Condensation",
+                "kind": "Output",
+                "units": "($kg$)",
+            },
+            "dpt": {
+                "name": "Deposition",
+                "kind": "Output",
+                "units": "($kg$)",
+            },
+            "vapour": {
+                "name": "Vapour loss",
+                "kind": "Output",
+                "units": "($kg$)",
+            },
+            "meltwater": {
+                "name": "Meltwater",
+                "kind": "Output",
+                "units": "($kg$)",
+            },
+            "Input": {
+                "name": "Water Input",
+                "kind": "Output",
+                "units": "($kg$)",
+            },
+            "unfrozen_water": {
+                "name": "Water Runoff",
+                "kind": "Output",
+                "units": "($kg$)",
+            },
+        }[parameter]
+
     def get_solar(self):
 
         self.df["ghi"] = self.df["SW_direct"] + self.df["SW_diffuse"]
@@ -194,7 +333,10 @@ class Icestupa:
 
         if self.trigger == "Temperature":
             self.df.Discharge = 0
-            mask = self.df["T_a"] < self.crit_temp
+            mask = (self.df["T_a"] < self.crit_temp) & (
+                self.df["SW_direct"] < 100
+            )
+            # mask = self.df["T_a"] < self.crit_temp
             mask_index = self.df[mask].index
             self.df.loc[mask_index, "Discharge"] = 1 * self.discharge
             mask = self.df["When"] >= self.fountain_off_date

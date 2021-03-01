@@ -30,14 +30,12 @@ from src.models.air import Icestupa
 
 
 # @st.cache(allow_output_mutation=True)
-def load_data(trigger="Schwarzsee"):
-    SITE, FOUNTAIN = config(location)
-    FOUNTAIN["trigger"] = trigger
-    icestupa = Icestupa(SITE, FOUNTAIN)
-    icestupa.read_output()
-    # st.write(icestupa.df.Discharge.head())
-    # st.write(icestupa.trigger)
-    return icestupa.df, SITE, FOUNTAIN
+# def load_data(trigger="Schwarzsee"):
+#     SITE, FOUNTAIN = config(location)
+#     FOUNTAIN["trigger"] = trigger
+#     icestupa = Icestupa(SITE, FOUNTAIN)
+#     icestupa.read_output()
+#     return icestupa.df, SITE, FOUNTAIN
 
 
 def download_csv(name, df):
@@ -171,202 +169,22 @@ def config(location="Schwarzsee"):
             tree_radius=4.13 / 2,
         )
 
-    # FOLDERS = dict(
-    #     raw_folder=os.path.join(dirname, "data/" + SITE["name"] + "/raw/"),
-    #     input_folder=os.path.join(dirname, "data/" + SITE["name"] + "/interim/"),
-    #     output_folder=os.path.join(dirname, "data/" + SITE["name"] + "/processed/"),
-    #     sim_folder=os.path.join(
-    #         dirname, "data/" + SITE["name"] + "/processed/simulations"
-    #     ),
-    # )
     return SITE, FOUNTAIN
 
 
-def get_parameter_metadata(parameter):
-    return {
-        "Discharge": {
-            "name": "Fountain Spray",
-            "kind": "Input",
-            "units": "($l\\, min^{-1}$)",
-        },
-        "T_a": {
-            "name": "Temperature",
-            "kind": "Input",
-            "units": "($\\degree C$)",
-        },
-        "RH": {
-            "name": "Relative Humidity",
-            "kind": "Input",
-            "units": "($\\%$)",
-        },
-        "p_a": {
-            "name": "Pressure",
-            "kind": "Input",
-            "units": "($hPa$)",
-        },
-        "SW_direct": {
-            "name": "Shortwave Direct",
-            "kind": "Input",
-            "units": "($W\\,m^{-2}$)",
-        },
-        "SW_diffuse": {
-            "name": "Shortwave Diffuse",
-            "kind": "Input",
-            "units": "($W\\,m^{-2}$)",
-        },
-        "LW_in": {
-            "name": "Longwave",
-            "kind": "Input",
-            "units": "($W\\,m^{-2}$)",
-        },
-        "Prec": {
-            "name": "Precipitation",
-            "kind": "Input",
-            "units": "($mm$)",
-        },
-        "v_a": {
-            "name": "Wind Speed",
-            "kind": "Input",
-            "units": "($m\\,s^{-1}$)",
-        },
-        "iceV": {
-            "name": "Ice Volume",
-            "kind": "Output",
-            "units": "($m^3$)",
-        },
-        "ice": {
-            "name": "Ice Mass",
-            "kind": "Output",
-            "units": "($kg$)",
-        },
-        "a": {
-            "name": "Albedo",
-            "kind": "Output",
-            "units": "()",
-        },
-        "f_cone": {
-            "name": "Solar Surface Area Fraction",
-            "kind": "Output",
-            "units": "()",
-        },
-        "s_cone": {
-            "name": "Ice Cone Slope",
-            "kind": "Output",
-            "units": "()",
-        },
-        "h_ice": {
-            "name": "Ice Cone Height",
-            "kind": "Output",
-            "units": "($m$)",
-        },
-        "r_ice": {
-            "name": "Ice Cone Radius",
-            "kind": "Output",
-            "units": "($m$)",
-        },
-        "T_s": {
-            "name": "Surface Temperature",
-            "kind": "Output",
-            "units": "($\\degree C$)",
-        },
-        "T_bulk": {
-            "name": "Bulk Temperature",
-            "kind": "Output",
-            "units": "($\\degree C$)",
-        },
-        "sea": {
-            "name": "Solar Elevation Angle",
-            "kind": "Output",
-            "units": "($\\degree$)",
-        },
-        "TotalE": {
-            "name": "Net Energy",
-            "kind": "Output",
-            "units": "($W\\,m^{-2}$)",
-        },
-        "ppt": {
-            "name": "Snow Accumulation",
-            "kind": "Output",
-            "units": "($kg$)",
-        },
-        "cdt": {
-            "name": "Condensation",
-            "kind": "Output",
-            "units": "($kg$)",
-        },
-        "dpt": {
-            "name": "Deposition",
-            "kind": "Output",
-            "units": "($kg$)",
-        },
-        "vapour": {
-            "name": "Vapour loss",
-            "kind": "Output",
-            "units": "($kg$)",
-        },
-        "meltwater": {
-            "name": "Meltwater",
-            "kind": "Output",
-            "units": "($kg$)",
-        },
-        "Input": {
-            "name": "Water Input",
-            "kind": "Output",
-            "units": "($kg$)",
-        },
-        "unfrozen_water": {
-            "name": "Water Runoff",
-            "kind": "Output",
-            "units": "($kg$)",
-        },
-    }[parameter]
-
-
-# input_full_names = dict(
-#     Discharge="Fountain Spray ($l\\, min^{-1}$)",
-#     T_a="Temperature ($\\degree C$)",
-#     RH="Humidity ($\\%$)",
-#     p_a="Pressure ($hPa$)",
-#     SW_direct="Shortwave Direct ($W\\,m^{-2}$)",
-#     SW_diffuse="Shortwave Diffuse ($W\\,m^{-2}$)",
-#     LW_in="Longwave Radiation ($W\\,m^{-2}$)",
-#     Prec="Precipitation ($mm$)",
-#     v_a="Wind speed ($m\\,s^{-1}$)",
-# )
-# output_full_names = dict(
-#     iceV="Ice Volume",
-#     ice="Ice Mass",
-#     a="Albedo",
-#     f_cone="Solar surface area fraction",
-#     thickness="Ice thickness",
-#     SA="Surface Area [$m^2$]",
-#     h_ice="Ice Cone Height [$m$]",
-#     h_f="Fountain Height [$m$]",
-#     r_ice="Ice Cone Radius [$m$]",
-#     s_cone="Ice Cone Slope",
-#     T_s="Surface Temperature [$\\degree C$]",
-#     T_bulk="Bulk Temperature [$\\degree C$]",
-#     sea="Solar Elevation Angle",
-#     TotalE="Net Energy",
-#     ppt="Snow Precipitation",
-#     cdt="Condensation",
-#     dpt="Deposition",
-#     vapour="Vapour",
-#     meltwater="Meltwater",
-#     Input="Water Input",
-#     unfrozen_water="Unfrozen Water",
-# )
-
 if __name__ == "__main__":
     location = st.sidebar.radio("Select Location", ("Schwarzsee", "Guttannen"))
-    fountain = st.sidebar.radio(
+    trigger = st.sidebar.radio(
         "Select Discharge Trigger", ("Schwarzsee", "Temperature", "NetEnergy")
     )
 
-    st.header("**%s** with fountain discharge trigger **%s**" % (location, fountain))
-    df_i, SITE, FOUNTAIN = load_data(fountain)
+    st.header("**%s** with fountain discharge trigger **%s**" % (location, trigger))
+    SITE, FOUNTAIN = config(location)
+    FOUNTAIN["trigger"] = trigger
+    icestupa = Icestupa(SITE, FOUNTAIN)
+    icestupa.read_output()
 
-    df = df_filter("Move sliders to filter dataframe", df_i)
+    df = df_filter("Move sliders to filter dataframe", icestupa.df)
 
     # column_1, column_2 = st.beta_columns(2)
     # with column_1:
@@ -386,17 +204,10 @@ if __name__ == "__main__":
     else:
         data = df[variable]
         for v in variable:
-            meta = get_parameter_metadata(v)
+            meta = icestupa.get_parameter_metadata(v)
             st.header("%s %s" % (meta["kind"], meta["name"] + " " + meta["units"]))
             st.line_chart(df[v])
-            # if v in input_full_names.keys():
-            #     st.header("Input %s" % (input_full_names[v]))
-            #     # st.markdown(download_csv(full_names[v], df[v]), unsafe_allow_html=True)
-            #     st.line_chart(df[v])
-            # if v in output_full_names.keys():
-            #     st.header("Output %s" % (output_full_names[v]))
-            #     # st.markdown(download_csv(full_names[v], df[v]), unsafe_allow_html=True)
-            #     st.line_chart(df[v])
+            st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)
 
 # df["When"] = df["When"].dt.tz_localize(
 #     "UTC"
