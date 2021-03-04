@@ -346,6 +346,7 @@ class Icestupa:
             df_f = pd.read_csv( os.path.join(dirname, "data/" + "schwarzsee" + "/interim/") + "schwarzsee_input_field.csv")
             df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")
             df_f['When'] = df_f['When'].mask(df_f['When'].dt.year == 2019, df_f['When'] + pd.offsets.DateOffset(year=2021))
+            # df_f['When'] = df_f['When'] - pd.DateOffset(10)
             mask = (df_f["When"] >= SITE["start_date"]) & (
                 df_f["When"] <= SITE["end_date"]
             )
@@ -368,7 +369,7 @@ class Icestupa:
             mask = self.df["When"] >= self.fountain_off_date
             mask_index = self.df[mask].index
             self.df.loc[mask_index, "Discharge"] = 0
-            logger.info(self.df.Discharge.astype(bool).sum(axis=0))
+            logger.info(f"Steps of spray : %.2f"% (self.df.Discharge.astype(bool).sum(axis=0)))
 
         if self.trigger == "NetEnergy":
             

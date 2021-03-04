@@ -11,7 +11,7 @@ sys.path.append(dirname)
 import logging
 
 DIRNAME = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-SITE = "secmol"
+SITE = "hial"
 # OPTION = "schwarzsee"
 
 # SITE = input("Input the Field SITE Name: ") or SITE

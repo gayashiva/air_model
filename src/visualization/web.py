@@ -127,6 +127,28 @@ def config(location="Schwarzsee"):
             discharge=3.58,  # FOUNTAIN on discharge
             crit_temp=0,  # FOUNTAIN runtime temperature
         )
+    if location == "Secmol":
+
+        SITE = dict(
+            name="secmol",
+            end_date=datetime(2021, 2, 22),
+            start_date=datetime(2021, 1, 30, 17),
+            utc_offset=1,
+            longitude=7.297543,
+            latitude=46.693723,
+            h_aws=3,
+        )
+
+        FOUNTAIN = dict(
+            fountain_off_date=datetime(2019, 3, 10, 18),
+            dia_f=0.005,  # FOUNTAIN aperture diameter
+            h_f=1.35,  # FOUNTAIN steps h_f
+            theta_f=45,  # FOUNTAIN aperture diameter
+            ftl=0,  # FOUNTAIN flight time loss ftl
+            T_w=5,  # FOUNTAIN Water temperature
+            discharge=3.58,  # FOUNTAIN on discharge
+            crit_temp=0,  # FOUNTAIN runtime temperature
+        )
 
     if location == "Leh":
         SITE = dict(
@@ -224,7 +246,9 @@ if __name__ == "__main__":
 
     df = df.set_index("When")
     variable = st.sidebar.multiselect(
-        "Choose Input/Output variables", (df.columns.tolist()), ["Discharge", "T_a"]
+        "Choose Input/Output variables",
+        (df.columns.tolist()),
+        ["iceV", "Discharge", "T_a"],
     )
     if not variable:
         st.error("Please select at least one variable.")
