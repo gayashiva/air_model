@@ -18,10 +18,9 @@ from sklearn.linear_model import LinearRegression
 dirname = sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
-from src.data.config import SITE, FOLDERS, FOUNTAIN, OPTION
+from src.data.config import SITE, FOLDERS, FOUNTAIN
 
 start = time.time()
-
 
 def field(site="schwarzsee"):
     if site == "schwarzsee":
@@ -125,7 +124,10 @@ def field(site="schwarzsee"):
 
         df.Discharge = df.Fountain * df.Discharge
         df.to_csv(FOLDERS["input_folder"] + SITE["name"] + "_input_field.csv")
-        return df
+    else:
+        input_file = FOLDERS["input_folder"] + SITE["name"] + "_input_field.csv"
+        df = pd.read_csv(input_file, sep=",", header=0, parse_dates=['When'])
+    return df
 
 
 def era5(df):
@@ -228,32 +230,32 @@ def era5(df):
     return df_ERA5, df_in3
 
 
-def discharge_rate(df, FOUNTAIN):
+# def discharge_rate(df, FOUNTAIN):
 
-    if OPTION == "schwarzsee":
-        df_f = pd.read_csv(
-            "data/schwarzsee/interim/" + SITE["name"] + "_input_field.csv"
-        )
-        df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")
-        df_f = df_f.set_index("When")
-        df = df.set_index("When")
-        mask = df_f["Discharge"] != 0
-        mask_index = df_f[mask].index
-        df.loc[mask_index, "Discharge"] = df_f["Discharge"]
-        mask = df_f["Discharge"] == 0
-        mask_index = df_f[mask].index
-        df.loc[mask_index, "Discharge"] = 0
-        df = df.reset_index()
+#     if OPTION == "schwarzsee":
+#         df_f = pd.read_csv(
+#             "data/schwarzsee/interim/" + SITE["name"] + "_input_field.csv"
+#         )
+#         df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")
+#         df_f = df_f.set_index("When")
+#         df = df.set_index("When")
+#         mask = df_f["Discharge"] != 0
+#         mask_index = df_f[mask].index
+#         df.loc[mask_index, "Discharge"] = df_f["Discharge"]
+#         mask = df_f["Discharge"] == 0
+#         mask_index = df_f[mask].index
+#         df.loc[mask_index, "Discharge"] = 0
+#         df = df.reset_index()
 
-    if OPTION == "temperature":
-        mask = df["T_a"] < FOUNTAIN["crit_temp"]
-        mask_index = df[mask].index
-        df.loc[mask_index, "Fountain"] = 1
-        mask = df["When"] >= FOUNTAIN["fountain_off_date"]
-        mask_index = df[mask].index
-        df.loc[mask_index, "Fountain"] = 0
+#     if OPTION == "temperature":
+#         mask = df["T_a"] < FOUNTAIN["crit_temp"]
+#         mask_index = df[mask].index
+#         df.loc[mask_index, "Fountain"] = 1
+#         mask = df["When"] >= FOUNTAIN["fountain_off_date"]
+#         mask_index = df[mask].index
+#         df.loc[mask_index, "Fountain"] = 0
 
-    return df["Discharge"]
+#     return df["Discharge"]
 
 
 def e_sat(T, surface="water", a1=611.21, a3=17.502, a4=32.19):

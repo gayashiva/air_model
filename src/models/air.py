@@ -68,7 +68,7 @@ class Icestupa:
     T_w = 0
     h_f = 0
     h_aws = 0
-    trigger = 'NetEnergy'
+    trigger = 'Schwarzsee'
 
     def __init__(self, *initial_data, **kwargs):
         for dictionary in initial_data:
@@ -85,20 +85,26 @@ class Icestupa:
             dirname, "data/" + self.name + "/processed/simulations"
         )
 
-        if self.name == "schwarzsee":
-            input_file = self.input_folder + "raw_input_extended.csv"
-        else:
-            input_file = self.input_folder + "raw_input_ERA5.csv"
-
+        input_file = self.input_folder + self.name + "_input_field.csv"
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
+        mask = (self.df["When"] >= SITE["start_date"]) & (
+            self.df["When"] <= SITE["end_date"]
+        )
+        self.df = self.df.loc[mask]
+        self.df = self.df.reset_index(drop = True)
 
-        if self.name == "guttannen":
-            self.df_cam = pd.read_csv(
-                self.input_folder + "cam.csv",
-                sep=",",
-                header=0,
-                parse_dates=["When"],
-            )
+        # if self.name == "schwarzsee":
+        #     input_file = self.input_folder + "raw_input_extended.csv"
+        # else:
+        #     input_file = self.input_folder + "raw_input_ERA5.csv"
+
+        # if self.name == "guttannen":
+        #     self.df_cam = pd.read_csv(
+        #         self.input_folder + "cam.csv",
+        #         sep=",",
+        #         header=0,
+        #         parse_dates=["When"],
+        #     )
 
     def get_parameter_metadata(self, parameter):
         return {
@@ -331,8 +337,23 @@ class Icestupa:
 
     def discharge_rate(self):
 
+        self.df["Discharge"] = 0
+
+        if self.trigger == "Schwarzsee":
+
+
+            df_f = pd.read_csv( os.path.join(dirname, "data/" + "schwarzsee" + "/interim/") + "schwarzsee_input_field.csv")
+            df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")
+            df_f['When'] = df_f['When'].mask(df_f['When'].dt.year == 2019, df_f['When'] + pd.offsets.DateOffset(year=2021))
+            df_f = df_f.set_index("When").resample("15T")
+            self.df = self.df.set_index("When")
+            mask = df_f["Discharge"] != 0
+            mask_index = df_f[mask].index
+            print(mask_index)
+            self.df.loc[mask_index, "Discharge"] = df_f["Discharge"]
+            self.df = self.df.reset_index()
+
         if self.trigger == "Temperature":
-            self.df.Discharge = 0
             mask = (self.df["T_a"] < self.crit_temp) & (
                 self.df["SW_direct"] < 100
             )
@@ -407,6 +428,8 @@ class Icestupa:
                 logger.info(col, "is unknown")
                 self.df[col] = 0
 
+        self.discharge_rate()
+
         """Albedo Decay"""
         self.T_DECAY = (
             self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
@@ -449,7 +472,6 @@ class Icestupa:
 
             s, f = self.albedo(row, s, f)
 
-        self.discharge_rate()
 
         self.df = self.df.round(5)
 
