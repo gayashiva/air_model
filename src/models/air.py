@@ -68,7 +68,8 @@ class Icestupa:
     T_w = 0
     h_f = 0
     h_aws = 0
-    trigger = 'Schwarzsee'
+    trigger = 'Temperature'
+    # discharge = 1
 
     def __init__(self, *initial_data, **kwargs):
         for dictionary in initial_data:
@@ -338,32 +339,36 @@ class Icestupa:
     def discharge_rate(self):
 
         self.df["Discharge"] = 0
+        self.df["Prec"] = 0
 
         if self.trigger == "Schwarzsee":
-
 
             df_f = pd.read_csv( os.path.join(dirname, "data/" + "schwarzsee" + "/interim/") + "schwarzsee_input_field.csv")
             df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")
             df_f['When'] = df_f['When'].mask(df_f['When'].dt.year == 2019, df_f['When'] + pd.offsets.DateOffset(year=2021))
-            df_f = df_f.set_index("When").resample("15T")
+            mask = (df_f["When"] >= SITE["start_date"]) & (
+                df_f["When"] <= SITE["end_date"]
+            )
+            df_f = df_f.loc[mask]
+            df_f = df_f.reset_index(drop = True)
+            df_f = df_f.set_index("When").resample("15T").mean()
             self.df = self.df.set_index("When")
             mask = df_f["Discharge"] != 0
             mask_index = df_f[mask].index
-            print(mask_index)
             self.df.loc[mask_index, "Discharge"] = df_f["Discharge"]
             self.df = self.df.reset_index()
 
         if self.trigger == "Temperature":
-            mask = (self.df["T_a"] < self.crit_temp) & (
-                self.df["SW_direct"] < 100
-            )
-            # mask = self.df["T_a"] < self.crit_temp
+            # mask = (self.df["T_a"] < self.crit_temp) & (
+            #     self.df["SW_direct"] < 100
+            # )
+            mask = self.df["T_a"] < self.crit_temp
             mask_index = self.df[mask].index
             self.df.loc[mask_index, "Discharge"] = 1 * self.discharge
             mask = self.df["When"] >= self.fountain_off_date
             mask_index = self.df[mask].index
             self.df.loc[mask_index, "Discharge"] = 0
-            logger.info(self.df.Discharge.head())
+            logger.info(self.df.Discharge.astype(bool).sum(axis=0))
 
         if self.trigger == "NetEnergy":
             
@@ -491,7 +496,7 @@ class Icestupa:
                 "a",
                 "vp_a",
                 "LW_in",
-                "missing",
+                # "missing",
             ]
         ]
 
@@ -710,7 +715,7 @@ class Icestupa:
                 "ppt",
                 "dpt",
                 "cdt",
-                "missing",
+                # "missing",
                 "s_cone",
                 "input",
                 "vp_ice",
@@ -754,7 +759,7 @@ class Icestupa:
         self.df = pd.read_hdf(self.input_folder + "model_input_"+ self.trigger +".h5", "df")
 
         # self.TIME_STEP=15*60
-        # self.df = self.df.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index(drop=True)
+        # self.df = self.df.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index()
 
         logger.info(self.df.head())
 
@@ -906,7 +911,7 @@ class Icestupa:
 
         self.liquid = [0] * 1
         STATE = 0
-        start = 0
+        self.start = 0
 
         logger.info("AIR simulation begins...")
         for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]):
@@ -931,7 +936,7 @@ class Icestupa:
                         * self.tree_height
                     )
 
-                if self.name == "schwarzsee":
+                if self.name == "schwarzsee" or self.name == "hial" or self.name == "secmol":
                     # self.config_update()
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.DX
