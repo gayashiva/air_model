@@ -11,8 +11,7 @@ sys.path.append(dirname)
 import logging
 
 DIRNAME = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-SITE = "hial"
-# OPTION = "schwarzsee"
+SITE = "secmol"
 
 # SITE = input("Input the Field SITE Name: ") or SITE
 if __name__ == "__main__":
@@ -69,14 +68,36 @@ print("SITE is", SITE)
 # logger.info("Config begins")
 
 
+if SITE == "gangles":
+    SITE = dict(
+        name="gangles",
+        end_date=datetime(2021, 2, 22),
+        start_date=datetime(2021, 1, 30, 17),
+        utc_offset=5.5,
+        longitude=77.606949,
+        latitude=34.216638,
+        h_aws=3,
+    )
+
+    FOUNTAIN = dict(
+        fountain_off_date=datetime(2021, 3, 10, 18),
+        dia_f=0.005,  # FOUNTAIN aperture diameter
+        h_f=1.35,  # FOUNTAIN steps h_f
+        theta_f=45,  # FOUNTAIN aperture diameter
+        ftl=0,  # FOUNTAIN flight time loss ftl
+        T_w=5,  # FOUNTAIN Water temperature
+        discharge=3.58,  # FOUNTAIN on discharge
+        crit_temp=0,  # FOUNTAIN runtime temperature
+    )
+
 if SITE == "hial":
     SITE = dict(
         name="hial",
         end_date=datetime(2021, 2, 22),
         start_date=datetime(2021, 1, 30, 17),
-        utc_offset=1,
-        longitude=7.297543,
-        latitude=46.693723,
+        utc_offset=5.5,
+        longitude=77.435594,
+        latitude=34.160637,
         h_aws=3,
     )
 
@@ -96,9 +117,9 @@ if SITE == "secmol":
         name="secmol",
         end_date=datetime(2021, 2, 22),
         start_date=datetime(2021, 1, 30, 17),
-        utc_offset=1,
-        longitude=7.297543,
-        latitude=46.693723,
+        utc_offset=5.5,
+        longitude=77.444852,
+        latitude=34.130649,
         h_aws=3,
     )
 

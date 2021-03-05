@@ -52,7 +52,7 @@ class Icestupa:
     P0 = 1013  # Standard air pressure hPa
 
     """Model constants"""
-    TIME_STEP = 5 * 60  # s Model time steps
+    TIME_STEP = 15 * 60  # s Model time steps
     DX = 5e-03  # Ice layer thickness
 
     """Surface"""
@@ -68,7 +68,7 @@ class Icestupa:
     T_w = 0
     h_f = 0
     h_aws = 0
-    trigger = 'Temperature'
+    trigger = 'NetEnergy'
     # discharge = 1
 
     def __init__(self, *initial_data, **kwargs):
@@ -431,7 +431,7 @@ class Icestupa:
             if col in list(self.df.columns):
                 unknown.remove(col)
             else:
-                logger.info(col, "is unknown")
+                logger.info("%s is unknown" % (col))
                 self.df[col] = 0
 
         self.discharge_rate()
@@ -937,7 +937,8 @@ class Icestupa:
                         * self.tree_height
                     )
 
-                if self.name == "schwarzsee" or self.name == "hial" or self.name == "secmol":
+                new_sites = ["hial", "gangles", "secmol"]
+                if self.name == "schwarzsee" or self.name in new_sites :
                     # self.config_update()
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.DX

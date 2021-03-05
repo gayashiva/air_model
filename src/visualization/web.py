@@ -29,15 +29,6 @@ import coloredlogs
 from src.models.air import Icestupa
 
 
-# @st.cache(allow_output_mutation=True)
-# def load_data(trigger="Schwarzsee"):
-#     SITE, FOUNTAIN = config(location)
-#     FOUNTAIN["trigger"] = trigger
-#     icestupa = Icestupa(SITE, FOUNTAIN)
-#     icestupa.read_output()
-#     return icestupa.df, SITE, FOUNTAIN
-
-
 def download_csv(name, df):
 
     csv = df.to_csv(index=False)
@@ -83,6 +74,27 @@ def df_filter(message, df):
 
 def config(location="Schwarzsee"):
 
+    if location == "Gangles":
+        SITE = dict(
+            name="gangles",
+            end_date=datetime(2021, 2, 22),
+            start_date=datetime(2021, 1, 30, 17),
+            utc_offset=5.5,
+            longitude=77.606949,
+            latitude=34.216638,
+            h_aws=3,
+        )
+
+        FOUNTAIN = dict(
+            fountain_off_date=datetime(2021, 3, 10, 18),
+            dia_f=0.005,  # FOUNTAIN aperture diameter
+            h_f=1.35,  # FOUNTAIN steps h_f
+            theta_f=45,  # FOUNTAIN aperture diameter
+            ftl=0,  # FOUNTAIN flight time loss ftl
+            T_w=5,  # FOUNTAIN Water temperature
+            discharge=3.58,  # FOUNTAIN on discharge
+            crit_temp=0,  # FOUNTAIN runtime temperature
+        )
     if location == "Schwarzsee":
         SITE = dict(
             name="schwarzsee",
@@ -219,7 +231,7 @@ def config(location="Schwarzsee"):
 
 if __name__ == "__main__":
     location = st.sidebar.radio(
-        "Select Location", ("Schwarzsee", "Guttannen", "Hial", "Secmol")
+        "Select Location", ("Schwarzsee", "Guttannen", "Hial", "Secmol", "Gangles")
     )
     trigger = st.sidebar.radio(
         "Select Discharge Trigger", ("Schwarzsee", "Temperature", "NetEnergy")
