@@ -19,7 +19,8 @@ from pvlib import location
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 sys.path.append(dirname)
-from src.data.config import SITE, FOUNTAIN, FOLDERS
+# from src.data.config import SITE, FOUNTAIN, FOLDERS
+from src.data.settings import config
 import logging
 import coloredlogs
 
@@ -52,7 +53,7 @@ class Icestupa:
     P0 = 1013  # Standard air pressure hPa
 
     """Model constants"""
-    TIME_STEP = 15 * 60  # s Model time steps
+    # TIME_STEP = 5 * 60  # s Model time steps
     DX = 5e-03  # Ice layer thickness
 
     """Surface"""
@@ -69,7 +70,6 @@ class Icestupa:
     h_f = 0
     h_aws = 0
     trigger = 'NetEnergy'
-    # discharge = 1
 
     def __init__(self, *initial_data, **kwargs):
         for dictionary in initial_data:
@@ -88,24 +88,13 @@ class Icestupa:
 
         input_file = self.input_folder + self.name + "_input_field.csv"
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
+        self.TIME_STEP = int(pd.infer_freq(self.df["When"])[:-1]) * 60
+        logger.info(f"Time steps -> %s minutes" % (str(self.TIME_STEP/60)))
         mask = (self.df["When"] >= SITE["start_date"]) & (
             self.df["When"] <= SITE["end_date"]
         )
         self.df = self.df.loc[mask]
         self.df = self.df.reset_index(drop = True)
-
-        # if self.name == "schwarzsee":
-        #     input_file = self.input_folder + "raw_input_extended.csv"
-        # else:
-        #     input_file = self.input_folder + "raw_input_ERA5.csv"
-
-        # if self.name == "guttannen":
-        #     self.df_cam = pd.read_csv(
-        #         self.input_folder + "cam.csv",
-        #         sep=",",
-        #         header=0,
-        #         parse_dates=["When"],
-        #     )
 
     def get_parameter_metadata(self, parameter):
         return {
@@ -358,6 +347,7 @@ class Icestupa:
             mask_index = df_f[mask].index
             self.df.loc[mask_index, "Discharge"] = df_f["Discharge"]
             self.df = self.df.reset_index()
+            logger.info(f"Hours of spray : %.2f"% (self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP/3600))
 
         if self.trigger == "Temperature":
             # mask = (self.df["T_a"] < self.crit_temp) & (
@@ -369,7 +359,7 @@ class Icestupa:
             mask = self.df["When"] >= self.fountain_off_date
             mask_index = self.df[mask].index
             self.df.loc[mask_index, "Discharge"] = 0
-            logger.info(f"Steps of spray : %.2f"% (self.df.Discharge.astype(bool).sum(axis=0)))
+            logger.info(f"Hours of spray : %.2f"% (self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP/3600))
 
         if self.trigger == "NetEnergy":
             
@@ -420,7 +410,7 @@ class Icestupa:
             ]
             self.df.drop(columns=col)
 
-            logger.info(self.df.Discharge.head())
+            logger.info(f"Hours of spray : %.2f"% (self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP/3600))
 
     def derive_parameters(self):
 
@@ -2438,6 +2428,8 @@ class PDF(Icestupa):
 
 if __name__ == "__main__":
     start = time.time()
+
+    SITE, FOUNTAIN = config(location = "Gangles")
 
     icestupa = PDF(SITE, FOUNTAIN)
 
