@@ -16,8 +16,8 @@ def config(location="Schwarzsee"):
     if location == "Gangles":
         SITE = dict(
             name="gangles",
-            end_date=datetime(2021, 2, 22),
-            start_date=datetime(2021, 1, 30, 17),
+            # end_date=datetime(2021, 2, 22),
+            # start_date=datetime(2021, 1, 30, 17),
             utc_offset=5.5,
             longitude=77.606949,
             latitude=34.216638,
@@ -25,14 +25,14 @@ def config(location="Schwarzsee"):
         )
 
         FOUNTAIN = dict(
-            fountain_off_date=datetime(2021, 3, 10, 18),
-            dia_f=0.005,  # FOUNTAIN aperture diameter
-            h_f=1.35,  # FOUNTAIN steps h_f
+            # fountain_off_date=datetime(2021, 3, 10, 18),
+            dia_f=0.01,  # FOUNTAIN aperture diameter
+            h_f=2,  # FOUNTAIN steps h_f
             theta_f=45,  # FOUNTAIN aperture diameter
             ftl=0,  # FOUNTAIN flight time loss ftl
-            T_w=5,  # FOUNTAIN Water temperature
-            discharge=3.58,  # FOUNTAIN on discharge
-            crit_temp=0,  # FOUNTAIN runtime temperature
+            T_w=1,  # FOUNTAIN Water temperature
+            discharge=60,  # FOUNTAIN on discharge
+            crit_temp=-5,  # FOUNTAIN runtime temperature
         )
     if location == "Schwarzsee":
         SITE = dict(
@@ -62,7 +62,7 @@ def config(location="Schwarzsee"):
             name="hial",
             end_date=datetime(2021, 2, 22),
             start_date=datetime(2021, 1, 30, 17),
-            utc_offset=1,
+            utc_offset=5.5,
             longitude=7.297543,
             latitude=46.693723,
             h_aws=3,
@@ -79,19 +79,18 @@ def config(location="Schwarzsee"):
             crit_temp=0,  # FOUNTAIN runtime temperature
         )
     if location == "Secmol":
-
         SITE = dict(
             name="secmol",
             end_date=datetime(2021, 2, 22),
             start_date=datetime(2021, 1, 30, 17),
-            utc_offset=1,
-            longitude=7.297543,
-            latitude=46.693723,
+            utc_offset=5.5,
+            longitude=77.444852,
+            latitude=34.130649,
             h_aws=3,
         )
 
         FOUNTAIN = dict(
-            fountain_off_date=datetime(2019, 3, 10, 18),
+            fountain_off_date=datetime(2021, 3, 10, 18),
             dia_f=0.005,  # FOUNTAIN aperture diameter
             h_f=1.35,  # FOUNTAIN steps h_f
             theta_f=45,  # FOUNTAIN aperture diameter
@@ -106,7 +105,7 @@ def config(location="Schwarzsee"):
             name="leh",
             end_date=datetime(2019, 4, 9),
             start_date=datetime(2019, 1, 30, 17),
-            utc_offset=1,
+            utc_offset=5.5,
             longitude=77.5771,
             latitude=34.1526,
             h_aws=3,

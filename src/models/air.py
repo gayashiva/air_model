@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 import sys
-from datetime import datetime
+from datetime import datetime , timedelta
 from tqdm import tqdm
 import os
 import math
@@ -32,7 +32,7 @@ coloredlogs.install(
     fmt="%(name)s %(levelname)s %(message)s",
     logger=logger,
 )
-logger.info("Model begins")
+logger.debug("Model begins")
 
 
 class Icestupa:
@@ -69,13 +69,13 @@ class Icestupa:
     T_w = 0
     h_f = 0
     h_aws = 0
-    trigger = 'NetEnergy'
+    trigger = 'Temperature'
 
     def __init__(self, *initial_data, **kwargs):
         for dictionary in initial_data:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
-                logger.info(f"%s -> %s" % (key, str(dictionary[key])))
+                logger.debug(f"%s -> %s" % (key, str(dictionary[key])))
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
@@ -89,12 +89,12 @@ class Icestupa:
         input_file = self.input_folder + self.name + "_input_field.csv"
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
         self.TIME_STEP = int(pd.infer_freq(self.df["When"])[:-1]) * 60
-        logger.info(f"Time steps -> %s minutes" % (str(self.TIME_STEP/60)))
-        mask = (self.df["When"] >= SITE["start_date"]) & (
-            self.df["When"] <= SITE["end_date"]
-        )
-        self.df = self.df.loc[mask]
-        self.df = self.df.reset_index(drop = True)
+        logger.debug(f"Time steps -> %s minutes" % (str(self.TIME_STEP/60)))
+        # mask = (self.df["When"] >= SITE["start_date"]) & (
+        #     self.df["When"] <= SITE["end_date"]
+        # )
+        # self.df = self.df.loc[mask]
+        # self.df = self.df.reset_index(drop = True)
 
     def get_parameter_metadata(self, parameter):
         return {
@@ -243,7 +243,7 @@ class Icestupa:
         site_location = location.Location(self.latitude, self.longitude)
 
         times = pd.date_range(
-            start=self.start_date, end=self.df["When"].iloc[-1], freq="5T"
+            start=self.start_date, end=self.df["When"].iloc[-1], freq=(str(int(self.TIME_STEP/60))+'T')
         )
         clearsky = site_location.get_clearsky(times)
         # Get solar azimuth and zenith to pass to the transposition function
@@ -323,6 +323,7 @@ class Icestupa:
         else:
             self.r_mean = self.projectile_xy(v=v)
 
+        logger.info("Spray radius %s" %(self.r_mean))
         return self.r_mean
 
     def discharge_rate(self):
@@ -336,30 +337,31 @@ class Icestupa:
             df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")
             df_f['When'] = df_f['When'].mask(df_f['When'].dt.year == 2019, df_f['When'] + pd.offsets.DateOffset(year=2021))
             # df_f['When'] = df_f['When'] - pd.DateOffset(10)
-            mask = (df_f["When"] >= SITE["start_date"]) & (
-                df_f["When"] <= SITE["end_date"]
+            mask = (df_f["When"] >= self.df.When[0]) & (
+                df_f["When"] <= self.df.When[-1]
             )
             df_f = df_f.loc[mask]
             df_f = df_f.reset_index(drop = True)
-            df_f = df_f.set_index("When").resample("15T").mean()
+            df_f = df_f.set_index("When").resample(str(int(self.TIME_STEP/60))+'T').mean()
             self.df = self.df.set_index("When")
             mask = df_f["Discharge"] != 0
             mask_index = df_f[mask].index
             self.df.loc[mask_index, "Discharge"] = df_f["Discharge"]
             self.df = self.df.reset_index()
-            logger.info(f"Hours of spray : %.2f"% (self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP/3600))
+            logger.debug(f"Hours of spray : %.2f"% (self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP/3600))
 
         if self.trigger == "Temperature":
-            # mask = (self.df["T_a"] < self.crit_temp) & (
-            #     self.df["SW_direct"] < 100
-            # )
-            mask = self.df["T_a"] < self.crit_temp
+            mask = (self.df["T_a"] < self.crit_temp) & (
+                self.df["SW_direct"] < 100
+            )
+            # mask = self.df["T_a"] < self.crit_temp
             mask_index = self.df[mask].index
             self.df.loc[mask_index, "Discharge"] = 1 * self.discharge
-            mask = self.df["When"] >= self.fountain_off_date
-            mask_index = self.df[mask].index
-            self.df.loc[mask_index, "Discharge"] = 0
-            logger.info(f"Hours of spray : %.2f"% (self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP/3600))
+            # mask = self.df["When"] >= self.fountain_off_date
+            # mask_index = self.df[mask].index
+            # self.df.loc[mask_index, "Discharge"] = 0
+            logger.debug(f"Hours of spray : %.2f"% (self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP/3600))
+
 
         if self.trigger == "NetEnergy":
             
@@ -383,7 +385,7 @@ class Icestupa:
                 self.df[column] = 0
 
             self.df.Discharge = 0
-            logger.info("Calculating discharge from energy trigger ...")
+            logger.debug("Calculating discharge from energy trigger ...")
             for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]):
                 self.energy_balance(row, mode='trigger')
             mask = self.df["TotalE"] < 0
@@ -410,9 +412,23 @@ class Icestupa:
             ]
             self.df.drop(columns=col)
 
-            logger.info(f"Hours of spray : %.2f"% (self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP/3600))
+            logger.debug(f"Hours of spray : %.2f"% (self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP/3600))
 
     def derive_parameters(self):
+
+
+        self.discharge_rate()
+        f_on = self.df.When[self.df.Discharge.astype(bool)].tolist()
+        self.start_date = f_on[0] 
+        self.end_date =  f_on[-1] #+ timedelta(days=30)
+        logger.debug("Model starts at %s" % (self.start_date))
+        logger.debug("Model ends at %s" % (self.end_date))
+
+        mask = (self.df["When"] >= self.start_date) & (
+            self.df["When"] <= self.end_date
+        )
+        self.df = self.df.loc[mask]
+        self.df = self.df.reset_index(drop = True)
 
         self.get_solar()
 
@@ -421,19 +437,16 @@ class Icestupa:
             if col in list(self.df.columns):
                 unknown.remove(col)
             else:
-                logger.info("%s is unknown" % (col))
+                logger.debug("%s is unknown" % (col))
                 self.df[col] = 0
-
-        self.discharge_rate()
-
         """Albedo Decay"""
         self.T_DECAY = (
             self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
-        )  # convert to 5 minute time steps
+        )
         s = 0
         f = 0
 
-        logger.info("Creating model input file...")
+        logger.debug("Creating model input file...")
         for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
 
             """ Vapour Pressure"""
@@ -491,15 +504,17 @@ class Icestupa:
             ]
         ]
 
-        if self.trigger == "Schwarzsee":
-            self.df.to_hdf(
-                self.input_folder + "model_input_extended.h5", key="df", mode="w"
-            )
-        else:
-            self.df.to_hdf(
-                self.input_folder + "model_input_" + self.trigger + ".h5", key="df", mode="w"
-            )
-
+        # if self.trigger == "Schwarzsee":
+        #     self.df.to_hdf(
+        #         self.input_folder + "model_input_extended.h5", key="df", mode="w"
+        #     )
+        # else:
+        self.df.to_hdf(
+            self.input_folder + "model_input_" + self.trigger + ".h5", key="df", mode="w"
+        )
+        self.df.to_csv(
+            self.input_folder + "model_input_" + self.trigger + ".csv"
+        )
     def surface_area(self, i):
 
         if (
@@ -528,7 +543,7 @@ class Icestupa:
             self.df.loc[i, "s_cone"] = self.df.loc[i - 1, "s_cone"]
 
             # Ice Radius
-            # logger.info(self.df.loc[i, "iceV"], self.df.loc[i, "s_cone"])
+            # logger.debug(self.df.loc[i, "iceV"], self.df.loc[i, "s_cone"])
             self.df.loc[i, "r_ice"] = math.pow(
                 self.df.loc[i, "iceV"] / math.pi * (3 / self.df.loc[i, "s_cone"]), 1 / 3
             )
@@ -617,7 +632,7 @@ class Icestupa:
         )
 
         if np.isnan(self.df.loc[i, "LW"]):
-            logger.info(
+            logger.debug(
                 f"LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
             )
 
@@ -752,58 +767,58 @@ class Icestupa:
         # self.TIME_STEP=15*60
         # self.df = self.df.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index()
 
-        logger.info(self.df.head())
+        logger.debug(self.df.head())
 
         if self.df.isnull().values.any():
-            logger.info("Warning: Null values present")
+            logger.debug("Warning: Null values present")
 
     def read_output(self):
 
         self.df = pd.read_hdf(self.output_folder + "model_output_"+ self.trigger + ".h5", "df")
 
         if self.df.isnull().values.any():
-            logger.info("Warning: Null values present")
-            # logger.info(self.df.columns)
-            # logger.info(self.df[['s_cone']].isnull().sum())
-            # logger.info(self.df[self.df['s_cone'].isnull()])
+            logger.debug("Warning: Null values present")
+            # logger.debug(self.df.columns)
+            # logger.debug(self.df[['s_cone']].isnull().sum())
+            # logger.debug(self.df[self.df['s_cone'].isnull()])
 
         # Table outputs
-        f_off = self.df.index[self.df.Discharge.astype(bool)].tolist()
-        f_off = f_off[-1] + 1
-        logger.info(
-            "When %s \n M_U %.2f\n M_solid %.2f\n M_gas %.2f\n M_liquid %.2f\n M_R %.2f\n M_D %.2f\n M_C %.2f\n M_F %.2f\n"
-            % (
-                self.df.When.iloc[f_off],
-                self.df.unfrozen_water.iloc[f_off],
-                self.df.ice.iloc[f_off],
-                self.df.vapour.iloc[f_off],
-                self.df.meltwater.iloc[f_off],
-                self.df.ppt[: f_off + 1].sum(),
-                self.df.dpt[: f_off + 1].sum(),
-                self.df.cdt[: f_off + 1].sum(),
-                self.df.Discharge[: f_off + 1].sum() * 5
-                + self.df.iceV.iloc[0] * self.RHO_I,
-            )
-        )
-        logger.info(
+        # f_off = self.df.index[self.df.Discharge.astype(bool)].tolist()
+        # f_off = f_off[-1] + 1
+        # logger.debug(
+        #     "When %s \n M_U %.2f\n M_solid %.2f\n M_gas %.2f\n M_liquid %.2f\n M_R %.2f\n M_D %.2f\n M_C %.2f\n M_F %.2f\n"
+        #     % (
+        #         self.df.When.iloc[f_off],
+        #         self.df.unfrozen_water.iloc[f_off],
+        #         self.df.ice.iloc[f_off],
+        #         self.df.vapour.iloc[f_off],
+        #         self.df.meltwater.iloc[f_off],
+        #         self.df.ppt[: f_off + 1].sum(),
+        #         self.df.dpt[: f_off + 1].sum(),
+        #         self.df.cdt[: f_off + 1].sum(),
+        #         self.df.Discharge[: f_off + 1].sum() * 5
+        #         + self.df.iceV.iloc[0] * self.RHO_I,
+        #     )
+        # )
+        logger.debug(
             f"M_input {self.df.input.iloc[-1]}\n M_R {self.df.ppt.sum()}\n M_D {self.df.dpt.sum()}\n M_C {self.df.cdt.sum()}\n M_F {self.df.Discharge.sum() * 5 + self.df.iceV.iloc[0] * self.RHO_I}\n"
         )
-        logger.info(
+        logger.debug(
             f"When {self.df.When.iloc[-1]}\n M_U {self.df.unfrozen_water.iloc[-1]},\n M_solid {self.df.ice.iloc[-1]},\n M_gas {self.df.vapour.iloc[-1]},\n M_liquid {self.df.meltwater.iloc[-1]}"
         )
-        logger.info(
+        logger.debug(
             f"Temperature of spray : %.2f"
             % (self.df.loc[self.df["TotalE"] < 0, "T_a"].mean())
         )
-        logger.info(f"Temperature minimum : {self.df.T_a.min()}")
-        logger.info(f"Energy mean : {self.df.TotalE.mean()}")
+        logger.debug(f"Temperature minimum : {self.df.T_a.min()}")
+        logger.debug(f"Energy mean : {self.df.TotalE.mean()}")
 
         dfd = self.df.set_index("When").resample("D").mean().reset_index(drop=True)
         dfh = self.df.set_index("When").resample("H").mean().reset_index(drop=True)
 
         dfd["Global"] = dfd["SW_diffuse"] + dfd["SW_direct"]
-        logger.info(f"Global max: {dfd.Global.max()}\n SW max: {dfd.SW.max()}")
-        logger.info(f"Nonzero Qf: {self.df.Qf.astype(bool).sum(axis=0)}")
+        logger.debug(f"Global max: {dfd.Global.max()}\n SW max: {dfd.SW.max()}")
+        logger.debug(f"Nonzero Qf: {self.df.Qf.astype(bool).sum(axis=0)}")
         Total = (
             dfd.SW.abs().sum()
             + dfd.LW.abs().sum()
@@ -814,37 +829,37 @@ class Icestupa:
             + dfd["$q_{melt}$"].abs().sum()
             + dfd["$q_{T}$"].abs().sum()
         )
-        logger.info(
+        logger.debug(
             "Qmelt: %.2f, Qt: %.2f" % (dfd["$q_{melt}$"].mean(), dfd["$q_{T}$"].mean())
         )
-        logger.info(
+        logger.debug(
             "Percent of Qmelt: %.2f \n Qt: %.8f"
             % (
                 dfd["$q_{melt}$"].abs().sum() / Total,
                 dfd["$q_{T}$"].abs().sum() / Total,
             )
         )
-        logger.info(
+        logger.debug(
             f"% of SW {dfd.SW.abs().sum()/Total}, LW {dfd.LW.abs().sum()/Total}, Qs {dfd.Qs.abs().sum()/Total}, Ql {dfd.Ql.abs().sum()/Total}, Qf {dfd.Qf.abs().sum()/Total}, Qg {dfd.Qg.abs().sum()/Total}"
         )
 
-        logger.info(
+        logger.debug(
             f"Mean of SW {dfd.SW.mean()}, LW {dfd.LW.mean()}, Qs {dfd.Qs.mean()}, Ql {dfd.Ql.mean()}, Qf {dfd.Qf.mean()}, Qg {dfd.Qg.mean()}"
         )
-        logger.info(
+        logger.debug(
             f"Range of SW {dfd.SW.min()}-{dfd.SW.max()}, LW {dfd.LW.min()}-{dfd.LW.max()}, Qs {dfd.Qs.min()}-{dfd.Qs.max()}, Ql {dfd.Ql.min()}-{dfd.Ql.max()}, Qf {dfd.Qf.min()}-{dfd.Qf.max()}, Qg {dfd.Qg.min()}-{dfd.Qg.max()}"
         )
-        logger.info(f"Max SA {self.df.SA.max()}")
-        logger.info(
+        logger.debug(f"Max SA {self.df.SA.max()}")
+        logger.debug(
             f"M_input {self.df.input.iloc[-1]}, M_R {self.df.ppt.sum()}, M_D {self.df.dpt.sum()}, M_F {self.df.Discharge.sum() * 5 + self.df.iceV.iloc[0] * self.RHO_I}"
         )
-        logger.info(
+        logger.debug(
             f"Max_growth {self.df.solid.max() / 5}, Mean_growth {self.df.solid.replace(0,np.NaN).mean() / 5},average_discharge {self.df.Discharge.replace(0, np.NaN).mean()}"
         )
 
-        logger.info(f"Duration {self.df.index[-1] * 5 / (60 * 24)}")
-        logger.info(f"Ended {self.df.When.iloc[-1]}")
-        logger.info(
+        logger.debug(f"Duration {self.df.index[-1] * 5 / (60 * 24)}")
+        logger.debug(f"Ended {self.df.When.iloc[-1]}")
+        logger.debug(
             f"Evaporation/Condensation: %.2f, Sublimation/Deposition: %.2f"
             % (
                 self.df.loc[self.df["RH"] > 60, "RH"].count() / self.df.index[-1],
@@ -859,11 +874,11 @@ class Icestupa:
             )
         )
 
-        # Output for manim
-        filename2 = os.path.join(self.output_folder, self.name + "_model_gif.csv")
-        self.df["h_f"] = self.h_f
-        cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
-        self.df[cols].to_csv(filename2, sep=",")
+        # # Output for manim
+        # filename2 = os.path.join(self.output_folder, self.name + "_model_gif.csv")
+        # self.df["h_f"] = self.h_f
+        # cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
+        # self.df[cols].to_csv(filename2, sep=",")
 
     def melt_freeze(self):
 
@@ -904,7 +919,7 @@ class Icestupa:
         STATE = 0
         self.start = 0
 
-        logger.info("AIR simulation begins...")
+        logger.debug("AIR simulation begins...")
         for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]):
             i = row.Index
 
@@ -927,9 +942,12 @@ class Icestupa:
                         * self.tree_height
                     )
 
+                if self.name == "schwarzsee": 
+                    self.df.loc[i - 1, "r_ice"] = self.spray_radius()
+                    self.df.loc[i - 1, "h_ice"] = self.DX
+
                 new_sites = ["hial", "gangles", "secmol"]
-                if self.name == "schwarzsee" or self.name in new_sites :
-                    # self.config_update()
+                if self.name in new_sites :
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.DX
 
@@ -1166,7 +1184,7 @@ class Icestupa:
                     + self.df.loc[i, "ppt"]
                 ) / (self.df.loc[i, "SA"] * self.RHO_I)
 
-                # logger.info(self.df.loc[i, "When"], self.df.loc[i, "ice"])
+                # logger.debug(self.df.loc[i, "When"], self.df.loc[i, "ice"])
 
                 self.liquid = [0] * 1
 
@@ -1212,12 +1230,12 @@ class Icestupa:
             ]
         ]
 
-        logger.info(
+        logger.debug(
             data.drop("$q_{net}$", axis=1).apply(
                 lambda x: x.corr(data["$q_{net}$"]) ** 2
             )
         )
-        logger.info(
+        logger.debug(
             data.drop("$\\Delta M_{ice}$", axis=1).apply(
                 lambda x: x.corr(data["$\\Delta M_{ice}$"]) ** 2
             )
@@ -2452,4 +2470,4 @@ if __name__ == "__main__":
 
     total = time.time() - start
 
-    logger.info("Total time  : %.2f", total / 60)
+    logger.debug("Total time  : %.2f", total / 60)
