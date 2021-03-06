@@ -51,6 +51,7 @@ class Icestupa:
     K_I = 2.123  # Thermal Conductivity Waite et al. 2006
     STEFAN_BOLTZMAN = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
     P0 = 1013  # Standard air pressure hPa
+    G = 9.81
 
     """Model constants"""
     # TIME_STEP = 5 * 60  # s Model time steps
@@ -270,13 +271,12 @@ class Icestupa:
             hs = self.h_f
         else:
             hs = h
-        g = 9.81
         data_xy = []
         t = 0.0
         theta_f = math.radians(self.theta_f)
         while True:
             # now calculate the height y
-            y = hs + (t * v * math.sin(theta_f)) - (g * t * t) / 2
+            y = hs + (t * v * math.sin(theta_f)) - (self.G * t * t) / 2
             # projectile has hit ground level
             if y < 0:
                 break
@@ -316,15 +316,30 @@ class Icestupa:
 
     def spray_radius(self, r_mean=0):
         Area = math.pi * math.pow(self.dia_f, 2) / 4
-        v = self.df["Discharge"].replace(0, np.NaN).mean() / (60 * 1000 * Area)
 
         if r_mean != 0:
             self.r_mean = r_mean
         else:
-            self.r_mean = self.projectile_xy(v=v)
+            # self.discharge = self.df["Discharge"].replace(0, np.NaN).mean() 
+            self.v = self.discharge  / (60 * 1000 * Area) 
+            self.r_mean = self.projectile_xy(v=self.v)
 
         logger.info("Spray radius %s" %(self.r_mean))
         return self.r_mean
+
+    def height_steps(self, i):
+        h_steps=1
+        if self.discharge != 0:
+            Area = math.pi * math.pow(self.dia_f, 2) / 4
+            self.v = np.sqrt(self.v**2 - 2 * self.G * h_steps)
+            if self.discharge < 6 :
+                discharge = 0
+                self.v = 0
+            else:
+                discharge = self.v * (60 * 1000 * Area)
+            logger.warning("Discharge changed from %s to %s" %(self.discharge , discharge))
+            self.discharge = discharge
+        self.df.Discharge.loc[i:] *= self.discharge
 
     def discharge_rate(self):
 
@@ -357,6 +372,7 @@ class Icestupa:
             # mask = self.df["T_a"] < self.crit_temp
             mask_index = self.df[mask].index
             self.df.loc[mask_index, "Discharge"] = 1 * self.discharge
+
             # mask = self.df["When"] >= self.fountain_off_date
             # mask_index = self.df[mask].index
             # self.df.loc[mask_index, "Discharge"] = 0
@@ -416,11 +432,10 @@ class Icestupa:
 
     def derive_parameters(self):
 
-
         self.discharge_rate()
-        f_on = self.df.When[self.df.Discharge.astype(bool)].tolist()
-        self.start_date = f_on[0] 
-        self.end_date =  f_on[-1] #+ timedelta(days=30)
+        self.f_on = self.df.When[self.df.Discharge.astype(bool)].tolist()
+        self.start_date = self.f_on[0] 
+        self.end_date =  self.f_on[-1] #+ timedelta(days=30)
         logger.debug("Model starts at %s" % (self.start_date))
         logger.debug("Model ends at %s" % (self.end_date))
 
@@ -515,6 +530,7 @@ class Icestupa:
         self.df.to_csv(
             self.input_folder + "model_input_" + self.trigger + ".csv"
         )
+
     def surface_area(self, i):
 
         if (
@@ -523,7 +539,7 @@ class Icestupa:
             - self.df.melted[i - 1]
             + self.df.ppt[i - 1]
             > 0
-        ) & (self.df.loc[i - 1, "r_ice"] > self.r_mean):
+        ) & (self.df.loc[i - 1, "r_ice"] > self.r_mean) & (self.discharge != 0):
             # Ice Radius
             self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"]
 
@@ -543,7 +559,7 @@ class Icestupa:
             self.df.loc[i, "s_cone"] = self.df.loc[i - 1, "s_cone"]
 
             # Ice Radius
-            # logger.debug(self.df.loc[i, "iceV"], self.df.loc[i, "s_cone"])
+            # logger.warning("%s,%s" %(self.df.loc[i, "iceV"], self.df.loc[i, "s_cone"]))
             self.df.loc[i, "r_ice"] = math.pow(
                 self.df.loc[i, "iceV"] / math.pi * (3 / self.df.loc[i, "s_cone"]), 1 / 3
             )
@@ -918,6 +934,7 @@ class Icestupa:
         self.liquid = [0] * 1
         STATE = 0
         self.start = 0
+        ctr = 0
 
         logger.debug("AIR simulation begins...")
         for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]):
@@ -989,6 +1006,12 @@ class Icestupa:
                     self.df.loc[i, "iceV"] += self.hollow_V
 
                 self.surface_area(i)
+
+                if self.df.h_ice[i]> ctr + self.h_f:
+                    ctr += 1
+                    self.df.Discharge.loc[i:] /= self.discharge
+                    logger.warning("Height increased to %s"%(ctr + self.h_f))
+                    self.height_steps(i)
 
                 # Precipitation to ice quantity
                 if row.T_a < self.T_RAIN and row.Prec > 0:
@@ -1086,6 +1109,7 @@ class Icestupa:
                     # self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
 
                     if self.liquid < 0:
+                        logger.warning("Discharge froze completely")
 
                         # Cooling Ice
                         self.df.loc[i, "$q_{T}$"] += (self.liquid * self.L_F) / (

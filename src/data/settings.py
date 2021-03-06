@@ -29,10 +29,10 @@ def config(location="Schwarzsee"):
             dia_f=0.01,  # FOUNTAIN aperture diameter
             h_f=2,  # FOUNTAIN steps h_f
             theta_f=45,  # FOUNTAIN aperture diameter
-            ftl=0,  # FOUNTAIN flight time loss ftl
+            ftl=0.5,  # FOUNTAIN flight time loss ftl
             T_w=1,  # FOUNTAIN Water temperature
-            discharge=60,  # FOUNTAIN on discharge
-            crit_temp=-5,  # FOUNTAIN runtime temperature
+            discharge=30,  # FOUNTAIN on discharge
+            crit_temp=0,  # FOUNTAIN runtime temperature
         )
     if location == "Schwarzsee":
         SITE = dict(
