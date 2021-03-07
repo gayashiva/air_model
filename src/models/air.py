@@ -90,11 +90,6 @@ class Icestupa:
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
         self.TIME_STEP = int(pd.infer_freq(self.df["When"])[:-1]) * 60
         logger.debug(f"Time steps -> %s minutes" % (str(self.TIME_STEP/60)))
-        # mask = (self.df["When"] >= SITE["start_date"]) & (
-        #     self.df["When"] <= SITE["end_date"]
-        # )
-        # self.df = self.df.loc[mask]
-        # self.df = self.df.reset_index(drop = True)
 
     def get_parameter_metadata(self, parameter):
         return {
@@ -339,6 +334,7 @@ class Icestupa:
 
     def height_steps(self, i):
         h_steps=1
+        self.df.loc[i:, "Discharge"] /= self.discharge
         if self.discharge != 0:
             Area = math.pi * math.pow(self.dia_f, 2) / 4
             if self.discharge < 6 :
@@ -349,7 +345,7 @@ class Icestupa:
                 discharge = self.v * (60 * 1000 * Area)
             logger.warning("Discharge changed from %s to %s" %(self.discharge , discharge))
             self.discharge = discharge
-        self.df.Discharge.loc[i:] *= self.discharge
+        self.df.loc[i:, "Discharge"] *= self.discharge
 
     def discharge_rate(self):
 
@@ -379,7 +375,6 @@ class Icestupa:
             mask = (self.df["T_a"] < self.crit_temp) & (
                 self.df["SW_direct"] < 100
             )
-            # mask = self.df["T_a"] < self.crit_temp
             mask_index = self.df[mask].index
             self.df.loc[mask_index, "Discharge"] = 1 * self.discharge
 
@@ -417,9 +412,9 @@ class Icestupa:
             mask = self.df["TotalE"] < 0
             mask_index = self.df[mask].index
             self.df.loc[mask_index, "Discharge"] = 1 * self.discharge
-            mask = self.df["When"] >= self.fountain_off_date
-            mask_index = self.df[mask].index
-            self.df.loc[mask_index, "Discharge"] = 0
+            # mask = self.df["When"] >= self.fountain_off_date
+            # mask_index = self.df[mask].index
+            # self.df.loc[mask_index, "Discharge"] = 0
 
             col = [
                 "T_s",  # Surface Temperature
@@ -446,8 +441,8 @@ class Icestupa:
         self.f_on = self.df.When[self.df.Discharge.astype(bool)].tolist()
         self.start_date = self.f_on[0] 
         self.end_date =  self.f_on[-1] #+ timedelta(days=30)
-        logger.debug("Model starts at %s" % (self.start_date))
-        logger.debug("Model ends at %s" % (self.end_date))
+        logger.info("Model starts at %s" % (self.start_date))
+        logger.info("Model ends at %s" % (self.end_date))
 
         mask = (self.df["When"] >= self.start_date) & (
             self.df["When"] <= self.end_date
@@ -489,20 +484,20 @@ class Icestupa:
                 )
 
             # """LW incoming"""
-            # if "LW_in" in unknown:
+            if "LW_in" in unknown:
 
-            #     self.df.loc[row.Index, "e_a"] = (
-            #         1.24
-            #         * math.pow(
-            #             abs(self.df.loc[row.Index, "vp_a"] / (row.T_a + 273.15)), 1 / 7
-            #         )
-            #     ) * (1 + 0.22 * math.pow(self.df.loc[row.Index, "cld"], 2))
+                self.df.loc[row.Index, "e_a"] = (
+                    1.24
+                    * math.pow(
+                        abs(self.df.loc[row.Index, "vp_a"] / (row.T_a + 273.15)), 1 / 7
+                    )
+                ) * (1 + 0.22 * math.pow(self.df.loc[row.Index, "cld"], 2))
 
-            #     self.df.loc[row.Index, "LW_in"] = (
-            #         self.df.loc[row.Index, "e_a"]
-            #         * self.STEFAN_BOLTZMAN
-            #         * math.pow(row.T_a + 273.15, 4)
-            #     )
+                self.df.loc[row.Index, "LW_in"] = (
+                    self.df.loc[row.Index, "e_a"]
+                    * self.STEFAN_BOLTZMAN
+                    * math.pow(row.T_a + 273.15, 4)
+                )
 
             s, f = self.albedo(row, s, f)
 
@@ -570,7 +565,7 @@ class Icestupa:
             self.df.loc[i, "s_cone"] = self.df.loc[i - 1, "s_cone"]
 
             # Ice Radius
-            # logger.warning("%s,%s" %(self.df.loc[i, "iceV"], self.df.loc[i, "s_cone"]))
+            logger.debug("%s,%s" %(self.df.loc[i, "iceV"], self.df.loc[i, "s_cone"]))
             self.df.loc[i, "r_ice"] = math.pow(
                 self.df.loc[i, "iceV"] / math.pi * (3 / self.df.loc[i, "s_cone"]), 1 / 3
             )
@@ -624,16 +619,17 @@ class Icestupa:
             )
         )
 
-        self.df.loc[i, "Ql"] = (
-            0.623
-            * self.L_S
-            * self.RHO_A
-            / self.P0
-            * math.pow(self.VAN_KARMAN, 2)
-            * self.df.loc[i, "v_a"]
-            * (row.vp_a - self.df.loc[i, "vp_ice"])
-            / ((np.log(self.h_aws / self.Z_I)) ** 2)
-        )
+        if mode != 'trigger':
+            self.df.loc[i, "Ql"] = (
+                0.623
+                * self.L_S
+                * self.RHO_A
+                / self.P0
+                * math.pow(self.VAN_KARMAN, 2)
+                * self.df.loc[i, "v_a"]
+                * (row.vp_a - self.df.loc[i, "vp_ice"])
+                / ((np.log(self.h_aws / self.Z_I)) ** 2)
+            )
 
         # Sensible Heat Qs
         self.df.loc[i, "Qs"] = (
@@ -648,9 +644,14 @@ class Icestupa:
         )
 
         # Short Wave Radiation SW
-        self.df.loc[i, "SW"] = (1 - row.a) * (
-            row.SW_direct * self.df.loc[i, "f_cone"] + row.SW_diffuse
-        )
+        if mode != 'trigger':
+            self.df.loc[i, "SW"] = (1 - row.a) * (
+                row.SW_direct * self.df.loc[i, "f_cone"] + row.SW_diffuse
+            )
+        else:
+            self.df.loc[i, "SW"] = (1 - self.A_I) * (
+                row.SW_direct + row.SW_diffuse
+            )
 
         # Long Wave Radiation LW
 
@@ -1016,7 +1017,6 @@ class Icestupa:
 
                 if self.df.h_ice[i]> ctr + self.h_f and self.discharge != 0:
                     ctr += 1
-                    self.df.Discharge.loc[i:] /= self.discharge
                     logger.warning("Height increased to %s"%(ctr + self.h_f))
                     self.height_steps(i)
 
@@ -1133,7 +1133,7 @@ class Icestupa:
                             self.TIME_STEP * self.df.loc[i, "SA"]
                         )
                         self.liquid = 0
-                        logger.info("Discharge froze completely")
+                        logger.debug("Discharge froze completely")
                     else:
                         self.df.loc[i, "$q_{melt}$"] += self.df.loc[i, "TotalE"]
 
@@ -1455,18 +1455,6 @@ class PDF(Icestupa):
         fig.autofmt_xdate()
         pp.savefig(bbox_inches="tight")
         plt.clf()
-
-        # ax1 = fig.add_subplot(111)
-        # y6 = self.df.cld
-        # ax1.plot(x, y6, "k-", linewidth=0.5)
-        # ax1.set_ylabel("Cloudiness")
-
-        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
-        # fig.autofmt_xdate()
-        # pp.savefig(bbox_inches="tight")
-        # plt.clf()
 
         plt.close("all")
         pp.close()
@@ -2484,7 +2472,7 @@ class PDF(Icestupa):
 if __name__ == "__main__":
     start = time.time()
 
-    SITE, FOUNTAIN = config(location = "Secmol")
+    SITE, FOUNTAIN = config(location = "Hial")
 
     icestupa = PDF(SITE, FOUNTAIN)
 
