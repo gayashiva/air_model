@@ -70,7 +70,6 @@ class Icestupa:
     T_w = 0
     h_f = 0
     h_aws = 0
-    trigger = 'Temperature'
 
     def __init__(self, *initial_data, **kwargs):
         for dictionary in initial_data:
@@ -199,6 +198,11 @@ class Icestupa:
                 "kind": "Output",
                 "units": "($W\\,m^{-2}$)",
             },
+            "$q_{melt}$": {
+                "name": "Melt Energy",
+                "kind": "Output",
+                "units": "($W\\,m^{-2}$)",
+            },
             "ppt": {
                 "name": "Snow Accumulation",
                 "kind": "Output",
@@ -234,6 +238,12 @@ class Icestupa:
                 "kind": "Output",
                 "units": "($kg$)",
             },
+            "SA": {
+                "name": "Surface Area",
+                "kind": "Output",
+                "units": "($m^2$)",
+            },
+
         }[parameter]
 
     def get_solar(self):
@@ -331,11 +341,11 @@ class Icestupa:
         h_steps=1
         if self.discharge != 0:
             Area = math.pi * math.pow(self.dia_f, 2) / 4
-            self.v = np.sqrt(self.v**2 - 2 * self.G * h_steps)
             if self.discharge < 6 :
                 discharge = 0
                 self.v = 0
             else:
+                self.v = np.sqrt(self.v**2 - 2 * self.G * h_steps)
                 discharge = self.v * (60 * 1000 * Area)
             logger.warning("Discharge changed from %s to %s" %(self.discharge , discharge))
             self.discharge = discharge
@@ -535,11 +545,12 @@ class Icestupa:
 
         if (
             self.df.solid[i - 1]
-            + self.df.dpt[i - 1]
+            # + self.df.dpt[i - 1]
+            # + self.df.cdt[i - 1]
             - self.df.melted[i - 1]
-            + self.df.ppt[i - 1]
+            # + self.df.ppt[i - 1]
             > 0
-        ) & (self.df.loc[i - 1, "r_ice"] > self.r_mean) & (self.discharge != 0):
+        ) & (self.df.loc[i - 1, "r_ice"] > self.r_mean):
             # Ice Radius
             self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"]
 
@@ -963,12 +974,8 @@ class Icestupa:
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.DX
 
-                new_sites = ["hial", "gangles", "secmol"]
+                new_sites = ["hial", "gangles", "secmol", "leh"]
                 if self.name in new_sites :
-                    self.df.loc[i - 1, "r_ice"] = self.spray_radius()
-                    self.df.loc[i - 1, "h_ice"] = self.DX
-
-                if self.name == "leh":
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.DX
 
@@ -1007,7 +1014,7 @@ class Icestupa:
 
                 self.surface_area(i)
 
-                if self.df.h_ice[i]> ctr + self.h_f:
+                if self.df.h_ice[i]> ctr + self.h_f and self.discharge != 0:
                     ctr += 1
                     self.df.Discharge.loc[i:] /= self.discharge
                     logger.warning("Height increased to %s"%(ctr + self.h_f))
@@ -1025,11 +1032,14 @@ class Icestupa:
                     )
 
                 # Fountain water output
-                self.liquid = row.Discharge * (1 - self.ftl) * self.TIME_STEP / 60
+
+                self.liquid = self.df.Discharge.loc[i] * (1 - self.ftl) * self.TIME_STEP / 60
+
                 if self.df.loc[i, "SA"]:
                     self.energy_balance(row)
                 else:
                     logger.error("SA zero")
+                    break
 
                 # Latent Heat
                 self.df.loc[i, "$q_{T}$"] = self.df.loc[i, "Ql"]
@@ -1109,7 +1119,6 @@ class Icestupa:
                     # self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
 
                     if self.liquid < 0:
-                        logger.warning("Discharge froze completely")
 
                         # Cooling Ice
                         self.df.loc[i, "$q_{T}$"] += (self.liquid * self.L_F) / (
@@ -1124,12 +1133,14 @@ class Icestupa:
                             self.TIME_STEP * self.df.loc[i, "SA"]
                         )
                         self.liquid = 0
+                        logger.info("Discharge froze completely")
                     else:
                         self.df.loc[i, "$q_{melt}$"] += self.df.loc[i, "TotalE"]
 
                 else:
                     # Heating Ice
                     self.df.loc[i, "$q_{T}$"] += self.df.loc[i, "TotalE"]
+
 
                 self.df.loc[i, "delta_T_s"] += (
                     self.df.loc[i, "$q_{T}$"]
@@ -1152,6 +1163,8 @@ class Icestupa:
                     )
 
                     self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
+                    logger.debug("Hot Ice")
+
 
                 if self.df.loc[i, "$q_{melt}$"] < 0:
                     self.df.loc[i, "solid"] -= (
@@ -2471,7 +2484,7 @@ class PDF(Icestupa):
 if __name__ == "__main__":
     start = time.time()
 
-    SITE, FOUNTAIN = config(location = "Gangles")
+    SITE, FOUNTAIN = config(location = "Secmol")
 
     icestupa = PDF(SITE, FOUNTAIN)
 
