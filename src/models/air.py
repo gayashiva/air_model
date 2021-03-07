@@ -343,7 +343,7 @@ class Icestupa:
             else:
                 self.v = np.sqrt(self.v**2 - 2 * self.G * h_steps)
                 discharge = self.v * (60 * 1000 * Area)
-            logger.warning("Discharge changed from %s to %s" %(self.discharge , discharge))
+            logger.warning("Discharge changed from %.2f to %.2f" %(self.discharge , discharge))
             self.discharge = discharge
         self.df.loc[i:, "Discharge"] *= self.discharge
 
@@ -2472,7 +2472,7 @@ class PDF(Icestupa):
 if __name__ == "__main__":
     start = time.time()
 
-    SITE, FOUNTAIN = config(location = "Hial")
+    SITE, FOUNTAIN = config(location = "Secmol")
 
     icestupa = PDF(SITE, FOUNTAIN)
 

@@ -8,11 +8,11 @@ coloredlogs.install(
     fmt="%(name)s %(levelname)s %(message)s",
     logger=logger,
 )
-logger.info("Settings done")
 
 
 def config(location="Schwarzsee"):
 
+    logger.info("Location is %s" % location)
     if location == "Gangles":
         SITE = dict(
             name="gangles",
