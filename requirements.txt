@@ -43,7 +43,7 @@ notebook==6.2.0
 numexpr==2.7.3
 numpy==1.19.5
 packaging==20.9
-pandas==1.2.3
+pandas==1.1.5
 pandocfilters==1.4.3
 parso==0.8.1
 pexpect==4.8.0
