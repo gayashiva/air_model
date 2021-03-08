@@ -89,7 +89,66 @@ if __name__ == "__main__":
     icestupa = Icestupa(SITE, FOUNTAIN)
     icestupa.read_output()
 
-    df = df_filter("Move sliders to filter dataframe", icestupa.df)
+    df_in = icestupa.df[
+        [
+            "When",
+            # "sea",
+            "T_a",
+            "RH",
+            "v_a",
+            "Discharge",
+            "SW_direct",
+            "SW_diffuse",
+            "Prec",
+            "p_a",
+            # "cld",
+            "a",
+            "vp_a",
+            "LW_in",
+            "T_s",
+            "T_bulk",
+            "f_cone",
+            "ice",
+            "iceV",
+            # "solid",
+            # "gas",
+            # "vapour",
+            # "melted",
+            # "delta_T_s",
+            "unfrozen_water",
+            "TotalE",
+            "SW",
+            "LW",
+            "Qs",
+            "Ql",
+            "Qf",
+            "Qg",
+            "meltwater",
+            "SA",
+            "h_ice",
+            "r_ice",
+            "ppt",
+            "dpt",
+            "cdt",
+            # "missing",
+            "s_cone",
+            # "input",
+            "vp_ice",
+            "thickness",
+            "$q_{T}$",
+            "$q_{melt}$",
+        ]
+    ]
+    # for col in df_in:
+    # df_in = df_in[:-2]
+    df_in = df_in.set_index("When")
+    cols = [
+        icestupa.get_parameter_metadata(item)["name"] for item in df_in.columns.tolist()
+    ]
+    print(cols.index("Temperature"))
+    df = df_in
+
+    # df = df_filter("Move sliders to filter dataframe", icestupa.df)
 
     # column_1, column_2 = st.beta_columns(2)
     # with column_1:
@@ -100,16 +159,19 @@ if __name__ == "__main__":
     #     st.header("Fountain")
     #     st.write(FOUNTAIN)
 
-    df = df.set_index("When")
+    # df = df.set_index("When")
     variable = st.sidebar.multiselect(
         "Choose Input/Output variables",
-        (df.columns.tolist()),
-        ["iceV", "Discharge", "T_a"],
+        # (df.columns.tolist()),
+        (cols),
+        ["Ice Volume", "Fountain Spray", "Temperature"]
+        # ["iceV", "Discharge", "T_a"],
     )
+
     if not variable:
         st.error("Please select at least one variable.")
     else:
-        data = df[variable]
+        variable = [df.columns[cols.index(item)] for item in variable]
         for v in variable:
             meta = icestupa.get_parameter_metadata(v)
             st.header("%s %s" % (meta["kind"], meta["name"] + " " + meta["units"]))

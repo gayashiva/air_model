@@ -93,6 +93,46 @@ class Icestupa:
 
     def get_parameter_metadata(self, parameter):
         return {
+            "When": {
+                "name": "Timestamp",
+                "kind": "Input",
+                "units": "()",
+            },
+            "cld": {
+                "name": "Cloudiness",
+                "kind": "Input",
+                "units": "()",
+            },
+            "vp_a": {
+                "name": "Air Vapour Pressure",
+                "kind": "Output",
+                "units": "($hPa$)",
+            },
+            "vp_ice": {
+                "name": "Ice Vapour Pressure",
+                "kind": "Output",
+                "units": "($hPa$)",
+            },
+            "solid": {
+                "name": "Ice per time step",
+                "kind": "Output",
+                "units": "($kg$)",
+            },
+            "melted": {
+                "name": "Melt per time step",
+                "kind": "Output",
+                "units": "($kg$)",
+            },
+            "gas": {
+                "name": "Vapour per time step",
+                "kind": "Output",
+                "units": "($kg$)",
+            },
+            "thickness": {
+                "name": "Ice thickness",
+                "kind": "Output",
+                "units": "($m$)",
+            },
             "Discharge": {
                 "name": "Fountain Spray",
                 "kind": "Input",
@@ -101,6 +141,11 @@ class Icestupa:
             "T_a": {
                 "name": "Temperature",
                 "kind": "Input",
+                "units": "($\\degree C$)",
+            },
+            "delta_T_s": {
+                "name": "Temperature change per time step",
+                "kind": "Output",
                 "units": "($\\degree C$)",
             },
             "RH": {
@@ -118,6 +163,11 @@ class Icestupa:
                 "kind": "Input",
                 "units": "($W\\,m^{-2}$)",
             },
+            "SW": {
+                "name": "Shortwave Radiation",
+                "kind": "Output",
+                "units": "($W\\,m^{-2}$)",
+            },
             "SW_diffuse": {
                 "name": "Shortwave Diffuse",
                 "kind": "Input",
@@ -126,6 +176,41 @@ class Icestupa:
             "LW_in": {
                 "name": "Longwave",
                 "kind": "Input",
+                "units": "($W\\,m^{-2}$)",
+            },
+            "LW": {
+                "name": "Longwave Radiation",
+                "kind": "Output",
+                "units": "($W\\,m^{-2}$)",
+            },
+            "Qs": {
+                "name": "Sensible Heat flux",
+                "kind": "Output",
+                "units": "($W\\,m^{-2}$)",
+            },
+            "Ql": {
+                "name": "Latent Heat flux",
+                "kind": "Output",
+                "units": "($W\\,m^{-2}$)",
+            },
+            "Qf": {
+                "name": "Fountain water heat flux",
+                "kind": "Output",
+                "units": "($W\\,m^{-2}$)",
+            },
+            "Qg": {
+                "name": "Bulk Icestupa heat flux",
+                "kind": "Output",
+                "units": "($W\\,m^{-2}$)",
+            },
+            "$q_{T}$": {
+                "name": "Temperature flux",
+                "kind": "Output",
+                "units": "($W\\,m^{-2}$)",
+            },
+            "$q_{melt}$": {
+                "name": "Melt energy",
+                "kind": "Output",
                 "units": "($W\\,m^{-2}$)",
             },
             "Prec": {
@@ -238,7 +323,6 @@ class Icestupa:
                 "kind": "Output",
                 "units": "($m^2$)",
             },
-
         }[parameter]
 
     def get_solar(self):
