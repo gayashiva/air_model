@@ -75,19 +75,38 @@ def df_filter(message, df):
 
 if __name__ == "__main__":
     location = st.sidebar.radio(
-        "Select Location", ("Schwarzsee", "Guttannen", "Hial", "Secmol", "Gangles")
+        "Select Location", ("Gangles", "Schwarzsee", "Guttannen", "Hial", "Secmol")
     )
     trigger = st.sidebar.radio(
-        "Select Discharge Trigger", ("Schwarzsee", "Temperature", "NetEnergy")
+        "Select Discharge Trigger", ("Temperature", "Schwarzsee", "NetEnergy")
     )
+    # trigger1 = st.sidebar.radio("Change Fountain start date", ("No", "Yes"))
 
     st.header(
         "**%s** site with fountain discharge triggered by **%s**" % (location, trigger)
     )
     SITE, FOUNTAIN = config(location)
+    start_date = SITE["start_date"]
+    h_f = FOUNTAIN["h_f"]
     FOUNTAIN["trigger"] = trigger
-    icestupa = Icestupa(SITE, FOUNTAIN)
-    icestupa.read_output()
+
+    start_date = st.date_input("Fountain spray starts at", start_date)
+    start_date = pd.to_datetime(start_date)
+    h_f = st.number_input("Fountain height starts at", value=h_f, min_value=1)
+    if start_date != SITE["start_date"] or h_f != FOUNTAIN["h_f"]:
+
+        SITE["start_date"] = pd.to_datetime(start_date)
+        FOUNTAIN["h_f"] = h_f
+
+        icestupa = Icestupa(SITE, FOUNTAIN)
+
+        icestupa.derive_parameters()
+
+        icestupa.melt_freeze()
+        icestupa.summary()
+    else:
+        icestupa = Icestupa(SITE, FOUNTAIN)
+        icestupa.read_output()
 
     df_in = icestupa.df[
         [
@@ -139,33 +158,18 @@ if __name__ == "__main__":
             "$q_{melt}$",
         ]
     ]
-    # for col in df_in:
-    # df_in = df_in[:-2]
     df_in = df_in.set_index("When")
     cols = [
         icestupa.get_parameter_metadata(item)["name"] for item in df_in.columns.tolist()
     ]
-    print(cols.index("Temperature"))
     df = df_in
 
     # df = df_filter("Move sliders to filter dataframe", icestupa.df)
 
-    # column_1, column_2 = st.beta_columns(2)
-    # with column_1:
-    #     st.header("Location")
-    #     st.write(SITE)
-
-    # with column_2:
-    #     st.header("Fountain")
-    #     st.write(FOUNTAIN)
-
-    # df = df.set_index("When")
     variable = st.sidebar.multiselect(
         "Choose Input/Output variables",
-        # (df.columns.tolist()),
         (cols),
-        ["Ice Volume", "Fountain Spray", "Temperature"]
-        # ["iceV", "Discharge", "T_a"],
+        ["Ice Volume", "Fountain Spray", "Temperature"],
     )
 
     if not variable:

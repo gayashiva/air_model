@@ -75,7 +75,7 @@ class Icestupa:
         for dictionary in initial_data:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
-                logger.debug(f"%s -> %s" % (key, str(dictionary[key])))
+                logger.info(f"%s -> %s" % (key, str(dictionary[key])))
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
@@ -90,6 +90,10 @@ class Icestupa:
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
         self.TIME_STEP = int(pd.infer_freq(self.df["When"])[:-1]) * 60
         logger.debug(f"Time steps -> %s minutes" % (str(self.TIME_STEP/60)))
+        logger.warning(self.start_date)
+        mask = (self.df["When"] >= self.start_date)
+        self.df = self.df.loc[mask]
+        self.df = self.df.reset_index(drop = True)
 
     def get_parameter_metadata(self, parameter):
         return {
@@ -2556,7 +2560,7 @@ class PDF(Icestupa):
 if __name__ == "__main__":
     start = time.time()
 
-    SITE, FOUNTAIN = config(location = "Secmol")
+    SITE, FOUNTAIN = config("Gangles")
 
     icestupa = PDF(SITE, FOUNTAIN)
 
