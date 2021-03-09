@@ -15,17 +15,26 @@ import logging
 from scipy import stats
 from sklearn.linear_model import LinearRegression
 
-dirname = sys.path.append(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(dirname)
+# from src.data.config import SITE, FOLDERS, FOUNTAIN
+from src.data.settings import config
+
+import logging
+import coloredlogs
+
+logger = logging.getLogger(__name__)
+coloredlogs.install(
+    fmt="%(name)s %(levelname)s %(message)s",
+    logger=logger,
 )
-from src.data.config import SITE, FOLDERS, FOUNTAIN
 
 start = time.time()
 
 def field(site="schwarzsee"):
     if site == "schwarzsee":
         df_in = pd.read_csv(
-            FOLDERS["raw_folder"] + SITE["name"] + "_aws.txt",
+            raw_folder + SITE["name"] + "_aws.txt",
             header=None,
             encoding="latin-1",
             skiprows=7,
@@ -86,7 +95,7 @@ def field(site="schwarzsee"):
 
         # Include Spray time
         df_nights = pd.read_csv(
-            FOLDERS["raw_folder"] + "schwarzsee_fountain_time.txt",
+            raw_folder + "schwarzsee_fountain_time.txt",
             sep="\\s+",
         )
 
@@ -123,7 +132,7 @@ def field(site="schwarzsee"):
         )
 
         df.Discharge = df.Fountain * df.Discharge
-        df.to_csv(FOLDERS["input_folder"] + SITE["name"] + "_input_field.csv")
+        df.to_csv(input_folder + SITE["name"] + "_input_field.csv")
     else:
         input_file = FOLDERS["input_folder"] + SITE["name"] + "_input_field.csv"
         df = pd.read_csv(input_file, sep=",", header=0, parse_dates=['When'])
@@ -182,7 +191,7 @@ def era5(df):
         ]
     ]
 
-    df_in3 = df_in3.round(5)
+    df_in3 = df_in3.round(3)
 
     upsampled = df_in3.resample("5T")
     interpolated = upsampled.interpolate(method="linear")
@@ -210,7 +219,7 @@ def era5(df):
     df_in3 = df_in3.loc[mask]
     df_in3 = df_in3.reset_index()
 
-    df_in3.to_csv(FOLDERS["input_folder"] + SITE["name"] + "_input_ERA5.csv")
+    df_in3.to_csv(input_folder + SITE["name"] + "_input_ERA5.csv")
 
     df_ERA5 = interpolated[
         [
@@ -247,7 +256,18 @@ def linreg(X, Y):
 
 if __name__ == "__main__":
 
+    SITE, FOUNTAIN = config("Schwarzsee")
+
+    raw_folder = os.path.join(dirname, "data/" + SITE["name"]+ "/raw/")
+    input_folder = os.path.join(dirname, "data/" + SITE["name"]+ "/interim/")
+
     df = field(site=SITE["name"])
+    # df = (
+    #     df.set_index("When")
+    #     .resample("15T")
+    #     .mean()
+    #     .reset_index()
+    # )
 
     df_ERA5, df_in3 = era5(df)
 
@@ -272,8 +292,8 @@ if __name__ == "__main__":
     df_ERA5 = df_ERA5.set_index("When")
 
     # Fill from ERA5
-    df.loc[df["T_a"].isnull(), ["T_a", "RH", "v_a", "p_a", "Discharge"]] = df_ERA5[
-        ["T_a", "RH", "v_a", "p_a", "Discharge"]
+    df.loc[df["T_a"].isnull(), ["T_a", "RH", "v_a", "p_a"]] = df_ERA5[
+        ["T_a", "RH", "v_a", "p_a"]
     ]
 
     df.loc[df["v_a"].isnull(), "missing"] = 2
@@ -285,7 +305,7 @@ if __name__ == "__main__":
 
     # Fill precipitation from Plaffeien
     df_in2 = pd.read_csv(
-        os.path.join(FOLDERS["raw_folder"], "plaffeien_aws.txt"),
+        os.path.join(raw_folder, "plaffeien_aws.txt"),
         sep=";",
         skiprows=2,
     )
@@ -303,6 +323,7 @@ if __name__ == "__main__":
         df_in2.set_index("When")
         .resample("5T")
         .interpolate(method="linear")
+        # .mean()
         .reset_index()
     )
 
@@ -363,14 +384,14 @@ if __name__ == "__main__":
             .sum()
         )
 
-    df_out = df_out.round(5)
+    df_out = df_out.round(3)
     df_out.loc[df_out["v_a"] < 0, "v_a"] = 0
 
     # Extend data
     df_ERA5["Prec"] = 0
     df_ERA5["missing"] = 1
     df_ERA5 = df_ERA5.reset_index()
-    mask = (df_ERA5["When"] >= df_out["When"].iloc[-1]) & (
+    mask = (df_ERA5["When"] > df_out["When"].iloc[-1]) & (
         df_ERA5["When"] <= datetime(2019, 5, 30)
     )
     df_ERA5 = df_ERA5.loc[mask]
@@ -388,6 +409,9 @@ if __name__ == "__main__":
     concat = pd.concat([df_out, df_ERA5])
     concat.loc[concat["Prec"].isnull(), "Prec"] = 0
     concat.loc[concat["v_a"] < 0, "v_a"] = 0
+    print(concat[concat.index.duplicated()])
+    print(concat.tail())
+
     concat = concat.reset_index()
 
     if concat.isnull().values.any():
@@ -411,9 +435,9 @@ if __name__ == "__main__":
             .sum()
         )
 
-    concat.to_csv(FOLDERS["input_folder"] + SITE["name"] + "_input_mixed.csv")
+    concat.to_csv(input_folder + SITE["name"] + "_input_model.csv")
     concat.to_hdf(
-        FOLDERS["input_folder"] + SITE["name"] + "_input_mixed.h5",
+        input_folder + SITE["name"] + "_input_model.h5",
         key="df",
         mode="w",
     )

@@ -17,7 +17,7 @@ def config(location="Schwarzsee"):
         SITE = dict(
             name="gangles",
             # end_date=datetime(2021, 2, 22),
-            start_date=datetime(2021, 1, 30),
+            start_date=datetime(2020, 12, 14),
             utc_offset=5.5,
             longitude=77.606949,
             latitude=34.216638,
@@ -33,13 +33,13 @@ def config(location="Schwarzsee"):
             T_w=1,  # FOUNTAIN Water temperature
             discharge=60,  # FOUNTAIN on discharge
             crit_temp=-1,  # FOUNTAIN runtime temperature
-            trigger="NetEnergy",
+            trigger="Temperature",
         )
     if location == "Schwarzsee":
         SITE = dict(
             name="schwarzsee",
-            end_date=datetime(2019, 3, 17),
             start_date=datetime(2019, 1, 30, 17),
+            end_date=datetime(2019, 3, 17),
             utc_offset=1,
             longitude=7.297543,
             latitude=46.693723,
@@ -55,6 +55,7 @@ def config(location="Schwarzsee"):
             T_w=5,  # FOUNTAIN Water temperature
             discharge=3.58,  # FOUNTAIN on discharge
             crit_temp=0,  # FOUNTAIN runtime temperature
+            trigger="Manual",
         )
 
     if location == "Hial":

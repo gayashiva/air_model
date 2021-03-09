@@ -75,12 +75,20 @@ def df_filter(message, df):
 
 if __name__ == "__main__":
     location = st.sidebar.radio(
-        "Select Location", ("Gangles", "Schwarzsee", "Guttannen", "Hial", "Secmol")
+        # "Select Location", ("Gangles", "Schwarzsee", "Guttannen", "Hial", "Secmol")
+        "Select Location",
+        ("Gangles", "Schwarzsee"),
     )
-    trigger = st.sidebar.radio(
-        "Select Discharge Trigger", ("Temperature", "Schwarzsee", "NetEnergy")
-    )
-    # trigger1 = st.sidebar.radio("Change Fountain start date", ("No", "Yes"))
+    if location != "Schwarzsee":
+        trigger = st.sidebar.radio(
+            "Select Discharge Trigger", ("Temperature", "NetEnergy")
+        )
+    else:
+        trigger = st.sidebar.radio(
+            "Select Discharge Trigger", ("Temperature", "NetEnergy", "Manual")
+        )
+
+    mode = st.sidebar.radio("Mode", ("Normal", "Advanced"))
 
     st.header(
         "**%s** site with fountain discharge triggered by **%s**" % (location, trigger)
@@ -90,20 +98,24 @@ if __name__ == "__main__":
     h_f = FOUNTAIN["h_f"]
     FOUNTAIN["trigger"] = trigger
 
-    start_date = st.date_input("Fountain spray starts at", start_date)
-    start_date = pd.to_datetime(start_date)
-    h_f = st.number_input("Fountain height starts at", value=h_f, min_value=1)
-    if start_date != SITE["start_date"] or h_f != FOUNTAIN["h_f"]:
+    if mode == "Advanced":
+        start_date = st.date_input("Fountain spray starts at", start_date)
+        start_date = pd.to_datetime(start_date)
+        h_f = st.number_input("Fountain height starts at", value=h_f, min_value=1)
+        if start_date != SITE["start_date"] or h_f != FOUNTAIN["h_f"]:
 
-        SITE["start_date"] = pd.to_datetime(start_date)
-        FOUNTAIN["h_f"] = h_f
+            SITE["start_date"] = pd.to_datetime(start_date)
+            FOUNTAIN["h_f"] = h_f
 
-        icestupa = Icestupa(SITE, FOUNTAIN)
+            icestupa = Icestupa(SITE, FOUNTAIN)
 
-        icestupa.derive_parameters()
+            icestupa.derive_parameters()
 
-        icestupa.melt_freeze()
-        icestupa.summary()
+            icestupa.melt_freeze()
+            icestupa.summary()
+        else:
+            icestupa = Icestupa(SITE, FOUNTAIN)
+            icestupa.read_output()
     else:
         icestupa = Icestupa(SITE, FOUNTAIN)
         icestupa.read_output()
