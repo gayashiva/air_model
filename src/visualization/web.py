@@ -100,7 +100,7 @@ if __name__ == "__main__":
             icestupa.derive_parameters()
 
             icestupa.melt_freeze()
-            icestupa.summary()
+            # icestupa.summary()
         else:
             icestupa = Icestupa(SITE, FOUNTAIN)
             icestupa.read_output()

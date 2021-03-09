@@ -815,7 +815,7 @@ class Icestupa:
         print("Duration", Duration)
 
         # Full Output
-        filename4 = self.output_folder + "model_results_" + self.trigger + ".csv"
+        filename4 = self.output_folder + "model_output_" + self.trigger + ".csv"
         self.df.to_csv(filename4, sep=",")
         self.df.to_hdf(
             self.output_folder + "model_output_" + self.trigger + ".h5",
