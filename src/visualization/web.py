@@ -32,7 +32,7 @@ from src.data.settings import config
 
 def download_csv(name, df):
 
-    csv = df.to_csv(index=False)
+    csv = df.to_csv()
     base = base64.b64encode(csv.encode()).decode()
     file = (
         f'<a href="data:file/csv;base64,{base}" download="%s.csv">Download file</a>'
@@ -77,32 +77,20 @@ if __name__ == "__main__":
     location = st.sidebar.radio(
         # "Select Location", ("Gangles", "Schwarzsee", "Guttannen", "Hial", "Secmol")
         "Select Location",
-        ("Gangles", "Schwarzsee"),
-    )
-    if location != "Schwarzsee":
-        trigger = st.sidebar.radio(
-            "Select Discharge Trigger", ("Temperature", "NetEnergy")
-        )
-    else:
-        trigger = st.sidebar.radio(
-            "Select Discharge Trigger", ("Temperature", "NetEnergy", "Manual")
-        )
-
-    mode = st.sidebar.radio("Mode", ("Normal", "Advanced"))
-
-    st.header(
-        "**%s** site with fountain discharge triggered by **%s**" % (location, trigger)
+        ("Schwarzsee", "Gangles"),
     )
     SITE, FOUNTAIN = config(location)
     start_date = SITE["start_date"]
     h_f = FOUNTAIN["h_f"]
-    FOUNTAIN["trigger"] = trigger
-
-    if mode == "Advanced":
+    if location != "Schwarzsee":
+        trigger = st.sidebar.radio(
+            "Select Discharge Trigger", ("Temperature", "NetEnergy")
+        )
+        FOUNTAIN["trigger"] = trigger
         start_date = st.date_input("Fountain spray starts at", start_date)
         start_date = pd.to_datetime(start_date)
         h_f = st.number_input("Fountain height starts at", value=h_f, min_value=1)
-        if start_date != SITE["start_date"] or h_f != FOUNTAIN["h_f"]:
+        if start_date > SITE["start_date"] or h_f != FOUNTAIN["h_f"]:
 
             SITE["start_date"] = pd.to_datetime(start_date)
             FOUNTAIN["h_f"] = h_f
@@ -117,8 +105,23 @@ if __name__ == "__main__":
             icestupa = Icestupa(SITE, FOUNTAIN)
             icestupa.read_output()
     else:
+        trigger = st.sidebar.radio(
+            "Select Discharge Trigger", ("Temperature", "NetEnergy", "Manual")
+        )
+        FOUNTAIN["trigger"] = trigger
         icestupa = Icestupa(SITE, FOUNTAIN)
         icestupa.read_output()
+
+    # mode = st.sidebar.radio("Mode", ("Normal", "Advanced"))
+
+    st.header(
+        "**%s** site with fountain discharge triggered by **%s**" % (location, trigger)
+    )
+
+    # if mode == "Advanced":
+    # else:
+    #     icestupa = Icestupa(SITE, FOUNTAIN)
+    #     icestupa.read_output()
 
     df_in = icestupa.df[
         [

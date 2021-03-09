@@ -65,7 +65,7 @@ def field(site="schwarzsee"):
                     minutes=5
                 )
 
-        df_in = df_in.set_index("When").resample("5T").last().reset_index()
+        df_in = df_in.set_index("When").resample("15T").last().reset_index()
 
         mask = (df_in["When"] >= SITE["start_date"]) & (
             df_in["When"] <= SITE["end_date"]
@@ -73,7 +73,7 @@ def field(site="schwarzsee"):
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
 
-        days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="5T")
+        days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="15T")
         days = pd.DataFrame({"When": days})
 
         df = pd.merge(
@@ -193,7 +193,7 @@ def era5(df):
 
     df_in3 = df_in3.round(3)
 
-    upsampled = df_in3.resample("5T")
+    upsampled = df_in3.resample("15T")
     interpolated = upsampled.interpolate(method="linear")
     interpolated = interpolated.reset_index()
 
@@ -262,12 +262,12 @@ if __name__ == "__main__":
     input_folder = os.path.join(dirname, "data/" + SITE["name"]+ "/interim/")
 
     df = field(site=SITE["name"])
-    # df = (
-    #     df.set_index("When")
-    #     .resample("15T")
-    #     .mean()
-    #     .reset_index()
-    # )
+    df = (
+        df.set_index("When")
+        .resample("15T")
+        .mean()
+        .reset_index()
+    )
 
     df_ERA5, df_in3 = era5(df)
 
@@ -321,9 +321,9 @@ if __name__ == "__main__":
     df_in2["Prec"] = df_in2["Prec"] / (10 * 60)  # ppt rate mm/s
     df_in2 = (
         df_in2.set_index("When")
-        .resample("5T")
-        .interpolate(method="linear")
-        # .mean()
+        .resample("15T")
+        # .interpolate(method="linear")
+        .mean()
         .reset_index()
     )
 
