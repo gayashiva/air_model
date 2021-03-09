@@ -80,6 +80,9 @@ if __name__ == "__main__":
         ("Schwarzsee", "Gangles"),
     )
     SITE, FOUNTAIN = config(location)
+    lat = SITE["latitude"]
+    lon = SITE["longitude"]
+    map_data = pd.DataFrame({"lat": [lat], "lon": [lon]})
     start_date = SITE["start_date"]
     h_f = FOUNTAIN["h_f"]
     if location != "Schwarzsee":
@@ -117,7 +120,6 @@ if __name__ == "__main__":
     st.header(
         "**%s** site with fountain discharge triggered by **%s**" % (location, trigger)
     )
-
     # if mode == "Advanced":
     # else:
     #     icestupa = Icestupa(SITE, FOUNTAIN)
@@ -186,6 +188,8 @@ if __name__ == "__main__":
         (cols),
         ["Ice Volume", "Fountain Spray", "Temperature"],
     )
+
+    st.sidebar.map(map_data, zoom=10)
 
     if not variable:
         st.error("Please select at least one variable.")
