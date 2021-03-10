@@ -33,7 +33,7 @@ def config(location="Schwarzsee"):
             T_w=1,  # FOUNTAIN Water temperature
             discharge=60,  # FOUNTAIN on discharge
             crit_temp=-1,  # FOUNTAIN runtime temperature
-            trigger="NetEnergy",
+            trigger="Temperature",
         )
     if location == "Schwarzsee":
         SITE = dict(

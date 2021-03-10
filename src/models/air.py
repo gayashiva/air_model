@@ -2562,7 +2562,7 @@ class PDF(Icestupa):
 if __name__ == "__main__":
     start = time.time()
 
-    SITE, FOUNTAIN = config("Schwarzsee")
+    SITE, FOUNTAIN = config("Gangles")
 
     icestupa = PDF(SITE, FOUNTAIN)
 
