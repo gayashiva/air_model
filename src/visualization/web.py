@@ -191,9 +191,9 @@ if __name__ == "__main__":
     )
 
     st.sidebar.map(map_data, zoom=10)
-    if location == "Schwarzsee":
-        if trigger1 == "Yes":
-            icestupa.paper_figures(output="web")
+    # if location == "Schwarzsee":
+    #     if trigger1 == "Yes":
+    #         icestupa.paper_figures(output="web")
 
     if not variable:
         st.error("Please select at least one variable.")
