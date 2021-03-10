@@ -145,7 +145,6 @@ if __name__ == "__main__":
 
     # df = df_filter("Move sliders to filter dataframe", icestupa.df)
 
-    st.write(input_cols)
     variable1 = st.sidebar.multiselect(
         "Choose Input variables",
         options=(input_cols),

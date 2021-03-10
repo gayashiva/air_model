@@ -55,7 +55,7 @@ def config(location="Schwarzsee"):
             T_w=5,  # FOUNTAIN Water temperature
             discharge=3.58,  # FOUNTAIN on discharge
             crit_temp=0,  # FOUNTAIN runtime temperature
-            trigger="Temperature",
+            trigger="NetEnergy",
         )
 
     if location == "Hial":
