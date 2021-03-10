@@ -109,7 +109,7 @@ if __name__ == "__main__":
             icestupa.read_output()
     else:
         trigger = st.sidebar.radio(
-            "Select Discharge Trigger", ("Temperature", "NetEnergy", "Manual")
+            "Select Discharge Trigger", ("Manual", "Temperature", "NetEnergy")
         )
         FOUNTAIN["trigger"] = trigger
         icestupa = Icestupa(SITE, FOUNTAIN)
