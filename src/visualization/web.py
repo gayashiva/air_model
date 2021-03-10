@@ -26,7 +26,7 @@ import base64
 
 import logging
 import coloredlogs
-from src.models.air import Icestupa
+from src.models.air import Icestupa, PDF
 from src.data.settings import config
 
 
@@ -112,7 +112,8 @@ if __name__ == "__main__":
             "Select Discharge Trigger", ("Manual", "Temperature", "NetEnergy")
         )
         FOUNTAIN["trigger"] = trigger
-        icestupa = Icestupa(SITE, FOUNTAIN)
+        trigger1 = st.sidebar.radio("Show Paper Figures", ("No", "Yes"))
+        icestupa = PDF(SITE, FOUNTAIN)
         icestupa.read_output()
 
     # mode = st.sidebar.radio("Mode", ("Normal", "Advanced"))
@@ -139,7 +140,7 @@ if __name__ == "__main__":
             "p_a",
             # "cld",
             "a",
-            "vp_a",
+            # "vp_a",
             "LW_in",
             "T_s",
             "T_bulk",
@@ -153,12 +154,12 @@ if __name__ == "__main__":
             # "delta_T_s",
             "unfrozen_water",
             "TotalE",
-            "SW",
-            "LW",
-            "Qs",
-            "Ql",
-            "Qf",
-            "Qg",
+            # "SW",
+            # "LW",
+            # "Qs",
+            # "Ql",
+            # "Qf",
+            # "Qg",
             "meltwater",
             "SA",
             "h_ice",
@@ -169,7 +170,7 @@ if __name__ == "__main__":
             # "missing",
             "s_cone",
             # "input",
-            "vp_ice",
+            # "vp_ice",
             "thickness",
             "$q_{T}$",
             "$q_{melt}$",
@@ -190,6 +191,9 @@ if __name__ == "__main__":
     )
 
     st.sidebar.map(map_data, zoom=10)
+    if location == "Schwarzsee":
+        if trigger1 == "Yes":
+            icestupa.paper_figures(output="web")
 
     if not variable:
         st.error("Please select at least one variable.")

@@ -2260,8 +2260,9 @@ class PDF(Icestupa):
             self.output_folder + "jpg/Figure_3.jpg", dpi=300, bbox_inches="tight"
         )
         # plt.show()
-        st.pyplot(fig)
-        fig1 = fig
+        if output == "web":
+            st.header("Model Input")
+            st.pyplot(fig)
         plt.clf()
 
         fig = plt.figure(figsize=(12, 14))
@@ -2292,7 +2293,7 @@ class PDF(Icestupa):
                 dfds.loc[i, "dpt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
                 dfds.loc[i, "cdt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
 
-        dfds = dfds.set_index("When").resample("D").sum().reset_index(drop=True)
+        dfds = dfds.set_index("When").resample("D").sum().reset_index()
         dfds["When"] = dfds["When"].dt.strftime("%b %d")
 
         dfds["label"] = " "
@@ -2334,7 +2335,7 @@ class PDF(Icestupa):
             ]
         ]
 
-        dfd = self.df.set_index("When").resample("D").mean().reset_index(drop=True)
+        dfd = self.df.set_index("When").resample("D").mean().reset_index()
         dfd["When"] = dfd["When"].dt.strftime("%b %d")
 
         dfd["label"] = " "
@@ -2357,7 +2358,7 @@ class PDF(Icestupa):
 
         dfd = dfd.set_index("label")
 
-        dfds2 = self.df.set_index("When").resample("D").mean().reset_index(drop=True)
+        dfds2 = self.df.set_index("When").resample("D").mean().reset_index()
         dfds2["When"] = dfds2["When"].dt.strftime("%b %d")
         dfds2["label"] = " "
         labels = [
@@ -2460,6 +2461,7 @@ class PDF(Icestupa):
                 self.output_folder + "jpg/Figure_6.jpg", dpi=300, bbox_inches="tight"
             )
         if output == "web":
+            st.header("Model Output")
             st.pyplot(fig)
 
         fig2 = fig
@@ -2502,30 +2504,30 @@ class PDF(Icestupa):
         # )
         fig3 = fig
         plt.close("all")
-        return fig1, fig2, fig3
+        # return fig1, fig2, fig3
 
 
 if __name__ == "__main__":
     start = time.time()
 
-    SITE, FOUNTAIN = config("Gangles")
+    SITE, FOUNTAIN = config("Schwarzsee")
 
     icestupa = PDF(SITE, FOUNTAIN)
 
-    icestupa.derive_parameters()
+    # icestupa.derive_parameters()
 
-    # icestupa.read_input()
+    icestupa.read_input()
 
-    icestupa.melt_freeze()
+    # icestupa.melt_freeze()
 
-    # icestupa.read_output()
+    icestupa.read_output()
 
     # icestupa.corr_plot()
 
     icestupa.summary()
 
     # icestupa.print_input()
-    # icestupa.paper_figures()
+    icestupa.paper_figures()
 
     # icestupa.print_output()
 
