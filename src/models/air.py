@@ -34,7 +34,6 @@ coloredlogs.install(
 )
 logger.debug("Model begins")
 
-
 class Icestupa:
     """Physical Constants"""
 
@@ -94,16 +93,22 @@ class Icestupa:
         self.df = self.df.loc[mask]
         self.df = self.df.reset_index(drop=True)
 
+    @st.cache
     def get_parameter_metadata(self, parameter):
         return {
             "When": {
                 "name": "Timestamp",
-                "kind": "Input",
+                "kind": "Misc",
                 "units": "()",
             },
             "cld": {
                 "name": "Cloudiness",
                 "kind": "Input",
+                "units": "()",
+            },
+            "e_a": {
+                "name": "Atmospheric Emissivity",
+                "kind": "Output",
                 "units": "()",
             },
             "vp_a": {
@@ -326,12 +331,22 @@ class Icestupa:
                 "kind": "Output",
                 "units": "($m^2$)",
             },
+            "missing": {
+                "name": "Data missing",
+                "kind": "Misc",
+                "units": "(  )",
+            },
+            "input": {
+                "name": "Mass Input",
+                "kind": "Misc",
+                "units": "($kg$)",
+            },
         }[parameter]
 
     def get_solar(self):
 
-        self.df["ghi"] = self.df["SW_direct"] + self.df["SW_diffuse"]
-        self.df["dif"] = self.df["SW_diffuse"]
+        # self.df["ghi"] = self.df["SW_direct"] + self.df["SW_diffuse"]
+        # self.df["dif"] = self.df["SW_diffuse"]
 
         site_location = location.Location(self.latitude, self.longitude)
 
@@ -340,7 +355,8 @@ class Icestupa:
             end=self.df["When"].iloc[-1],
             freq=(str(int(self.TIME_STEP / 60)) + "T"),
         )
-        clearsky = site_location.get_clearsky(times)
+        # clearsky = site_location.get_clearsky(times)
+
         # Get solar azimuth and zenith to pass to the transposition function
         solar_position = site_location.get_solarposition(
             times=times, method="ephemeris"
@@ -348,9 +364,9 @@ class Icestupa:
 
         solar_df = pd.DataFrame(
             {
-                "ghics": clearsky["ghi"],
-                "difcs": clearsky["dhi"],
-                "zen": solar_position["zenith"],
+                # "ghics": clearsky["ghi"],
+                # "difcs": clearsky["dhi"],
+                # "zen": solar_position["zenith"],
                 "sea": np.radians(solar_position["elevation"]),
             }
         )
@@ -617,6 +633,7 @@ class Icestupa:
             s, f = self.albedo(row, s, f)
 
         self.df = self.df.round(3)
+        self.df = self.df[self.df.columns.drop(list(self.df.filter(regex="Unnamed")))]
 
         self.df.to_hdf(
             self.input_folder + "model_input_" + self.trigger + ".h5",
@@ -828,6 +845,7 @@ class Icestupa:
 
         #     self.df.to_hdf(self.output_folder + "model_output.h5", key="df", mode="w")
 
+    # @st.cache
     def read_input(self):
 
         # if self.name == "schwarzsee":
@@ -845,6 +863,7 @@ class Icestupa:
         if self.df.isnull().values.any():
             logger.debug("Warning: Null values present")
 
+    # @st.cache
     def read_output(self):
 
         self.df = pd.read_hdf(
@@ -955,6 +974,7 @@ class Icestupa:
         # cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
         # self.df[cols].to_csv(filename2, sep=",")
 
+    # @st.cache
     def melt_freeze(self):
 
         col = [
@@ -1346,9 +1366,28 @@ class PDF(Icestupa):
 
         x = self.df.When
 
+        for variable in self.df.columns:
+            v = self.get_parameter_metadata(variable)
+            if v["kind"] == "Input":
+
+                y1 = self.df[variable]
+                ax1.plot(x, y1, "k-", linewidth=0.5)
+                # ax1.set_ylabel("Fountain Spray [$l\\, min^{-1}$]")
+                ax1.set_ylabel(v["name"] + " " + v["units"])
+                ax1.grid()
+
+                ax1t = ax1.twinx()
+                ax1t.plot(x, self.df.Prec * 1000, "b-", linewidth=0.5)
+                ax1t.set_ylabel("Precipitation [$mm\\, s^{-1}$]", color="b")
+                for tl in ax1t.get_yticklabels():
+                    tl.set_color("b")
+
+
+
         y1 = self.df.Discharge
         ax1.plot(x, y1, "k-", linewidth=0.5)
         ax1.set_ylabel("Fountain Spray [$l\\, min^{-1}$]")
+        # ax1.set_ylabel(v["name"] + " " + v["units"])
         ax1.grid()
 
         ax1t = ax1.twinx()
@@ -2504,6 +2543,19 @@ class PDF(Icestupa):
         # )
         fig3 = fig
         plt.close("all")
+
+        self.df = self.df.rename(
+            {
+                "$q_{SW}$":"SW",
+                "$q_{LW}$":"LW",
+                "$q_S$":"Qs",
+                "$q_L$":"Ql",
+                "$q_{F}$":"Qf",
+                "$q_{G}$":"Qg",
+            },
+            axis=1,
+        )
+        
         # return fig1, fig2, fig3
 
 
@@ -2514,20 +2566,20 @@ if __name__ == "__main__":
 
     icestupa = PDF(SITE, FOUNTAIN)
 
-    # icestupa.derive_parameters()
+    icestupa.derive_parameters()
 
-    icestupa.read_input()
+    # icestupa.read_input()
 
-    # icestupa.melt_freeze()
+    icestupa.melt_freeze()
 
-    icestupa.read_output()
+    # icestupa.read_output()
 
     # icestupa.corr_plot()
 
     icestupa.summary()
 
     # icestupa.print_input()
-    icestupa.paper_figures()
+    # icestupa.paper_figures()
 
     # icestupa.print_output()
 

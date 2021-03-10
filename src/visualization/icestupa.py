@@ -73,6 +73,23 @@ def df_filter(message, df):
     return filtered_df
 
 
+@st.cache
+def vars(df_in):
+    input_cols = []
+    input_vars = []
+    output_cols = []
+    output_vars = []
+    for variable in df_in.columns:
+        v = icestupa.get_parameter_metadata(variable)
+        if v["kind"] == "Input":
+            input_cols.append(v["name"])
+            input_vars.append(variable)
+        if v["kind"] == "Output":
+            output_cols.append(v["name"])
+            output_vars.append(variable)
+    return input_cols, input_vars, output_cols, output_vars
+
+
 if __name__ == "__main__":
     location = st.sidebar.radio(
         # "Select Location", ("Gangles", "Schwarzsee", "Guttannen", "Hial", "Secmol")
@@ -112,93 +129,41 @@ if __name__ == "__main__":
             "Select Discharge Trigger", ("Manual", "Temperature", "NetEnergy")
         )
         FOUNTAIN["trigger"] = trigger
-        trigger1 = st.sidebar.radio("Show Paper Figures", ("No", "Yes"))
         icestupa = PDF(SITE, FOUNTAIN)
         icestupa.read_output()
-
-    # mode = st.sidebar.radio("Mode", ("Normal", "Advanced"))
 
     st.header(
         "**%s** site with fountain discharge triggered by **%s**" % (location, trigger)
     )
-    # if mode == "Advanced":
-    # else:
-    #     icestupa = Icestupa(SITE, FOUNTAIN)
-    #     icestupa.read_output()
 
-    df_in = icestupa.df[
-        [
-            "When",
-            # "sea",
-            "T_a",
-            "RH",
-            "v_a",
-            "Discharge",
-            "SW_direct",
-            "SW_diffuse",
-            "Prec",
-            "p_a",
-            # "cld",
-            "a",
-            # "vp_a",
-            "LW_in",
-            "T_s",
-            "T_bulk",
-            "f_cone",
-            "ice",
-            "iceV",
-            # "solid",
-            # "gas",
-            # "vapour",
-            # "melted",
-            # "delta_T_s",
-            "unfrozen_water",
-            "TotalE",
-            # "SW",
-            # "LW",
-            # "Qs",
-            # "Ql",
-            # "Qf",
-            # "Qg",
-            "meltwater",
-            "SA",
-            "h_ice",
-            "r_ice",
-            "ppt",
-            "dpt",
-            "cdt",
-            # "missing",
-            "s_cone",
-            # "input",
-            # "vp_ice",
-            "thickness",
-            "$q_{T}$",
-            "$q_{melt}$",
-        ]
-    ]
+    df_in = icestupa.df
+    df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
+    input_cols, input_vars, output_cols, output_vars = vars(df_in)
+
     df_in = df_in.set_index("When")
-    cols = [
-        icestupa.get_parameter_metadata(item)["name"] for item in df_in.columns.tolist()
-    ]
     df = df_in
 
     # df = df_filter("Move sliders to filter dataframe", icestupa.df)
 
-    variable = st.sidebar.multiselect(
-        "Choose Input/Output variables",
-        (cols),
-        ["Ice Volume", "Fountain Spray", "Temperature"],
+    st.write(input_cols)
+    variable1 = st.sidebar.multiselect(
+        "Choose Input variables",
+        options=(input_cols),
+        default=["Fountain Spray", "Temperature"],
     )
-
+    variable2 = st.sidebar.multiselect(
+        "Choose Output variables",
+        options=(output_cols),
+        default=["Ice Volume"],
+    )
     st.sidebar.map(map_data, zoom=10)
-    # if location == "Schwarzsee":
-    #     if trigger1 == "Yes":
-    #         icestupa.paper_figures(output="web")
 
-    if not variable:
+    if not (variable1 or variable2):
         st.error("Please select at least one variable.")
     else:
-        variable = [df.columns[cols.index(item)] for item in variable]
+        variable_in = [input_vars[input_cols.index(item)] for item in variable1]
+        variable_out = [output_vars[output_cols.index(item)] for item in variable2]
+        variable = variable_in + variable_out
         for v in variable:
             meta = icestupa.get_parameter_metadata(v)
             st.header("%s %s" % (meta["kind"], meta["name"] + " " + meta["units"]))
