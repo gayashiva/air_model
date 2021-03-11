@@ -13,6 +13,31 @@ coloredlogs.install(
 def config(location="Schwarzsee"):
 
     logger.info("Location is %s" % location)
+    if location == "Guttannen":
+
+        SITE = dict(
+            name="guttannen",
+            start_date=datetime(2020, 12, 12),
+            end_date=datetime(2021, 3, 1),
+            utc_offset=1,
+            latitude=46.649999,
+            longitude=8.283333,
+            h_aws=3,
+        )
+
+        FOUNTAIN = dict(
+            fountain_off_date=datetime(2020, 3, 1),
+            dia_f=0.005,  # FOUNTAIN aperture diameter
+            h_f=3.93,  # FOUNTAIN steps h_f
+            theta_f=0,  # FOUNTAIN aperture diameter
+            ftl=0,  # FOUNTAIN flight time loss ftl
+            T_w=5,  # FOUNTAIN Water temperature
+            discharge=3.58,  # FOUNTAIN on discharge
+            crit_temp=0,  # FOUNTAIN runtime temperature
+            tree_height=1.93,
+            tree_radius=4.13 / 2,
+        )
+
     if location == "Gangles":
         SITE = dict(
             name="gangles",
@@ -140,32 +165,6 @@ def config(location="Schwarzsee"):
             latitude=46.693723,
             longitude=7.297543,
             utc_offset=1,
-        )
-
-    if location == "Guttannen":
-
-        SITE = dict(
-            name="guttannen",
-            start_date=datetime(2020, 1, 1, 18),
-            end_date=datetime(2020, 5, 1),
-            error_date=datetime(2020, 1, 19),
-            utc_offset=1,
-            latitude=46.649999,
-            longitude=8.283333,
-            h_aws=3,
-        )
-
-        FOUNTAIN = dict(
-            fountain_off_date=datetime(2019, 3, 1),
-            dia_f=0.005,  # FOUNTAIN aperture diameter
-            h_f=3.93,  # FOUNTAIN steps h_f
-            theta_f=0,  # FOUNTAIN aperture diameter
-            ftl=0,  # FOUNTAIN flight time loss ftl
-            T_w=5,  # FOUNTAIN Water temperature
-            discharge=3.58,  # FOUNTAIN on discharge
-            crit_temp=0,  # FOUNTAIN runtime temperature
-            tree_height=1.93,
-            tree_radius=4.13 / 2,
         )
 
     return SITE, FOUNTAIN

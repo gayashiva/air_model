@@ -24,6 +24,7 @@ import logging
 import coloredlogs
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 coloredlogs.install(
     fmt="%(name)s %(levelname)s %(message)s",
     logger=logger,
@@ -31,7 +32,70 @@ coloredlogs.install(
 
 start = time.time()
 
+
 def field(site="schwarzsee"):
+    if site == "guttannen":
+        df_in = pd.read_csv(
+            raw_folder + SITE["name"] + "_11Feb20.txt",
+            header=None,
+            encoding="latin-1",
+            skiprows=7,
+            sep="\\s+",
+            names=[
+                "Date",
+                "Time",
+                "Wind Direction",
+                "Wind Speed",
+                "Maximum Wind Speed",
+                "Temperature",
+                "Humidity",
+                "Pressure",
+                "Pluviometer",
+            ],
+        )
+        df_in["When"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
+        df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+        df_in = df_in.drop(["Pluviometer", "Date", "Time"], axis=1)
+        # print(df_in[df_in.When < datetime(2020,12,20)])
+        logger.debug(df_in.head())
+        logger.debug(df_in.tail())
+        df_in = df_in.set_index("When").resample("15T").mean().reset_index()
+
+        mask = (df_in["When"] >= SITE["start_date"]) & (
+            df_in["When"] <= SITE["end_date"]
+        )
+        df_in = df_in.loc[mask]
+        df_in = df_in.reset_index()
+        days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="15T")
+        days = pd.DataFrame({"When": days})
+
+        df = pd.merge(
+            df_in[
+                [
+                    "When",
+                    "Wind Speed",
+                    "Temperature",
+                    "Humidity",
+                    "Pressure",
+                ]
+            ],
+            days,
+            on="When",
+        )
+
+        df = df.round(3)
+        # CSV output
+        df.rename(
+            columns={
+                "Wind Speed": "v_a",
+                "Temperature": "T_a",
+                "Humidity": "RH",
+                "Pressure": "p_a",
+            },
+            inplace=True,
+        )
+        df.to_csv(input_folder + SITE["name"] + "_input_field.csv")
+
     if site == "schwarzsee":
         df_in = pd.read_csv(
             raw_folder + SITE["name"] + "_aws.txt",
@@ -133,20 +197,34 @@ def field(site="schwarzsee"):
 
         df.Discharge = df.Fountain * df.Discharge
         df.to_csv(input_folder + SITE["name"] + "_input_field.csv")
-    else:
-        input_file = FOLDERS["input_folder"] + SITE["name"] + "_input_field.csv"
-        df = pd.read_csv(input_file, sep=",", header=0, parse_dates=['When'])
+    # else:
+    #     input_file = input_folder + SITE["name"] + "_input_field.csv"
+    #     df = pd.read_csv(input_file, sep=",", header=0, parse_dates=['When'])
     return df
 
 
-def era5(df):
+def era5(df, site="schwarzsee"):
     df_in3 = pd.read_csv(
         # FOLDERS["raw_folder"] + "ERA5_" + SITE["name"] + ".csv",
-        "/home/suryab/work/ERA5/results/schwarzsee_2019.csv",
+        # "/home/suryab/work/ERA5/results/schwarzsee_2019.csv",
+        "/home/suryab/work/ERA5/outputs/" + site + "_2021.csv",
         sep=",",
         header=0,
         parse_dates=["When"],
     )
+    df_in2 = pd.read_csv(
+        "/home/suryab/work/ERA5/outputs/" + site + "_2020.csv",
+        sep=",",
+        header=0,
+        parse_dates=["When"],
+    )
+    df_in3 = df_in3.set_index("When")
+    df_in2 = df_in2.set_index("When")
+    df_in3 = pd.concat([df_in2, df_in3])
+    df_in3 = df_in3.reset_index()
+    mask = (df_in3["When"] >= SITE["start_date"]) & (df_in3["When"] <= SITE["end_date"])
+    df_in3 = df_in3.loc[mask]
+    df_in3 = df_in3.reset_index(drop='True')
 
     time_steps = 60 * 60
     df_in3["ssrd"] /= time_steps
@@ -236,6 +314,9 @@ def era5(df):
         ]
     ]
     # df_ERA5.loc[:, "Discharge"] = 0
+
+    logger.debug(df_ERA5.head())
+    logger.debug(df_ERA5.tail())
     return df_ERA5, df_in3
 
 
@@ -300,30 +381,30 @@ def meteoswiss_parameter(parameter):
         "oli000z0": {
             "name": "LW_in",
             "units": "($W\\,m^{-2}$)",
-        }
+        },
     }
 
     value = d.get(parameter)
 
     return value
 
-def meteoswiss(site = 'plaffeien'):
-    df= pd.read_csv(
-        os.path.join(raw_folder, "plaffeien_aws.txt"),
-        sep=";",
+
+def meteoswiss(site="schwarzsee"):
+
+    if site == 'schwarzsee':
+        site = 'plaffeien'
+    df = pd.read_csv(
+        os.path.join(raw_folder, site + "_meteoswiss.txt"),
+        sep="\s+",
         skiprows=2,
     )
-    # if site == 'plaffeien':
-    #     col_keep = ['time', 'rre150z0', "tre200s0", "ure200s0", "ure200s0"]
-    #     df = df [col_keep]
     for col in df.columns:
         if meteoswiss_parameter(col):
             df[col] = pd.to_numeric(df[col], errors="coerce")
-            df = df.rename(columns = {col:meteoswiss_parameter(col)['name']})
+            df = df.rename(columns={col: meteoswiss_parameter(col)["name"]})
         else:
-            df = df.drop(columns = col)
+            df = df.drop(columns=col)
     df["When"] = pd.to_datetime(df["When"], format="%Y%m%d%H%M")
-    print(df.head())
 
     df["Prec"] = df["Prec"] / (10 * 60)  # ppt rate mm/s
     df = (
@@ -336,23 +417,17 @@ def meteoswiss(site = 'plaffeien'):
     return df
 
 
-
 if __name__ == "__main__":
 
-    SITE, FOUNTAIN = config("Schwarzsee")
+    SITE, FOUNTAIN = config("Guttannen")
 
-    raw_folder = os.path.join(dirname, "data/" + SITE["name"]+ "/raw/")
-    input_folder = os.path.join(dirname, "data/" + SITE["name"]+ "/interim/")
+    raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
+    input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
 
     df = field(site=SITE["name"])
-    df = (
-        df.set_index("When")
-        .resample("15T")
-        .mean()
-        .reset_index()
-    )
+    df = df.set_index("When").resample("15T").mean().reset_index()
 
-    df_ERA5, df_in3 = era5(df)
+    df_ERA5, df_in3 = era5(df, SITE["name"])
 
     df_ERA5 = df_ERA5.set_index("When")
     df = df.set_index("When")
@@ -366,15 +441,16 @@ if __name__ == "__main__":
     )
 
     # Fit ERA5 to field data
-    for column in ["T_a", "RH", "v_a", "p_a"]:
-        Y = df[column].values.reshape(-1, 1)
-        X = df_ERA5[mask][column].values.reshape(-1, 1)
-        slope, intercept = linreg(X, Y)
-        df_ERA5[column] = slope * df_ERA5[column] + intercept
+    # for column in ["T_a", "RH", "v_a", "p_a"]:
+    #     Y = df[column].values.reshape(-1, 1)
+    #     X = df_ERA5[mask][column].values.reshape(-1, 1)
+    #     slope, intercept = linreg(X, Y)
+    #     df_ERA5[column] = slope * df_ERA5[column] + intercept
 
     df_ERA5 = df_ERA5.set_index("When")
 
     # Fill from ERA5
+    logger.warning(df.loc[df["T_a"].isnull()])
     df.loc[df["T_a"].isnull(), ["T_a", "RH", "v_a", "p_a"]] = df_ERA5[
         ["T_a", "RH", "v_a", "p_a"]
     ]
@@ -386,13 +462,7 @@ if __name__ == "__main__":
         ["SW_direct", "SW_diffuse", "LW_in"]
     ]
 
-    # Fill precipitation from Plaffeien
-    # df_in2 = pd.read_csv(
-    #     os.path.join(raw_folder, "plaffeien_aws.txt"),
-    #     sep=";",
-    #     skiprows=2,
-    # )
-    df_in2 = meteoswiss(site = 'plaffeien')
+    df_in2 = meteoswiss(SITE["name"])
 
     mask = (df_in2["When"] >= SITE["start_date"]) & (df_in2["When"] <= SITE["end_date"])
     df_in2 = df_in2.loc[mask]
@@ -402,17 +472,18 @@ if __name__ == "__main__":
     df = df.reset_index()
     df_in2 = df_in2.reset_index()
 
-    # Compare ERA5 and field data
-    for column in ["T_a", "RH", "v_a", "p_a"]:
 
-        slope, intercept, r_value, p_value, std_err = stats.linregress(
-            df[column].values, df_in3[column].values
-        )
-        print("ERA5", column, r_value)
-        slope, intercept, r_value, p_value, std_err = stats.linregress(
-            df[column].values, df_in2[column].values
-        )
-        print("Plf", column, r_value)
+    # Compare ERA5 and field data
+    # for column in ["T_a", "RH", "v_a", "p_a"]:
+
+    #     slope, intercept, r_value, p_value, std_err = stats.linregress(
+    #         df[column].values, df_in3[column].values
+    #     )
+    #     print("ERA5", column, r_value)
+        # slope, intercept, r_value, p_value, std_err = stats.linregress(
+        #     df[column].values, df_in2[column].values
+        # )
+        # print("Plf", column, r_value)
 
     df_out = df[
         [
