@@ -254,6 +254,89 @@ def linreg(X, Y):
     return slope, intercept
 
 
+def meteoswiss_parameter(parameter):
+    # d = {"time":{"name":"When", "units":"()"}}
+    d = {
+        "time": {
+            "name": "When",
+            "units": "(  )",
+        },
+        "rre150z0": {
+            "name": "Prec",
+            "units": "($mm$)",
+        },
+        "dkl010z0": {
+            "name": "Wind direction",
+            "units": "($\\degree$)",
+        },
+        "fkl010z0": {
+            "name": "v_a",
+            "units": "($ms^{-1}$)",
+        },
+        "ure200s0": {
+            "name": "RH",
+            "units": "($%$)",
+        },
+        "prestas0": {
+            "name": "p_a",
+            "units": "($hPa$)",
+        },
+        "pva200s0": {
+            "name": "vp_a",
+            "units": "($hPa$)",
+        },
+        "tde200s0": {
+            "name": "T_ad",
+            "units": "($\\degree C$)",
+        },
+        "tre200s0": {
+            "name": "T_a",
+            "units": "($\\degree C$)",
+        },
+        "gre000z0": {
+            "name": "SW_global",
+            "units": "($W\\,m^{-2}$)",
+        },
+        "oli000z0": {
+            "name": "LW_in",
+            "units": "($W\\,m^{-2}$)",
+        }
+    }
+
+    value = d.get(parameter)
+
+    return value
+
+def meteoswiss(site = 'plaffeien'):
+    df= pd.read_csv(
+        os.path.join(raw_folder, "plaffeien_aws.txt"),
+        sep=";",
+        skiprows=2,
+    )
+    # if site == 'plaffeien':
+    #     col_keep = ['time', 'rre150z0', "tre200s0", "ure200s0", "ure200s0"]
+    #     df = df [col_keep]
+    for col in df.columns:
+        if meteoswiss_parameter(col):
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+            df = df.rename(columns = {col:meteoswiss_parameter(col)['name']})
+        else:
+            df = df.drop(columns = col)
+    df["When"] = pd.to_datetime(df["When"], format="%Y%m%d%H%M")
+    print(df.head())
+
+    df["Prec"] = df["Prec"] / (10 * 60)  # ppt rate mm/s
+    df = (
+        df.set_index("When")
+        .resample("15T")
+        # .interpolate(method="linear")
+        .mean()
+        .reset_index()
+    )
+    return df
+
+
+
 if __name__ == "__main__":
 
     SITE, FOUNTAIN = config("Schwarzsee")
@@ -304,28 +387,12 @@ if __name__ == "__main__":
     ]
 
     # Fill precipitation from Plaffeien
-    df_in2 = pd.read_csv(
-        os.path.join(raw_folder, "plaffeien_aws.txt"),
-        sep=";",
-        skiprows=2,
-    )
-    df_in2["When"] = pd.to_datetime(df_in2["time"], format="%Y%m%d%H%M")
-
-    df_in2["Prec"] = pd.to_numeric(df_in2["rre150z0"], errors="coerce")
-    df_in2["p_a"] = pd.to_numeric(df_in2["prestas0"], errors="coerce")
-    df_in2["RH"] = pd.to_numeric(df_in2["ure200s0"], errors="coerce")
-    df_in2["v_a"] = pd.to_numeric(df_in2["fkl010z0"], errors="coerce")
-    df_in2["T_a"] = pd.to_numeric(df_in2["tre200s0"], errors="coerce")
-    df_in2["SW_g"] = pd.to_numeric(df_in2["gre000z0"], errors="coerce")
-
-    df_in2["Prec"] = df_in2["Prec"] / (10 * 60)  # ppt rate mm/s
-    df_in2 = (
-        df_in2.set_index("When")
-        .resample("15T")
-        # .interpolate(method="linear")
-        .mean()
-        .reset_index()
-    )
+    # df_in2 = pd.read_csv(
+    #     os.path.join(raw_folder, "plaffeien_aws.txt"),
+    #     sep=";",
+    #     skiprows=2,
+    # )
+    df_in2 = meteoswiss(site = 'plaffeien')
 
     mask = (df_in2["When"] >= SITE["start_date"]) & (df_in2["When"] <= SITE["end_date"])
     df_in2 = df_in2.loc[mask]
