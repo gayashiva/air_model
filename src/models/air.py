@@ -34,6 +34,7 @@ coloredlogs.install(
 )
 logger.debug("Model begins")
 
+
 class Icestupa:
     """Physical Constants"""
 
@@ -568,12 +569,12 @@ class Icestupa:
 
     def derive_parameters(self):
         unknown = ["a", "vp_a", "LW_in", "cld"]
-        for col in unknown:
-            if col in list(self.df.columns):
-                unknown.remove(col)
+        for i in range(len(unknown)):
+            if unknown[i] in list(self.df.columns):
+                unknown[i] = np.NaN
             else:
-                logger.warning("%s is unknown" % (col))
-                self.df[col] = 0
+                logger.warning("%s is unknown" % (unknown[i]))
+                self.df[unknown[i]] = 0
         """Albedo Decay"""
         self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
         s = 0
@@ -581,6 +582,7 @@ class Icestupa:
 
         logger.debug("Creating model input file...")
         for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
+            i = row.Index
 
             """ Vapour Pressure"""
             if "vp_a" in unknown:
@@ -764,8 +766,8 @@ class Icestupa:
         )
 
         if np.isnan(self.df.loc[i, "LW"]):
-            logger.debug(
-                f"LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+            logger.error(
+                f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
             )
 
         if self.liquid > 0:
@@ -809,7 +811,7 @@ class Icestupa:
 
         if np.isnan(self.df.loc[i, "TotalE"]):
             logger.error(
-                f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}, SA {self.df.SA[i]}"
+                f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}"
             )
 
     def summary(self):
@@ -845,7 +847,6 @@ class Icestupa:
 
         #     self.df.to_hdf(self.output_folder + "model_output.h5", key="df", mode="w")
 
-    # @st.cache
     def read_input(self):
 
         # if self.name == "schwarzsee":
@@ -863,7 +864,6 @@ class Icestupa:
         if self.df.isnull().values.any():
             logger.debug("Warning: Null values present")
 
-    # @st.cache
     def read_output(self):
 
         self.df = pd.read_hdf(
@@ -1018,18 +1018,13 @@ class Icestupa:
         logger.debug("AIR simulation begins...")
         for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]):
             i = row.Index
-            ice_melted = (self.df.loc[i, "ice"] < 1) 
-            # or (
-            #     self.df.loc[i, "T_s"] < -100
-            # )
-
-            # fountain_off = self.df.Discharge[i:].sum() == 0
-
+            ice_melted = self.df.loc[i, "ice"] < 0.001
             # logger.warning("Ice left %s kg and %s" %(self.df.loc[i, "ice"], self.df.Discharge[i:].sum()))
             # if ice_melted & fountain_off:
             if ice_melted and STATE == 1:
                 self.df.loc[i - 1, "meltwater"] += self.df.loc[i - 1, "ice"]
                 self.df.loc[i - 1, "ice"] = 0
+                logger.info("Model ends at %s" % (self.df.When[i]))
                 self.df = self.df[self.start : i - 1]
                 self.df = self.df.reset_index(drop=True)
                 break
@@ -1042,7 +1037,7 @@ class Icestupa:
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.DX
 
-                new_sites = ["hial", "gangles", "secmol", "leh"]
+                new_sites = ["hial", "gangles", "secmol", "leh", "guttannen"]
                 if self.name in new_sites:
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.DX
@@ -1063,11 +1058,10 @@ class Icestupa:
 
                 self.start = i - 1
 
-
             if STATE == 1:
 
-                if self.name == "guttannen" and i != self.start + 1:
-                    self.df.loc[i, "iceV"] += self.hollow_V
+                # if self.name == "guttannen" and i != self.start + 1:
+                #     self.df.loc[i, "iceV"] += self.hollow_V
 
                 self.surface_area(i)
 
@@ -1381,8 +1375,6 @@ class PDF(Icestupa):
                 ax1t.set_ylabel("Precipitation [$mm\\, s^{-1}$]", color="b")
                 for tl in ax1t.get_yticklabels():
                     tl.set_color("b")
-
-
 
         y1 = self.df.Discharge
         ax1.plot(x, y1, "k-", linewidth=0.5)
@@ -2546,29 +2538,29 @@ class PDF(Icestupa):
 
         self.df = self.df.rename(
             {
-                "$q_{SW}$":"SW",
-                "$q_{LW}$":"LW",
-                "$q_S$":"Qs",
-                "$q_L$":"Ql",
-                "$q_{F}$":"Qf",
-                "$q_{G}$":"Qg",
+                "$q_{SW}$": "SW",
+                "$q_{LW}$": "LW",
+                "$q_S$": "Qs",
+                "$q_L$": "Ql",
+                "$q_{F}$": "Qf",
+                "$q_{G}$": "Qg",
             },
             axis=1,
         )
-        
+
         # return fig1, fig2, fig3
 
 
 if __name__ == "__main__":
     start = time.time()
 
-    SITE, FOUNTAIN = config("Gangles")
+    SITE, FOUNTAIN = config("Guttannen")
 
     icestupa = PDF(SITE, FOUNTAIN)
 
-    icestupa.derive_parameters()
+    # icestupa.derive_parameters()
 
-    # icestupa.read_input()
+    icestupa.read_input()
 
     icestupa.melt_freeze()
 

@@ -33,14 +33,6 @@ coloredlogs.install(
 start = time.time()
 
 
-def convertToNumber(s):
-    return int.from_bytes(s.encode(), "little")
-
-
-def convertFromNumber(n):
-    return n.to_bytes(math.ceil(n.bit_length() / 8), "little").decode()
-
-
 def field(site="schwarzsee"):
     if site == "guttannen":
         df_in = pd.read_csv(
@@ -481,16 +473,9 @@ if __name__ == "__main__":
         # logger.warning("%s converted to %0.1f" %(col, convertToNumber(col)))
         df.loc[df[col].isnull(), col] = df_ERA5[col]
 
-    # df.loc[df["T_a"].isnull(), ["T_a", "RH", "v_a", "p_a"]] = df_ERA5[
-    #     ["T_a", "RH", "v_a", "p_a"]
-    # ]
-
-    df[["SW_direct", "SW_diffuse", "LW_in"]] = df_ERA5[
-        ["SW_direct", "SW_diffuse", "LW_in"]
-    ]
-    for col in ["SW_direct", "SW_diffuse", "LW_in"]:
-        logger.info("%s from ERA5" %col)
-
+    for col in ["p_a", "SW_direct", "SW_diffuse", "LW_in"]:
+        logger.info("%s from ERA5" % col)
+        df[col] = df_ERA5[col]
 
     # df_in2 = meteoswiss(SITE["name"])
 
@@ -523,16 +508,16 @@ if __name__ == "__main__":
             "SW_diffuse",
             "Prec",
             "vp_a",
-            # "p_a",
+            "p_a",
             "missing",
-            # "LW_in",
+            "LW_in",
         ]
     ]
 
     if df_out.isnull().values.any():
         print("Warning: Null values present")
         print(
-            df[
+            df_out[
                 [
                     "When",
                     "T_a",
@@ -543,15 +528,19 @@ if __name__ == "__main__":
                     "SW_diffuse",
                     "Prec",
                     "vp_a",
-                    # "p_a",
+                    "p_a",
                     "missing",
+                    "LW_in",
                 ]
             ]
             .isnull()
             .sum()
         )
 
+    logger.error(df.loc[df.When == datetime(2021,1,14), "LW_in"])
     df_out = df_out.round(3)
+    df.loc[df["Prec"].isnull(), "Prec"] = 0
+    df.loc[df["vp_a"].isnull(), "vp_a"] = 0
     # df_out.loc[df_out["v_a"] < 0, "v_a"] = 0
     logger.error(df_out[df_out.index.duplicated()])
     logger.info(df_out.tail())

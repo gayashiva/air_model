@@ -17,7 +17,7 @@ def config(location="Schwarzsee"):
 
         SITE = dict(
             name="guttannen",
-            start_date=datetime(2020, 12, 12),
+            start_date=datetime(2021, 1, 1),
             end_date=datetime(2021, 3, 1),
             utc_offset=1,
             latitude=46.649999,
@@ -27,14 +27,14 @@ def config(location="Schwarzsee"):
         )
 
         FOUNTAIN = dict(
-            fountain_off_date=datetime(2020, 3, 1),
-            dia_f=0.005,  # FOUNTAIN aperture diameter
-            h_f=3.93,  # FOUNTAIN steps h_f
+            fountain_off_date=datetime(2021, 3, 1),
+            dia_f=0.015,  # FOUNTAIN aperture diameter
+            h_f=3,  # FOUNTAIN steps h_f
             theta_f=0,  # FOUNTAIN aperture diameter
             ftl=0,  # FOUNTAIN flight time loss ftl
             T_w=5,  # FOUNTAIN Water temperature
-            discharge=3.58,  # FOUNTAIN on discharge
-            crit_temp=0,  # FOUNTAIN runtime temperature
+            discharge=10,  # FOUNTAIN on discharge
+            crit_temp=-2,  # FOUNTAIN runtime temperature
             tree_height=1.93,
             tree_radius=4.13 / 2,
             trigger="Temperature",
