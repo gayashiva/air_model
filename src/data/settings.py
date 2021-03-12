@@ -22,7 +22,8 @@ def config(location="Schwarzsee"):
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
-            h_aws=3,
+            h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
+            altitude_aws=1054,
         )
 
         FOUNTAIN = dict(
@@ -36,6 +37,7 @@ def config(location="Schwarzsee"):
             crit_temp=0,  # FOUNTAIN runtime temperature
             tree_height=1.93,
             tree_radius=4.13 / 2,
+            trigger="Temperature",
         )
 
     if location == "Gangles":

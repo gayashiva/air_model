@@ -94,7 +94,7 @@ if __name__ == "__main__":
     location = st.sidebar.radio(
         # "Select Location", ("Gangles", "Schwarzsee", "Guttannen", "Hial", "Secmol")
         "Select Location",
-        ("Schwarzsee", "Gangles"),
+        ("Schwarzsee", "Gangles", "Guttannen"),
     )
     SITE, FOUNTAIN = config(location)
     lat = SITE["latitude"]
@@ -102,7 +102,20 @@ if __name__ == "__main__":
     map_data = pd.DataFrame({"lat": [lat], "lon": [lon]})
     start_date = SITE["start_date"]
     h_f = FOUNTAIN["h_f"]
-    if location != "Schwarzsee":
+
+    if location == "Schwarzsee":
+        trigger = st.sidebar.radio(
+            "Select Discharge Trigger", ("Manual", "Temperature", "NetEnergy")
+        )
+        FOUNTAIN["trigger"] = trigger
+        icestupa = PDF(SITE, FOUNTAIN)
+        icestupa.read_output()
+        df_in = icestupa.df
+        df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
+        df_in = df_in.set_index("When")
+        df = df_in
+
+    if location == "Gangles":
         trigger = st.sidebar.radio(
             "Select Discharge Trigger", ("Temperature", "NetEnergy")
         )
@@ -120,40 +133,44 @@ if __name__ == "__main__":
             icestupa.derive_parameters()
 
             icestupa.melt_freeze()
-            # icestupa.summary()
-        else:
-            icestupa = Icestupa(SITE, FOUNTAIN)
-            icestupa.read_output()
-    else:
+        df_in = icestupa.df
+        df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
+        df_in = df_in.set_index("When")
+        df = df_in
+        # icestupa.summary()
+
+    if location == "Guttannen":
         trigger = st.sidebar.radio(
             "Select Discharge Trigger", ("Manual", "Temperature", "NetEnergy")
         )
         FOUNTAIN["trigger"] = trigger
         icestupa = PDF(SITE, FOUNTAIN)
-        icestupa.read_output()
+
+        input_folder = os.path.join(dirname, "data/" + "guttannen" + "/interim/")
+        input_file = input_folder + "guttannen" + "_input_model.csv"
+        df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
+        df_in = df.set_index("When")
+        df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
+        df = df_in
 
     st.header(
         "**%s** site with fountain discharge triggered by **%s**" % (location, trigger)
     )
 
-    df_in = icestupa.df
-    df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
     input_cols, input_vars, output_cols, output_vars = vars(df_in)
-
-    df_in = df_in.set_index("When")
-    df = df_in
 
     # df = df_filter("Move sliders to filter dataframe", icestupa.df)
 
     variable1 = st.sidebar.multiselect(
         "Choose Input variables",
         options=(input_cols),
-        default=["Fountain Spray", "Temperature"],
+        # default=["Fountain Spray", "Temperature"],
+        default=["Temperature"],
     )
     variable2 = st.sidebar.multiselect(
         "Choose Output variables",
         options=(output_cols),
-        default=["Ice Volume"],
+        # default=["Ice Volume"],
     )
     st.sidebar.map(map_data, zoom=10)
 
@@ -167,8 +184,5 @@ if __name__ == "__main__":
             meta = icestupa.get_parameter_metadata(v)
             st.header("%s %s" % (meta["kind"], meta["name"] + " " + meta["units"]))
             st.line_chart(df[v])
-            st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)
 
-# df["When"] = df["When"].dt.tz_localize(
-#     "UTC"
-# )  # Hardcoded as workaround to  https://github.com/streamlit/streamlit/issues/1061
+            st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)

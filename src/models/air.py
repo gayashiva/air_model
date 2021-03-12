@@ -106,6 +106,11 @@ class Icestupa:
                 "kind": "Input",
                 "units": "()",
             },
+            "missing": {
+                "name": "Filled from ERA5",
+                "kind": "Input",
+                "units": "()",
+            },
             "e_a": {
                 "name": "Atmospheric Emissivity",
                 "kind": "Output",
@@ -330,11 +335,6 @@ class Icestupa:
                 "name": "Surface Area",
                 "kind": "Output",
                 "units": "($m^2$)",
-            },
-            "missing": {
-                "name": "Data missing",
-                "kind": "Misc",
-                "units": "(  )",
             },
             "input": {
                 "name": "Mass Input",
