@@ -10,7 +10,6 @@ os.environ[
     "TZ"
 ] = "UTC"  # Hardcoded as workaround to  https://github.com/streamlit/streamlit/issues/106
 import numpy as np
-import seaborn as sns
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
