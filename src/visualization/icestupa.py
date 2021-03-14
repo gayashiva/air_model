@@ -10,12 +10,13 @@ os.environ[
     "TZ"
 ] = "UTC"  # Hardcoded as workaround to  https://github.com/streamlit/streamlit/issues/106
 import numpy as np
-import matplotlib.dates as mdates
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.offsetbox import AnchoredText
-from matplotlib.ticker import AutoMinorLocator
-from matplotlib.backends.backend_pdf import PdfPages
+
+# import matplotlib.dates as mdates
+# import matplotlib.pyplot as plt
+# import matplotlib.patches as mpatches
+# from matplotlib.offsetbox import AnchoredText
+# from matplotlib.ticker import AutoMinorLocator
+# from matplotlib.backends.backend_pdf import PdfPages
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
