@@ -1,9 +1,7 @@
 import streamlit as st
-import altair as alt
 import pandas as pd
 import sys
 from datetime import datetime
-from tqdm import tqdm
 import os
 
 os.environ[
@@ -12,7 +10,8 @@ os.environ[
 import numpy as np
 
 # import matplotlib.dates as mdates
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
+
 # import matplotlib.patches as mpatches
 # from matplotlib.offsetbox import AnchoredText
 # from matplotlib.ticker import AutoMinorLocator
