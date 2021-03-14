@@ -1,19 +1,18 @@
 import pandas as pd
 import streamlit as st
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from tqdm import tqdm
 import os
 import math
 import time
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 from matplotlib.offsetbox import AnchoredText
 from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
-import seaborn as sns
+# import seaborn as sns
 from pvlib import location
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -24,7 +23,7 @@ from src.data.settings import config
 import logging
 import coloredlogs
 
-pd.plotting.register_matplotlib_converters()
+# pd.plotting.register_matplotlib_converters()
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -33,7 +32,6 @@ coloredlogs.install(
     logger=logger,
 )
 logger.debug("Model begins")
-
 
 class Icestupa:
     """Physical Constants"""
