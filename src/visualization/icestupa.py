@@ -164,10 +164,14 @@ if __name__ == "__main__":
     col1, mid, col2 = st.beta_columns([4, 6, 20])
     input_cols, input_vars, output_cols, output_vars = vars(df_in)
 
-    if location == "Schwarzsee":
-        video_file = open(output_folder + SITE["name"] + "_icestupa.mp4", "rb")
-        video_bytes = video_file.read()
-        st.video(video_bytes)
+    # if location == "Schwarzsee":
+    #     video_file = open(
+    #         output_folder + SITE["name"] + "_icestupa_converted.mp4",
+    #         "rb"
+    #         # output_folder + "wcam18_icestupa.avi",
+    #     )
+    #     video_bytes = video_file.read()
+    #     st.video(video_bytes)
 
     with col1:
         air_logo = os.path.join(dirname, "src/visualization/AIR_logo.png")
@@ -182,11 +186,11 @@ if __name__ == "__main__":
 
     st.write("## Input variables")
     if location == "Schwarzsee":
-        st.image(output_folder + "paper_figures/Model_Input.jpg")
+        st.image(output_folder + "paper_figures/Model_Input_" + trigger + ".jpg")
     variable1 = st.multiselect(
         "Choose",
         options=(input_cols),
-        default=["Fountain Spray", "Temperature"],
+        # default=["Fountain Spray", "Temperature"],
         # default=["Temperature"],
     )
     if not (variable1):
@@ -203,10 +207,12 @@ if __name__ == "__main__":
             # st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)
 
     st.write("## Output variables")
+    if location == "Schwarzsee":
+        st.image(output_folder + "paper_figures/Model_Output_" + trigger + ".jpg")
     variable2 = st.multiselect(
         "Choose",
         options=(output_cols),
-        default=["Ice Volume"],
+        # default=["Ice Volume"],
     )
     if not (variable2):
         st.error("Please select at least one variable.")

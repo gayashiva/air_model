@@ -2307,12 +2307,8 @@ class PDF(Icestupa):
         fig.autofmt_xdate()
         plt.savefig(
             # self.output_folder + "paper_figures/Figure_3.jpg", dpi=300, bbox_inches="tight"
-            self.output_folder + "paper_figures/Model_Input.jpg", dpi=300, bbox_inches="tight"
+            self.output_folder + "paper_figures/Model_Input_" + self.trigger + ".jpg", dpi=300, bbox_inches="tight"
         )
-        # plt.show()
-        if output == "web":
-            st.header("Model Input")
-            st.pyplot(fig)
         plt.clf()
 
         fig = plt.figure(figsize=(12, 14))
@@ -2506,16 +2502,10 @@ class PDF(Icestupa):
         ax4.add_artist(at)
         plt.xticks(rotation=45)
         plt.tight_layout()
-        # if output == "paper":
         plt.savefig(
             # self.output_folder + "paper_figures/Figure_6.jpg", dpi=300, bbox_inches="tight"
-            self.output_folder + "paper_figures/Model_Output.jpg", dpi=300, bbox_inches="tight"
+            self.output_folder + "paper_figures/Model_Output_" + self.trigger + ".jpg", dpi=300, bbox_inches="tight"
         )
-        if output == "web":
-            st.header("Model Output")
-            st.pyplot(fig)
-
-        fig2 = fig
         plt.clf()
 
         fig, (ax1, ax2) = plt.subplots(
@@ -2575,17 +2565,17 @@ if __name__ == "__main__":
 
     icestupa = PDF(SITE, FOUNTAIN)
 
-    icestupa.derive_parameters()
+    # icestupa.derive_parameters()
 
     # icestupa.read_input()
 
-    icestupa.melt_freeze()
+    # icestupa.melt_freeze()
 
-    # icestupa.read_output()
+    icestupa.read_output()
 
     # icestupa.corr_plot()
 
-    icestupa.summary()
+    # icestupa.summary()
 
     # icestupa.print_input()
     icestupa.paper_figures()
