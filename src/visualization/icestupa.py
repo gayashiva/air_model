@@ -160,9 +160,7 @@ if __name__ == "__main__":
 
     col1, mid, col2 = st.beta_columns([4, 6, 20])
     with col1:
-        st.image(
-            "/home/suryab/work/air_model/src/visualization/AIR_logo.png", width=180
-        )
+        st.image(dirname + "/visualization/AIR_logo.png", width=180)
     with col2:
         st.write("## Artificial Ice Reservoir Simulation")
         st.write("## **%s** Icestupa " % (location))
