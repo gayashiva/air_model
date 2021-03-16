@@ -165,7 +165,9 @@ if __name__ == "__main__":
     input_cols, input_vars, output_cols, output_vars = vars(df_in)
 
     if location == "Schwarzsee":
-        st.video(output_folder + SITE["name"] + "_icestupa.mp4")
+        video_file = open(output_folder + SITE["name"] + "_icestupa.mp4", "rb")
+        video_bytes = video_file.read()
+        st.video(video_bytes)
 
     with col1:
         air_logo = os.path.join(dirname, "src/visualization/AIR_logo.png")
