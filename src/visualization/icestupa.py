@@ -176,6 +176,8 @@ if __name__ == "__main__":
 
     st.sidebar.map(map_data, zoom=10)
     st.write("## Input variables")
+    if location == "Schwarzsee":
+        st.image(output_folder + "paper_figures/Model_Input.jpg")
     variable1 = st.multiselect(
         "Choose",
         options=(input_cols),
@@ -196,7 +198,6 @@ if __name__ == "__main__":
             # st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)
 
     st.write("## Output variables")
-    st.image(output_folder + "paper_figures/Model_Input.jpg")
     variable2 = st.multiselect(
         "Choose",
         options=(output_cols),
