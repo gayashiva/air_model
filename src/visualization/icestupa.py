@@ -158,6 +158,8 @@ if __name__ == "__main__":
         # df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
         # df = df_in
 
+    input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
+    output_folder = os.path.join(dirname, "data/" + SITE["name"] + "/processed/")
     col1, mid, col2 = st.beta_columns([4, 6, 20])
     with col1:
         air_logo = os.path.join(dirname, "src/visualization/AIR_logo.png")
@@ -177,8 +179,8 @@ if __name__ == "__main__":
     variable1 = st.multiselect(
         "Choose",
         options=(input_cols),
-        # default=["Fountain Spray", "Temperature"],
-        default=["Temperature"],
+        default=["Fountain Spray", "Temperature"],
+        # default=["Temperature"],
     )
     if not (variable1):
         st.error("Please select at least one variable.")
@@ -194,10 +196,11 @@ if __name__ == "__main__":
             # st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)
 
     st.write("## Output variables")
+    st.image(output_folder + "paper_figures/Model_Input.jpg")
     variable2 = st.multiselect(
         "Choose",
         options=(output_cols),
-        # default=["Ice Volume"],
+        default=["Ice Volume"],
     )
     if not (variable2):
         st.error("Please select at least one variable.")
