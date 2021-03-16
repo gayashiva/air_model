@@ -160,7 +160,13 @@ if __name__ == "__main__":
 
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
     output_folder = os.path.join(dirname, "data/" + SITE["name"] + "/processed/")
+    st.sidebar.map(map_data, zoom=10)
     col1, mid, col2 = st.beta_columns([4, 6, 20])
+    input_cols, input_vars, output_cols, output_vars = vars(df_in)
+
+    if location == "Schwarzsee":
+        st.video(output_folder + SITE["name"] + "_icestupa.mp4")
+
     with col1:
         air_logo = os.path.join(dirname, "src/visualization/AIR_logo.png")
         print(air_logo)
@@ -170,11 +176,8 @@ if __name__ == "__main__":
         st.write("## **%s** Icestupa " % (location))
         st.write("### **%s** Fountain trigger" % (trigger))
 
-    input_cols, input_vars, output_cols, output_vars = vars(df_in)
-
     # df = df_filter("Move sliders to filter dataframe", icestupa.df)
 
-    st.sidebar.map(map_data, zoom=10)
     st.write("## Input variables")
     if location == "Schwarzsee":
         st.image(output_folder + "paper_figures/Model_Input.jpg")
