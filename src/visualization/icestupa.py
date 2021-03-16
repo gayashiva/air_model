@@ -173,8 +173,9 @@ if __name__ == "__main__":
     # df = df_filter("Move sliders to filter dataframe", icestupa.df)
 
     st.sidebar.map(map_data, zoom=10)
+    st.write("## Input variables")
     variable1 = st.multiselect(
-        "Choose Input variables",
+        "Choose",
         options=(input_cols),
         # default=["Fountain Spray", "Temperature"],
         default=["Temperature"],
@@ -186,12 +187,15 @@ if __name__ == "__main__":
         variable = variable_in
         for v in variable:
             meta = icestupa.get_parameter_metadata(v)
-            st.header("%s %s" % (meta["kind"], meta["name"] + " " + meta["units"]))
+            # st.header("%s %s" % (meta["kind"], meta["name"] + " " + meta["units"]))
+            st.header("%s" % (meta["name"] + " " + meta["units"]))
             st.line_chart(df[v])
 
             # st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)
+
+    st.write("## Output variables")
     variable2 = st.multiselect(
-        "Choose Output variables",
+        "Choose",
         options=(output_cols),
         # default=["Ice Volume"],
     )
@@ -202,7 +206,7 @@ if __name__ == "__main__":
         variable = variable_out
         for v in variable:
             meta = icestupa.get_parameter_metadata(v)
-            st.header("%s %s" % (meta["kind"], meta["name"] + " " + meta["units"]))
+            st.header("%s" % (meta["name"] + " " + meta["units"]))
             st.line_chart(df[v])
 
             # st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)
