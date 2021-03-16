@@ -514,6 +514,7 @@ if __name__ == "__main__":
         ]
     ]
 
+    # df_out.loc[df_out["Prec"].isnull(), "Prec"] = 0
     if df_out.isnull().values.any():
         print("Warning: Null values present")
         print(
@@ -537,10 +538,10 @@ if __name__ == "__main__":
             .sum()
         )
 
-    logger.error(df.loc[df.When == datetime(2021,1,14), "LW_in"])
+    df_out.loc[:, "Prec"] = df_out.Prec.interpolate()
+    df_out.loc[:, "vp_a"] = df_out.Prec.interpolate()
+
     df_out = df_out.round(3)
-    df.loc[df["Prec"].isnull(), "Prec"] = 0
-    df.loc[df["vp_a"].isnull(), "vp_a"] = 0
     # df_out.loc[df_out["v_a"] < 0, "v_a"] = 0
     logger.error(df_out[df_out.index.duplicated()])
     logger.info(df_out.tail())

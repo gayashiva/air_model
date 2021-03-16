@@ -472,7 +472,7 @@ class Icestupa:
             )
 
         if self.trigger == "NetEnergy":
-            self.df["Prec"] = 0
+            # self.df["Prec"] = 0
 
             col = [
                 "T_s",  # Surface Temperature
@@ -736,6 +736,10 @@ class Icestupa:
                 * (row.vp_a - self.df.loc[i, "vp_ice"])
                 / ((np.log(self.h_aws / self.Z_I)) ** 2)
             )
+            if np.isnan(self.df.loc[i, "Ql"]):
+                logger.error(
+                    f"When {self.df.When[i]}, v_a {self.df.vp_a[i]}")
+                sys.exit("Wind speed")
 
         # Sensible Heat Qs
         self.df.loc[i, "Qs"] = (
@@ -1035,7 +1039,12 @@ class Icestupa:
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.DX
 
-                new_sites = ["hial", "gangles", "secmol", "leh", "guttannen"]
+                if self.name == "guttannen":
+                    self.df.loc[i - 1, "r_ice"] = self.spray_radius()
+                    # self.df.loc[i - 1, "r_ice"] = self.r_i
+                    self.df.loc[i - 1, "h_ice"] = self.h_i
+
+                new_sites = ["hial", "gangles", "secmol", "leh"]
                 if self.name in new_sites:
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.DX
@@ -1050,7 +1059,8 @@ class Icestupa:
                     * self.df.loc[i - 1, "h_ice"]
                 )
                 self.df.loc[i, "ice"] = (
-                    math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2 * self.DX
+                    math.pi / 3 * self.df.loc[i - 1, "r_ice"] ** 2
+                    * self.df.loc[i - 1, "h_ice"] * self.RHO_I
                 )
                 self.df.loc[i, "input"] = self.df.loc[i, "ice"]
 
@@ -1058,11 +1068,13 @@ class Icestupa:
 
             if STATE == 1:
 
-                # if self.name == "guttannen" and i != self.start + 1:
+                # if self.name == "guttannen" and i == self.start + 1:
                 #     self.df.loc[i, "iceV"] += self.hollow_V
+                #     self.df.loc[i, "ice"] += self.hollow_V * self.RHO_I
 
                 self.surface_area(i)
 
+                #Change in fountain height
                 if self.df.h_ice[i] > ctr + self.h_f and self.discharge != 0:
                     ctr += 1
                     logger.warning("Height increased to %s" % (ctr + self.h_f))
@@ -1089,7 +1101,7 @@ class Icestupa:
                     self.energy_balance(row)
                 else:
                     logger.error("SA zero")
-                    break
+                    sys.exit("SA zero")
 
                 # Latent Heat
                 self.df.loc[i, "$q_{T}$"] = self.df.loc[i, "Ql"]
@@ -1167,6 +1179,10 @@ class Icestupa:
                         - self.df.loc[i, "Ql"]
                     )
                     # self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
+                    if np.isnan(self.df.loc[i, "$q_{T}$"]):
+                        logger.error(
+                            f"When {self.df.When[i]}, Ql {self.df.Ql[i]}")
+                        sys.exit()
 
                     if self.liquid < 0:
 
@@ -1183,7 +1199,7 @@ class Icestupa:
                             self.TIME_STEP * self.df.loc[i, "SA"]
                         )
                         self.liquid = 0
-                        logger.debug("Discharge froze completely")
+                        logger.warning("Discharge froze completely")
                     else:
                         self.df.loc[i, "$q_{melt}$"] += self.df.loc[i, "TotalE"]
 
@@ -1213,6 +1229,10 @@ class Icestupa:
 
                     self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
                     logger.debug("Hot Ice")
+                    if np.isnan(self.df.loc[i, "delta_T_s"]):
+                        logger.error(
+                            f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+                        )
 
                 if self.df.loc[i, "$q_{melt}$"] < 0:
                     self.df.loc[i, "solid"] -= (
@@ -2286,7 +2306,8 @@ class PDF(Icestupa):
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
         plt.savefig(
-            self.output_folder + "jpg/Figure_3.jpg", dpi=300, bbox_inches="tight"
+            # self.output_folder + "paper_figures/Figure_3.jpg", dpi=300, bbox_inches="tight"
+            self.output_folder + "paper_figures/Model_Input.jpg", dpi=300, bbox_inches="tight"
         )
         # plt.show()
         if output == "web":
@@ -2485,10 +2506,11 @@ class PDF(Icestupa):
         ax4.add_artist(at)
         plt.xticks(rotation=45)
         plt.tight_layout()
-        if output == "paper":
-            plt.savefig(
-                self.output_folder + "jpg/Figure_6.jpg", dpi=300, bbox_inches="tight"
-            )
+        # if output == "paper":
+        plt.savefig(
+            # self.output_folder + "paper_figures/Figure_6.jpg", dpi=300, bbox_inches="tight"
+            self.output_folder + "paper_figures/Model_Output.jpg", dpi=300, bbox_inches="tight"
+        )
         if output == "web":
             st.header("Model Output")
             st.pyplot(fig)
@@ -2528,10 +2550,10 @@ class PDF(Icestupa):
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
-        # plt.savefig(
-        #     self.output_folder + "jpg/Figure_7.jpg", dpi=300, bbox_inches="tight"
-        # )
-        fig3 = fig
+        plt.savefig(
+                # self.output_folder + "paper_figures/Figure_7.jpg", dpi=300, bbox_inches="tight"
+            self.output_folder + "paper_figures/albedo_temperature.jpg", dpi=300, bbox_inches="tight"
+        )
         plt.close("all")
 
         self.df = self.df.rename(
@@ -2546,30 +2568,29 @@ class PDF(Icestupa):
             axis=1,
         )
 
-        # return fig1, fig2, fig3
-
-
 if __name__ == "__main__":
     start = time.time()
 
-    SITE, FOUNTAIN = config("Guttannen")
+    SITE, FOUNTAIN = config("Schwarzsee")
 
     icestupa = PDF(SITE, FOUNTAIN)
 
     # icestupa.derive_parameters()
 
-    icestupa.read_input()
+    # icestupa.read_input()
 
-    icestupa.melt_freeze()
+    # icestupa.melt_freeze()
 
-    # icestupa.read_output()
+    icestupa.read_output()
 
     # icestupa.corr_plot()
 
-    icestupa.summary()
+    # icestupa.summary()
 
     # icestupa.print_input()
-    # icestupa.paper_figures()
+    icestupa.paper_figures()
+    # st.pyplot(fig2)
+    # st.pyplot(fig3)
 
     # icestupa.print_output()
 

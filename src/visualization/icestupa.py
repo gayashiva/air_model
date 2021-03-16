@@ -144,44 +144,65 @@ if __name__ == "__main__":
         )
         FOUNTAIN["trigger"] = trigger
         icestupa = PDF(SITE, FOUNTAIN)
-
-        input_folder = os.path.join(dirname, "data/" + "guttannen" + "/interim/")
-        input_file = input_folder + "guttannen" + "_input_model.csv"
-        df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
-        df_in = df.set_index("When")
+        icestupa.read_output()
+        df_in = icestupa.df
         df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
+        df_in = df_in.set_index("When")
         df = df_in
 
-    st.header(
-        "**%s** site with fountain discharge triggered by **%s**" % (location, trigger)
-    )
+        # icestupa = PDF(SITE, FOUNTAIN)
+        # input_folder = os.path.join(dirname, "data/" + "guttannen" + "/interim/")
+        # input_file = input_folder + "guttannen" + "_input_model.csv"
+        # df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
+        # df_in = df.set_index("When")
+        # df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
+        # df = df_in
+
+    col1, mid, col2 = st.beta_columns([4, 6, 20])
+    with col1:
+        st.image(
+            "/home/suryab/work/air_model/src/visualization/AIR_logo.png", width=180
+        )
+    with col2:
+        st.write("## Artificial Ice Reservoir Simulation")
+        st.write("## **%s** Icestupa " % (location))
+        st.write("### **%s** Fountain trigger" % (trigger))
 
     input_cols, input_vars, output_cols, output_vars = vars(df_in)
 
     # df = df_filter("Move sliders to filter dataframe", icestupa.df)
 
-    variable1 = st.sidebar.multiselect(
+    st.sidebar.map(map_data, zoom=10)
+    variable1 = st.multiselect(
         "Choose Input variables",
         options=(input_cols),
         # default=["Fountain Spray", "Temperature"],
         default=["Temperature"],
     )
-    variable2 = st.sidebar.multiselect(
-        "Choose Output variables",
-        options=(output_cols),
-        # default=["Ice Volume"],
-    )
-    st.sidebar.map(map_data, zoom=10)
-
-    if not (variable1 or variable2):
+    if not (variable1):
         st.error("Please select at least one variable.")
     else:
         variable_in = [input_vars[input_cols.index(item)] for item in variable1]
-        variable_out = [output_vars[output_cols.index(item)] for item in variable2]
-        variable = variable_in + variable_out
+        variable = variable_in
         for v in variable:
             meta = icestupa.get_parameter_metadata(v)
             st.header("%s %s" % (meta["kind"], meta["name"] + " " + meta["units"]))
             st.line_chart(df[v])
 
-            st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)
+            # st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)
+    variable2 = st.multiselect(
+        "Choose Output variables",
+        options=(output_cols),
+        # default=["Ice Volume"],
+    )
+    if not (variable2):
+        st.error("Please select at least one variable.")
+    else:
+        variable_out = [output_vars[output_cols.index(item)] for item in variable2]
+        variable = variable_out
+        for v in variable:
+            meta = icestupa.get_parameter_metadata(v)
+            st.header("%s %s" % (meta["kind"], meta["name"] + " " + meta["units"]))
+            st.line_chart(df[v])
+
+            # st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)
