@@ -161,6 +161,7 @@ if __name__ == "__main__":
     col1, mid, col2 = st.beta_columns([4, 6, 20])
     with col1:
         air_logo = os.path.join(dirname, "src/visualization/AIR_logo.png")
+        print(air_logo)
         st.image(air_logo, width=180)
     with col2:
         st.write("## Artificial Ice Reservoir Simulation")
