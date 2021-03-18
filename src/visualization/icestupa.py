@@ -186,7 +186,9 @@ if __name__ == "__main__":
 
     st.write("## Input variables")
     if location == "Schwarzsee":
-        st.image(output_folder + "paper_figures/Model_Input_" + trigger + ".jpg")
+        agree = st.checkbox("Display all?")
+        if agree:
+            st.image(output_folder + "paper_figures/Model_Input_" + trigger + ".jpg")
     variable1 = st.multiselect(
         "Choose",
         options=(input_cols),
@@ -208,7 +210,10 @@ if __name__ == "__main__":
 
     st.write("## Output variables")
     if location == "Schwarzsee":
-        st.image(output_folder + "paper_figures/Model_Output_" + trigger + ".jpg")
+        agree = st.checkbox("Display all?")
+        if agree:
+            st.image(output_folder + "paper_figures/Model_Output_" + trigger + ".jpg")
+
     variable2 = st.multiselect(
         "Choose",
         options=(output_cols),
