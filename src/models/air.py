@@ -12,13 +12,11 @@ from matplotlib.offsetbox import AnchoredText
 from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
-# import seaborn as sns
 from pvlib import location
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 sys.path.append(dirname)
-# from src.data.config import SITE, FOUNTAIN, FOLDERS
 from src.data.settings import config
 import logging
 import coloredlogs
@@ -35,7 +33,6 @@ logger.debug("Model begins")
 
 class Icestupa:
     """Physical Constants"""
-
     L_S = 2848 * 1000  # J/kg Sublimation
     L_E = 2514 * 1000  # J/kg Evaporation
     L_F = 334 * 1000  # J/kg Fusion
@@ -49,13 +46,9 @@ class Icestupa:
     K_I = 2.123  # Thermal Conductivity Waite et al. 2006
     STEFAN_BOLTZMAN = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
     P0 = 1013  # Standard air pressure hPa
-    G = 9.81
+    G = 9.81 #Gravitational acceleration
 
-    """Model constants"""
-    # TIME_STEP = 5 * 60  # s Model time steps
-    DX = 5e-03  # Ice layer thickness
-
-    """Surface"""
+    """Surface Properties"""
     IE = 0.95  # Ice Emissivity IE
     A_I = 0.35  # Albedo of Ice A_I
     A_S = 0.85  # Albedo of Fresh Snow A_S
@@ -63,20 +56,20 @@ class Icestupa:
     Z_I = 0.0017  # Ice Momentum and Scalar roughness length
     T_RAIN = 1  # Temperature condition for liquid precipitation
 
-    "Simulation"
-    dia_f = 0
-    T_w = 0
-    h_f = 0
-    h_aws = 0
+    """Model constants"""
+    DX = 5e-03  # Initial Ice layer thickness
 
     def __init__(self, *initial_data, **kwargs):
+        # Initialise all variables of dictionary
         for dictionary in initial_data:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
                 logger.info(f"%s -> %s" % (key, str(dictionary[key])))
+        # Initialise other variables
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
+        #Define directory structure
         self.raw_folder = os.path.join(dirname, "data/" + self.name + "/raw/")
         self.input_folder = os.path.join(dirname, "data/" + self.name + "/interim/")
         self.output_folder = os.path.join(dirname, "data/" + self.name + "/processed/")
@@ -84,16 +77,17 @@ class Icestupa:
             dirname, "data/" + self.name + "/processed/simulations"
         )
 
+        #Initialize input dataset
         input_file = self.input_folder + self.name + "_input_model.csv"
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
-        self.TIME_STEP = int(pd.infer_freq(self.df["When"])[:-1]) * 60
+        self.TIME_STEP = int(pd.infer_freq(self.df["When"])[:-1]) * 60 # Extract time step from datetime column
         logger.debug(f"Time steps -> %s minutes" % (str(self.TIME_STEP / 60)))
         mask = self.df["When"] >= self.start_date
         self.df = self.df.loc[mask]
         self.df = self.df.reset_index(drop=True)
 
     @st.cache
-    def get_parameter_metadata(self, parameter):
+    def get_parameter_metadata(self, parameter): # Provides Metadata of all input and Output variables
         return {
             "When": {
                 "name": "Timestamp",
@@ -342,7 +336,7 @@ class Icestupa:
             },
         }[parameter]
 
-    def get_solar(self):
+    def get_solar(self): # Provides solar angle for each time step
 
         # self.df["ghi"] = self.df["SW_direct"] + self.df["SW_diffuse"]
         # self.df["dif"] = self.df["SW_diffuse"]
@@ -375,7 +369,7 @@ class Icestupa:
 
         self.df = pd.merge(solar_df, self.df, on="When")
 
-    def projectile_xy(self, v, h=0):
+    def projectile_xy(self, v, h=0): # standard projectile equation function that returns range of projectile
         if h == 0:
             hs = self.h_f
         else:
@@ -397,18 +391,18 @@ class Icestupa:
             t += 0.01
         return x
 
-    def albedo(self, row, s=0, f=0):
+    def albedo(self, row, s=0, f=0): # Albedo Scheme described in Section 3.2.1
 
         i = row.Index
 
         """Albedo"""
-        # Precipitation
+        # Precipitation event
         if (row.Discharge == 0) & (row.Prec > 0):
-            if row.T_a < self.T_RAIN:  # Snow
+            if row.T_a < self.T_RAIN:  # Snow event
                 s = 0
                 f = 0
 
-        if row.Discharge > 0:
+        if row.Discharge > 0: # Spray event
             f = 1
             s = 0
 
@@ -423,20 +417,19 @@ class Icestupa:
 
         return s, f
 
-    def spray_radius(self, r_mean=0):
+    def spray_radius(self, r_mean=0): # Provides spray radius assuming projectile motion of water droplets
         Area = math.pi * math.pow(self.dia_f, 2) / 4
 
         if r_mean != 0:
             self.r_mean = r_mean
         else:
-            # self.discharge = self.df["Discharge"].replace(0, np.NaN).mean()
             self.v = self.discharge / (60 * 1000 * Area)
             self.r_mean = self.projectile_xy(v=self.v)
 
         logger.info("Spray radius %s" % (self.r_mean))
         return self.r_mean
 
-    def height_steps(self, i):
+    def height_steps(self, i): # Updates discharge based on new fountain height
         h_steps = 1
         self.df.loc[i:, "Discharge"] /= self.discharge
         if self.discharge != 0:
@@ -453,7 +446,7 @@ class Icestupa:
             self.discharge = discharge
         self.df.loc[i:, "Discharge"] *= self.discharge
 
-    def discharge_rate(self):
+    def discharge_rate(self): # Provides discharge info based on trigger setting
 
         self.df["Discharge"] = 0
 
@@ -463,16 +456,12 @@ class Icestupa:
             mask_index = self.df[mask].index
             self.df.loc[mask_index, "Discharge"] = 1 * self.discharge
 
-            # mask = self.df["When"] >= self.fountain_off_date
-            # mask_index = self.df[mask].index
-            # self.df.loc[mask_index, "Discharge"] = 0
             logger.debug(
                 f"Hours of spray : %.2f"
                 % (self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP / 3600)
             )
 
         if self.trigger == "NetEnergy":
-            # self.df["Prec"] = 0
 
             col = [
                 "T_s",  # Surface Temperature
@@ -565,18 +554,15 @@ class Icestupa:
             st.write("Manual discharge information does not exist")
             sys.exit()
 
-    def derive_parameters(self):
-        unknown = ["a", "vp_a", "LW_in", "cld"]
+    def derive_parameters(self): # Derives additional parameters required for simulation
+        unknown = ["a", "vp_a", "LW_in", "cld"] # Possible unknown variables
         for i in range(len(unknown)):
             if unknown[i] in list(self.df.columns):
-                unknown[i] = np.NaN
+                unknown[i] = np.NaN # Removes known variable
             else:
                 logger.warning("%s is unknown" % (unknown[i]))
                 self.df[unknown[i]] = 0
-        """Albedo Decay"""
-        self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
-        s = 0
-        f = 0
+
 
         logger.debug("Creating model input file...")
         for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
@@ -621,14 +607,15 @@ class Icestupa:
         # logger.info("Model ends at %s" % (self.end_date))
 
         mask = self.df["When"] >= self.start_date
-        # self.df["When"] <= self.end_date
-        # )
         self.df = self.df.loc[mask]
         self.df = self.df.reset_index(drop=True)
 
         self.get_solar()
 
-        logger.debug("Creating model input file...")
+        """Albedo Decay parameters initialized"""
+        self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
+        s = 0
+        f = 0
         for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
             s, f = self.albedo(row, s, f)
 
@@ -646,28 +633,22 @@ class Icestupa:
 
         if (
             self.df.solid[i - 1]
-            # + self.df.dpt[i - 1]
-            # + self.df.cdt[i - 1]
             - self.df.melted[i - 1]
-            # + self.df.ppt[i - 1]
             > 0
-        ) & (self.df.loc[i - 1, "r_ice"] > self.r_mean):
-            # Ice Radius
+        ) & (self.df.loc[i - 1, "r_ice"] > self.r_mean): # Growth rate positive and radius goes beyond spray radius
             self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"]
 
-            # Ice Height
             self.df.loc[i, "h_ice"] = (
                 3 * self.df.loc[i, "iceV"] / (math.pi * self.df.loc[i, "r_ice"] ** 2)
             )
 
-            # Height by Radius ratio
             self.df.loc[i, "s_cone"] = (
                 self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
             )
 
         else:
 
-            # Height to radius ratio
+            # Height to radius ratio constant
             self.df.loc[i, "s_cone"] = self.df.loc[i - 1, "s_cone"]
 
             # Ice Radius
@@ -706,7 +687,7 @@ class Icestupa:
     def energy_balance(self, row, mode="normal"):
         i = row.Index
 
-        if mode == "trigger":
+        if mode == "trigger": # Used while deriving discharge rate
             self.df.loc[i, "T_s"] = 0
             self.df.loc[i, "Qf"] = 0
             self.df.loc[i, "Qg"] = 0
@@ -736,10 +717,6 @@ class Icestupa:
                 * (row.vp_a - self.df.loc[i, "vp_ice"])
                 / ((np.log(self.h_aws / self.Z_I)) ** 2)
             )
-            if np.isnan(self.df.loc[i, "Ql"]):
-                logger.error(
-                    f"When {self.df.When[i]}, v_a {self.df.vp_a[i]}")
-                sys.exit("Wind speed")
 
         # Sensible Heat Qs
         self.df.loc[i, "Qs"] = (
@@ -762,7 +739,6 @@ class Icestupa:
             self.df.loc[i, "SW"] = (1 - self.A_I) * (row.SW_direct + row.SW_diffuse)
 
         # Long Wave Radiation LW
-
         self.df.loc[i, "LW"] = row.LW_in - self.IE * self.STEFAN_BOLTZMAN * math.pow(
             self.df.loc[i, "T_s"] + 273.15, 4
         )
@@ -771,6 +747,7 @@ class Icestupa:
             logger.error(
                 f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
             )
+            sys.exit("LW nan")
 
         if self.liquid > 0:
             self.df.loc[i, "Qf"] = (
@@ -815,10 +792,11 @@ class Icestupa:
             logger.error(
                 f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}"
             )
+            sys.exit("Energy nan")
 
-    def summary(self):
+    def summary(self): # Summaries results and saves output
 
-        self.df = self.df[self.df.columns.drop(list(self.df.filter(regex="Unnamed")))]
+        self.df = self.df[self.df.columns.drop(list(self.df.filter(regex="Unnamed")))] # Drops garbage columns
         Efficiency = (
             (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1])
             / self.df["input"].iloc[-1]
@@ -843,40 +821,26 @@ class Icestupa:
             key="df",
             mode="w",
         )
-        # else:
-        #     filename4 = self.output_folder + "model_results.csv"
-        #     self.df.to_csv(filename4, sep=",")
-
-        #     self.df.to_hdf(self.output_folder + "model_output.h5", key="df", mode="w")
 
     def read_input(self):
 
-        # if self.name == "schwarzsee":
-        #     self.df = pd.read_hdf(self.input_folder + "model_input_extended.h5", "df")
-        # else:
         self.df = pd.read_hdf(
             self.input_folder + "model_input_" + self.trigger + ".h5", "df"
         )
 
-        # self.TIME_STEP=15*60
-        # self.df = self.df.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index()
-
         logger.debug(self.df.head())
 
         if self.df.isnull().values.any():
-            logger.debug("Warning: Null values present")
+            logger.warning("Warning: Null values present")
 
-    def read_output(self):
+    def read_output(self): # Reads output and Displays outputs useful for manuscript
 
         self.df = pd.read_hdf(
             self.output_folder + "model_output_" + self.trigger + ".h5", "df"
         )
 
         if self.df.isnull().values.any():
-            logger.debug("Warning: Null values present")
-            # logger.debug(self.df.columns)
-            # logger.debug(self.df[['s_cone']].isnull().sum())
-            # logger.debug(self.df[self.df['s_cone'].isnull()])
+            logger.warning("Warning: Null values present")
 
         # Table outputs
         # f_off = self.df.index[self.df.Discharge.astype(bool)].tolist()
@@ -976,12 +940,11 @@ class Icestupa:
         # cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
         # self.df[cols].to_csv(filename2, sep=",")
 
-    # @st.cache
     def melt_freeze(self):
 
         col = [
-            "T_s",  # Surface Temperature
-            "T_bulk",  # Bulk Temperature
+            "T_s",
+            "T_bulk",
             "f_cone",
             "ice",
             "iceV",
@@ -1021,9 +984,8 @@ class Icestupa:
         for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]):
             i = row.Index
             ice_melted = self.df.loc[i, "ice"] < 0.001
-            # logger.warning("Ice left %s kg and %s" %(self.df.loc[i, "ice"], self.df.Discharge[i:].sum()))
-            # if ice_melted & fountain_off:
-            if ice_melted and STATE == 1:
+
+            if ice_melted and STATE == 1: # Break loop when ice melted and simulation done
                 self.df.loc[i - 1, "meltwater"] += self.df.loc[i - 1, "ice"]
                 self.df.loc[i - 1, "ice"] = 0
                 logger.info("Model ends at %s" % (self.df.When[i]))
@@ -1031,10 +993,10 @@ class Icestupa:
                 self.df = self.df.reset_index(drop=True)
                 break
 
-            # Initialize
             if self.df.Discharge[i] > 0 and STATE == 0:
                 STATE = 1
 
+                # Special Initialisaton for specific sites
                 if self.name == "schwarzsee":
                     self.df.loc[i - 1, "r_ice"] = self.spray_radius()
                     self.df.loc[i - 1, "h_ice"] = self.DX
@@ -1092,7 +1054,6 @@ class Icestupa:
                     )
 
                 # Fountain water output
-
                 self.liquid = (
                     self.df.Discharge.loc[i] * (1 - self.ftl) * self.TIME_STEP / 60
                 )
@@ -1163,7 +1124,6 @@ class Icestupa:
                         )
 
                 if self.df.loc[i, "TotalE"] < 0 and self.liquid > 0:
-
                     """Freezing water"""
                     self.liquid += (
                         self.df.loc[i, "TotalE"] * self.TIME_STEP * self.df.loc[i, "SA"]
@@ -1179,13 +1139,8 @@ class Icestupa:
                         - self.df.loc[i, "Ql"]
                     )
                     # self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
-                    if np.isnan(self.df.loc[i, "$q_{T}$"]):
-                        logger.error(
-                            f"When {self.df.When[i]}, Ql {self.df.Ql[i]}")
-                        sys.exit()
 
                     if self.liquid < 0:
-
                         # Cooling Ice
                         self.df.loc[i, "$q_{T}$"] += (self.liquid * self.L_F) / (
                             self.TIME_STEP * self.df.loc[i, "SA"]
@@ -1213,7 +1168,7 @@ class Icestupa:
                     / (self.RHO_I * self.DX * self.C_I)
                 )
 
-                """Hot Ice"""
+                """Ice temperature above zero"""
                 if (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]) > 0:
                     self.df.loc[i, "$q_{melt}$"] += (
                         (self.RHO_I * self.DX * self.C_I)
@@ -1233,6 +1188,7 @@ class Icestupa:
                         logger.error(
                             f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
                         )
+                        sys.exit("Ice Temperature nan")
 
                 if self.df.loc[i, "$q_{melt}$"] < 0:
                     self.df.loc[i, "solid"] -= (
@@ -1293,7 +1249,7 @@ class Icestupa:
 
                 self.liquid = [0] * 1
 
-    def corr_plot(self):
+    def corr_plot(self): # Produces correlation plot of all variables
 
         data = self.df
 
@@ -1308,8 +1264,6 @@ class Icestupa:
         data["$\\Delta M_{ice}$"] = (
             self.df["solid"] + self.df["dpt"] - self.df["melted"] + self.df["ppt"]
         )
-
-        # data = data.drop(["When", "input", "ppt", "ice", "T_s", "vapour", "Discharge", "TotalE", "T_a", "sea", "SW_direct", "a", "cld", "sea", "e_a", "vp_a", "LW_in", "vp_ice", "f_cone", "SW_diffuse", "s_cone", "RH", "iceV", "melted", "Qf", "SW", "LW", "Qs", "Ql", "dpt", "p_a", "thickness", "h_ice", "r_ice", "Prec", "v_a", "unfrozen_water", "meltwater"], axis=1)
 
         data = data.rename(
             {
@@ -1361,7 +1315,7 @@ class Icestupa:
         # plt.show()
 
 
-class PDF(Icestupa):
+class PDF(Icestupa): # Class with print functions
     def print_input(self, filename="derived_parameters.pdf"):
         if filename == "derived_parameters.pdf":
             filename = self.input_folder
@@ -2578,9 +2532,7 @@ if __name__ == "__main__":
     # icestupa.summary()
 
     # icestupa.print_input()
-    icestupa.paper_figures()
-    # st.pyplot(fig2)
-    # st.pyplot(fig3)
+    # icestupa.paper_figures()
 
     # icestupa.print_output()
 
