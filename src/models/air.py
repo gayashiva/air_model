@@ -21,8 +21,6 @@ from src.data.settings import config
 import logging
 import coloredlogs
 
-# pd.plotting.register_matplotlib_converters()
-
 # Required for colored logging statements
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -339,9 +337,6 @@ class Icestupa:
 
     def get_solar(self): # Provides solar angle for each time step
 
-        # self.df["ghi"] = self.df["SW_direct"] + self.df["SW_diffuse"]
-        # self.df["dif"] = self.df["SW_diffuse"]
-
         site_location = location.Location(self.latitude, self.longitude)
 
         times = pd.date_range(
@@ -349,7 +344,6 @@ class Icestupa:
             end=self.df["When"].iloc[-1],
             freq=(str(int(self.TIME_STEP / 60)) + "T"),
         )
-        # clearsky = site_location.get_clearsky(times)
 
         # Get solar azimuth and zenith to pass to the transposition function
         solar_position = site_location.get_solarposition(
