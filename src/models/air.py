@@ -23,6 +23,7 @@ import coloredlogs
 
 # pd.plotting.register_matplotlib_converters()
 
+# Required for colored logging statements
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 coloredlogs.install(
@@ -648,7 +649,7 @@ class Icestupa:
 
         else:
 
-            # Height to radius ratio constant
+            # Maintain constant Height to radius ratio 
             self.df.loc[i, "s_cone"] = self.df.loc[i - 1, "s_cone"]
 
             # Ice Radius
@@ -822,7 +823,7 @@ class Icestupa:
             mode="w",
         )
 
-    def read_input(self):
+    def read_input(self): # Use processed input dataset
 
         self.df = pd.read_hdf(
             self.input_folder + "model_input_" + self.trigger + ".h5", "df"
@@ -940,7 +941,7 @@ class Icestupa:
         # cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
         # self.df[cols].to_csv(filename2, sep=",")
 
-    def melt_freeze(self):
+    def melt_freeze(self): # Main function
 
         col = [
             "T_s",
@@ -1314,8 +1315,6 @@ class Icestupa:
         # )
         # plt.show()
 
-
-class PDF(Icestupa): # Class with print functions
     def print_input(self, filename="derived_parameters.pdf"):
         if filename == "derived_parameters.pdf":
             filename = self.input_folder
@@ -2517,7 +2516,7 @@ if __name__ == "__main__":
 
     SITE, FOUNTAIN = config("Schwarzsee")
 
-    icestupa = PDF(SITE, FOUNTAIN)
+    icestupa = Icestupa(SITE, FOUNTAIN)
 
     # icestupa.derive_parameters()
 
