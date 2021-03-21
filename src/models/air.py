@@ -558,7 +558,6 @@ class Icestupa:
                 logger.warning("%s is unknown" % (unknown[i]))
                 self.df[unknown[i]] = 0
 
-
         logger.debug("Creating model input file...")
         for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
             i = row.Index
@@ -577,7 +576,7 @@ class Icestupa:
                     / 100
                 )
 
-            # """LW incoming"""
+            """LW incoming"""
             if "LW_in" in unknown:
 
                 self.df.loc[row.Index, "e_a"] = (
@@ -594,7 +593,7 @@ class Icestupa:
                 )
 
         self.discharge_rate()
-        self.f_on = self.df.When[self.df.Discharge.astype(bool)].tolist()
+        self.f_on = self.df.When[self.df.Discharge.astype(bool)].tolist() # List of all timesteps when fountain on
         self.start_date = self.f_on[0]
         logger.warning("Fountain ends %s" % self.f_on[-1])
         # self.end_date =  self.f_on[-1] #+ timedelta(days=30)
@@ -615,7 +614,7 @@ class Icestupa:
             s, f = self.albedo(row, s, f)
 
         self.df = self.df.round(3)
-        self.df = self.df[self.df.columns.drop(list(self.df.filter(regex="Unnamed")))]
+        self.df = self.df[self.df.columns.drop(list(self.df.filter(regex="Unnamed")))] # Remove junk columns
 
         self.df.to_hdf(
             self.input_folder + "model_input_" + self.trigger + ".h5",
