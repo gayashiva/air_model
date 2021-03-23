@@ -25,7 +25,7 @@ import base64
 
 import logging
 import coloredlogs
-from src.models.air import Icestupa, PDF
+from src.models.air import Icestupa
 from src.data.settings import config
 
 
@@ -107,7 +107,7 @@ if __name__ == "__main__":
             "Select Discharge Trigger", ("Manual", "Temperature", "NetEnergy")
         )
         FOUNTAIN["trigger"] = trigger
-        icestupa = PDF(SITE, FOUNTAIN)
+        icestupa = Icestupa(SITE, FOUNTAIN)
         icestupa.read_output()
         df_in = icestupa.df
         df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
@@ -143,14 +143,14 @@ if __name__ == "__main__":
             "Select Discharge Trigger", ("Manual", "Temperature", "NetEnergy")
         )
         FOUNTAIN["trigger"] = trigger
-        icestupa = PDF(SITE, FOUNTAIN)
+        icestupa = Icestupa(SITE, FOUNTAIN)
         icestupa.read_output()
         df_in = icestupa.df
         df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
         df_in = df_in.set_index("When")
         df = df_in
 
-        # icestupa = PDF(SITE, FOUNTAIN)
+        # icestupa = Icestupa(SITE, FOUNTAIN)
         # input_folder = os.path.join(dirname, "data/" + "guttannen" + "/interim/")
         # input_file = input_folder + "guttannen" + "_input_model.csv"
         # df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
@@ -175,7 +175,6 @@ if __name__ == "__main__":
 
     with col1:
         air_logo = os.path.join(dirname, "src/visualization/AIR_logo.png")
-        print(air_logo)
         st.image(air_logo, width=180)
     with col2:
         st.write("## Artificial Ice Reservoir Simulation")
@@ -193,7 +192,7 @@ if __name__ == "__main__":
         "Choose",
         options=(input_cols),
         # default=["Fountain Spray", "Temperature"],
-        # default=["Temperature"],
+        default=["Temperature"],
     )
     if not (variable1):
         st.error("Please select at least one variable.")
@@ -217,7 +216,7 @@ if __name__ == "__main__":
     variable2 = st.multiselect(
         "Choose",
         options=(output_cols),
-        # default=["Ice Volume"],
+        default=["Ice Volume"],
     )
     if not (variable2):
         st.error("Please select at least one variable.")

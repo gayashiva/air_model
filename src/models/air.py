@@ -25,7 +25,8 @@ import coloredlogs
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 coloredlogs.install(
-    fmt="%(name)s %(levelname)s %(message)s",
+    # fmt="%(name)s %(levelname)s %(message)s",
+    fmt="%(levelname)s %(message)s",
     logger=logger,
 )
 logger.debug("Model begins")
@@ -95,42 +96,42 @@ class Icestupa:
             },
             "cld": {
                 "name": "Cloudiness",
-                "kind": "Input",
+                "kind": "Derived",
                 "units": "()",
             },
             "missing": {
                 "name": "Filled from ERA5",
-                "kind": "Input",
+                "kind": "Derived",
                 "units": "()",
             },
             "e_a": {
                 "name": "Atmospheric Emissivity",
-                "kind": "Output",
+                "kind": "Derived",
                 "units": "()",
             },
             "vp_a": {
                 "name": "Air Vapour Pressure",
-                "kind": "Output",
+                "kind": "Derived",
                 "units": "($hPa$)",
             },
             "vp_ice": {
                 "name": "Ice Vapour Pressure",
-                "kind": "Output",
+                "kind": "Derived",
                 "units": "($hPa$)",
             },
             "solid": {
                 "name": "Ice per time step",
-                "kind": "Output",
+                "kind": "Derived",
                 "units": "($kg$)",
             },
             "melted": {
                 "name": "Melt per time step",
-                "kind": "Output",
+                "kind": "Derived",
                 "units": "($kg$)",
             },
             "gas": {
                 "name": "Vapour per time step",
-                "kind": "Output",
+                "kind": "Derived",
                 "units": "($kg$)",
             },
             "thickness": {
@@ -150,7 +151,7 @@ class Icestupa:
             },
             "delta_T_s": {
                 "name": "Temperature change per time step",
-                "kind": "Output",
+                "kind": "Derived",
                 "units": "($\\degree C$)",
             },
             "RH": {
@@ -210,12 +211,12 @@ class Icestupa:
             },
             "$q_{T}$": {
                 "name": "Temperature flux",
-                "kind": "Output",
+                "kind": "Derived",
                 "units": "($W\\,m^{-2}$)",
             },
             "$q_{melt}$": {
                 "name": "Melt energy",
-                "kind": "Output",
+                "kind": "Derived",
                 "units": "($W\\,m^{-2}$)",
             },
             "Prec": {
@@ -250,7 +251,7 @@ class Icestupa:
             },
             "s_cone": {
                 "name": "Ice Cone Slope",
-                "kind": "Output",
+                "kind": "Derived",
                 "units": "()",
             },
             "h_ice": {
@@ -275,16 +276,11 @@ class Icestupa:
             },
             "sea": {
                 "name": "Solar Elevation Angle",
-                "kind": "Output",
+                "kind": "Derived",
                 "units": "($\\degree$)",
             },
             "TotalE": {
                 "name": "Net Energy",
-                "kind": "Output",
-                "units": "($W\\,m^{-2}$)",
-            },
-            "$q_{melt}$": {
-                "name": "Melt Energy",
                 "kind": "Output",
                 "units": "($W\\,m^{-2}$)",
             },
@@ -427,18 +423,20 @@ class Icestupa:
     def height_steps(self, i): # Updates discharge based on new fountain height
         h_steps = 1
         self.df.loc[i:, "Discharge"] /= self.discharge
-        if self.discharge != 0:
-            Area = math.pi * math.pow(self.dia_f, 2) / 4
-            if self.discharge < 6:
-                discharge = 0
-                self.v = 0
-            else:
-                self.v = np.sqrt(self.v ** 2 - 2 * self.G * h_steps)
-                discharge = self.v * (60 * 1000 * Area)
-            logger.warning(
-                "Discharge changed from %.2f to %.2f" % (self.discharge, discharge)
-            )
-            self.discharge = discharge
+        if self.name != 'guttannen':
+            if self.discharge != 0:
+                Area = math.pi * math.pow(self.dia_f, 2) / 4
+                if self.discharge < 6:
+                    discharge = 0
+                    self.v = 0
+                else:
+                    self.v = np.sqrt(self.v ** 2 - 2 * self.G * h_steps)
+                    discharge = self.v * (60 * 1000 * Area)
+                logger.warning(
+                    "Discharge changed from %.2f to %.2f" % (self.discharge, discharge)
+                )
+                self.discharge = discharge
+
         self.df.loc[i:, "Discharge"] *= self.discharge
 
     def discharge_rate(self): # Provides discharge info based on trigger setting
@@ -507,6 +505,9 @@ class Icestupa:
                 % (self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP / 3600)
             )
 
+        if self.trigger == "Manual" and self.name == "guttannen":
+            self.df["Discharge"] = self.discharge
+
         if self.trigger == "Manual" and self.name == "schwarzsee":
 
             # self.start_date=datetime(2021, 1, 30, 17)
@@ -544,10 +545,10 @@ class Icestupa:
                 % (self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP / 3600)
             )
 
-        if self.trigger == "Manual" and self.name != "schwarzsee":
-            logger.error("Manual discharge information does not exist")
-            st.write("Manual discharge information does not exist")
-            sys.exit()
+        # if self.trigger == "Manual" and self.name != "schwarzsee":
+        #     logger.error("Manual discharge information does not exist")
+        #     st.write("Manual discharge information does not exist")
+        #     sys.exit()
 
     def derive_parameters(self): # Derives additional parameters required for simulation
         unknown = ["a", "vp_a", "LW_in", "cld"] # Possible unknown variables
@@ -996,9 +997,13 @@ class Icestupa:
                     self.df.loc[i - 1, "h_ice"] = self.DX
 
                 if self.name == "guttannen":
-                    self.df.loc[i - 1, "r_ice"] = self.spray_radius()
-                    # self.df.loc[i - 1, "r_ice"] = self.r_i
-                    self.df.loc[i - 1, "h_ice"] = self.h_i
+                    self.spray_radius()
+                    if self.h_i !=0:
+                        self.df.loc[i - 1, "h_ice"] = self.h_i
+                        self.df.loc[i - 1, "r_ice"] = self.r_i
+                    else:
+                        self.df.loc[i - 1, "h_ice"] = self.DX
+                        self.df.loc[i - 1, "r_ice"] = self.spray_radius()
 
                 new_sites = ["hial", "gangles", "secmol", "leh"]
                 if self.name in new_sites:
@@ -1019,12 +1024,13 @@ class Icestupa:
                     * self.df.loc[i - 1, "h_ice"] * self.RHO_I
                 )
                 self.df.loc[i, "input"] = self.df.loc[i, "ice"]
+                logger.warning("Initialise: radius %s, height %s, iceV %s" % (self.df.loc[i - 1, "r_ice"], self.df.loc[i - 1, "h_ice"], self.df.loc[i , "iceV"]))
 
                 self.start = i - 1
 
             if STATE == 1:
 
-                # if self.name == "guttannen" and i == self.start + 1:
+                # if self.name == "guttannen" and i == self.start + 1 and self.hollow_V != 0:
                 #     self.df.loc[i, "iceV"] += self.hollow_V
                 #     self.df.loc[i, "ice"] += self.hollow_V * self.RHO_I
 
@@ -1033,7 +1039,7 @@ class Icestupa:
                 #Change in fountain height
                 if self.df.h_ice[i] > ctr + self.h_f and self.discharge != 0:
                     ctr += 1
-                    logger.warning("Height increased to %s" % (ctr + self.h_f))
+                    logger.warning("Height increased to %s on %s" % ((ctr + self.h_f), self.df.When[i]))
                     self.height_steps(i)
 
                 # Precipitation to ice quantity
@@ -1715,21 +1721,21 @@ class Icestupa:
 if __name__ == "__main__":
     start = time.time()
 
-    SITE, FOUNTAIN = config("Schwarzsee")
+    SITE, FOUNTAIN = config("Guttannen")
 
     icestupa = Icestupa(SITE, FOUNTAIN)
 
-    # icestupa.derive_parameters()
+    icestupa.derive_parameters()
 
     # icestupa.read_input()
 
-    # icestupa.melt_freeze()
+    icestupa.melt_freeze()
 
-    icestupa.read_output()
+    # icestupa.read_output()
 
     # icestupa.corr_plot()
 
-    # icestupa.summary()
+    icestupa.summary()
 
     # icestupa.print_input()
     # icestupa.paper_figures()
