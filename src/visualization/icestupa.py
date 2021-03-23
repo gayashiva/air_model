@@ -211,7 +211,7 @@ if __name__ == "__main__":
         for v in variable:
             meta = icestupa.get_parameter_metadata(v)
             st.header("%s" % (meta["name"] + " " + meta["units"]))
-            if v == "iceV":
+            if v == "iceV" and location == "Guttannen":
                 fig, ax = plt.subplots()
                 ax.set_ylabel("Ice Volume[$m^3$]")
                 CB91_Blue = "#2CBDFE"
