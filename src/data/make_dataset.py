@@ -407,7 +407,8 @@ def meteoswiss(site="schwarzsee"):
         site = "plaffeien"
     df = pd.read_csv(
         os.path.join(raw_folder, site + "_meteoswiss.txt"),
-        sep="\s+",
+        # sep="\s+",
+        sep=";",
         skiprows=2,
     )
     for col in df.columns:

@@ -85,6 +85,14 @@ class Icestupa:
         mask = self.df["When"] >= self.start_date
         self.df = self.df.loc[mask]
         self.df = self.df.reset_index(drop=True)
+        # Add Validation data to input
+        if self.name in ['guttannen']:
+            df_v = pd.read_csv(self.input_folder + self.name + "_drone.csv", sep=",", header=0, parse_dates=["When"])
+            df_v = df_v.set_index('When')
+            # df_v = df_v.astype(float)
+            self.df = self.df.set_index('When')
+            self.df['DroneV'] = df_v['DroneV']
+            self.df = self.df.reset_index()
 
     @st.cache
     def get_parameter_metadata(self, parameter): # Provides Metadata of all input and Output variables
@@ -93,6 +101,11 @@ class Icestupa:
                 "name": "Timestamp",
                 "kind": "Misc",
                 "units": "()",
+            },
+            "DroneV": {
+                "name": "Drone Validation",
+                "kind": "Output",
+                "units": "($m^3$)",
             },
             "cld": {
                 "name": "Cloudiness",
@@ -545,6 +558,9 @@ class Icestupa:
                 % (self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP / 3600)
             )
 
+        mask = (self.df["When"] > self.fountain_off_date)
+        mask_index = self.df[mask].index
+        self.df.loc[mask_index, "Discharge"] = 0
         # if self.trigger == "Manual" and self.name != "schwarzsee":
         #     logger.error("Manual discharge information does not exist")
         #     st.write("Manual discharge information does not exist")

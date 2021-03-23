@@ -5,7 +5,7 @@ import coloredlogs
 
 logger = logging.getLogger(__name__)
 coloredlogs.install(
-    fmt="%(name)s %(levelname)s %(message)s",
+    fmt="%(levelname)s %(message)s",
     logger=logger,
 )
 
@@ -17,8 +17,8 @@ def config(location="Schwarzsee"):
 
         SITE = dict(
             name="guttannen",
-            start_date=datetime(2020, 12, 2),
-            end_date=datetime(2021, 3, 6),
+            start_date=datetime(2020, 11, 22),
+            end_date=datetime(2021, 3, 20),
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
@@ -27,21 +27,22 @@ def config(location="Schwarzsee"):
         )
 
         FOUNTAIN = dict(
-            # fountain_off_date=datetime(2021, 3, 1),
+            fountain_off_date=datetime(2021, 2, 27),
             dia_f=0.007,  # FOUNTAIN aperture diameter
-            h_f=3.5,  # FOUNTAIN steps h_f
+            h_f=2.5,  # FOUNTAIN steps h_f
             theta_f=0,  # FOUNTAIN aperture diameter
             ftl=0,  # FOUNTAIN flight time loss ftl
             T_w=5,  # FOUNTAIN Water temperature
-            discharge=18.5,  # FOUNTAIN on discharge
+            discharge=21.0,  # FOUNTAIN on discharge
             crit_temp=0,  # FOUNTAIN runtime temperature
             # tree_height=1.93,
             # tree_radius=4.13 / 2,
             # tree_height=1 + 1,
             # tree_radius=3.3 + 3 / 2,
-            # hollow_V=73.5,
-            h_i=2.65,
-            r_i=10.3 / 2,
+            # h_i=0.7,
+            # r_i=10.33 / 2,
+            h_i=0.5,
+            r_i=4.25,
             trigger="Manual",
         )
 

@@ -3,6 +3,7 @@ import pandas as pd
 import sys
 from datetime import datetime
 import os
+import matplotlib.dates as mdates
 
 os.environ[
     "TZ"
@@ -150,28 +151,11 @@ if __name__ == "__main__":
         df_in = df_in.set_index("When")
         df = df_in
 
-        # icestupa = Icestupa(SITE, FOUNTAIN)
-        # input_folder = os.path.join(dirname, "data/" + "guttannen" + "/interim/")
-        # input_file = input_folder + "guttannen" + "_input_model.csv"
-        # df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
-        # df_in = df.set_index("When")
-        # df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
-        # df = df_in
-
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
     output_folder = os.path.join(dirname, "data/" + SITE["name"] + "/processed/")
     st.sidebar.map(map_data, zoom=10)
     col1, mid, col2 = st.beta_columns([4, 6, 20])
     input_cols, input_vars, output_cols, output_vars = vars(df_in)
-
-    # if location == "Schwarzsee":
-    #     video_file = open(
-    #         output_folder + SITE["name"] + "_icestupa_converted.mp4",
-    #         "rb"
-    #         # output_folder + "wcam18_icestupa.avi",
-    #     )
-    #     video_bytes = video_file.read()
-    #     st.video(video_bytes)
 
     with col1:
         air_logo = os.path.join(dirname, "src/visualization/AIR_logo.png")
@@ -200,6 +184,7 @@ if __name__ == "__main__":
         variable_in = [input_vars[input_cols.index(item)] for item in variable1]
         variable = variable_in
         for v in variable:
+
             meta = icestupa.get_parameter_metadata(v)
             # st.header("%s %s" % (meta["kind"], meta["name"] + " " + meta["units"]))
             st.header("%s" % (meta["name"] + " " + meta["units"]))
@@ -226,6 +211,32 @@ if __name__ == "__main__":
         for v in variable:
             meta = icestupa.get_parameter_metadata(v)
             st.header("%s" % (meta["name"] + " " + meta["units"]))
-            st.line_chart(df[v])
+            if v == "iceV":
+                fig, ax = plt.subplots()
+                ax.set_ylabel("Ice Volume[$m^3$]")
+                CB91_Blue = "#2CBDFE"
+                CB91_Green = "#47DBCD"
+                x = df.index
+                y1 = df.iceV
+                y2 = df.DroneV
+                ax.plot(
+                    x,
+                    y1,
+                    "b-",
+                    label="Modelled Ice Volume",
+                    linewidth=1,
+                    color=CB91_Blue,
+                )
+                ax.scatter(x, y2, color=CB91_Green, label="Drone Volume")
+                ax.set_ylim(bottom=0)
+                plt.legend()
+                ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+                ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+                ax.xaxis.set_minor_locator(mdates.DayLocator())
+                fig.autofmt_xdate()
+                st.pyplot(fig)
+
+            else:
+                st.line_chart(df[v])
 
             # st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)
