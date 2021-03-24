@@ -79,6 +79,8 @@ def vars(df_in):
     input_vars = []
     output_cols = []
     output_vars = []
+    derived_cols = []
+    derived_vars = []
     for variable in df_in.columns:
         v = icestupa.get_parameter_metadata(variable)
         if v["kind"] == "Input":
@@ -87,7 +89,10 @@ def vars(df_in):
         if v["kind"] == "Output":
             output_cols.append(v["name"])
             output_vars.append(variable)
-    return input_cols, input_vars, output_cols, output_vars
+        if v["kind"] == "Derived":
+            derived_cols.append(v["name"])
+            derived_vars.append(variable)
+    return input_cols, input_vars, output_cols, output_vars, derived_cols, derived_vars
 
 
 if __name__ == "__main__":
@@ -153,9 +158,10 @@ if __name__ == "__main__":
 
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
     output_folder = os.path.join(dirname, "data/" + SITE["name"] + "/processed/")
-    st.sidebar.map(map_data, zoom=10)
     col1, mid, col2 = st.beta_columns([4, 6, 20])
-    input_cols, input_vars, output_cols, output_vars = vars(df_in)
+    input_cols, input_vars, output_cols, output_vars, derived_cols, derived_vars = vars(
+        df_in
+    )
 
     with col1:
         air_logo = os.path.join(dirname, "src/visualization/AIR_logo.png")
@@ -167,76 +173,105 @@ if __name__ == "__main__":
 
     # df = df_filter("Move sliders to filter dataframe", icestupa.df)
 
-    st.write("## Input variables")
-    if location == "Schwarzsee":
-        agree_i = st.checkbox("Display all input?")
-        if agree_i:
-            st.image(output_folder + "paper_figures/Model_Input_" + trigger + ".jpg")
-    variable1 = st.multiselect(
-        "Choose",
-        options=(input_cols),
-        # default=["Fountain Spray", "Temperature"],
-        default=["Temperature"],
-    )
-    if not (variable1):
-        st.error("Please select at least one variable.")
-    else:
-        variable_in = [input_vars[input_cols.index(item)] for item in variable1]
-        variable = variable_in
-        for v in variable:
-
-            meta = icestupa.get_parameter_metadata(v)
-            # st.header("%s %s" % (meta["kind"], meta["name"] + " " + meta["units"]))
-            st.header("%s" % (meta["name"] + " " + meta["units"]))
-            st.line_chart(df[v])
-
-            # st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)
-
-    st.write("## Output variables")
-    if location == "Schwarzsee":
-        agree_o = st.checkbox("Display all output?")
-        if agree_o:
-            st.image(output_folder + "paper_figures/Model_Output_" + trigger + ".jpg")
-
-    variable2 = st.multiselect(
-        "Choose",
-        options=(output_cols),
-        default=["Ice Volume"],
-    )
-    if not (variable2):
-        st.error("Please select at least one variable.")
-    else:
-        variable_out = [output_vars[output_cols.index(item)] for item in variable2]
-        variable = variable_out
-        for v in variable:
-            meta = icestupa.get_parameter_metadata(v)
-            st.header("%s" % (meta["name"] + " " + meta["units"]))
-            if v == "iceV" and location == "Guttannen":
-                fig, ax = plt.subplots()
-                ax.set_ylabel("Ice Volume[$m^3$]")
-                CB91_Blue = "#2CBDFE"
-                CB91_Green = "#47DBCD"
-                x = df.index
-                y1 = df.iceV
-                y2 = df.DroneV
-                ax.plot(
-                    x,
-                    y1,
-                    "b-",
-                    label="Modelled Ice Volume",
-                    linewidth=1,
-                    color=CB91_Blue,
+    input = st.sidebar.checkbox("Choose Input Variables")
+    output = st.sidebar.checkbox("Choose Output Variables", value=True)
+    derived = st.sidebar.checkbox("Choose Derived Variables")
+    st.sidebar.map(map_data, zoom=10)
+    if input:
+        st.write("## Input variables")
+        if location == "Schwarzsee":
+            agree_i = st.checkbox("Display all input?")
+            if agree_i:
+                st.image(
+                    output_folder + "paper_figures/Model_Input_" + trigger + ".jpg"
                 )
-                ax.scatter(x, y2, color=CB91_Green, label="Drone Volume")
-                ax.set_ylim(bottom=0)
-                plt.legend()
-                ax.xaxis.set_major_locator(mdates.WeekdayLocator())
-                ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-                ax.xaxis.set_minor_locator(mdates.DayLocator())
-                fig.autofmt_xdate()
-                st.pyplot(fig)
+        variable1 = st.multiselect(
+            "Choose",
+            options=(input_cols),
+            # default=["Fountain Spray", "Temperature"],
+            default=["Temperature"],
+        )
+        if not (variable1):
+            st.error("Please select at least one variable.")
+        else:
+            variable_in = [input_vars[input_cols.index(item)] for item in variable1]
+            variable = variable_in
+            for v in variable:
 
-            else:
+                meta = icestupa.get_parameter_metadata(v)
+                # st.header("%s %s" % (meta["kind"], meta["name"] + " " + meta["units"]))
+                st.header("%s" % (meta["name"] + " " + meta["units"]))
                 st.line_chart(df[v])
 
-            # st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)
+                # st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)
+
+    if output:
+        st.write("## Output variables")
+        if location == "Schwarzsee":
+            agree_o = st.checkbox("Display all output?")
+            if agree_o:
+                st.image(
+                    output_folder + "paper_figures/Model_Output_" + trigger + ".jpg"
+                )
+
+        variable2 = st.multiselect(
+            "Choose",
+            options=(output_cols),
+            default=["Ice Volume"],
+        )
+        if not (variable2):
+            st.error("Please select at least one variable.")
+        else:
+            variable_out = [output_vars[output_cols.index(item)] for item in variable2]
+            variable = variable_out
+            for v in variable:
+                meta = icestupa.get_parameter_metadata(v)
+                st.header("%s" % (meta["name"] + " " + meta["units"]))
+                if v == "iceV" and location == "Guttannen":
+                    fig, ax = plt.subplots()
+                    ax.set_ylabel("Ice Volume[$m^3$]")
+                    CB91_Blue = "#2CBDFE"
+                    CB91_Green = "#47DBCD"
+                    x = df.index
+                    y1 = df.iceV
+                    y2 = df.DroneV
+                    ax.plot(
+                        x,
+                        y1,
+                        "b-",
+                        label="Modelled Ice Volume",
+                        linewidth=1,
+                        color=CB91_Blue,
+                    )
+                    ax.scatter(x, y2, color=CB91_Green, label="Drone Volume")
+                    ax.set_ylim(bottom=0)
+                    plt.legend()
+                    ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+                    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+                    ax.xaxis.set_minor_locator(mdates.DayLocator())
+                    fig.autofmt_xdate()
+                    st.pyplot(fig)
+
+                else:
+                    st.line_chart(df[v])
+
+                # st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)
+    if derived:
+        st.write("## Derived variables")
+        variable3 = st.multiselect(
+            "Choose",
+            options=(derived_cols),
+            # default=["Fountain Spray", "Temperature"],
+            # default=["Temperature"],
+        )
+        if not (variable3):
+            st.error("Please select at least one variable.")
+        else:
+            variable_in = [derived_vars[derived_cols.index(item)] for item in variable3]
+            variable = variable_in
+            for v in variable:
+
+                meta = icestupa.get_parameter_metadata(v)
+                # st.header("%s %s" % (meta["kind"], meta["name"] + " " + meta["units"]))
+                st.header("%s" % (meta["name"] + " " + meta["units"]))
+                st.line_chart(df[v])

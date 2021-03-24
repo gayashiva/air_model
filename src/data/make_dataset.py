@@ -17,7 +17,6 @@ from sklearn.linear_model import LinearRegression
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
-# from src.data.config import SITE, FOLDERS, FOUNTAIN
 from src.data.settings import config
 
 import logging

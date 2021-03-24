@@ -85,6 +85,7 @@ class Icestupa:
         mask = self.df["When"] >= self.start_date
         self.df = self.df.loc[mask]
         self.df = self.df.reset_index(drop=True)
+
         # Add Validation data to input
         if self.name in ['guttannen']:
             df_v = pd.read_csv(self.input_folder + self.name + "_drone.csv", sep=",", header=0, parse_dates=["When"])
@@ -104,7 +105,7 @@ class Icestupa:
             },
             "DroneV": {
                 "name": "Drone Validation",
-                "kind": "Output",
+                "kind": "Derived",
                 "units": "($m^3$)",
             },
             "cld": {
@@ -149,7 +150,7 @@ class Icestupa:
             },
             "thickness": {
                 "name": "Ice thickness",
-                "kind": "Output",
+                "kind": "Derived",
                 "units": "($m$)",
             },
             "Discharge": {
@@ -254,12 +255,12 @@ class Icestupa:
             },
             "a": {
                 "name": "Albedo",
-                "kind": "Output",
+                "kind": "Derived",
                 "units": "()",
             },
             "f_cone": {
                 "name": "Solar Surface Area Fraction",
-                "kind": "Output",
+                "kind": "Derived",
                 "units": "()",
             },
             "s_cone": {
@@ -622,6 +623,7 @@ class Icestupa:
         self.df = self.df.reset_index(drop=True)
 
         self.get_solar()
+        self.df.Prec = self.df.Prec * self.TIME_STEP #mm
 
         """Albedo Decay parameters initialized"""
         self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
@@ -661,6 +663,7 @@ class Icestupa:
 
             # Maintain constant Height to radius ratio 
             self.df.loc[i, "s_cone"] = self.df.loc[i - 1, "s_cone"]
+            # self.df.loc[i, "s_cone"] = self.h_f/self.r_mean
 
             # Ice Radius
             # logger.warning("%s,%s" %(self.df.loc[i, "iceV"], self.df.loc[i, "s_cone"]))
@@ -1053,9 +1056,10 @@ class Icestupa:
                 self.surface_area(i)
 
                 #Change in fountain height
-                if self.df.h_ice[i] > ctr + self.h_f and self.discharge != 0:
-                    ctr += 1
-                    logger.warning("Height increased to %s on %s" % ((ctr + self.h_f), self.df.When[i]))
+                if self.df.h_ice[i] > self.h_f and self.discharge != 0:
+                    self.h_f += 1
+                    # ctr += 1
+                    logger.warning("Height increased to %s on %s" % (self.h_f, self.df.When[i]))
                     self.height_steps(i)
 
                 # Precipitation to ice quantity
@@ -1063,7 +1067,6 @@ class Icestupa:
                     self.df.loc[i, "ppt"] = (
                         self.RHO_W
                         * row.Prec
-                        * self.TIME_STEP
                         / 1000
                         * math.pi
                         * math.pow(self.df.loc[i, "r_ice"], 2)
