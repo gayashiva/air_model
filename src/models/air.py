@@ -624,13 +624,15 @@ class Icestupa:
 
         self.get_solar()
         self.df.Prec = self.df.Prec * self.TIME_STEP #mm
-
-        """Albedo Decay parameters initialized"""
-        self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
-        s = 0
-        f = 0
-        for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
-            s, f = self.albedo(row, s, f)
+        if self.name == 'guttannen':
+            self.df.a = self.A_I
+        else:
+            """Albedo Decay parameters initialized"""
+            self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
+            s = 0
+            f = 0
+            for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
+                s, f = self.albedo(row, s, f)
 
         self.df = self.df.round(3)
         self.df = self.df[self.df.columns.drop(list(self.df.filter(regex="Unnamed")))] # Remove junk columns
@@ -1398,7 +1400,7 @@ class Icestupa:
         ax1t = ax1.twinx()
         ax1t.plot(
             x,
-            self.df.Prec * 1000 * self.TIME_STEP,
+            self.df.Prec * 1000,
             linestyle="-",
             color=CB91_Blue,
             label="Plaffeien",
@@ -1521,25 +1523,25 @@ class Icestupa:
         dfds = dfds.set_index("When").resample("D").sum().reset_index()
         dfds["When"] = dfds["When"].dt.strftime("%b %d")
 
-        dfds["label"] = " "
-        labels = [
-            "Jan 30",
-            "Feb 05",
-            "Feb 12",
-            "Feb 19",
-            "Feb 26",
-            "Mar 05",
-            "Mar 12",
-            "Mar 19",
-            "Mar 26",
-            "Apr 02",
-        ]
-        for i in range(0, dfds.shape[0]):
-            for item in labels:
-                if dfds.When[i] == item:
-                    dfds.loc[i, "label"] = dfds.When[i]
+        # dfds["label"] = " "
+        # labels = [
+        #     "Jan 30",
+        #     "Feb 05",
+        #     "Feb 12",
+        #     "Feb 19",
+        #     "Feb 26",
+        #     "Mar 05",
+        #     "Mar 12",
+        #     "Mar 19",
+        #     "Mar 26",
+        #     "Apr 02",
+        # ]
+        # for i in range(0, dfds.shape[0]):
+        #     for item in labels:
+        #         if dfds.When[i] == item:
+        #             dfds.loc[i, "label"] = dfds.When[i]
 
-        dfds = dfds.set_index("label")
+        # dfds = dfds.set_index("label")
         dfds = dfds.rename(
             columns={
                 "solid": "Ice",
@@ -1563,46 +1565,46 @@ class Icestupa:
         dfd = self.df.set_index("When").resample("D").mean().reset_index()
         dfd["When"] = dfd["When"].dt.strftime("%b %d")
 
-        dfd["label"] = " "
-        labels = [
-            "Jan 30",
-            "Feb 05",
-            "Feb 12",
-            "Feb 19",
-            "Feb 26",
-            "Mar 05",
-            "Mar 12",
-            "Mar 19",
-            "Mar 26",
-            "Apr 02",
-        ]
-        for i in range(0, dfd.shape[0]):
-            for item in labels:
-                if dfd.When[i] == item:
-                    dfd.loc[i, "label"] = dfd.When[i]
+        # dfd["label"] = " "
+        # labels = [
+        #     "Jan 30",
+        #     "Feb 05",
+        #     "Feb 12",
+        #     "Feb 19",
+        #     "Feb 26",
+        #     "Mar 05",
+        #     "Mar 12",
+        #     "Mar 19",
+        #     "Mar 26",
+        #     "Apr 02",
+        # ]
+        # for i in range(0, dfd.shape[0]):
+        #     for item in labels:
+        #         if dfd.When[i] == item:
+        #             dfd.loc[i, "label"] = dfd.When[i]
 
-        dfd = dfd.set_index("label")
+        # dfd = dfd.set_index("label")
 
         dfds2 = self.df.set_index("When").resample("D").mean().reset_index()
         dfds2["When"] = dfds2["When"].dt.strftime("%b %d")
-        dfds2["label"] = " "
-        labels = [
-            "Jan 30",
-            "Feb 05",
-            "Feb 12",
-            "Feb 19",
-            "Feb 26",
-            "Mar 05",
-            "Mar 12",
-            "Mar 19",
-            "Mar 26",
-            "Apr 02",
-        ]
-        for i in range(0, dfds2.shape[0]):
-            for item in labels:
-                if dfds2.When[i] == item:
-                    dfds2.loc[i, "label"] = dfds2.When[i]
-        dfds2 = dfds2.set_index("label")
+        # dfds2["label"] = " "
+        # labels = [
+        #     "Jan 30",
+        #     "Feb 05",
+        #     "Feb 12",
+        #     "Feb 19",
+        #     "Feb 26",
+        #     "Mar 05",
+        #     "Mar 12",
+        #     "Mar 19",
+        #     "Mar 26",
+        #     "Apr 02",
+        # ]
+        # for i in range(0, dfds2.shape[0]):
+        #     for item in labels:
+        #         if dfds2.When[i] == item:
+        #             dfds2.loc[i, "label"] = dfds2.When[i]
+        # dfds2 = dfds2.set_index("label")
         y3 = dfds2["SA"]
         y4 = dfds2["iceV"]
         y0 = dfds["Discharge"] * 5 / 1000
@@ -1628,7 +1630,7 @@ class Icestupa:
         ax1.grid(color="black", alpha=0.3, linewidth=0.5, which="major")
         plt.ylabel("Energy Flux [$W\\,m^{-2}$]")
         plt.legend(loc="upper center", ncol=6)
-        plt.ylim(-125, 125)
+        # plt.ylim(-125, 125)
         x_axis = ax1.axes.get_xaxis()
         x_axis.set_visible(False)
         at = AnchoredText("(b)", prop=dict(size=10), frameon=True, loc="upper left")
@@ -1647,7 +1649,7 @@ class Icestupa:
         plt.ylabel("Thickness ($m$ w. e.)")
         plt.xticks(rotation=45)
         plt.legend(loc="upper center", ncol=6)
-        ax2.set_ylim(-0.03, 0.03)
+        # ax2.set_ylim(-0.03, 0.03)
         ax2.yaxis.set_minor_locator(AutoMinorLocator())
         ax2.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
         x_axis = ax2.axes.get_xaxis()
@@ -1679,6 +1681,10 @@ class Icestupa:
         at = AnchoredText("(e)", prop=dict(size=10), frameon=True, loc="upper left")
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
         ax4.add_artist(at)
+        ax4.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax4.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax4.xaxis.set_minor_locator(mdates.DayLocator())
+        fig.autofmt_xdate()
         plt.xticks(rotation=45)
         plt.tight_layout()
         plt.savefig(
@@ -1744,20 +1750,20 @@ if __name__ == "__main__":
 
     icestupa = Icestupa(SITE, FOUNTAIN)
 
-    icestupa.derive_parameters()
+    # icestupa.derive_parameters()
 
     # icestupa.read_input()
 
-    icestupa.melt_freeze()
+    # icestupa.melt_freeze()
 
-    # icestupa.read_output()
+    icestupa.read_output()
 
     # icestupa.corr_plot()
 
-    icestupa.summary()
+    # icestupa.summary()
 
     # icestupa.print_input()
-    # icestupa.paper_figures()
+    icestupa.paper_figures()
 
     # icestupa.print_output()
 

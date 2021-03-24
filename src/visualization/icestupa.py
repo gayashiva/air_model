@@ -173,9 +173,11 @@ if __name__ == "__main__":
 
     # df = df_filter("Move sliders to filter dataframe", icestupa.df)
 
-    input = st.sidebar.checkbox("Choose Input Variables")
-    output = st.sidebar.checkbox("Choose Output Variables", value=True)
-    derived = st.sidebar.checkbox("Choose Derived Variables")
+    st.sidebar.write("Display Variables")
+    input = st.sidebar.checkbox("Input")
+    output = st.sidebar.checkbox("Output", value=True)
+    derived = st.sidebar.checkbox("Derived")
+    st.sidebar.write("# Map of %s" % location)
     st.sidebar.map(map_data, zoom=10)
     if input:
         st.write("## Input variables")
