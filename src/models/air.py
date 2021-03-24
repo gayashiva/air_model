@@ -95,6 +95,13 @@ class Icestupa:
             self.df['DroneV'] = df_v['DroneV']
             self.df = self.df.reset_index()
 
+        if self.name in ['schwarzsee']:
+            self.df.DroneV = np.NaN
+            self.df = self.df.set_index('When')
+            self.df.loc[datetime(2019, 2, 14, 16), 'DroneV'] = 0.856575
+            self.df.loc[datetime(2019, 3, 10, 18), 'DroneV'] = 0.1295
+            self.df = self.df.reset_index()
+
     @st.cache
     def get_parameter_metadata(self, parameter): # Provides Metadata of all input and Output variables
         return {
@@ -323,11 +330,11 @@ class Icestupa:
                 "kind": "Output",
                 "units": "($kg$)",
             },
-            "Input": {
-                "name": "Water Input",
-                "kind": "Output",
-                "units": "($kg$)",
-            },
+            # "Input": {
+            #     "name": "Water Input",
+            #     "kind": "Output",
+            #     "units": "($kg$)",
+            # },
             "unfrozen_water": {
                 "name": "Water Runoff",
                 "kind": "Output",
@@ -340,7 +347,7 @@ class Icestupa:
             },
             "input": {
                 "name": "Mass Input",
-                "kind": "Misc",
+                "kind": "Output",
                 "units": "($kg$)",
             },
         }[parameter]
@@ -613,10 +620,10 @@ class Icestupa:
         self.discharge_rate()
         self.f_on = self.df.When[self.df.Discharge.astype(bool)].tolist() # List of all timesteps when fountain on
         self.start_date = self.f_on[0]
-        logger.warning("Fountain ends %s" % self.f_on[-1])
-        # self.end_date =  self.f_on[-1] #+ timedelta(days=30)
         logger.info("Model starts at %s" % (self.start_date))
         # logger.info("Model ends at %s" % (self.end_date))
+        logger.warning("Fountain ends %s" % self.f_on[-1])
+        # self.end_date =  self.f_on[-1] #+ timedelta(days=30)
 
         mask = self.df["When"] >= self.start_date
         self.df = self.df.loc[mask]
@@ -624,15 +631,13 @@ class Icestupa:
 
         self.get_solar()
         self.df.Prec = self.df.Prec * self.TIME_STEP #mm
-        if self.name == 'guttannen':
-            self.df.a = self.A_I
-        else:
-            """Albedo Decay parameters initialized"""
-            self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
-            s = 0
-            f = 0
-            for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
-                s, f = self.albedo(row, s, f)
+
+        """Albedo Decay parameters initialized"""
+        self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
+        s = 0
+        f = 0
+        for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
+            s, f = self.albedo(row, s, f)
 
         self.df = self.df.round(3)
         self.df = self.df[self.df.columns.drop(list(self.df.filter(regex="Unnamed")))] # Remove junk columns
@@ -821,13 +826,12 @@ class Icestupa:
 
         Duration = self.df.index[-1] * 5 / (60 * 24)
 
-        print("\nIce Volume Max", float(self.df["iceV"].max()))
-        print("Fountain efficiency", Efficiency)
-        print("Ice Mass Remaining", self.df["ice"].iloc[-1])
-        print("Meltwater", self.df["meltwater"].iloc[-1])
-        print("Ppt", self.df["ppt"].sum())
-        print("Deposition", self.df["dpt"].sum())
-        print("Duration", Duration)
+        print("\nIce Volume Max", float(round(self.df["iceV"].max(), 2)))
+        print("Fountain efficiency", round(Efficiency, 2))
+        print("Ice Mass Remaining", round(self.df["ice"].iloc[-1], 2))
+        print("Meltwater",round(self.df["meltwater"].iloc[-1],2)) 
+        print("Ppt", round(self.df["ppt"].sum(),2))
+        # print("Duration", round(Duration,2))
 
         # Full Output
         filename4 = self.output_folder + "model_output_" + self.trigger + ".csv"
@@ -1400,7 +1404,7 @@ class Icestupa:
         ax1t = ax1.twinx()
         ax1t.plot(
             x,
-            self.df.Prec * 1000,
+            self.df.Prec,
             linestyle="-",
             color=CB91_Blue,
             label="Plaffeien",
@@ -1523,25 +1527,6 @@ class Icestupa:
         dfds = dfds.set_index("When").resample("D").sum().reset_index()
         dfds["When"] = dfds["When"].dt.strftime("%b %d")
 
-        # dfds["label"] = " "
-        # labels = [
-        #     "Jan 30",
-        #     "Feb 05",
-        #     "Feb 12",
-        #     "Feb 19",
-        #     "Feb 26",
-        #     "Mar 05",
-        #     "Mar 12",
-        #     "Mar 19",
-        #     "Mar 26",
-        #     "Apr 02",
-        # ]
-        # for i in range(0, dfds.shape[0]):
-        #     for item in labels:
-        #         if dfds.When[i] == item:
-        #             dfds.loc[i, "label"] = dfds.When[i]
-
-        # dfds = dfds.set_index("label")
         dfds = dfds.rename(
             columns={
                 "solid": "Ice",
@@ -1565,49 +1550,14 @@ class Icestupa:
         dfd = self.df.set_index("When").resample("D").mean().reset_index()
         dfd["When"] = dfd["When"].dt.strftime("%b %d")
 
-        # dfd["label"] = " "
-        # labels = [
-        #     "Jan 30",
-        #     "Feb 05",
-        #     "Feb 12",
-        #     "Feb 19",
-        #     "Feb 26",
-        #     "Mar 05",
-        #     "Mar 12",
-        #     "Mar 19",
-        #     "Mar 26",
-        #     "Apr 02",
-        # ]
-        # for i in range(0, dfd.shape[0]):
-        #     for item in labels:
-        #         if dfd.When[i] == item:
-        #             dfd.loc[i, "label"] = dfd.When[i]
-
-        # dfd = dfd.set_index("label")
 
         dfds2 = self.df.set_index("When").resample("D").mean().reset_index()
         dfds2["When"] = dfds2["When"].dt.strftime("%b %d")
-        # dfds2["label"] = " "
-        # labels = [
-        #     "Jan 30",
-        #     "Feb 05",
-        #     "Feb 12",
-        #     "Feb 19",
-        #     "Feb 26",
-        #     "Mar 05",
-        #     "Mar 12",
-        #     "Mar 19",
-        #     "Mar 26",
-        #     "Apr 02",
-        # ]
-        # for i in range(0, dfds2.shape[0]):
-        #     for item in labels:
-        #         if dfds2.When[i] == item:
-        #             dfds2.loc[i, "label"] = dfds2.When[i]
-        # dfds2 = dfds2.set_index("label")
+        dfds2 = dfds2.set_index("When")
+        dfds = dfds.set_index("When")
         y3 = dfds2["SA"]
         y4 = dfds2["iceV"]
-        y0 = dfds["Discharge"] * 5 / 1000
+        y0 = dfds["Discharge"] * self.TIME_STEP / (60*1000)
 
         z = dfd[["$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
 
@@ -1673,7 +1623,7 @@ class Icestupa:
 
         ax4 = fig.add_subplot(5, 1, 5)
         ax4 = y4.plot.bar(
-            y="iceV", linewidth=0.5, edgecolor="black", color="#D9E9FA", ax=ax4
+            x="When", y="iceV", linewidth=0.5, edgecolor="black", color="#D9E9FA", ax=ax4
         )
         ax4.xaxis.set_label_text("")
         ax4.set_ylabel("Ice Volume($m^3$)")
@@ -1682,13 +1632,11 @@ class Icestupa:
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
         ax4.add_artist(at)
         ax4.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax4.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax4.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
         plt.xticks(rotation=45)
         plt.tight_layout()
         plt.savefig(
-            # self.output_folder + "paper_figures/Figure_6.jpg", dpi=300, bbox_inches="tight"
             self.output_folder + "paper_figures/Model_Output_" + self.trigger + ".jpg", dpi=300, bbox_inches="tight"
         )
         plt.clf()
@@ -1750,17 +1698,17 @@ if __name__ == "__main__":
 
     icestupa = Icestupa(SITE, FOUNTAIN)
 
-    # icestupa.derive_parameters()
+    icestupa.derive_parameters()
 
     # icestupa.read_input()
 
-    # icestupa.melt_freeze()
+    icestupa.melt_freeze()
 
-    icestupa.read_output()
+    # icestupa.read_output()
 
     # icestupa.corr_plot()
 
-    # icestupa.summary()
+    icestupa.summary()
 
     # icestupa.print_input()
     icestupa.paper_figures()

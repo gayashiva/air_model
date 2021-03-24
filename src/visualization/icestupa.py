@@ -99,7 +99,7 @@ if __name__ == "__main__":
     location = st.sidebar.radio(
         # "Select Location", ("Gangles", "Schwarzsee", "Guttannen", "Hial", "Secmol")
         "Select Location",
-        ("Schwarzsee", "Gangles", "Guttannen"),
+        ("Schwarzsee", "Guttannen"),
     )
     SITE, FOUNTAIN = config(location)
     lat = SITE["latitude"]
@@ -174,19 +174,55 @@ if __name__ == "__main__":
     # df = df_filter("Move sliders to filter dataframe", icestupa.df)
 
     st.sidebar.write("Display Variables")
+    summary = st.sidebar.checkbox("Summary", value=True)
     input = st.sidebar.checkbox("Input")
     output = st.sidebar.checkbox("Output", value=True)
     derived = st.sidebar.checkbox("Derived")
     st.sidebar.write("# Map of %s" % location)
     st.sidebar.map(map_data, zoom=10)
+    if summary:
+        st.write("### Maximum Ice Volume: %.2f m3" % icestupa.df["iceV"].max())
+        st.write(
+            "### Meltwater Released: %.2f litres" % icestupa.df["meltwater"].iloc[-1]
+        )
+        Duration = icestupa.df.index[-1] * icestupa.TIME_STEP / (60 * 60 * 24)
+        st.write("### Survival Duration:  %.2f days" % round(Duration, 2))
+        col1, mid, col2 = st.beta_columns([14, 2, 14])
+        with col1:
+            st.write("## Input variables")
+            st.image(output_folder + "paper_figures/Model_Input_" + trigger + ".jpg")
+
+        with col2:
+            st.write("## Output variables")
+            st.image(output_folder + "paper_figures/Model_Output_" + trigger + ".jpg")
+
+        st.write("## Volume Estimation and Validation")
+        fig, ax = plt.subplots()
+        ax.set_ylabel("Ice Volume[$m^3$]")
+        CB91_Blue = "#2CBDFE"
+        CB91_Green = "#47DBCD"
+        x = icestupa.df.When
+        y1 = icestupa.df.iceV
+        y2 = icestupa.df.DroneV
+        ax.plot(
+            x,
+            y1,
+            "b-",
+            label="Modelled Ice Volume",
+            linewidth=1,
+            color=CB91_Blue,
+        )
+        ax.scatter(x, y2, color=CB91_Green, label="Drone Volume")
+        ax.set_ylim(bottom=0)
+        plt.legend()
+        ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax.xaxis.set_minor_locator(mdates.DayLocator())
+        fig.autofmt_xdate()
+        st.pyplot(fig)
+
     if input:
         st.write("## Input variables")
-        if location == "Schwarzsee":
-            agree_i = st.checkbox("Display all input?")
-            if agree_i:
-                st.image(
-                    output_folder + "paper_figures/Model_Input_" + trigger + ".jpg"
-                )
         variable1 = st.multiselect(
             "Choose",
             options=(input_cols),
@@ -209,12 +245,6 @@ if __name__ == "__main__":
 
     if output:
         st.write("## Output variables")
-        if location == "Schwarzsee":
-            agree_o = st.checkbox("Display all output?")
-            if agree_o:
-                st.image(
-                    output_folder + "paper_figures/Model_Output_" + trigger + ".jpg"
-                )
 
         variable2 = st.multiselect(
             "Choose",
@@ -229,34 +259,7 @@ if __name__ == "__main__":
             for v in variable:
                 meta = icestupa.get_parameter_metadata(v)
                 st.header("%s" % (meta["name"] + " " + meta["units"]))
-                if v == "iceV" and location == "Guttannen":
-                    fig, ax = plt.subplots()
-                    ax.set_ylabel("Ice Volume[$m^3$]")
-                    CB91_Blue = "#2CBDFE"
-                    CB91_Green = "#47DBCD"
-                    x = df.index
-                    y1 = df.iceV
-                    y2 = df.DroneV
-                    ax.plot(
-                        x,
-                        y1,
-                        "b-",
-                        label="Modelled Ice Volume",
-                        linewidth=1,
-                        color=CB91_Blue,
-                    )
-                    ax.scatter(x, y2, color=CB91_Green, label="Drone Volume")
-                    ax.set_ylim(bottom=0)
-                    plt.legend()
-                    ax.xaxis.set_major_locator(mdates.WeekdayLocator())
-                    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-                    ax.xaxis.set_minor_locator(mdates.DayLocator())
-                    fig.autofmt_xdate()
-                    st.pyplot(fig)
-
-                else:
-                    st.line_chart(df[v])
-
+                st.line_chart(df[v])
                 # st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)
     if derived:
         st.write("## Derived variables")

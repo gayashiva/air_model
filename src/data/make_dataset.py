@@ -215,24 +215,33 @@ def field(site="schwarzsee"):
 
 
 def era5(df, site="schwarzsee"):
-    df_in3 = pd.read_csv(
-        # FOLDERS["raw_folder"] + "ERA5_" + SITE["name"] + ".csv",
-        # "/home/suryab/work/ERA5/results/schwarzsee_2019.csv",
-        "/home/suryab/work/ERA5/outputs/" + site + "_2021.csv",
-        sep=",",
-        header=0,
-        parse_dates=["When"],
-    )
-    df_in2 = pd.read_csv(
-        "/home/suryab/work/ERA5/outputs/" + site + "_2020.csv",
-        sep=",",
-        header=0,
-        parse_dates=["When"],
-    )
-    df_in3 = df_in3.set_index("When")
-    df_in2 = df_in2.set_index("When")
-    df_in3 = pd.concat([df_in2, df_in3])
-    df_in3 = df_in3.reset_index()
+
+    if site in ["schwarzsee"]:
+        df_in3 = pd.read_csv(
+            "/home/suryab/work/ERA5/outputs/" + site + "_2019.csv",
+            sep=",",
+            header=0,
+            parse_dates=["When"],
+        )
+
+    else:
+        df_in3 = pd.read_csv(
+            "/home/suryab/work/ERA5/outputs/" + site + "_2021.csv",
+            sep=",",
+            header=0,
+            parse_dates=["When"],
+        )
+        df_in2 = pd.read_csv(
+            "/home/suryab/work/ERA5/outputs/" + site + "_2020.csv",
+            sep=",",
+            header=0,
+            parse_dates=["When"],
+        )
+        df_in3 = df_in3.set_index("When")
+        df_in2 = df_in2.set_index("When")
+        df_in3 = pd.concat([df_in2, df_in3])
+        df_in3 = df_in3.reset_index()
+
     mask = (df_in3["When"] >= SITE["start_date"]) & (df_in3["When"] <= SITE["end_date"])
     df_in3 = df_in3.loc[mask]
     df_in3 = df_in3.reset_index(drop="True")
@@ -286,9 +295,6 @@ def era5(df, site="schwarzsee"):
     interpolated = upsampled.interpolate(method="linear")
     interpolated = interpolated.reset_index()
 
-    # interpolated["Discharge"] = 0
-    # interpolated["Discharge"] = discharge_rate(interpolated, FOUNTAIN)
-
     df_in3 = interpolated[
         [
             "When",
@@ -321,10 +327,8 @@ def era5(df, site="schwarzsee"):
             "LW_in",
             "p_a",
             "Prec",
-            # "Discharge",
         ]
     ]
-    # df_ERA5.loc[:, "Discharge"] = 0
 
     logger.debug(df_ERA5.head())
     logger.debug(df_ERA5.tail())
@@ -434,20 +438,22 @@ def meteoswiss(site="schwarzsee"):
 
 if __name__ == "__main__":
 
-    SITE, FOUNTAIN = config("Guttannen")
+    SITE, FOUNTAIN = config("Schwarzsee")
 
     raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
 
-    # df = field(site=SITE["name"])
-    df = meteoswiss(SITE["name"])
+    if SITE["name"] in ["schwarzsee"]:
+        df = field(site=SITE["name"])
+    else:
+        df = meteoswiss(SITE["name"])
 
     df_ERA5, df_in3 = era5(df, SITE["name"])
 
     df_ERA5 = df_ERA5.set_index("When")
     df = df.set_index("When")
     df["missing"] = 0
-    df["missing_type"] = ""
+    # df["missing_type"] = ""
     # df.loc[df["T_a"].isnull(), "missing"] = 1
     # df["v_a"] = df["v_a"].replace(0, np.NaN)
 
@@ -457,32 +463,47 @@ if __name__ == "__main__":
     )
 
     # Fit ERA5 to field data
-    # for column in ["T_a", "RH", "v_a", "p_a"]:
-    #     Y = df[column].values.reshape(-1, 1)
-    #     X = df_ERA5[mask][column].values.reshape(-1, 1)
-    #     slope, intercept = linreg(X, Y)
-    #     df_ERA5[column] = slope * df_ERA5[column] + intercept
+    for column in ["T_a", "RH", "v_a", "p_a"]:
+        Y = df[column].values.reshape(-1, 1)
+        X = df_ERA5[mask][column].values.reshape(-1, 1)
+        slope, intercept = linreg(X, Y)
+        df_ERA5[column] = slope * df_ERA5[column] + intercept
 
     df_ERA5 = df_ERA5.set_index("When")
 
     # Fill from ERA5
     logger.debug(df.loc[df["T_a"].isnull()])
-    for col in ["T_a", "RH", "v_a"]:
-        df.loc[df[col].isnull(), "missing"] = 1
-        df.loc[df[col].isnull(), "missing_type"] = col
-        # logger.warning("%s converted to %0.1f" %(col, convertToNumber(col)))
-        df.loc[df[col].isnull(), col] = df_ERA5[col]
 
-    for col in ["p_a", "SW_direct", "SW_diffuse", "LW_in"]:
-        logger.info("%s from ERA5" % col)
-        df[col] = df_ERA5[col]
+    if SITE["name"] in ["guttannen"]:
+        for col in ["T_a", "RH", "v_a"]:
+            df.loc[df[col].isnull(), "missing"] = 1
+            df.loc[df[col].isnull(), "missing_type"] = col
+            # logger.warning("%s converted to %0.1f" %(col, convertToNumber(col)))
+            df.loc[df[col].isnull(), col] = df_ERA5[col]
 
-    # df_in2 = meteoswiss(SITE["name"])
+        for col in ["p_a", "SW_direct", "SW_diffuse", "LW_in"]:
+            logger.info("%s from ERA5" % col)
+            df[col] = df_ERA5[col]
 
-    # df_in2 = df_in2.set_index("When")
+    if SITE["name"] in ["schwarzsee"]:
+        for col in ["T_a", "RH", "v_a", "p_a"]:
+            df.loc[df[col].isnull(), "missing"] = 1
+            df.loc[df[col].isnull(), "missing_type"] = col
+            # logger.warning("%s converted to %0.1f" %(col, convertToNumber(col)))
+            df.loc[df[col].isnull(), col] = df_ERA5[col]
 
-    # df["Prec"] = df_in2["Prec"]
-    # df_in2 = df_in2.reset_index()
+        for col in ["SW_direct", "SW_diffuse", "LW_in"]:
+            logger.info("%s from ERA5" % col)
+            df[col] = df_ERA5[col]
+
+    if SITE["name"] in ["schwarzsee"]:
+        df_in2 = meteoswiss(SITE["name"])
+
+        df_in2 = df_in2.set_index("When")
+
+        df["Prec"] = df_in2["Prec"]
+        df_in2 = df_in2.reset_index()
+
     df = df.reset_index()
 
     # Compare ERA5 and field data
@@ -497,13 +518,26 @@ if __name__ == "__main__":
     # )
     # print("Plf", column, r_value)
 
-    df_out = df[
-        [
+    if SITE["name"] in ["schwarzsee"]:
+        cols = [
             "When",
             "T_a",
             "RH",
             "v_a",
-            # "Discharge",
+            "SW_direct",
+            "SW_diffuse",
+            "Prec",
+            # "vp_a",
+            "p_a",
+            "missing",
+            "LW_in",
+        ]
+    else:
+        cols = [
+            "When",
+            "T_a",
+            "RH",
+            "v_a",
             "SW_direct",
             "SW_diffuse",
             "Prec",
@@ -512,31 +546,13 @@ if __name__ == "__main__":
             "missing",
             "LW_in",
         ]
-    ]
+
+    df_out = df[cols]
 
     # df_out.loc[df_out["Prec"].isnull(), "Prec"] = 0
     if df_out.isnull().values.any():
         print("Warning: Null values present")
-        print(
-            df_out[
-                [
-                    "When",
-                    "T_a",
-                    "RH",
-                    "v_a",
-                    # "Discharge",
-                    "SW_direct",
-                    "SW_diffuse",
-                    "Prec",
-                    "vp_a",
-                    "p_a",
-                    "missing",
-                    "LW_in",
-                ]
-            ]
-            .isnull()
-            .sum()
-        )
+        print(df_out[cols].isnull().sum())
 
     df_out.loc[:, "Prec"] = df_out.Prec.interpolate()
     df_out.loc[:, "vp_a"] = df_out.Prec.interpolate()
@@ -547,60 +563,61 @@ if __name__ == "__main__":
     logger.info(df_out.tail())
     df_out.to_csv(input_folder + SITE["name"] + "_input_model.csv")
 
-    # Extend data
-    # df_ERA5["Prec"] = 0
-    # df_ERA5["missing"] = 1
-    # df_ERA5 = df_ERA5.reset_index()
-    # mask = (df_ERA5["When"] > df_out["When"].iloc[-1]) & (
-    #     df_ERA5["When"] <= datetime(2019, 5, 30)
-    # )
-    # df_ERA5 = df_ERA5.loc[mask]
-
-    # mask = (df_in2["When"] >= SITE["start_date"]) & (
-    #     df_in2["When"] <= SITE["end_date"]
-    # )
-    # df_in2 = df_in2.loc[mask]
-    # df_in2 = df_in2.set_index("When")
-
-    # df_out = df_out.set_index("When")
-    # df_ERA5 = df_ERA5.set_index("When")
-
-    # df_ERA5["Prec"] = df_in2["Prec"]
-    # concat = pd.concat([df_out, df_ERA5])
-    # concat.loc[concat["Prec"].isnull(), "Prec"] = 0
-    # concat.loc[concat["v_a"] < 0, "v_a"] = 0
-    # logger.error(concat[concat.index.duplicated()])
-    # logger.info(concat.tail())
-
-    # concat = concat.reset_index()
-
-    # if concat.isnull().values.any():
-    #     print("Warning: Null values present")
-    #     print(
-    #         concat[
-    #             [
-    #                 "When",
-    #                 "T_a",
-    #                 "RH",
-    #                 "v_a",
-    #                 # "Discharge",
-    #                 "SW_direct",
-    #                 "SW_diffuse",
-    #                 "Prec",
-    #                 "p_a",
-    #                 "missing",
-    #             ]
-    #         ]
-    #         .isnull()
-    #         .sum()
+    # if SITE["name"] in ['schwarzsee']:
+    # # Extend data
+    #     df_ERA5["Prec"] = 0
+    #     df_ERA5["missing"] = 1
+    #     df_ERA5 = df_ERA5.reset_index()
+    #     mask = (df_ERA5["When"] > df_out["When"].iloc[-1]) & (
+    #         df_ERA5["When"] <= datetime(2019, 5, 30)
     #     )
+    #     df_ERA5 = df_ERA5.loc[mask]
 
-    # concat.to_csv(input_folder + SITE["name"] + "_input_model.csv")
-    # concat.to_hdf(
-    #     input_folder + SITE["name"] + "_input_model.h5",
-    #     key="df",
-    #     mode="w",
-    # )
+    #     mask = (df_in2["When"] >= SITE["start_date"]) & (
+    #         df_in2["When"] <= SITE["end_date"]
+    #     )
+    #     df_in2 = df_in2.loc[mask]
+    #     df_in2 = df_in2.set_index("When")
+
+    #     df_out = df_out.set_index("When")
+    #     df_ERA5 = df_ERA5.set_index("When")
+
+    #     df_ERA5["Prec"] = df_in2["Prec"]
+    #     concat = pd.concat([df_out, df_ERA5])
+    #     concat.loc[concat["Prec"].isnull(), "Prec"] = 0
+    #     concat.loc[concat["v_a"] < 0, "v_a"] = 0
+    #     logger.error(concat[concat.index.duplicated()])
+    #     logger.info(concat.tail())
+
+    #     concat = concat.reset_index()
+
+    #     if concat.isnull().values.any():
+    #         print("Warning: Null values present")
+    #         print(
+    #             concat[
+    #                 [
+    #                     "When",
+    #                     "T_a",
+    #                     "RH",
+    #                     "v_a",
+    #                     # "Discharge",
+    #                     "SW_direct",
+    #                     "SW_diffuse",
+    #                     "Prec",
+    #                     "p_a",
+    #                     "missing",
+    #                 ]
+    #             ]
+    #             .isnull()
+    #             .sum()
+    #         )
+
+    #     concat.to_csv(input_folder + SITE["name"] + "_input_model.csv")
+    #     concat.to_hdf(
+    #         input_folder + SITE["name"] + "_input_model.h5",
+    #         key="df",
+    #         mode="w",
+    #     )
 
     # fig = plt.figure()
     # ax1 = fig.add_subplot(111)
