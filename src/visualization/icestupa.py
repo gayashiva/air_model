@@ -99,7 +99,7 @@ if __name__ == "__main__":
     location = st.sidebar.radio(
         # "Select Location", ("Gangles", "Schwarzsee", "Guttannen", "Hial", "Secmol")
         "Select Location",
-        ("Schwarzsee", "Guttannen"),
+        ("Guttannen", "Schwarzsee"),
     )
     SITE, FOUNTAIN = config(location)
     lat = SITE["latitude"]
@@ -176,7 +176,7 @@ if __name__ == "__main__":
     st.sidebar.write("Display Variables")
     summary = st.sidebar.checkbox("Summary", value=True)
     input = st.sidebar.checkbox("Input")
-    output = st.sidebar.checkbox("Output", value=True)
+    output = st.sidebar.checkbox("Output")
     derived = st.sidebar.checkbox("Derived")
     st.sidebar.write("# Map of %s" % location)
     st.sidebar.map(map_data, zoom=10)
