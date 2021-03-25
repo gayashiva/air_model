@@ -33,7 +33,7 @@ def config(location="Schwarzsee"):
             theta_f=0,  # FOUNTAIN aperture diameter
             ftl=0,  # FOUNTAIN flight time loss ftl
             T_w=5,  # FOUNTAIN Water temperature
-            discharge=22.0,  # FOUNTAIN on discharge
+            discharge=15.0,  # FOUNTAIN on discharge
             crit_temp=0,  # FOUNTAIN runtime temperature
             # tree_height=1.93,
             # tree_radius=4.13 / 2,
@@ -41,9 +41,11 @@ def config(location="Schwarzsee"):
             # tree_radius=3.3 + 3 / 2,
             # h_i=0.7,
             # r_i=10.33 / 2,
-            h_i=0.5,
-            r_i=4.25,
-            trigger="NetEnergy",
+            h_i=0.43,
+            r_i=9.04 / 2,
+            # h_i=0,
+            # r_i=0,
+            trigger="Manual",
         )
 
     if location == "Gangles":

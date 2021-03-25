@@ -93,6 +93,10 @@ class Icestupa:
             # df_v = df_v.astype(float)
             self.df = self.df.set_index('When')
             self.df['DroneV'] = df_v['DroneV']
+            self.df.h_s = 0
+            self.df.loc[datetime(2020, 12, 30, 16), 'h_s'] = 1
+            self.df.loc[datetime(2021, 1, 7, 16), 'h_s'] = 1
+            self.df.loc[datetime(2021, 1, 11, 16), 'h_s'] = 1
             self.df = self.df.reset_index()
 
         if self.name in ['schwarzsee']:
@@ -107,6 +111,11 @@ class Icestupa:
         return {
             "When": {
                 "name": "Timestamp",
+                "kind": "Misc",
+                "units": "()",
+            },
+            "h_s": {
+                "name": "Height Steps",
                 "kind": "Misc",
                 "units": "()",
             },
@@ -401,6 +410,7 @@ class Icestupa:
             data_xy.append((x, y))
             # use the time in increments of 0.1 seconds
             t += 0.01
+        logger.warning("Range of %s on %s" % (self.h_f, x))
         return x
 
     def albedo(self, row, s=0, f=0): # Albedo Scheme described in Section 3.2.1
@@ -408,24 +418,33 @@ class Icestupa:
         i = row.Index
 
         """Albedo"""
+        # # Precipitation event
+        # if (row.Discharge == 0) & (row.Prec > 0):
+        #     if row.T_a < self.T_RAIN:  # Snow event
+        #         s = 0
+        #         f = 0
+
+        # if row.Discharge > 0: # Spray event
+        #     f = 1
+        #     s = 0
+
+        # if f == 0:  # last snowed
+        #     self.df.loc[i, "a"] = self.A_I + (self.A_S - self.A_I) * math.exp(
+        #         -s / self.T_DECAY
+        #     )
+        #     s = s + 1
+        # else:  # last sprayed
+
+        #     self.df.loc[i, "a"] = self.A_I
+
         # Precipitation event
-        if (row.Discharge == 0) & (row.Prec > 0):
+        if (row.Prec > 0):
             if row.T_a < self.T_RAIN:  # Snow event
                 s = 0
-                f = 0
-
-        if row.Discharge > 0: # Spray event
-            f = 1
-            s = 0
-
-        if f == 0:  # last snowed
-            self.df.loc[i, "a"] = self.A_I + (self.A_S - self.A_I) * math.exp(
-                -s / self.T_DECAY
-            )
-            s = s + 1
-        else:  # last sprayed
-
-            self.df.loc[i, "a"] = self.A_I
+        self.df.loc[i, "a"] = self.A_I + (self.A_S - self.A_I) * math.exp(
+            -s / self.T_DECAY
+        )
+        s = s + 1
 
         return s, f
 
@@ -436,7 +455,7 @@ class Icestupa:
             self.r_mean = r_mean
         else:
             self.v = self.discharge / (60 * 1000 * Area)
-            self.r_mean = self.projectile_xy(v=self.v)
+            self.r_mean = self.projectile_xy(v=self.v, h=self.h_f)
 
         logger.info("Spray radius %s" % (self.r_mean))
         return self.r_mean
@@ -770,7 +789,7 @@ class Icestupa:
             )
             sys.exit("LW nan")
 
-        if self.liquid > 0:
+        if self.liquid > 0 and self.name=='schwarzsee': #Can only find Qf if water discharge quantity known
             self.df.loc[i, "Qf"] = (
                 (self.df.loc[i - 1, "solid"])
                 * self.C_W
@@ -1062,11 +1081,14 @@ class Icestupa:
                 self.surface_area(i)
 
                 #Change in fountain height
-                if self.df.h_ice[i] > self.h_f and self.discharge != 0:
+                # if self.df.h_ice[i] > self.h_f and self.discharge != 0:
+                if row.h_s ==1:
                     self.h_f += 1
                     # ctr += 1
                     logger.warning("Height increased to %s on %s" % (self.h_f, self.df.When[i]))
-                    self.height_steps(i)
+                    # self.height_steps(i)
+                    self.spray_radius()
+                    # self.df.loc[i, "r_ice"] = self.spray_radius()
 
                 # Precipitation to ice quantity
                 if row.T_a < self.T_RAIN and row.Prec > 0:
