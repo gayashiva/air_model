@@ -43,9 +43,7 @@ def config(location="Schwarzsee"):
             # r_i=10.33 / 2,
             h_i=0.43,
             r_i=9.04 / 2,
-            # h_i=0,
-            # r_i=0,
-            trigger="Manual",
+            trigger="NetEnergy",
         )
 
     if location == "Gangles":

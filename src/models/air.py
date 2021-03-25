@@ -1042,7 +1042,7 @@ class Icestupa:
 
                 if self.name == "guttannen":
                     self.spray_radius()
-                    if self.h_i !=0:
+                    if hasattr(self, 'h_i'):
                         self.df.loc[i - 1, "h_ice"] = self.h_i
                         self.df.loc[i - 1, "r_ice"] = self.r_i
                     else:
