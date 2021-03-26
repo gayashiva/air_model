@@ -13,7 +13,7 @@ from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 from pvlib import location
-from functools import cache
+from functools import lru_cache
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
@@ -92,6 +92,7 @@ class Icestupa:
         self.df = self.df.reset_index(drop=True)
         logger.info(self.df.head())
 
+    @lru_cache
     def calibration(self, site):
         # Add Validation data to input
         if site in ['guttannen']:
@@ -374,7 +375,7 @@ class Icestupa:
             },
         }[parameter]
 
-    @cache
+    @lru_cache
     def get_solar(self, latitude, longitude): # Provides solar angle for each time step
 
         site_location = location.Location(latitude, longitude)
@@ -403,7 +404,7 @@ class Icestupa:
         solar_df = solar_df.reset_index()
         return solar_df
 
-    @cache
+    @lru_cache
     def droplet_projectile(self,dia,h, d=0, x=0): # returns discharge or spray radius using projectile motion
         Area = math.pi * math.pow(dia, 2) / 4
         data_xy = []
@@ -430,7 +431,7 @@ class Icestupa:
             logger.info("Discharge calculated is %s" % (d))
             return d
 
-    @cache
+    @lru_cache
     def albedo(self, row, s=0, f=0, site='schwarzsee' ): # Albedo Scheme described in Section 3.2.1
 
         i = row.Index
