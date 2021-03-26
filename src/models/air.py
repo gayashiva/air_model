@@ -13,6 +13,7 @@ from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 from pvlib import location
+from functools import cache
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
@@ -114,7 +115,6 @@ class Icestupa:
         logger.info(df_c.head())
         return df_c
 
-    @st.cache
     def get_parameter_metadata(self, parameter): # Provides Metadata of all input and Output variables
         return {
             "When": {
@@ -374,6 +374,7 @@ class Icestupa:
             },
         }[parameter]
 
+    @cache
     def get_solar(self, latitude, longitude): # Provides solar angle for each time step
 
         site_location = location.Location(latitude, longitude)
@@ -402,6 +403,7 @@ class Icestupa:
         solar_df = solar_df.reset_index()
         return solar_df
 
+    @cache
     def droplet_projectile(self,dia,h, d=0, x=0): # returns discharge or spray radius using projectile motion
         Area = math.pi * math.pow(dia, 2) / 4
         data_xy = []
@@ -428,6 +430,7 @@ class Icestupa:
             logger.info("Discharge calculated is %s" % (d))
             return d
 
+    @cache
     def albedo(self, row, s=0, f=0, site='schwarzsee' ): # Albedo Scheme described in Section 3.2.1
 
         i = row.Index
@@ -485,6 +488,7 @@ class Icestupa:
 
         self.df.loc[i:, "Discharge"] *= self.discharge
 
+    @cache
     def discharge_rate(self): # Provides discharge info based on trigger setting
 
         self.df["Discharge"] = 0
@@ -586,6 +590,7 @@ class Icestupa:
         mask_index = self.df[mask].index
         self.df.loc[mask_index, "Discharge"] = 0
 
+    @cache
     def derive_parameters(self): # Derives additional parameters required for simulation
         df_c = self.calibration(site = self.name)
         if self.name in ['guttannen']:
