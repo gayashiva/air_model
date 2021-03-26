@@ -1,7 +1,9 @@
 from datetime import datetime
 import logging
 import coloredlogs
+import os
 
+dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 logger = logging.getLogger(__name__)
 coloredlogs.install(
@@ -169,4 +171,12 @@ def config(location="Schwarzsee"):
             utc_offset=1,
         )
 
-    return SITE, FOUNTAIN
+    # Define directory structure
+    FOLDER = dict(
+        raw=os.path.join(dirname, "data/" + SITE["name"] + "/raw/"),
+        input=os.path.join(dirname, "data/" + SITE["name"] + "/interim/"),
+        output=os.path.join(dirname, "data/" + SITE["name"] + "/processed/"),
+        sim=os.path.join(dirname, "data/" + SITE["name"] + "/processed/simulations"),
+    )
+
+    return SITE, FOUNTAIN, FOLDER
