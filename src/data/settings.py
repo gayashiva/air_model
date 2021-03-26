@@ -8,6 +8,9 @@ coloredlogs.install(
     fmt="%(levelname)s %(message)s",
     logger=logger,
 )
+# Spammers
+logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
+logging.getLogger("numexpr").setLevel(logging.CRITICAL)
 
 
 def config(location="Schwarzsee"):
