@@ -34,7 +34,30 @@ def config(location="Schwarzsee"):
             crit_temp=0,  # FOUNTAIN runtime temperature
             # h_i=0.43,
             # r_i=9.04 / 2,
-            trigger="NetEnergy",
+            trigger="Manual",
+        )
+
+    if location == "Schwarzsee":
+        SITE = dict(
+            name="schwarzsee",
+            start_date=datetime(2019, 1, 30, 17),
+            end_date=datetime(2019, 3, 17),
+            utc_offset=1,
+            longitude=7.297543,
+            latitude=46.693723,
+            h_aws=3,
+        )
+
+        FOUNTAIN = dict(
+            fountain_off_date=datetime(2019, 3, 10, 18),
+            dia_f=0.005,  # FOUNTAIN aperture diameter
+            h_f=1.35,  # FOUNTAIN steps h_f
+            theta_f=45,  # FOUNTAIN aperture diameter
+            ftl=0,  # FOUNTAIN flight time loss ftl
+            T_w=5,  # FOUNTAIN Water temperature
+            discharge=3.58,  # FOUNTAIN on discharge
+            crit_temp=0,  # FOUNTAIN runtime temperature
+            trigger="Manual",
         )
 
     if location == "Gangles":
@@ -59,29 +82,6 @@ def config(location="Schwarzsee"):
             crit_temp=-1,  # FOUNTAIN runtime temperature
             trigger="Temperature",
         )
-    if location == "Schwarzsee":
-        SITE = dict(
-            name="schwarzsee",
-            start_date=datetime(2019, 1, 30, 17),
-            end_date=datetime(2019, 3, 17),
-            utc_offset=1,
-            longitude=7.297543,
-            latitude=46.693723,
-            h_aws=3,
-        )
-
-        FOUNTAIN = dict(
-            fountain_off_date=datetime(2019, 3, 10, 18),
-            dia_f=0.005,  # FOUNTAIN aperture diameter
-            h_f=1.35,  # FOUNTAIN steps h_f
-            theta_f=45,  # FOUNTAIN aperture diameter
-            ftl=0,  # FOUNTAIN flight time loss ftl
-            T_w=5,  # FOUNTAIN Water temperature
-            discharge=3.58,  # FOUNTAIN on discharge
-            crit_temp=0,  # FOUNTAIN runtime temperature
-            trigger="NetEnergy",
-        )
-
     if location == "Hial":
 
         SITE = dict(

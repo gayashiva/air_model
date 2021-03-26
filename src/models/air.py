@@ -489,7 +489,7 @@ class Icestupa:
 
         self.df.loc[i:, "Discharge"] *= self.discharge
 
-    @cache
+    @lru_cache
     def discharge_rate(self): # Provides discharge info based on trigger setting
 
         self.df["Discharge"] = 0
@@ -591,7 +591,7 @@ class Icestupa:
         mask_index = self.df[mask].index
         self.df.loc[mask_index, "Discharge"] = 0
 
-    @cache
+    @lru_cache
     def derive_parameters(self): # Derives additional parameters required for simulation
         df_c = self.calibration(site = self.name)
         if self.name in ['guttannen']:
@@ -1558,7 +1558,7 @@ class Icestupa:
 if __name__ == "__main__":
     start = time.time()
 
-    SITE, FOUNTAIN = config("Schwarzsee")
+    SITE, FOUNTAIN = config("Guttannen")
 
     icestupa = Icestupa(SITE, FOUNTAIN )
 
