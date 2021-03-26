@@ -108,10 +108,8 @@ if __name__ == "__main__":
     start_date = SITE["start_date"]
     h_f = FOUNTAIN["h_f"]
 
-    if location == "Schwarzsee":
-        trigger = st.sidebar.radio(
-            "Select Discharge Trigger", ("Manual", "Temperature", "NetEnergy")
-        )
+    if location in ["Guttannen", "Schwarzsee"]:
+        trigger = st.sidebar.radio("Select Discharge Trigger", ("Manual", "NetEnergy"))
         FOUNTAIN["trigger"] = trigger
         icestupa = Icestupa(SITE, FOUNTAIN)
         icestupa.read_output()
@@ -119,11 +117,20 @@ if __name__ == "__main__":
         df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
         df_in = df_in.set_index("When")
         df = df_in
+    # if location == "Schwarzsee":
+    #     trigger = st.sidebar.radio(
+    #         "Select Discharge Trigger", ("Manual", "NetEnergy")
+    #     )
+    #     FOUNTAIN["trigger"] = trigger
+    #     icestupa = Icestupa(SITE, FOUNTAIN)
+    #     icestupa.read_output()
+    #     df_in = icestupa.df
+    #     df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
+    #     df_in = df_in.set_index("When")
+    #     df = df_in
 
     if location == "Gangles":
-        trigger = st.sidebar.radio(
-            "Select Discharge Trigger", ("Temperature", "NetEnergy")
-        )
+        trigger = st.sidebar.radio("Select Discharge Trigger", ("NetEnergy"))
         FOUNTAIN["trigger"] = trigger
         start_date = st.date_input("Fountain spray starts at", start_date)
         start_date = pd.to_datetime(start_date)
@@ -143,18 +150,6 @@ if __name__ == "__main__":
         df_in = df_in.set_index("When")
         df = df_in
         # icestupa.summary()
-
-    if location == "Guttannen":
-        trigger = st.sidebar.radio(
-            "Select Discharge Trigger", ("Manual", "Temperature", "NetEnergy")
-        )
-        FOUNTAIN["trigger"] = trigger
-        icestupa = Icestupa(SITE, FOUNTAIN)
-        icestupa.read_output()
-        df_in = icestupa.df
-        df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
-        df_in = df_in.set_index("When")
-        df = df_in
 
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
     output_folder = os.path.join(dirname, "data/" + SITE["name"] + "/processed/")

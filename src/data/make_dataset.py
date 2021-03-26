@@ -438,7 +438,7 @@ def meteoswiss(site="schwarzsee"):
 
 if __name__ == "__main__":
 
-    SITE, FOUNTAIN = config("Schwarzsee")
+    SITE, FOUNTAIN = config("Guttannen")
 
     raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")

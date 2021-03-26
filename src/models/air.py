@@ -58,6 +58,9 @@ class Icestupa:
 
     """Model constants"""
     DX = 5e-03  # Initial Ice layer thickness
+    theta_f=45  # FOUNTAIN angle
+    ftl=0  # FOUNTAIN flight time loss ftl
+    T_w=5  # FOUNTAIN Water temperature
 
     def __init__(self, *initial_data, **kwargs):
         # Initialise all variables of dictionary
@@ -68,6 +71,7 @@ class Icestupa:
         # Initialise other variables
         for key in kwargs:
             setattr(self, key, kwargs[key])
+            logger.info(f"%s -> %s" % (key, str(dictionary[key])))
 
         #Define directory structure
         self.raw_folder = os.path.join(dirname, "data/" + self.name + "/raw/")
@@ -85,26 +89,30 @@ class Icestupa:
         mask = self.df["When"] >= self.start_date
         self.df = self.df.loc[mask]
         self.df = self.df.reset_index(drop=True)
+        logger.info(self.df.head())
 
+    def calibration(self, site):
         # Add Validation data to input
-        if self.name in ['guttannen']:
-            df_v = pd.read_csv(self.input_folder + self.name + "_drone.csv", sep=",", header=0, parse_dates=["When"])
-            df_v = df_v.set_index('When')
-            # df_v = df_v.astype(float)
-            self.df = self.df.set_index('When')
-            self.df['DroneV'] = df_v['DroneV']
-            self.df.h_s = 0
-            self.df.loc[datetime(2020, 12, 30, 16), 'h_s'] = 1
-            self.df.loc[datetime(2021, 1, 7, 16), 'h_s'] = 1
-            self.df.loc[datetime(2021, 1, 11, 16), 'h_s'] = 1
-            self.df = self.df.reset_index()
+        if site in ['guttannen']:
+            df_c = pd.read_csv(self.input_folder + self.name + "_drone.csv", sep=",", header=0, parse_dates=["When"])
+            df_c = df_c.set_index('When')
+            # self.df = self.df.set_index('When')
+            # self.df['DroneV'] = df_c['DroneV']
 
-        if self.name in ['schwarzsee']:
-            self.df.DroneV = np.NaN
-            self.df = self.df.set_index('When')
-            self.df.loc[datetime(2019, 2, 14, 16), 'DroneV'] = 0.856575
-            self.df.loc[datetime(2019, 3, 10, 18), 'DroneV'] = 0.1295
-            self.df = self.df.reset_index()
+            data = [{'When':datetime(2020, 12, 30, 16), 'h_s':1}, {'When':datetime(2021, 1, 11, 16), 'h_s':1}, {'When':datetime(2021, 1, 7, 16), 'h_s':1}]
+            df_h = pd.DataFrame(data) 
+            # df_c.loc[datetime(2020, 12, 30, 14), 'h_s'] = 1
+            # df_c.loc[datetime(2021, 1, 7, 14), 'h_s'] = 1
+            # df_c.loc[datetime(2021, 1, 11, 14), 'h_s'] = 1
+            df_c = df_c.reset_index()
+            df_c = pd.concat([df_c, df_h], ignore_index=True , sort=False)
+            df_c = df_c.set_index('When').sort_index().reset_index()
+
+        if site in ['schwarzsee']:
+            data = [{'When':datetime(2019, 2, 14, 16), 'DroneV':0.856575}, {'When':datetime(2019, 3, 10, 18), 'DroneV':0.1295}]
+            df_c = pd.DataFrame(data) 
+        logger.info(df_c.head())
+        return df_c
 
     @st.cache
     def get_parameter_metadata(self, parameter): # Provides Metadata of all input and Output variables
@@ -118,6 +126,11 @@ class Icestupa:
                 "name": "Height Steps",
                 "kind": "Misc",
                 "units": "()",
+            },
+            "dia": {
+                "name": "Measured diameter",
+                "kind": "Misc",
+                "units": "($m$)",
             },
             "DroneV": {
                 "name": "Drone Validation",
@@ -361,9 +374,9 @@ class Icestupa:
             },
         }[parameter]
 
-    def get_solar(self): # Provides solar angle for each time step
+    def get_solar(self, latitude, longitude): # Provides solar angle for each time step
 
-        site_location = location.Location(self.latitude, self.longitude)
+        site_location = location.Location(latitude, longitude)
 
         times = pd.date_range(
             start=self.start_date,
@@ -387,78 +400,71 @@ class Icestupa:
         solar_df.loc[solar_df["sea"] < 0, "sea"] = 0
         solar_df.index = solar_df.index.set_names(["When"])
         solar_df = solar_df.reset_index()
+        return solar_df
 
-        self.df = pd.merge(solar_df, self.df, on="When")
-
-    def projectile_xy(self, v, h=0): # standard projectile equation function that returns range of projectile
-        if h == 0:
-            hs = self.h_f
-        else:
-            hs = h
+    def droplet_projectile(self,dia,h, d=0, x=0): # returns discharge or spray radius using projectile motion
+        Area = math.pi * math.pow(dia, 2) / 4
         data_xy = []
-        t = 0.0
-        theta_f = math.radians(self.theta_f)
-        while True:
-            # now calculate the height y
-            y = hs + (t * v * math.sin(theta_f)) - (self.G * t * t) / 2
-            # projectile has hit ground level
-            if y < 0:
-                break
-            # calculate the distance x
-            x = v * math.cos(theta_f) * t
-            # append the (x, y) tuple to the list
-            data_xy.append((x, y))
-            # use the time in increments of 0.1 seconds
-            t += 0.01
-        logger.warning("Range of %s on %s" % (self.h_f, x))
-        return x
+        theta_f = math.radians(45)
+        if x == 0:
+            v = d / (60 * 1000 * Area)
+            t = 0.0
+            while True:
+                # now calculate the height y
+                y = h + (t * v * math.sin(theta_f)) - (self.G * t * t) / 2
+                # projectile has hit ground level
+                if y < 0:
+                    break
+                # calculate the distance x
+                x = v * math.cos(theta_f) * t
+                # append the (x, y) tuple to the list
+                data_xy.append((x, y))
+                t += 0.01
+            logger.info("Spray radius at height %s is %s" % (h, x))
+            return x
+        else:
+            v = math.sqrt(self.G**2 * x**2/(math.cos(theta_f)**2 * 2 * self.G * h + math.sin(2 * theta_f) * self.G * x))
+            d = v * (60 * 1000 * Area)
+            logger.info("Discharge calculated is %s" % (d))
+            return d
 
-    def albedo(self, row, s=0, f=0): # Albedo Scheme described in Section 3.2.1
+    def albedo(self, row, s=0, f=0, site='schwarzsee' ): # Albedo Scheme described in Section 3.2.1
 
         i = row.Index
 
         """Albedo"""
-        # # Precipitation event
-        # if (row.Discharge == 0) & (row.Prec > 0):
-        #     if row.T_a < self.T_RAIN:  # Snow event
-        #         s = 0
-        #         f = 0
+        if site in ['schwarzsee']:
+            # Precipitation event
+            if (row.Discharge == 0) & (row.Prec > 0):
+                if row.T_a < self.T_RAIN:  # Snow event
+                    s = 0
+                    f = 0
 
-        # if row.Discharge > 0: # Spray event
-        #     f = 1
-        #     s = 0
-
-        # if f == 0:  # last snowed
-        #     self.df.loc[i, "a"] = self.A_I + (self.A_S - self.A_I) * math.exp(
-        #         -s / self.T_DECAY
-        #     )
-        #     s = s + 1
-        # else:  # last sprayed
-
-        #     self.df.loc[i, "a"] = self.A_I
-
-        # Precipitation event
-        if (row.Prec > 0):
-            if row.T_a < self.T_RAIN:  # Snow event
+            if row.Discharge > 0: # Spray event
+                f = 1
                 s = 0
-        self.df.loc[i, "a"] = self.A_I + (self.A_S - self.A_I) * math.exp(
-            -s / self.T_DECAY
-        )
-        s = s + 1
+
+            if f == 0:  # last snowed
+                self.df.loc[i, "a"] = self.A_I + (self.A_S - self.A_I) * math.exp(
+                    -s / self.T_DECAY
+                )
+                s = s + 1
+            else:  # last sprayed
+
+                self.df.loc[i, "a"] = self.A_I
+
+        if site in ['guttannen']:
+
+            # Precipitation event
+            if (row.Prec > 0):
+                if row.T_a < self.T_RAIN:  # Snow event
+                    s = 0
+            self.df.loc[i, "a"] = self.A_I + (self.A_S - self.A_I) * math.exp(
+                -s / self.T_DECAY
+            )
+            s = s + 1
 
         return s, f
-
-    def spray_radius(self, r_mean=0): # Provides spray radius assuming projectile motion of water droplets
-        Area = math.pi * math.pow(self.dia_f, 2) / 4
-
-        if r_mean != 0:
-            self.r_mean = r_mean
-        else:
-            self.v = self.discharge / (60 * 1000 * Area)
-            self.r_mean = self.projectile_xy(v=self.v, h=self.h_f)
-
-        logger.info("Spray radius %s" % (self.r_mean))
-        return self.r_mean
 
     def height_steps(self, i): # Updates discharge based on new fountain height
         h_steps = 1
@@ -550,8 +556,6 @@ class Icestupa:
 
         if self.trigger == "Manual" and self.name == "schwarzsee":
 
-            # self.start_date=datetime(2021, 1, 30, 17)
-            # self.end_date=self.df.When.tail(1).values[0]
             mask = self.df["When"] >= self.start_date
             self.df = self.df.loc[mask]
             self.df = self.df.reset_index(drop=True)
@@ -562,13 +566,6 @@ class Icestupa:
                 + "schwarzsee_input_field.csv"
             )
             df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")
-            # df_f['When'] = df_f['When'].mask(df_f['When'].dt.year == 2019, df_f['When'] + pd.offsets.DateOffset(year=2021))
-            # df_f['When'] = df_f['When'] - pd.DateOffset(10)
-            # mask = (df_f["When"] >= self.df.When[0]) & (
-            #     df_f["When"] <= self.end_date
-            # )
-            # df_f = df_f.loc[mask]
-            # df_f = df_f.reset_index(drop = True)
             df_f = (
                 df_f.set_index("When")
                 .resample(str(int(self.TIME_STEP / 60)) + "T")
@@ -576,8 +573,8 @@ class Icestupa:
             )
             self.df = self.df.set_index("When")
             mask = df_f["Discharge"] != 0
-            mask_index = df_f[mask].index
-            self.df.loc[mask_index, "Discharge"] = df_f["Discharge"]
+            f_on = df_f[mask].index
+            self.df.loc[f_on, "Discharge"] = df_f["Discharge"]
             self.df = self.df.reset_index()
             self.df["Discharge"] = self.df.Discharge.replace(np.nan, 0)
             logger.debug(
@@ -588,12 +585,17 @@ class Icestupa:
         mask = (self.df["When"] > self.fountain_off_date)
         mask_index = self.df[mask].index
         self.df.loc[mask_index, "Discharge"] = 0
-        # if self.trigger == "Manual" and self.name != "schwarzsee":
-        #     logger.error("Manual discharge information does not exist")
-        #     st.write("Manual discharge information does not exist")
-        #     sys.exit()
 
     def derive_parameters(self): # Derives additional parameters required for simulation
+        df_c = self.calibration(site = self.name)
+        if self.name in ['guttannen']:
+            self.r_spray = df_c.loc[0,'dia']/2
+            self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
+        else:
+            self.df['h_s'] = np.NaN
+
+        self.df = pd.merge(self.df,df_c,on='When', how='left')
+        # logger.info(self.df[self.df.When==datetime(2020, 11, 22, 14)])
         unknown = ["a", "vp_a", "LW_in", "cld"] # Possible unknown variables
         for i in range(len(unknown)):
             if unknown[i] in list(self.df.columns):
@@ -637,18 +639,17 @@ class Icestupa:
                 )
 
         self.discharge_rate()
-        self.f_on = self.df.When[self.df.Discharge.astype(bool)].tolist() # List of all timesteps when fountain on
-        self.start_date = self.f_on[0]
+        f_on = self.df.When[self.df.Discharge!=0].tolist() # List of all timesteps when fountain on
+        self.start_date = f_on[0]
         logger.info("Model starts at %s" % (self.start_date))
-        # logger.info("Model ends at %s" % (self.end_date))
-        logger.warning("Fountain ends %s" % self.f_on[-1])
-        # self.end_date =  self.f_on[-1] #+ timedelta(days=30)
+        logger.warning("Fountain ends %s" % f_on[-1])
 
         mask = self.df["When"] >= self.start_date
         self.df = self.df.loc[mask]
         self.df = self.df.reset_index(drop=True)
 
-        self.get_solar()
+        solar_df = self.get_solar(latitude = self.latitude, longitude = self.longitude)
+        self.df = pd.merge(solar_df, self.df, on="When")
         self.df.Prec = self.df.Prec * self.TIME_STEP #mm
 
         """Albedo Decay parameters initialized"""
@@ -656,7 +657,7 @@ class Icestupa:
         s = 0
         f = 0
         for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
-            s, f = self.albedo(row, s, f)
+            s, f = self.albedo(row,  s, f, site = self.name)
 
         self.df = self.df.round(3)
         self.df = self.df[self.df.columns.drop(list(self.df.filter(regex="Unnamed")))] # Remove junk columns
@@ -674,7 +675,7 @@ class Icestupa:
             self.df.solid[i - 1]
             - self.df.melted[i - 1]
             > 0
-        ) & (self.df.loc[i - 1, "r_ice"] > self.r_mean): # Growth rate positive and radius goes beyond spray radius
+        ) & (self.df.loc[i - 1, "r_ice"] >= self.r_spray): # Growth rate positive and radius goes beyond spray radius
             self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"]
 
             self.df.loc[i, "h_ice"] = (
@@ -689,7 +690,7 @@ class Icestupa:
 
             # Maintain constant Height to radius ratio 
             self.df.loc[i, "s_cone"] = self.df.loc[i - 1, "s_cone"]
-            # self.df.loc[i, "s_cone"] = self.h_f/self.r_mean
+            # self.df.loc[i, "s_cone"] = self.h_f/self.r_spray
 
             # Ice Radius
             # logger.warning("%s,%s" %(self.df.loc[i, "iceV"], self.df.loc[i, "s_cone"]))
@@ -881,104 +882,6 @@ class Icestupa:
         if self.df.isnull().values.any():
             logger.warning("Warning: Null values present")
 
-        # Table outputs
-        # f_off = self.df.index[self.df.Discharge.astype(bool)].tolist()
-        # f_off = f_off[-1] + 1
-        # logger.debug(
-        #     "When %s \n M_U %.2f\n M_solid %.2f\n M_gas %.2f\n M_liquid %.2f\n M_R %.2f\n M_D %.2f\n M_C %.2f\n M_F %.2f\n"
-        #     % (
-        #         self.df.When.iloc[f_off],
-        #         self.df.unfrozen_water.iloc[f_off],
-        #         self.df.ice.iloc[f_off],
-        #         self.df.vapour.iloc[f_off],
-        #         self.df.meltwater.iloc[f_off],
-        #         self.df.ppt[: f_off + 1].sum(),
-        #         self.df.dpt[: f_off + 1].sum(),
-        #         self.df.cdt[: f_off + 1].sum(),
-        #         self.df.Discharge[: f_off + 1].sum() * 5
-        #         + self.df.iceV.iloc[0] * self.RHO_I,
-        #     )
-        # )
-        logger.debug(
-            f"M_input {self.df.input.iloc[-1]}\n M_R {self.df.ppt.sum()}\n M_D {self.df.dpt.sum()}\n M_C {self.df.cdt.sum()}\n M_F {self.df.Discharge.sum() * 5 + self.df.iceV.iloc[0] * self.RHO_I}\n"
-        )
-        logger.debug(
-            f"When {self.df.When.iloc[-1]}\n M_U {self.df.unfrozen_water.iloc[-1]},\n M_solid {self.df.ice.iloc[-1]},\n M_gas {self.df.vapour.iloc[-1]},\n M_liquid {self.df.meltwater.iloc[-1]}"
-        )
-        logger.debug(
-            f"Temperature of spray : %.2f"
-            % (self.df.loc[self.df["TotalE"] < 0, "T_a"].mean())
-        )
-        logger.debug(f"Temperature minimum : {self.df.T_a.min()}")
-        logger.debug(f"Energy mean : {self.df.TotalE.mean()}")
-
-        dfd = self.df.set_index("When").resample("D").mean().reset_index(drop=True)
-        dfh = self.df.set_index("When").resample("H").mean().reset_index(drop=True)
-
-        dfd["Global"] = dfd["SW_diffuse"] + dfd["SW_direct"]
-        logger.debug(f"Global max: {dfd.Global.max()}\n SW max: {dfd.SW.max()}")
-        logger.debug(f"Nonzero Qf: {self.df.Qf.astype(bool).sum(axis=0)}")
-        Total = (
-            dfd.SW.abs().sum()
-            + dfd.LW.abs().sum()
-            + dfd.Qs.abs().sum()
-            + dfd.Ql.abs().sum()
-            + dfd.Qf.abs().sum()
-            + dfd.Qg.abs().sum()
-            + dfd["$q_{melt}$"].abs().sum()
-            + dfd["$q_{T}$"].abs().sum()
-        )
-        logger.debug(
-            "Qmelt: %.2f, Qt: %.2f" % (dfd["$q_{melt}$"].mean(), dfd["$q_{T}$"].mean())
-        )
-        logger.debug(
-            "Percent of Qmelt: %.2f \n Qt: %.8f"
-            % (
-                dfd["$q_{melt}$"].abs().sum() / Total,
-                dfd["$q_{T}$"].abs().sum() / Total,
-            )
-        )
-        logger.debug(
-            f"% of SW {dfd.SW.abs().sum()/Total}, LW {dfd.LW.abs().sum()/Total}, Qs {dfd.Qs.abs().sum()/Total}, Ql {dfd.Ql.abs().sum()/Total}, Qf {dfd.Qf.abs().sum()/Total}, Qg {dfd.Qg.abs().sum()/Total}"
-        )
-
-        logger.debug(
-            f"Mean of SW {dfd.SW.mean()}, LW {dfd.LW.mean()}, Qs {dfd.Qs.mean()}, Ql {dfd.Ql.mean()}, Qf {dfd.Qf.mean()}, Qg {dfd.Qg.mean()}"
-        )
-        logger.debug(
-            f"Range of SW {dfd.SW.min()}-{dfd.SW.max()}, LW {dfd.LW.min()}-{dfd.LW.max()}, Qs {dfd.Qs.min()}-{dfd.Qs.max()}, Ql {dfd.Ql.min()}-{dfd.Ql.max()}, Qf {dfd.Qf.min()}-{dfd.Qf.max()}, Qg {dfd.Qg.min()}-{dfd.Qg.max()}"
-        )
-        logger.debug(f"Max SA {self.df.SA.max()}")
-        logger.debug(
-            f"M_input {self.df.input.iloc[-1]}, M_R {self.df.ppt.sum()}, M_D {self.df.dpt.sum()}, M_F {self.df.Discharge.sum() * 5 + self.df.iceV.iloc[0] * self.RHO_I}"
-        )
-        logger.debug(
-            f"Max_growth {self.df.solid.max() / 5}, Mean_growth {self.df.solid.replace(0,np.NaN).mean() / 5},average_discharge {self.df.Discharge.replace(0, np.NaN).mean()}"
-        )
-
-        logger.debug(f"Duration {self.df.index[-1] * 5 / (60 * 24)}")
-        logger.debug(f"Ended {self.df.When.iloc[-1]}")
-        logger.debug(
-            f"Evaporation/Condensation: %.2f, Sublimation/Deposition: %.2f"
-            % (
-                self.df.loc[self.df["RH"] > 60, "RH"].count() / self.df.index[-1],
-                self.df.loc[self.df["RH"] <= 60, "RH"].count() / self.df.index[-1],
-            )
-        )
-        logger.warning(
-            f"Q_net below zero time: %.2f, Fountain time: %.2f"
-            % (
-                dfh.loc[dfh["TotalE"] < 0, "TotalE"].count(),
-                dfh.loc[dfh["Discharge"] > 0, "Discharge"].count(),
-            )
-        )
-
-        # # Output for manim
-        # filename2 = os.path.join(self.output_folder, self.name + "_model_gif.csv")
-        # self.df["h_f"] = self.h_f
-        # cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
-        # self.df[cols].to_csv(filename2, sep=",")
-
     def melt_freeze(self): # Main function
 
         col = [
@@ -1017,7 +920,11 @@ class Icestupa:
         self.liquid = [0] * 1
         STATE = 0
         self.start = 0
-        ctr = 0
+
+        if hasattr(self, 'r_spray'): # Provide discharge
+            self.discharge = self.droplet_projectile(dia = self.dia_f, h = self.h_f, x=self.r_spray)
+        else: # Provide spray radius
+            self.r_spray = self.droplet_projectile(dia = self.dia_f, h= self.h_f, d=self.discharge)
 
         logger.debug("AIR simulation begins...")
         for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]):
@@ -1037,21 +944,20 @@ class Icestupa:
 
                 # Special Initialisaton for specific sites
                 if self.name == "schwarzsee":
-                    self.df.loc[i - 1, "r_ice"] = self.spray_radius()
+                    self.df.loc[i - 1, "r_ice"] = self.r_spray
                     self.df.loc[i - 1, "h_ice"] = self.DX
 
                 if self.name == "guttannen":
-                    self.spray_radius()
-                    if hasattr(self, 'h_i'):
+                    if hasattr(self, 'r_spray'):
                         self.df.loc[i - 1, "h_ice"] = self.h_i
-                        self.df.loc[i - 1, "r_ice"] = self.r_i
+                        self.df.loc[i - 1, "r_ice"] = self.r_spray
                     else:
                         self.df.loc[i - 1, "h_ice"] = self.DX
-                        self.df.loc[i - 1, "r_ice"] = self.spray_radius()
+                        self.df.loc[i - 1, "r_ice"] = self.r_spray
 
                 new_sites = ["hial", "gangles", "secmol", "leh"]
                 if self.name in new_sites:
-                    self.df.loc[i - 1, "r_ice"] = self.spray_radius()
+                    self.df.loc[i - 1, "r_ice"] = self.r_spray
                     self.df.loc[i - 1, "h_ice"] = self.DX
 
                 self.df.loc[i - 1, "s_cone"] = (
@@ -1073,22 +979,17 @@ class Icestupa:
                 self.start = i - 1
 
             if STATE == 1:
-
-                # if self.name == "guttannen" and i == self.start + 1 and self.hollow_V != 0:
-                #     self.df.loc[i, "iceV"] += self.hollow_V
-                #     self.df.loc[i, "ice"] += self.hollow_V * self.RHO_I
-
-                self.surface_area(i)
-
                 #Change in fountain height
-                # if self.df.h_ice[i] > self.h_f and self.discharge != 0:
-                if row.h_s ==1:
-                    self.h_f += 1
-                    # ctr += 1
+                if not np.isnan(row.h_s):
+                    self.h_f += row.h_s
                     logger.warning("Height increased to %s on %s" % (self.h_f, self.df.When[i]))
                     # self.height_steps(i)
-                    self.spray_radius()
-                    # self.df.loc[i, "r_ice"] = self.spray_radius()
+                    self.r_spray = self.droplet_projectile(dia = self.dia_f, h= self.h_f, d=self.discharge)
+                    self.df.loc[i - 1, "r_ice"] = self.r_spray
+                    self.df.loc[i -1, "h_ice"]= 3 * self.df.loc[i, "iceV"] / (math.pi * self.r_spray ** 2)
+
+
+                self.surface_area(i)
 
                 # Precipitation to ice quantity
                 if row.T_a < self.T_RAIN and row.Prec > 0:
@@ -1295,71 +1196,6 @@ class Icestupa:
                 # logger.warning("%s, %s"%(self.df.loc[i, "When"], self.df.loc[i, "Discharge"]))
 
                 self.liquid = [0] * 1
-
-    def corr_plot(self): # Produces correlation plot of all variables
-
-        data = self.df
-
-        data = data[data.columns.drop(list(data.filter(regex="Unnamed")))]
-
-        data["$q_{net}$"] = data["TotalE"] + data["Ql"]
-
-        data["$\\Delta M_{input}$"] = data["Discharge"] * 5 + data["dpt"] + data["ppt"]
-
-        data["$SW_{in}$"] = data["SW_direct"] + data["SW_diffuse"]
-
-        data["$\\Delta M_{ice}$"] = (
-            self.df["solid"] + self.df["dpt"] - self.df["melted"] + self.df["ppt"]
-        )
-
-        data = data.rename(
-            {
-                "delta_T_s": "$\\Delta T_{ice}$",
-                "SA": "A",
-                "T_a": "$T_a$",
-                "v_a": "$v_a$",
-                "p_a": "$p_a$",
-            },
-            axis=1,
-        )
-
-        data = data[
-            [
-                "$q_{net}$",
-                "$T_a$",
-                "$v_a$",
-                "$p_a$",
-                "RH",
-                "$SW_{in}$",
-                "$\\Delta M_{ice}$",
-                "A",
-            ]
-        ]
-
-        logger.debug(
-            data.drop("$q_{net}$", axis=1).apply(
-                lambda x: x.corr(data["$q_{net}$"]) ** 2
-            )
-        )
-        logger.debug(
-            data.drop("$\\Delta M_{ice}$", axis=1).apply(
-                lambda x: x.corr(data["$\\Delta M_{ice}$"]) ** 2
-            )
-        )
-
-        # corr = data.corr()
-        # ax = sns.heatmap(
-        #     corr,
-        #     vmin=-1,
-        #     vmax=1,
-        #     center=0,
-        #     cmap=sns.diverging_palette(20, 220, n=200),
-        #     square=True,
-        # )
-        # ax.set_xticklabels(
-        #     ax.get_xticklabels(), rotation=45, horizontalalignment="right"
-        # )
-        # plt.show()
 
     def paper_figures(self, output="none"):
         CB91_Blue = "#2CBDFE"
@@ -1716,9 +1552,9 @@ class Icestupa:
 if __name__ == "__main__":
     start = time.time()
 
-    SITE, FOUNTAIN = config("Guttannen")
+    SITE, FOUNTAIN = config("Schwarzsee")
 
-    icestupa = Icestupa(SITE, FOUNTAIN)
+    icestupa = Icestupa(SITE, FOUNTAIN )
 
     icestupa.derive_parameters()
 

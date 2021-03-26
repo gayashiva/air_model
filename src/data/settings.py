@@ -30,19 +30,10 @@ def config(location="Schwarzsee"):
             fountain_off_date=datetime(2021, 2, 27),
             dia_f=0.007,  # FOUNTAIN aperture diameter
             h_f=2.5,  # FOUNTAIN steps h_f
-            theta_f=0,  # FOUNTAIN aperture diameter
-            ftl=0,  # FOUNTAIN flight time loss ftl
-            T_w=5,  # FOUNTAIN Water temperature
-            discharge=15.0,  # FOUNTAIN on discharge
+            discharge=12.33,  # FOUNTAIN on discharge
             crit_temp=0,  # FOUNTAIN runtime temperature
-            # tree_height=1.93,
-            # tree_radius=4.13 / 2,
-            # tree_height=1 + 1,
-            # tree_radius=3.3 + 3 / 2,
-            # h_i=0.7,
-            # r_i=10.33 / 2,
-            h_i=0.43,
-            r_i=9.04 / 2,
+            # h_i=0.43,
+            # r_i=9.04 / 2,
             trigger="NetEnergy",
         )
 
