@@ -7,7 +7,8 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 
 logger = logging.getLogger(__name__)
 coloredlogs.install(
-    fmt="%(levelname)s %(message)s",
+    fmt="%(name)s %(levelname)s %(message)s",
+    # fmt="%(levelname)s %(message)s",
     logger=logger,
 )
 # Spammers
