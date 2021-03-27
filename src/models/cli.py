@@ -1,7 +1,4 @@
 import os, sys, time
-
-dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-sys.path.append(dirname)
 from src.models.air import Icestupa
 from src.data.settings import config
 
@@ -11,7 +8,6 @@ import coloredlogs
 if __name__ == "__main__":
     # Initialise logger
     logger = logging.getLogger(__name__)
-    coloredlogs.DEFAULT_FIELD_STYLES["funcName"] = {"color": "blue"}
     coloredlogs.install(
         fmt="%(funcName)s %(levelname)s %(message)s",
         level=logging.INFO,

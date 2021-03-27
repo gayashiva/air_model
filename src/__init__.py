@@ -22,6 +22,7 @@ def setup_logging(
     """
     path = default_path
     value = os.getenv(env_key, None)
+    coloredlogs.DEFAULT_FIELD_STYLES["funcName"] = {"color": "blue"}
     if value:
         path = value
     if os.path.exists(path):

@@ -49,5 +49,5 @@ def get_calibration(site, input):
             {"When": datetime(2019, 3, 10, 18), "DroneV": 0.1295},
         ]
         df_c = pd.DataFrame(data)
-    logger.info(df_c.head())
+    logger.info(df_c.head(10))
     return df_c

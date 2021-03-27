@@ -3,7 +3,7 @@ disable_existing_loggers: true
 
 formatters:
   standard:
-    format: "%(name)s - %(levelname)s - %(message)s"
+    format: "%(funcName)s - %(levelname)s - %(message)s"
   error:
     format: "%(levelname)s <PID %(process)d:%(processName)s> %(name)s.%(funcName)s(): %(message)s"
 
