@@ -4,30 +4,21 @@ import sys
 from datetime import datetime
 import os
 import matplotlib.dates as mdates
-
-os.environ[
-    "TZ"
-] = "UTC"  # Hardcoded as workaround to  https://github.com/streamlit/streamlit/issues/106
-import numpy as np
-
-# import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
-
-# import matplotlib.patches as mpatches
-# from matplotlib.offsetbox import AnchoredText
-# from matplotlib.ticker import AutoMinorLocator
-# from matplotlib.backends.backend_pdf import PdfPages
+import numpy as np
+import re
+import base64
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 sys.path.append(dirname)
-import re
-import base64
+
+from src.models.methods.metadata import get_parameter_metadata
+from src.models.air import Icestupa
+from src.data.settings import config
 
 import logging
 import coloredlogs
-from src.models.air import Icestupa
-from src.data.settings import config
 
 
 def download_csv(name, df):
@@ -82,7 +73,7 @@ def vars(df_in):
     derived_cols = []
     derived_vars = []
     for variable in df_in.columns:
-        v = icestupa.get_parameter_metadata(variable)
+        v = get_parameter_metadata(variable)
         if v["kind"] == "Input":
             input_cols.append(v["name"])
             input_vars.append(variable)
@@ -96,12 +87,19 @@ def vars(df_in):
 
 
 if __name__ == "__main__":
+    logger = logging.getLogger(__name__)
+    coloredlogs.install(
+        fmt="%(funcName)s %(levelname)s %(message)s",
+        level=logging.INFO,
+        logger=logger,
+    )
+
     location = st.sidebar.radio(
         # "Select Location", ("Gangles", "Schwarzsee", "Guttannen", "Hial", "Secmol")
         "Select Location",
         ("Guttannen", "Schwarzsee"),
     )
-    SITE, FOUNTAIN = config(location)
+    SITE, FOUNTAIN, FOLDER = config(location)
     lat = SITE["latitude"]
     lon = SITE["longitude"]
     map_data = pd.DataFrame({"lat": [lat], "lon": [lon]})
@@ -111,7 +109,7 @@ if __name__ == "__main__":
     if location in ["Guttannen", "Schwarzsee"]:
         trigger = st.sidebar.radio("Select Discharge Trigger", ("Manual", "NetEnergy"))
         FOUNTAIN["trigger"] = trigger
-        icestupa = Icestupa(SITE, FOUNTAIN)
+        icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)
         icestupa.read_output()
         df_in = icestupa.df
         df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]

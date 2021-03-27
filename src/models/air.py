@@ -9,10 +9,10 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 
 sys.path.append(dirname)
 
-from methods.calibration import get_calibration
-from methods.metadata import get_parameter_metadata
-from methods.solar import get_solar
-from methods.droplet import get_droplet_projectile
+from src.models.methods.calibration import get_calibration
+from src.models.methods.metadata import get_parameter_metadata
+from src.models.methods.solar import get_solar
+from src.models.methods.droplet import get_droplet_projectile
 
 from src.data.settings import config
 import logging
@@ -77,12 +77,12 @@ class Icestupa:
         logger.debug(self.df.tail())
 
     # Imported methods
-    from methods._albedo import get_albedo
-    from methods._height_steps import get_height_steps
-    from methods._discharge import get_discharge
-    from methods._area import get_area
-    from methods._energy import get_energy
-    from methods._figures import summary_figures
+    from src.models.methods._albedo import get_albedo
+    from src.models.methods._height_steps import get_height_steps
+    from src.models.methods._discharge import get_discharge
+    from src.models.methods._area import get_area
+    from src.models.methods._energy import get_energy
+    from src.models.methods._figures import summary_figures
 
     def derive_parameters(
         self,
