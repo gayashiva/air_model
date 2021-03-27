@@ -1,72 +1,13 @@
-import os
-import sys
+import os, sys
 from datetime import datetime
-import argparse
-from distutils.util import strtobool
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 sys.path.append(dirname)
-# from src.data.logging import setup_logging
 import logging
 
 DIRNAME = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-SITE = "secmol"
-
-# SITE = input("Input the Field SITE Name: ") or SITE
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="""
-    This script is going to create an employee profile. 
-    """
-    )
-    parser.add_argument(
-        "site",
-        choices=["schwarzsee", "guttannen", "leh"],
-        help="Location",
-    )
-
-    parser.add_argument(
-        "--d",
-        default=False,
-        type=strtobool,
-        help="Do you want to debug? (default: %(default)s)",
-    )
-
-    args = parser.parse_args()
-    DEBUG = args.d
-    SITE = args.site
-
-    if DEBUG:
-        print("Debugging Site : " + str(SITE))
-    else:
-        print("Site : " + str(SITE))
-
-    # parser.add_argument("--address", help="Address of Employee")
-
-    # NAME = args.name
-    # TITLE = args.title
-    # ADDRESS = args.address
-
-    # print("Name : " + NAME)
-    # print("Job Title : " + TITLE)
-    # print("Address : " + ADDRESS)
-    # parser.add_argument("--isFullTime", default=True, type=strtobool, help="Is this Employee Full Time? (default: %(default)s)")
-
-    # FULLTIME = args.isFullTime
-
-    # if FULLTIME:
-    #     print(NAME + " is a full time employee.")
-    # else:
-    #     print(NAME + " is not a full time employee.")
-
-
-print("SITE is", SITE)
-# setup_logging()
-# logger = logging.getLogger(__name__)
-# print(logger)
-# logger.info("Config begins")
-
+SITE = "guttannen"
 
 if SITE == "gangles":
     SITE = dict(

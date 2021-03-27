@@ -8,20 +8,20 @@ import coloredlogs
 
 # Required for colored logging statements
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 coloredlogs.install(
     fmt="%(name)s %(levelname)s %(message)s",
     # fmt="%(levelname)s %(message)s",
+    level=logging.INFO,
     logger=logger,
 )
 
 
 @lru_cache
-def get_calibration(self, site):
+def get_calibration(site, input):
     # Add Validation data to input
     if site in ["guttannen"]:
         df_c = pd.read_csv(
-            self.input + self.name + "_drone.csv",
+            input + site + "_drone.csv",
             sep=",",
             header=0,
             parse_dates=["When"],

@@ -5,6 +5,9 @@ from matplotlib.offsetbox import AnchoredText
 from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 import pandas as pd
+import logging
+
+logger = logging.getLogger(__name__)
 
 def summary_figures(self):
 

@@ -1,3 +1,4 @@
+import os, sys, time
 import pandas as pd
 import math
 import numpy as np
@@ -6,14 +7,7 @@ from functools import lru_cache
 import logging
 import coloredlogs
 
-# Required for colored logging statements
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-coloredlogs.install(
-    # fmt="%(name)s %(levelname)s %(message)s",
-    fmt="%(levelname)s %(message)s",
-    logger=logger,
-)
 
 
 @lru_cache
@@ -94,7 +88,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         logger.warning(f"Start date changed to %s" % (self.start_date))
 
         df_f = pd.read_csv(
-            os.path.join(dirname, "data/" + "schwarzsee" + "/interim/")
+            os.path.join("data/" + "schwarzsee" + "/interim/")
             + "schwarzsee_input_field.csv"
         )
         df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")

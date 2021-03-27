@@ -5,14 +5,16 @@ import pandas as pd
 
 
 @lru_cache
-def get_solar(self, latitude, longitude):  # Provides solar angle for each time step
+def get_solar(
+    latitude, longitude, start, end, TIME_STEP
+):  # Provides solar angle for each time step
 
     site_location = location.Location(latitude, longitude)
 
     times = pd.date_range(
-        start=self.start_date,
-        end=self.df["When"].iloc[-1],
-        freq=(str(int(self.TIME_STEP / 60)) + "T"),
+        start,
+        end,
+        freq=(str(int(TIME_STEP / 60)) + "T"),
     )
 
     # Get solar azimuth and zenith to pass to the transposition function

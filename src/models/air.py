@@ -1,19 +1,23 @@
 import pandas as pd
-import sys
+import sys, os, math, time
 from datetime import datetime
 from tqdm import tqdm
-import os
-import math
-import time
 import numpy as np
 from functools import lru_cache
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 sys.path.append(dirname)
+
+from methods.calibration import get_calibration
+from methods.metadata import get_parameter_metadata
+from methods.solar import get_solar
+from methods.droplet import get_droplet_projectile
+
 from src.data.settings import config
 import logging
-import coloredlogs
+
+logger = logging.getLogger(__name__)
 
 
 class Icestupa:
@@ -69,15 +73,11 @@ class Icestupa:
         mask = self.df["When"] >= self.start_date
         self.df = self.df.loc[mask]
         self.df = self.df.reset_index(drop=True)
-        logger.info(self.df.head())
-        # sys.exit()
+        logger.debug(self.df.head())
+        logger.debug(self.df.tail())
 
     # Imported methods
-    from methods._metadata import get_parameter_metadata
-    from methods._calibration import get_calibration
-    from methods._solar import get_solar
     from methods._albedo import get_albedo
-    from methods._droplet import get_droplet_projectile
     from methods._height_steps import get_height_steps
     from methods._discharge import get_discharge
     from methods._area import get_area
@@ -87,7 +87,7 @@ class Icestupa:
     def derive_parameters(
         self,
     ):  # Derives additional parameters required for simulation
-        df_c = self.get_calibration(site=self.name)
+        df_c = get_calibration(site=self.name, input=self.input)
         if self.name in ["guttannen"]:
             self.r_spray = df_c.loc[0, "dia"] / 2
             self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
@@ -150,7 +150,13 @@ class Icestupa:
         self.df = self.df.loc[mask]
         self.df = self.df.reset_index(drop=True)
 
-        solar_df = self.get_solar(latitude=self.latitude, longitude=self.longitude)
+        solar_df = get_solar(
+            latitude=self.latitude,
+            longitude=self.longitude,
+            start=self.start_date,
+            end=self.df["When"].iloc[-1],
+            TIME_STEP=self.TIME_STEP,
+        )
         self.df = pd.merge(solar_df, self.df, on="When")
         self.df.Prec = self.df.Prec * self.TIME_STEP  # mm
 
@@ -261,11 +267,11 @@ class Icestupa:
         self.start = 0
 
         if hasattr(self, "r_spray"):  # Provide discharge
-            self.discharge = self.get_droplet_projectile(
+            self.discharge = get_droplet_projectile(
                 dia=self.dia_f, h=self.h_f, x=self.r_spray
             )
         else:  # Provide spray radius
-            self.r_spray = self.droplet_projectile(
+            self.r_spray = get_droplet_projectile(
                 dia=self.dia_f, h=self.h_f, d=self.discharge
             )
 
@@ -556,40 +562,3 @@ class Icestupa:
                 # logger.warning("%s, %s"%(self.df.loc[i, "When"], self.df.loc[i, "Discharge"]))
 
                 self.liquid = [0] * 1
-
-
-if __name__ == "__main__":
-    logger = logging.getLogger(__name__)
-    coloredlogs.DEFAULT_FIELD_STYLES["funcName"] = {"color": "blue"}
-    coloredlogs.install(
-        fmt="%(funcName)s %(levelname)s %(message)s",
-        level=logging.INFO,
-        logger=logger,
-    )
-    start = time.time()
-
-    SITE, FOUNTAIN, FOLDER = config("Guttannen")
-
-    icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)
-
-    icestupa.derive_parameters()
-
-    # icestupa.read_input()
-
-    icestupa.melt_freeze()
-
-    # icestupa.read_output()
-
-    # icestupa.corr_plot()
-
-    icestupa.summary()
-
-    # icestupa.print_input()
-
-    # icestupa.summary_figures()
-
-    # icestupa.print_output()
-
-    total = time.time() - start
-
-    logger.debug("Total time  : %.2f", total / 60)

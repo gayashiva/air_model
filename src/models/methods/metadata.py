@@ -3,7 +3,7 @@ from functools import lru_cache
 
 @lru_cache
 def get_parameter_metadata(
-    self, parameter
+    parameter,
 ):  # Provides Metadata of all input and Output variables
     return {
         "When": {

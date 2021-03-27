@@ -2,6 +2,9 @@ import pandas as pd
 import math
 import numpy as np
 from functools import lru_cache
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def get_energy(self, row, mode="normal"):
