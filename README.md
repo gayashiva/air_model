@@ -2,7 +2,7 @@
 
 # Artificial Ice Reservoirs
 
-A physical model that estimates the meltwater quantity and survival duration of artificial ice reservoirs (aka Icestupas)
+A physical model that estimates the meltwater quantity and survival duration of artificial ice reservoirs (aka Icestupas). Model results and associated data available [here.](https://share.streamlit.io/gayashiva/air_model/src/visualization/icestupa.py)
 
 ## Project Organization
 
