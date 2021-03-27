@@ -1,5 +1,4 @@
 import pandas as pd
-import streamlit as st
 import sys
 from datetime import datetime
 from tqdm import tqdm
@@ -15,16 +14,6 @@ sys.path.append(dirname)
 from src.data.settings import config
 import logging
 import coloredlogs
-
-# Required for colored logging statements
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-coloredlogs.install(
-    fmt="%(name)s %(levelname)s %(message)s",
-    # fmt="%(levelname)s %(message)s",
-    logger=logger,
-)
-logger.debug("Model begins")
 
 
 class Icestupa:
@@ -76,11 +65,12 @@ class Icestupa:
         self.TIME_STEP = (
             int(pd.infer_freq(self.df["When"])[:-1]) * 60
         )  # Extract time step from datetime column
-        logger.debug(f"Time steps -> %s minutes" % (str(self.TIME_STEP / 60)))
+        logger.info(f"Time steps -> %s minutes" % (str(self.TIME_STEP / 60)))
         mask = self.df["When"] >= self.start_date
         self.df = self.df.loc[mask]
         self.df = self.df.reset_index(drop=True)
         logger.info(self.df.head())
+        # sys.exit()
 
     # Imported methods
     from methods._metadata import get_parameter_metadata
@@ -569,6 +559,13 @@ class Icestupa:
 
 
 if __name__ == "__main__":
+    logger = logging.getLogger(__name__)
+    coloredlogs.DEFAULT_FIELD_STYLES["funcName"] = {"color": "blue"}
+    coloredlogs.install(
+        fmt="%(funcName)s %(levelname)s %(message)s",
+        level=logging.INFO,
+        logger=logger,
+    )
     start = time.time()
 
     SITE, FOUNTAIN, FOLDER = config("Guttannen")

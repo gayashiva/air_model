@@ -6,11 +6,11 @@ import os
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 logger = logging.getLogger(__name__)
-coloredlogs.install(
-    fmt="%(name)s %(levelname)s %(message)s",
-    # fmt="%(levelname)s %(message)s",
-    logger=logger,
-)
+# coloredlogs.install(
+#     fmt="%(name)s %(levelname)s %(message)s",
+#     # fmt="%(levelname)s %(message)s",
+#     logger=logger,
+# )
 # Spammers
 logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
 logging.getLogger("numexpr").setLevel(logging.CRITICAL)

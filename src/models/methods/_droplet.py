@@ -7,13 +7,14 @@ import logging
 import coloredlogs
 
 # Required for colored logging statements
+print(__name__)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-coloredlogs.install(
-    # fmt="%(name)s %(levelname)s %(message)s",
-    fmt="%(levelname)s %(message)s",
-    logger=logger,
-)
+# coloredlogs.install(
+#     # fmt="%(name)s %(levelname)s %(message)s",
+#     fmt="%(levelname)s %(message)s",
+#     logger=logger,
+# )
 
 
 @lru_cache
