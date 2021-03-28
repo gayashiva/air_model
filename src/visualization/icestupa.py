@@ -176,10 +176,10 @@ if __name__ == "__main__":
     st.sidebar.map(map_data, zoom=10)
     if timelapse:
         if location == "Schwarzsee":
-            st.write("## %s Timelapse" %(location))
+            st.write("## %s Timelapse" % (location))
             url = "https://youtu.be/GhljRBGpxMg"
         if location == "Guttannen":
-            st.write("## %s Timelapse" %(location))
+            st.write("## %s Timelapse" % (location))
             url = "https://youtu.be/DBHoL1Z7H6U"
         st.video(url)
         st.write("## Volume Estimation and Validation")
@@ -222,7 +222,6 @@ if __name__ == "__main__":
         with col2:
             st.write("## Output variables")
             st.image(output_folder + "paper_figures/Model_Output_" + trigger + ".jpg")
-
 
     if input:
         st.write("## Input variables")
