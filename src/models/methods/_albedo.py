@@ -9,7 +9,6 @@ import coloredlogs
 logger = logging.getLogger(__name__)
 
 
-@lru_cache
 def get_albedo(
     self, row, s=0, f=0, site="schwarzsee"
 ):  # Albedo Scheme described in Section 3.2.1

@@ -9,7 +9,6 @@ import coloredlogs
 logger = logging.getLogger(__name__)
 
 
-@lru_cache
 def get_droplet_projectile(
     dia, h, d=0, x=0
 ):  # returns discharge or spray radius using projectile motion

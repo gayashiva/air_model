@@ -3,8 +3,9 @@ from pvlib import location
 import numpy as np
 import pandas as pd
 
+logger = logging.getLogger(__name__)
 
-@lru_cache
+
 def get_solar(
     latitude, longitude, start, end, TIME_STEP
 ):  # Provides solar angle for each time step

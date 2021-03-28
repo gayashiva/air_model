@@ -10,7 +10,6 @@ import coloredlogs
 logger = logging.getLogger(__name__)
 
 
-@lru_cache
 def get_discharge(self):  # Provides discharge info based on trigger setting
 
     self.df["Discharge"] = 0
