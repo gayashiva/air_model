@@ -223,30 +223,6 @@ if __name__ == "__main__":
             st.write("## Output variables")
             st.image(output_folder + "paper_figures/Model_Output_" + trigger + ".jpg")
 
-        st.write("## Volume Estimation and Validation")
-        fig, ax = plt.subplots()
-        ax.set_ylabel("Ice Volume[$m^3$]")
-        CB91_Blue = "#2CBDFE"
-        CB91_Green = "#47DBCD"
-        x = icestupa.df.When
-        y1 = icestupa.df.iceV
-        y2 = icestupa.df.DroneV
-        ax.plot(
-            x,
-            y1,
-            "b-",
-            label="Modelled Ice Volume",
-            linewidth=1,
-            color=CB91_Blue,
-        )
-        ax.scatter(x, y2, color=CB91_Green, label="Drone Volume")
-        ax.set_ylim(bottom=0)
-        plt.legend()
-        ax.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax.xaxis.set_minor_locator(mdates.DayLocator())
-        fig.autofmt_xdate()
-        st.pyplot(fig)
 
     if input:
         st.write("## Input variables")
