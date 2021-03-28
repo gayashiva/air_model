@@ -1,7 +1,7 @@
-from functools import lru_cache
+import streamlit as st
 
 
-@lru_cache
+@st.cache
 def get_parameter_metadata(
     parameter,
 ):  # Provides Metadata of all input and Output variables
