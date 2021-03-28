@@ -2,6 +2,7 @@ from functools import lru_cache
 from pvlib import location
 import numpy as np
 import pandas as pd
+import logging
 
 logger = logging.getLogger(__name__)
 
