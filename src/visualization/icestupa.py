@@ -239,7 +239,7 @@ if __name__ == "__main__":
             variable = variable_in
             for v in variable:
 
-                meta = icestupa.get_parameter_metadata(v)
+                meta = get_parameter_metadata(v)
                 # st.header("%s %s" % (meta["kind"], meta["name"] + " " + meta["units"]))
                 st.header("%s" % (meta["name"] + " " + meta["units"]))
                 st.line_chart(df[v])
@@ -260,7 +260,7 @@ if __name__ == "__main__":
             variable_out = [output_vars[output_cols.index(item)] for item in variable2]
             variable = variable_out
             for v in variable:
-                meta = icestupa.get_parameter_metadata(v)
+                meta = get_parameter_metadata(v)
                 st.header("%s" % (meta["name"] + " " + meta["units"]))
                 st.line_chart(df[v])
                 # st.markdown(download_csv(meta["name"], df[v]), unsafe_allow_html=True)
@@ -279,7 +279,7 @@ if __name__ == "__main__":
             variable = variable_in
             for v in variable:
 
-                meta = icestupa.get_parameter_metadata(v)
+                meta = get_parameter_metadata(v)
                 # st.header("%s %s" % (meta["kind"], meta["name"] + " " + meta["units"]))
                 st.header("%s" % (meta["name"] + " " + meta["units"]))
                 st.line_chart(df[v])
