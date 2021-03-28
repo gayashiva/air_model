@@ -167,12 +167,46 @@ if __name__ == "__main__":
     # df = df_filter("Move sliders to filter dataframe", icestupa.df)
 
     st.sidebar.write("Display Variables")
+    timelapse = st.sidebar.checkbox("Timelapse", value=True)
     summary = st.sidebar.checkbox("Summary", value=True)
     input = st.sidebar.checkbox("Input")
     output = st.sidebar.checkbox("Output")
     derived = st.sidebar.checkbox("Derived")
     st.sidebar.write("# Map of %s" % location)
     st.sidebar.map(map_data, zoom=10)
+    if timelapse:
+        if location == "Schwarzsee":
+            st.write("## %s Timelapse" %(location))
+            url = "https://youtu.be/GhljRBGpxMg"
+        if location == "Guttannen":
+            st.write("## %s Timelapse" %(location))
+            url = "https://youtu.be/DBHoL1Z7H6U"
+        st.video(url)
+        st.write("## Volume Estimation and Validation")
+        fig, ax = plt.subplots()
+        ax.set_ylabel("Ice Volume[$m^3$]")
+        CB91_Blue = "#2CBDFE"
+        CB91_Green = "#47DBCD"
+        x = icestupa.df.When
+        y1 = icestupa.df.iceV
+        y2 = icestupa.df.DroneV
+        ax.plot(
+            x,
+            y1,
+            "b-",
+            label="Modelled Ice Volume",
+            linewidth=1,
+            color=CB91_Blue,
+        )
+        ax.scatter(x, y2, color=CB91_Green, label="Drone Volume")
+        ax.set_ylim(bottom=0)
+        plt.legend()
+        ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax.xaxis.set_minor_locator(mdates.DayLocator())
+        fig.autofmt_xdate()
+        st.pyplot(fig)
+
     if summary:
         st.write("### Maximum Ice Volume: %.2f m3" % icestupa.df["iceV"].max())
         st.write(

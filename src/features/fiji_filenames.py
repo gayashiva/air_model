@@ -17,9 +17,6 @@ import shutil
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 sys.path.append(dirname)
-# from src.data.config import site, dates, folders, fountain, surface
-
-# dir = "/home/surya/Programs/PycharmProjects/air_model/data/raw/"
 
 oldpath = "/home/suryab/Pictures/Schwarzsee_2019/"
 newpath = "/home/suryab/Pictures/Schwarzsee_2019/timelapse/"
@@ -30,7 +27,9 @@ df_names = pd.DataFrame({"col": onlyfiles})
 df_names["Label"] = df_names["col"].str.split("m").str[-1]
 
 df_names["Label"] = (
-    "2020-"
+    "20"
+    + df_names["Label"].str[0:2]
+    + "-"
     + df_names["Label"].str[2:4]
     + "-"
     + df_names["Label"].str[4:6]
@@ -40,7 +39,23 @@ df_names["Label"] = (
 # print(df_names.Label)
 
 df_names["When"] = pd.to_datetime(df_names["Label"], format="%Y-%m-%d %H")
+df_names = df_names.set_index("When").sort_index().reset_index()
 print(df_names.head())
+
+if not os.path.exists(newpath):
+    os.mkdir(newpath)
+else:
+    # Delete folder contents
+    folder = newpath
+    for filename in os.listdir(folder):
+        file_path = os.path.join(folder, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            print("Failed to delete %s. Reason: %s" % (file_path, e))
 
 # df_names["When"] = df_names["When"].dt.strftime("%b %d %H")
 
@@ -50,10 +65,13 @@ print(df_names.head())
 
 for i in range(0, df_names.shape[0]):
 
-    if 6 < df_names.loc[i, "When"].hour < 19:
-        if df_names.loc[i, "When"].hour % 2 == 0:
+    if 6 < df_names.loc[i, "When"].hour < 17:
+        if df_names.loc[i, "When"].hour % 4 == 0:
             shutil.copy(oldpath + df_names.loc[i, "col"], newpath)
             os.rename(
                 newpath + df_names.loc[i, "col"],
-                newpath + str(df_names.loc[i, "When"].strftime("%b-%d %H") + ":00"),
+                newpath
+                + str(i)
+                + "_"
+                + str(df_names.loc[i, "When"].strftime("%b-%d %H") + ":00"),
             )
