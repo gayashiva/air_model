@@ -4,7 +4,7 @@ from datetime import datetime
 from tqdm import tqdm
 import numpy as np
 from functools import lru_cache
-# from pandas_profiling import ProfileReport
+from pandas_profiling import ProfileReport
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
@@ -52,7 +52,7 @@ class Icestupa:
     theta_f = 45  # FOUNTAIN angle
     ftl = 0  # FOUNTAIN flight time loss ftl
     T_w = 5  # FOUNTAIN Water temperature
-    crit_temp=0  # FOUNTAIN runtime temperature
+    crit_temp = 0  # FOUNTAIN runtime temperature
 
     def __init__(self, *initial_data, **kwargs):
         # Initialise all variables of dictionary
@@ -181,7 +181,7 @@ class Icestupa:
         )
         self.df.to_csv(self.input + "model_input_" + self.trigger + ".csv")
 
-    def summary(self):  # Summaries results and saves output
+    def summary(self):  # Summarizes results and saves output
 
         self.df = self.df[
             self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
@@ -192,14 +192,14 @@ class Icestupa:
             * 100
         )
 
-        Duration = self.df.index[-1] * 5 / (60 * 24)
+        Duration = self.df.index[-1] * self.TIME_STEP / (60*60 * 24)
 
         print("\nIce Volume Max", float(round(self.df["iceV"].max(), 2)))
-        print("Fountain efficiency", round(Efficiency, 2))
+        print("Fountain efficiency", round(Efficiency, 3))
         print("Ice Mass Remaining", round(self.df["ice"].iloc[-1], 2))
         print("Meltwater", round(self.df["meltwater"].iloc[-1], 2))
         print("Ppt", round(self.df["ppt"].sum(), 2))
-        # print("Duration", round(Duration,2))
+        print("Duration", round(Duration, 2))
 
         # Full Output
         filename4 = self.output + "model_output_" + self.trigger + ".csv"
@@ -216,12 +216,12 @@ class Icestupa:
 
         logger.debug(self.df.head())
 
-        if report:
+        if report == True:
             prof = ProfileReport(self.df)
             prof.to_file(output_file=self.output + "input_report.html")
 
         if self.df.isnull().values.any():
-            logger.warning("Warning: Null values present")
+            logger.warning("Null values present")
 
     def read_output(
         self, report=False
@@ -231,12 +231,27 @@ class Icestupa:
             self.output + "model_output_" + self.trigger + ".h5", "df"
         )
 
-        # if report:
-        #     prof = ProfileReport(self.df)
-        #     prof.to_file(output_file=self.output + "output_report.html")
+        Efficiency = (
+            (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1])
+            / self.df["input"].iloc[-1]
+            * 100
+        )
 
-        if self.df.isnull().values.any():
-            logger.warning("Warning: Null values present")
+        Duration = self.df.index[-1] * self.TIME_STEP / (60*60 * 24)
+
+        print("\nIce Volume Max", float(round(self.df["iceV"].max(), 2)))
+        print("Fountain efficiency", round(Efficiency, 3))
+        print("Ice Mass Remaining", round(self.df["ice"].iloc[-1], 2))
+        print("Meltwater", round(self.df["meltwater"].iloc[-1], 2))
+        print("Input", round(self.df["input"].iloc[-1], 2))
+        print("Ppt", round(self.df["ppt"].sum(), 2))
+        print("Duration", round(Duration, 2))
+
+        # self.df = self.df.set_index("When").resample("D").mean().reset_index()
+
+        if report == True:
+            prof = ProfileReport(self.df)
+            prof.to_file(output_file=self.output + "output_report.html")
 
     def melt_freeze(self):  # Main function
 
@@ -561,7 +576,7 @@ class Icestupa:
                     + self.df.loc[i, "ppt"]
                     + self.df.loc[i, "dpt"]
                     + self.df.loc[i, "cdt"]
-                    + self.df.loc[i, "Discharge"] * 5
+                    + self.liquid
                 )
                 self.df.loc[i + 1, "thickness"] = (
                     self.df.loc[i, "solid"]
