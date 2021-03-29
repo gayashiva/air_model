@@ -17,8 +17,7 @@ A physical model that estimates the meltwater quantity and survival duration of 
     ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
     │   └── figures        <- Generated graphics and figures to be used in reporting
     │
-    ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-    │                         generated with `pip freeze > requirements.txt`
+    ├── requirements.txt   <- The requirements file for reproducing the analysis environment
     │
     ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
     ├── src                <- Source code for use in this project.
@@ -34,12 +33,11 @@ A physical model that estimates the meltwater quantity and survival duration of 
     │   ├── models         <- Scripts to train models and then use trained models to make
     │   │   │                 predictions
     │   │   ├── icestupaClass.py
-    │   │   └── userApp.py
+    │   │   └── userApp.py <- Scripts to generate model results
     │   │
-    │   ├── logs           <- Scripts for logger setup and output
-    │   │   └── make_dataset.py
+    │   ├── logs           <- Scripts for logger configuration and output
     │   │
-    │   └── visualization  <- Scripts to create results oriented visualizations using streamlit and manim
+    │   └── visualization  <- Scripts to create streamlit web app
     │       └── webApp.py
     │
     └── tox.ini            <- tox file with settings for running tox; see tox.testrun.org
