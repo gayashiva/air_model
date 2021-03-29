@@ -70,7 +70,9 @@ def get_energy(self, row, mode="normal"):
         )
         sys.exit("LW nan")
 
-    if self.liquid > 0:  # Can only find Qf if water discharge quantity known
+    if (
+        self.liquid > 0 and self.df.loc[i - 1, "solid"] > 0
+    ):  # Can only find Qf if water discharge quantity known
         self.df.loc[i, "Qf"] = (
             (self.df.loc[i - 1, "solid"])
             # self.liquid
