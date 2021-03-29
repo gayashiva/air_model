@@ -1,3 +1,7 @@
+"""Compile raw data from the location, meteoswiss or ERA5
+"""
+
+# External modules
 import sys
 import pandas as pd
 import numpy as np
@@ -12,25 +16,14 @@ from pathlib import Path
 from tqdm import tqdm
 import os
 import logging
+import coloredlogs
 from scipy import stats
 from sklearn.linear_model import LinearRegression
 
+# Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 from src.data.settings import config
-
-import logging
-import coloredlogs
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-coloredlogs.install(
-    fmt="%(name)s %(levelname)s %(message)s",
-    logger=logger,
-)
-
-start = time.time()
-
 
 def field(site="schwarzsee"):
     if site == "guttannen":
@@ -438,6 +431,13 @@ def meteoswiss(site="schwarzsee"):
 
 if __name__ == "__main__":
 
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    coloredlogs.install(
+        fmt="%(name)s %(levelname)s %(message)s",
+        logger=logger,
+    )
+
     SITE, FOUNTAIN = config("Guttannen")
 
     raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
@@ -453,9 +453,6 @@ if __name__ == "__main__":
     df_ERA5 = df_ERA5.set_index("When")
     df = df.set_index("When")
     df["missing"] = 0
-    # df["missing_type"] = ""
-    # df.loc[df["T_a"].isnull(), "missing"] = 1
-    # df["v_a"] = df["v_a"].replace(0, np.NaN)
 
     df_ERA5 = df_ERA5.reset_index()
     mask = (df_ERA5["When"] >= SITE["start_date"]) & (
@@ -478,7 +475,6 @@ if __name__ == "__main__":
         for col in ["T_a", "RH", "v_a"]:
             df.loc[df[col].isnull(), "missing"] = 1
             df.loc[df[col].isnull(), "missing_type"] = col
-            # logger.warning("%s converted to %0.1f" %(col, convertToNumber(col)))
             df.loc[df[col].isnull(), col] = df_ERA5[col]
 
         for col in ["p_a", "SW_direct", "SW_diffuse", "LW_in"]:
@@ -489,7 +485,6 @@ if __name__ == "__main__":
         for col in ["T_a", "RH", "v_a", "p_a"]:
             df.loc[df[col].isnull(), "missing"] = 1
             df.loc[df[col].isnull(), "missing_type"] = col
-            # logger.warning("%s converted to %0.1f" %(col, convertToNumber(col)))
             df.loc[df[col].isnull(), col] = df_ERA5[col]
 
         for col in ["SW_direct", "SW_diffuse", "LW_in"]:
@@ -549,7 +544,6 @@ if __name__ == "__main__":
 
     df_out = df[cols]
 
-    # df_out.loc[df_out["Prec"].isnull(), "Prec"] = 0
     if df_out.isnull().values.any():
         print("Warning: Null values present")
         print(df_out[cols].isnull().sum())
@@ -558,148 +552,7 @@ if __name__ == "__main__":
     df_out.loc[:, "vp_a"] = df_out.Prec.interpolate()
 
     df_out = df_out.round(3)
-    # df_out.loc[df_out["v_a"] < 0, "v_a"] = 0
     logger.error(df_out[df_out.index.duplicated()])
     logger.info(df_out.tail())
     df_out.to_csv(input_folder + SITE["name"] + "_input_model.csv")
 
-    # if SITE["name"] in ['schwarzsee']:
-    # # Extend data
-    #     df_ERA5["Prec"] = 0
-    #     df_ERA5["missing"] = 1
-    #     df_ERA5 = df_ERA5.reset_index()
-    #     mask = (df_ERA5["When"] > df_out["When"].iloc[-1]) & (
-    #         df_ERA5["When"] <= datetime(2019, 5, 30)
-    #     )
-    #     df_ERA5 = df_ERA5.loc[mask]
-
-    #     mask = (df_in2["When"] >= SITE["start_date"]) & (
-    #         df_in2["When"] <= SITE["end_date"]
-    #     )
-    #     df_in2 = df_in2.loc[mask]
-    #     df_in2 = df_in2.set_index("When")
-
-    #     df_out = df_out.set_index("When")
-    #     df_ERA5 = df_ERA5.set_index("When")
-
-    #     df_ERA5["Prec"] = df_in2["Prec"]
-    #     concat = pd.concat([df_out, df_ERA5])
-    #     concat.loc[concat["Prec"].isnull(), "Prec"] = 0
-    #     concat.loc[concat["v_a"] < 0, "v_a"] = 0
-    #     logger.error(concat[concat.index.duplicated()])
-    #     logger.info(concat.tail())
-
-    #     concat = concat.reset_index()
-
-    #     if concat.isnull().values.any():
-    #         print("Warning: Null values present")
-    #         print(
-    #             concat[
-    #                 [
-    #                     "When",
-    #                     "T_a",
-    #                     "RH",
-    #                     "v_a",
-    #                     # "Discharge",
-    #                     "SW_direct",
-    #                     "SW_diffuse",
-    #                     "Prec",
-    #                     "p_a",
-    #                     "missing",
-    #                 ]
-    #             ]
-    #             .isnull()
-    #             .sum()
-    #         )
-
-    #     concat.to_csv(input_folder + SITE["name"] + "_input_model.csv")
-    #     concat.to_hdf(
-    #         input_folder + SITE["name"] + "_input_model.h5",
-    #         key="df",
-    #         mode="w",
-    #     )
-
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(111)
-    # ax1.scatter(df_in2.SW_g, df_in3.SW_g, s=2)
-    # ax1.set_ylabel("ERA5 Global Solar radiation [$W\\,m^{-2}$]")
-    # ax1.set_xlabel("Plaffeien Global Solar radiation [$W\\,m^{-2}$]")
-    # ax1.grid()
-    # lims = [
-    #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-    #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-    # ]
-    # # now plot both limits against eachother
-    # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
-    # ax1.set_aspect("equal")
-    # ax1.set_xlim(lims)
-    # ax1.set_ylim(lims)
-    # # pp.savefig(bbox_inches="tight")
-    # plt.savefig(FOLDERS["input_folder"] + "compare.jpg", dpi=300, bbox_inches="tight")
-    # plt.clf()
-
-    # ax1 = fig.add_subplot(111)
-    # ax1.scatter(df_out.v_a, df_in3.v_a, s=2)
-    # ax1.set_xlabel("AWS v")
-    # ax1.set_ylabel("ERA5 v")
-    # ax1.grid()
-    # lims = [
-    #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-    #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-    # ]
-    # # now plot both limits against eachother
-    # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
-    # ax1.set_aspect("equal")
-    # ax1.set_xlim(lims)
-    # ax1.set_ylim(lims)
-    # pp.savefig(bbox_inches="tight")
-    # plt.clf()
-
-    # ax1 = fig.add_subplot(111)
-    # ax1.scatter(df_out.T_a, df_in3.T_a, s=2)
-    # ax1.set_xlabel("AWS T")
-    # ax1.set_ylabel("ERA5 T")
-    # ax1.grid()
-    # lims = [
-    #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-    #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-    # ]
-    # # now plot both limits against eachother
-    # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
-    # ax1.set_aspect("equal")
-    # ax1.set_xlim(lims)
-    # ax1.set_ylim(lims)
-    # pp.savefig(bbox_inches="tight")
-    # plt.clf()
-
-    # ax1 = fig.add_subplot(111)
-    # ax1.scatter(df_in2.Prec, df_in3.Prec, s=2)
-    # ax1.set_xlabel("Plf ppt")
-    # ax1.set_ylabel("ERA5 ppt")
-    # ax1.grid()
-    # lims = [
-    #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-    #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-    # ]
-    # # now plot both limits against eachother
-    # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
-    # ax1.set_aspect("equal")
-    # ax1.set_xlim(lims)
-    # ax1.set_ylim(lims)
-    # pp.savefig(bbox_inches="tight")
-
-    # plt.clf()
-    # pp.close()
-    """
-            Parameter
-            ---------
-                      Unit                                 Description
-            oli000z0
-            prestas0  hPa                                  Pressure at station level (QFE); current value
-            gre000z0  W/m²                                 Global radiation; ten minutes mean
-            pva200s0  hPa                                  Vapour pressure 2 m above ground; current value
-            rre150z0  mm                                   Precipitation; ten minutes total
-            ure200s0  %                                    Relative air humidity 2 m above ground;
-            fkl010z0  m/s                                  Wind speed scalar; ten minutes mean
-            tre200s0  °C                                   Air temperature 2 m above ground; current
-    """
