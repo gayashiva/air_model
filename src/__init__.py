@@ -9,9 +9,6 @@ import coloredlogs
 
 dirname = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
-sys.path.append(dirname)
-from src.logs.logging import setup_logging
-
 
 def setup_logging(
     default_path=dirname + "/src/logs/logging.yaml",
