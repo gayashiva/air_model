@@ -1,9 +1,13 @@
 import os, sys, time
+import logging
+import coloredlogs
+
+dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+sys.path.append(dirname)
 from src.models.air import Icestupa
 from src.data.settings import config
 
-import logging
-import coloredlogs
 
 if __name__ == "__main__":
     # Initialise logger
@@ -20,17 +24,17 @@ if __name__ == "__main__":
 
     icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)
 
-    icestupa.derive_parameters()
+    # icestupa.derive_parameters()
 
     # icestupa.read_input()
 
-    icestupa.melt_freeze()
+    # icestupa.melt_freeze()
 
-    # icestupa.read_output()
+    icestupa.read_output()
 
     # icestupa.corr_plot()
 
-    icestupa.summary()
+    # icestupa.summary()
 
     # icestupa.print_input()
 

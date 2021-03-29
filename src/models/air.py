@@ -4,6 +4,7 @@ from datetime import datetime
 from tqdm import tqdm
 import numpy as np
 from functools import lru_cache
+from pandas_profiling import ProfileReport
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
@@ -208,20 +209,28 @@ class Icestupa:
             mode="w",
         )
 
-    def read_input(self):  # Use processed input dataset
+    def read_input(self, report=False):  # Use processed input dataset
 
         self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
 
         logger.debug(self.df.head())
 
+        if report:
+            prof = ProfileReport(self.df)
+            prof.to_file(output_file=self.output + 'input_report.html')
+
         if self.df.isnull().values.any():
             logger.warning("Warning: Null values present")
 
-    def read_output(self):  # Reads output and Displays outputs useful for manuscript
+    def read_output(self, report=False):  # Reads output and Displays outputs useful for manuscript
 
         self.df = pd.read_hdf(
             self.output + "model_output_" + self.trigger + ".h5", "df"
         )
+
+        if report:
+            prof = ProfileReport(self.df)
+            prof.to_file(output_file=self.output + 'output_report.html')
 
         if self.df.isnull().values.any():
             logger.warning("Warning: Null values present")
