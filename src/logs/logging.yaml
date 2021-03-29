@@ -59,10 +59,10 @@ handlers:
     backupCount: 20
     encoding: utf8
 
-root:
-  level: NOTSET
-  handlers: [console]
-  propogate: yes
+# root:
+#   level: NOTSET
+#   handlers: [console]
+#   propogate: no
 
 loggers:
   __main__:
@@ -75,7 +75,7 @@ loggers:
         debug_file_handler,
         warn_file_handler,
       ]
-    propogate: no
+    propogate: yes
 
   <module>:
     level: INFO
@@ -99,4 +99,4 @@ loggers:
         debug_file_handler,
         warn_file_handler,
       ]
-    propogate: yes
+    propogate: no

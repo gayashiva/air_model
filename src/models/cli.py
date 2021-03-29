@@ -24,21 +24,21 @@ if __name__ == "__main__":
 
     icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)
 
-    # icestupa.derive_parameters()
+    icestupa.derive_parameters()
 
     # icestupa.read_input()
 
-    # icestupa.melt_freeze()
+    icestupa.melt_freeze()
 
-    icestupa.read_output()
+    # icestupa.read_output()
 
     # icestupa.corr_plot()
 
-    # icestupa.summary()
+    icestupa.summary()
 
     # icestupa.print_input()
 
-    # icestupa.summary_figures()
+    icestupa.summary_figures()
 
     # icestupa.print_output()
 

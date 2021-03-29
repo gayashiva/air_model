@@ -4,7 +4,7 @@ from datetime import datetime
 from tqdm import tqdm
 import numpy as np
 from functools import lru_cache
-from pandas_profiling import ProfileReport
+# from pandas_profiling import ProfileReport
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
@@ -217,20 +217,22 @@ class Icestupa:
 
         if report:
             prof = ProfileReport(self.df)
-            prof.to_file(output_file=self.output + 'input_report.html')
+            prof.to_file(output_file=self.output + "input_report.html")
 
         if self.df.isnull().values.any():
             logger.warning("Warning: Null values present")
 
-    def read_output(self, report=False):  # Reads output and Displays outputs useful for manuscript
+    def read_output(
+        self, report=False
+    ):  # Reads output and Displays outputs useful for manuscript
 
         self.df = pd.read_hdf(
             self.output + "model_output_" + self.trigger + ".h5", "df"
         )
 
-        if report:
-            prof = ProfileReport(self.df)
-            prof.to_file(output_file=self.output + 'output_report.html')
+        # if report:
+        #     prof = ProfileReport(self.df)
+        #     prof.to_file(output_file=self.output + "output_report.html")
 
         if self.df.isnull().values.any():
             logger.warning("Warning: Null values present")
@@ -356,7 +358,7 @@ class Icestupa:
                         "Height increased to %s on %s" % (self.h_f, self.df.When[i])
                     )
                     # self.get_height_steps(i)
-                    self.r_spray = self.get_droplet_projectile(
+                    self.r_spray = get_droplet_projectile(
                         dia=self.dia_f, h=self.h_f, d=self.discharge
                     )
                     self.df.loc[i - 1, "r_ice"] = self.r_spray
@@ -461,7 +463,6 @@ class Icestupa:
                         / self.TIME_STEP
                         - self.df.loc[i, "Ql"]
                     )
-                    # self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
 
                     if self.liquid < 0:
                         # Cooling Ice

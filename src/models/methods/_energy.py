@@ -70,19 +70,19 @@ def get_energy(self, row, mode="normal"):
         )
         sys.exit("LW nan")
 
-    if (
-        self.liquid > 0 and self.name == "schwarzsee"
-    ):  # Can only find Qf if water discharge quantity known
+    if self.liquid > 0:  # Can only find Qf if water discharge quantity known
         self.df.loc[i, "Qf"] = (
             (self.df.loc[i - 1, "solid"])
+            # self.liquid
             * self.C_W
             * self.T_w
             / (self.TIME_STEP * self.df.loc[i, "SA"])
         )
 
-        self.df.loc[i, "Qf"] += (
-            self.RHO_I * self.DX * self.C_I * (self.df.loc[i, "T_s"]) / self.TIME_STEP
-        )
+    # Change in paper
+    #     self.df.loc[i, "Qf"] += (
+    #         self.RHO_I * self.DX * self.C_I * (self.df.loc[i, "T_s"]) / self.TIME_STEP
+    #     )
 
     if mode == "normal":
         self.df.loc[i, "Qg"] = (
@@ -101,7 +101,7 @@ def get_energy(self, row, mode="normal"):
         self.df.loc[i, "SW"]
         + self.df.loc[i, "LW"]
         + self.df.loc[i, "Qs"]
-        + self.df.loc[i, "Qf"]
+        # + self.df.loc[i, "Qf"]
         + self.df.loc[i, "Qg"]
     )
 
