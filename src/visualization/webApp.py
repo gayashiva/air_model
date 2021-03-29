@@ -19,7 +19,7 @@ import coloredlogs
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 from src.models.methods.metadata import get_parameter_metadata
-from src.models.air import Icestupa
+from src.models.icestupaClass import Icestupa
 from src.data.settings import config
 
 
@@ -202,8 +202,6 @@ if __name__ == "__main__":
         st.write(
             "### Meltwater Released: %.2f litres" % icestupa.df["meltwater"].iloc[-1]
         )
-        Duration = icestupa.df.index[-1] * icestupa.TIME_STEP / (60 * 60 * 24)
-        st.write("### Survival Duration:  %.2f days" % round(Duration, 2))
         col1, mid, col2 = st.beta_columns([14, 2, 14])
         with col1:
             st.write("## Input variables")

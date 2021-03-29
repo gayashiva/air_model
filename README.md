@@ -25,6 +25,7 @@ A physical model that estimates the meltwater quantity and survival duration of 
     │   ├── __init__.py    <- Makes src a Python module and provides logging setup
     │   │
     │   ├── data           <- Scripts to download or generate data
+    │   │   ├── settings.py
     │   │   └── make_dataset.py
     │   │
     │   ├── features       <- Scripts to turn raw data into features for modeling
@@ -32,14 +33,14 @@ A physical model that estimates the meltwater quantity and survival duration of 
     │   │
     │   ├── models         <- Scripts to train models and then use trained models to make
     │   │   │                 predictions
-    │   │   ├── predict_model.py
-    │   │   └── train_model.py
+    │   │   ├── icestupaClass.py
+    │   │   └── userApp.py
     │   │
     │   ├── logs           <- Scripts for logger setup and output
     │   │   └── make_dataset.py
     │   │
     │   └── visualization  <- Scripts to create results oriented visualizations using streamlit and manim
-    │       └── visualize.py
+    │       └── webApp.py
     │
     └── tox.ini            <- tox file with settings for running tox; see tox.testrun.org
 

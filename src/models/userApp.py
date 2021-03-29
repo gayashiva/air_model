@@ -10,7 +10,7 @@ import inquirer
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
-from src.models.air import Icestupa
+from src.models.icestupaClass import Icestupa
 from src.data.settings import config
 
 
