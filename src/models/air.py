@@ -1,3 +1,7 @@
+"""Icestupa class object definition
+"""
+
+# External modules
 import pandas as pd
 import sys, os, math, time
 from datetime import datetime
@@ -5,19 +9,18 @@ from tqdm import tqdm
 import numpy as np
 from functools import lru_cache
 from pandas_profiling import ProfileReport
+import logging
 
+# Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
 sys.path.append(dirname)
-
 from src.models.methods.calibration import get_calibration
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
-
 from src.data.settings import config
-import logging
 
+# Module logger
 logger = logging.getLogger(__name__)
 
 

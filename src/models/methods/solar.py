@@ -1,3 +1,5 @@
+"""Function that returns solar elevation angle
+"""
 from functools import lru_cache
 from pvlib import location
 import numpy as np

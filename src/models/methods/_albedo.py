@@ -1,8 +1,9 @@
+"""Icestupa class function that returns albedo column(a)
+"""
 import pandas as pd
 import math
 import numpy as np
 from functools import lru_cache
-
 import logging
 import coloredlogs
 

@@ -1,3 +1,6 @@
+"""Icestupa class function that returns additional field data to initialise ice radius and height and include drone validation
+"""
+
 import pandas as pd
 import math
 import numpy as np

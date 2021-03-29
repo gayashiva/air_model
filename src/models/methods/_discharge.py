@@ -1,10 +1,11 @@
+"""Icestupa class function that returns Discharge rate column(Discharge)
+"""
 import os, sys, time
 import pandas as pd
 import math
 import numpy as np
 from tqdm import tqdm
 from functools import lru_cache
-
 import logging
 import coloredlogs
 

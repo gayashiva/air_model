@@ -1,10 +1,14 @@
+"""Command line interface to create or display Icestupa class
+"""
+
+# External modules
 import os, sys, time
 import logging
 import coloredlogs
 import inquirer
 
+# Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
 sys.path.append(dirname)
 from src.models.air import Icestupa
 from src.data.settings import config
@@ -12,7 +16,7 @@ from src.data.settings import config
 
 if __name__ == "__main__":
 
-    # Initialise logger
+    # Main logger
     logger = logging.getLogger(__name__)
     coloredlogs.install(
         fmt="%(funcName)s %(levelname)s %(message)s",

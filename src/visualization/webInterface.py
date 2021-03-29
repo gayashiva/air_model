@@ -1,3 +1,7 @@
+"""Streamlit web app to display Icestupa class object
+"""
+
+# External modules
 import streamlit as st
 import pandas as pd
 import sys
@@ -8,17 +12,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import re
 import base64
+import logging
+import coloredlogs
 
+# Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
 sys.path.append(dirname)
-
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.air import Icestupa
 from src.data.settings import config
-
-import logging
-import coloredlogs
 
 
 def download_csv(name, df):

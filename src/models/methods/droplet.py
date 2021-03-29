@@ -1,3 +1,6 @@
+"""Function that returns spray radius or discharge quantity
+"""
+
 import pandas as pd
 import math
 import numpy as np

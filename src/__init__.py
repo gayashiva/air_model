@@ -1,3 +1,5 @@
+"""Logging configuration setup
+"""
 import yaml
 import os
 import sys

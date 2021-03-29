@@ -1,3 +1,6 @@
+"""Icestupa class function that adjusts discharge when fountain height increases
+"""
+
 import pandas as pd
 import math
 import numpy as np

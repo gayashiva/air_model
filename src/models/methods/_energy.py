@@ -1,9 +1,14 @@
+"""Icestupa class function that returns energy flux
+"""
+
+# External modules
 import pandas as pd
 import math
 import numpy as np
 from functools import lru_cache
 import logging
 
+# Module logger
 logger = logging.getLogger(__name__)
 
 

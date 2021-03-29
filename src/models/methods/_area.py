@@ -1,3 +1,5 @@
+"""Icestupa class function that calculates surface area, ice radius and height
+"""
 import pandas as pd
 import math
 import numpy as np

@@ -1,14 +1,19 @@
+"""Location specific settings used to initialise icestupa object
+"""
+
+# External modules
 from datetime import datetime
 import logging
-import coloredlogs
 import os
 
-dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
+# Module logger
 logger = logging.getLogger(__name__)
+
 # Spammers
 logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
 logging.getLogger("numexpr").setLevel(logging.CRITICAL)
+
+dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 
 def config(location="Schwarzsee", trigger="Manual"):
@@ -50,7 +55,6 @@ def config(location="Schwarzsee", trigger="Manual"):
             fountain_off_date=datetime(2019, 3, 10, 18),
             dia_f=0.005,  # FOUNTAIN aperture diameter
             h_f=1.35,  # FOUNTAIN steps h_f
-            theta_f=45,  # FOUNTAIN aperture diameter
             discharge=3.58,  # FOUNTAIN on discharge
             trigger=trigger,
         )
@@ -70,12 +74,8 @@ def config(location="Schwarzsee", trigger="Manual"):
             # fountain_off_date=datetime(2021, 3, 10, 18),
             dia_f=0.01,  # FOUNTAIN aperture diameter
             h_f=2,  # FOUNTAIN steps h_f
-            theta_f=45,  # FOUNTAIN aperture diameter
-            ftl=0.5,  # FOUNTAIN flight time loss ftl
-            T_w=1,  # FOUNTAIN Water temperature
             discharge=60,  # FOUNTAIN on discharge
-            crit_temp=-1,  # FOUNTAIN runtime temperature
-            trigger="Temperature",
+            trigger=trigger,
         )
     if location == "Hial":
 

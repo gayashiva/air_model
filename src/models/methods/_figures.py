@@ -1,3 +1,6 @@
+"""Icestupa class function that generates figures for web app
+"""
+
 import numpy as np
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
