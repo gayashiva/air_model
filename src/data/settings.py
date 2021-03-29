@@ -11,7 +11,7 @@ logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
 logging.getLogger("numexpr").setLevel(logging.CRITICAL)
 
 
-def config(location="Schwarzsee"):
+def config(location="Schwarzsee", trigger="Manual"):
 
     logger.info("Location is %s" % location)
     if location == "Guttannen":
@@ -32,10 +32,7 @@ def config(location="Schwarzsee"):
             dia_f=0.007,  # FOUNTAIN aperture diameter
             h_f=2.5,  # FOUNTAIN steps h_f
             discharge=12.33,  # FOUNTAIN on discharge
-            crit_temp=0,  # FOUNTAIN runtime temperature
-            # h_i=0.43,
-            # r_i=9.04 / 2,
-            trigger="Manual",
+            trigger=trigger,
         )
 
     if location == "Schwarzsee":
@@ -54,11 +51,8 @@ def config(location="Schwarzsee"):
             dia_f=0.005,  # FOUNTAIN aperture diameter
             h_f=1.35,  # FOUNTAIN steps h_f
             theta_f=45,  # FOUNTAIN aperture diameter
-            ftl=0,  # FOUNTAIN flight time loss ftl
-            T_w=5,  # FOUNTAIN Water temperature
             discharge=3.58,  # FOUNTAIN on discharge
-            crit_temp=0,  # FOUNTAIN runtime temperature
-            trigger="Manual",
+            trigger=trigger,
         )
 
     if location == "Gangles":

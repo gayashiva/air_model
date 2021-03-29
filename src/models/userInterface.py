@@ -1,6 +1,7 @@
 import os, sys, time
 import logging
 import coloredlogs
+import inquirer
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
@@ -10,6 +11,7 @@ from src.data.settings import config
 
 
 if __name__ == "__main__":
+
     # Initialise logger
     logger = logging.getLogger(__name__)
     coloredlogs.install(
@@ -18,30 +20,44 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    start = time.time()
+    q = [
+        inquirer.List(
+            "location",
+            message="Where is the Icestupa?",
+            choices=["Guttannen", "Schwarzsee"],
+            default="Guttannen",
+        ),
+        inquirer.List(
+            "trigger",
+            message="How is fountain switched on?",
+            choices=["Manual", "NetEnergy"],
+            default="Manual",
+        ),
+        inquirer.List(
+            "run", message="Regenerate results?", choices=["yes", "no"], default="yes"
+        ),
+    ]
 
-    SITE, FOUNTAIN, FOLDER = config("Guttannen")
+    answers = inquirer.prompt(q)
 
+    # Get settings for given location and trigger
+    SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
+
+    # Initialise icestupa object
     icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)
 
-    icestupa.derive_parameters()
+    if answers["run"] == "yes":
+        # Derive all the input parameters
+        icestupa.derive_parameters()
 
-    # icestupa.read_input()
+        # Generate results
+        icestupa.melt_freeze()
 
-    icestupa.melt_freeze()
+        # Summarise and save model results
+        icestupa.summary()
 
-    # icestupa.read_output()
-
-    # icestupa.corr_plot()
-
-    icestupa.summary()
-
-    # icestupa.print_input()
-
-    icestupa.summary_figures()
-
-    # icestupa.print_output()
-
-    total = time.time() - start
-
-    logger.debug("Total time  : %.2f", total / 60)
+        # Create figures for web interface
+        icestupa.summary_figures()
+    else:
+        # Use output parameters from cache
+        icestupa.read_output()

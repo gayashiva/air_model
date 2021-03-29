@@ -2,6 +2,7 @@ import os, sys, time
 import pandas as pd
 import math
 import numpy as np
+from tqdm import tqdm
 from functools import lru_cache
 
 import logging
@@ -49,7 +50,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         self.df.Discharge = 0
         logger.debug("Calculating discharge from energy trigger ...")
         for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]):
-            self.energy_balance(row, mode="trigger")
+            self.get_energy(row, mode="trigger")
         mask = self.df["TotalE"] < 0
         mask_index = self.df[mask].index
         self.df.loc[mask_index, "Discharge"] = 1 * self.discharge

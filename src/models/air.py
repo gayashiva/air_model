@@ -52,6 +52,7 @@ class Icestupa:
     theta_f = 45  # FOUNTAIN angle
     ftl = 0  # FOUNTAIN flight time loss ftl
     T_w = 5  # FOUNTAIN Water temperature
+    crit_temp=0  # FOUNTAIN runtime temperature
 
     def __init__(self, *initial_data, **kwargs):
         # Initialise all variables of dictionary
