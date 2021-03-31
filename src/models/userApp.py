@@ -45,8 +45,8 @@ if __name__ == "__main__":
     # answers = inquirer.prompt(q)
 
     answers = dict(
-        location = "Guttannen 2021",
-        trigger='Weather',
+        location = "Guttannen 2020",
+        trigger='Temperature',
         run='yes',
     )
 

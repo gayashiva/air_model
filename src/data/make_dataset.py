@@ -536,14 +536,15 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    SITE, FOUNTAIN, FOLDER = config("Guttannen 2021")
+    SITE, FOUNTAIN, FOLDER = config("Guttannen 2020")
 
     raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
 
-    if SITE["name"] in ["schwarzsee19", "guttannen20"]:
+    if SITE["name"] in ["schwarzsee19"]:
         df = field(location=SITE["name"])
-    if SITE["name"] in ["guttannen21"]:
+        logger.warning(df.v_a.mean())
+    if SITE["name"] in ["guttannen21", "guttannen20"]:
         df = meteoswiss(SITE["name"])
 
     df_ERA5, df_in3 = era5(df, SITE["name"])
@@ -559,7 +560,7 @@ if __name__ == "__main__":
 
     # Fit ERA5 to field data
 
-    if SITE["name"] in ["guttannen21"]:
+    if SITE["name"] in ["guttannen21", "guttannen20"]:
         fit_list = ["T_a", "RH", "v_a"]
     else:
         fit_list = ["T_a", "RH", "v_a", "p_a"]
@@ -668,6 +669,10 @@ if __name__ == "__main__":
     logger.warning(df_out[df_out.index.duplicated()])
     logger.info(df_out.tail())
     df_out.to_csv(input_folder + SITE["name"] + "_input_model.csv")
+    fig = plt.figure()
+    plt.plot(df_out.v_a)
+    plt.ylabel('some numbers')
+    plt.savefig(input_folder + SITE["name"] + "test.png")
 
     if SITE["name"] in ['schwarzsee19']:
         df_ERA5["Prec"] = 0
@@ -721,8 +726,4 @@ if __name__ == "__main__":
             key="df",
             mode="w",
         )
-        fig = plt.figure()
-        plt.plot(concat.v_a)
-        plt.ylabel('some numbers')
-        plt.savefig(input_folder + SITE["name"] + "test.png")
 

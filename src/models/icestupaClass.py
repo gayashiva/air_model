@@ -93,7 +93,7 @@ class Icestupa:
         self,
     ):  # Derives additional parameters required for simulation
         df_c = get_calibration(site=self.name, input=self.input)
-        if self.name in ["guttannen21"]:
+        if self.name in ["guttannen21", "guttannen20"]:
             self.r_spray = df_c.loc[0, "dia"] / 2
             self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
 
@@ -325,15 +325,8 @@ class Icestupa:
                     self.df.loc[i - 1, "r_ice"] = self.r_spray
                     self.df.loc[i - 1, "h_ice"] = self.DX
 
-                if self.name == "guttannen20":
-                    if hasattr(self, "h_i"):
-                        self.df.loc[i - 1, "h_ice"] = self.h_i
-                        self.df.loc[i - 1, "r_ice"] = self.r_spray
-                    else:
-                        self.df.loc[i - 1, "h_ice"] = self.DX
-                        self.df.loc[i - 1, "r_ice"] = self.r_spray
 
-                if self.name == "guttannen21":
+                if self.name in ["guttannen21", "guttannen20"]:
                     if hasattr(self, "h_i"):
                         self.df.loc[i - 1, "h_ice"] = self.h_i
                         self.df.loc[i - 1, "r_ice"] = self.r_spray
@@ -581,6 +574,16 @@ class Icestupa:
                     self.df.loc[i + 1, "ice"] / self.RHO_I
                     + self.df.loc[self.start, "iceV"]
                 )
+                # if hasattr(self, "hollowV"):  # Include Hollow Volume
+                #     if self.name == 'guttannen20' and self.df.When[i] >= datetime(2020,1,1,16):
+                #         self.df.loc[i , "iceV"] += self.hollowV
+                #         self.df.loc[i, "h_ice"] = (
+                #             3 * self.df.loc[i, "iceV"] / (math.pi * self.df.loc[i, "r_ice"] ** 2)
+                #         )
+                #         self.df.loc[i , "s_cone"] = (
+                #             self.df.loc[i , "h_ice"] / self.df.loc[i , "r_ice"]
+                #         )
+
                 self.df.loc[i + 1, "input"] = (
                     self.df.loc[i, "input"]
                     + self.df.loc[i, "ppt"]
@@ -594,6 +597,7 @@ class Icestupa:
                     - self.df.loc[i, "melted"]
                     + self.df.loc[i, "ppt"]
                 ) / (self.df.loc[i, "SA"] * self.RHO_I)
+
 
 
                 self.liquid = [0] * 1

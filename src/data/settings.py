@@ -45,13 +45,14 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
         SITE = dict(
             name="guttannen20",
             start_date=datetime(2019, 12, 28),
-            end_date=datetime(2020, 3, 20),
+            end_date=datetime(2020, 4, 6),
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
             altitude_aws=1054,
             h_i=0.005,
+            hollowV=44.6,
         )
 
         FOUNTAIN = dict(
