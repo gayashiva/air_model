@@ -17,12 +17,10 @@ def get_albedo(
     i = row.Index
 
     """Albedo"""
-    if site in ["schwarzsee"]:
-        # Precipitation event
-        if (row.Discharge == 0) & (row.Prec > 0):
-            if row.T_a < self.T_RAIN:  # Snow event
-                s = 0
-                f = 0
+    if site in ["schwarzsee19"]:
+        if row.T_a < self.T_RAIN and row.Prec>0:  # Snow event
+            s = 0
+            f = 0
 
         if row.Discharge > 0:  # Spray event
             f = 1
@@ -37,7 +35,7 @@ def get_albedo(
 
             self.df.loc[i, "a"] = self.A_I
 
-    if site in ["guttannen"]:
+    if site in ["guttannen20", "guttannen21"]:
 
         # Precipitation event
         if row.Prec > 0:

@@ -97,43 +97,17 @@ if __name__ == "__main__":
     )
 
     location = st.sidebar.radio(
-        # "Select Location", ("Gangles", "Schwarzsee", "Guttannen", "Hial", "Secmol")
-        "Select Location",
-        ("Guttannen", "Schwarzsee"),
+        "Select Icestupa",
+        ("Schwarzsee 2019", "Guttannen 2020", "Guttannen 2021"),
     )
-    SITE, FOUNTAIN, FOLDER = config(location)
-    lat = SITE["latitude"]
-    lon = SITE["longitude"]
-    map_data = pd.DataFrame({"lat": [lat], "lon": [lon]})
-    start_date = SITE["start_date"]
-    h_f = FOUNTAIN["h_f"]
+    trigger = st.sidebar.radio("Select Fountain control", ("None", "Manual", "Temperature", "Weather"))
+    SITE, FOUNTAIN, FOLDER = config(location, trigger=trigger)
 
-    if location in ["Guttannen", "Schwarzsee"]:
-        trigger = st.sidebar.radio("Select Discharge Trigger", ("Manual", "NetEnergy"))
-        FOUNTAIN["trigger"] = trigger
+    if SITE["name"] in ['guttannen20', 'guttannen21'] and FOUNTAIN['trigger'] == 'Manual':
+        st.write('## Sorry, manual fountain control not recorded. Please choose a different fountain control')
+    else:
         icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)
         icestupa.read_output()
-        df_in = icestupa.df
-        df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
-        df_in = df_in.set_index("When")
-        df = df_in
-
-    if location == "Gangles":
-        trigger = st.sidebar.radio("Select Discharge Trigger", ("NetEnergy"))
-        FOUNTAIN["trigger"] = trigger
-        start_date = st.date_input("Fountain spray starts at", start_date)
-        start_date = pd.to_datetime(start_date)
-        h_f = st.number_input("Fountain height starts at", value=h_f, min_value=1)
-        if start_date > SITE["start_date"] or h_f != FOUNTAIN["h_f"]:
-
-            SITE["start_date"] = pd.to_datetime(start_date)
-            FOUNTAIN["h_f"] = h_f
-
-            icestupa = Icestupa(SITE, FOUNTAIN)
-
-            icestupa.derive_parameters()
-
-            icestupa.melt_freeze()
         df_in = icestupa.df
         df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
         df_in = df_in.set_index("When")
@@ -151,8 +125,15 @@ if __name__ == "__main__":
         st.image(air_logo, width=180)
     with col2:
         st.write("## Artificial Ice Reservoir Simulation")
-        st.write("## **%s** Icestupa " % (location))
-        st.write("### **%s** Fountain trigger" % (trigger))
+        # st.write("## **%s** Icestupa " % (location))
+        if trigger == 'None':
+            st.write("### Fountain was always kept on until **%s** " % (icestupa.fountain_off_date.date()))
+        if trigger == 'Manual':
+            st.write("### Fountain was controlled **%s** until **%s**" % (trigger + 'ly', (icestupa.fountain_off_date.date())))
+        if trigger == 'Temperature':
+            st.write("### Fountain was switched on/off after sunset when temperature was below **%s** until **%s**" % (icestupa.crit_temp, (icestupa.fountain_off_date.date())))
+        if trigger == 'Weather':
+            st.write("### Fountain was switched on/off whenever surface energy balance was negative/positive respectively until **%s**"% (icestupa.fountain_off_date.date()))
 
     # df = df_filter("Move sliders to filter dataframe", icestupa.df)
 
@@ -163,14 +144,21 @@ if __name__ == "__main__":
     output = st.sidebar.checkbox("Output")
     derived = st.sidebar.checkbox("Derived")
     st.sidebar.write("# Map of %s" % location)
+    lat = SITE["latitude"]
+    lon = SITE["longitude"]
+    map_data = pd.DataFrame({"lat": [lat], "lon": [lon]})
     st.sidebar.map(map_data, zoom=10)
     if timelapse:
-        if location == "Schwarzsee":
+        if location == "Schwarzsee 2019":
             st.write("## %s Timelapse" % (location))
             url = "https://youtu.be/GhljRBGpxMg"
-        if location == "Guttannen":
+        if location == "Guttannen 2021":
             st.write("## %s Timelapse" % (location))
             url = "https://youtu.be/DBHoL1Z7H6U"
+        if location == "Guttannen 2020":
+            st.write("## %s Timelapse" % (location))
+            url = "https://youtu.be/kcrvhU20OOE"
+
         st.video(url)
         st.write("## Volume Estimation and Validation")
         fig, ax = plt.subplots()

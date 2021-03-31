@@ -7,6 +7,7 @@ import math
 import numpy as np
 from functools import lru_cache
 import logging
+import sys
 
 # Module logger
 logger = logging.getLogger(__name__)
@@ -43,6 +44,11 @@ def get_energy(self, row, mode="normal"):
             * (row.vp_a - self.df.loc[i, "vp_ice"])
             / ((np.log(self.h_aws / self.Z_I)) ** 2)
         )
+        if np.isnan(self.df.loc[i, "Ql"]):
+            logger.error(
+                f"When {self.df.When[i]},p_a {self.df.p_a[i]}"
+            )
+            sys.exit('Ql nan')
 
     # Sensible Heat Qs
     self.df.loc[i, "Qs"] = (
@@ -65,13 +71,19 @@ def get_energy(self, row, mode="normal"):
         self.df.loc[i, "SW"] = (1 - self.A_I) * (row.SW_direct + row.SW_diffuse)
 
     # Long Wave Radiation LW
-    self.df.loc[i, "LW"] = row.LW_in - self.IE * self.STEFAN_BOLTZMAN * math.pow(
-        self.df.loc[i, "T_s"] + 273.15, 4
-    )
+    try:
+        self.df.loc[i, "LW"] = row.LW_in - self.IE * self.STEFAN_BOLTZMAN * math.pow(
+            self.df.loc[i, "T_s"] + 273.15, 4
+        )
+    except OverflowError:
+        logger.error(
+            f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i]}"
+        )
+        sys.exit("LW nan")
 
     if np.isnan(self.df.loc[i, "LW"]):
         logger.error(
-            f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+            f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i]}"
         )
         sys.exit("LW nan")
 
@@ -89,7 +101,7 @@ def get_energy(self, row, mode="normal"):
     #         self.RHO_I * self.DX * self.C_I * (self.df.loc[i, "T_s"]) / self.TIME_STEP
     #     )
 
-    if mode == "normal":
+    if mode != "trigger":
         self.df.loc[i, "Qg"] = (
             self.K_I
             * (self.df.loc[i, "T_bulk"] - self.df.loc[i, "T_s"])

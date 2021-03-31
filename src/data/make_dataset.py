@@ -25,8 +25,86 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 sys.path.append(dirname)
 from src.data.settings import config
 
-def field(site="schwarzsee"):
-    if site == "guttannen":
+def field(location="schwarzsee"):
+    if location == "guttannen20":
+        df_in = pd.read_csv(
+            raw_folder + SITE["name"] + ".txt",
+            header=None,
+            encoding="latin-1",
+            skiprows=7,
+            sep="\\s+",
+            index_col=False,
+            names=[
+                "Date",
+                "Time",
+                "Discharge",
+                "Wind Direction",
+                "Wind Speed",
+                "Maximum Wind Speed",
+                "Temperature",
+                "Humidity",
+                "Pressure",
+                "Pluviometer",
+            ],
+        )
+        types_dict = {
+            "Date": str,
+            "Time": str,
+            "Discharge": float,
+            "Wind Direction": float,
+            "Wind Speed": float,
+            "Temperature": float,
+            "Humidity": float,
+            "Pressure": float,
+            "Pluviometer": float,
+        }
+        for col, col_type in types_dict.items():
+            df_in[col] = df_in[col].astype(col_type)
+        df_in["When"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
+        df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+        df_in = df_in.drop(["Pluviometer", "Date", "Time"], axis=1)
+        df_in = df_in.set_index("When").resample("15T").mean().reset_index()
+
+        mask = (df_in["When"] >= SITE["start_date"]) & (
+            df_in["When"] <= SITE["end_date"]
+        )
+        df_in = df_in.loc[mask]
+        df_in = df_in.reset_index()
+        days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="15T")
+        days = pd.DataFrame({"When": days})
+
+        df = pd.merge(
+            df_in[
+                [
+                    "When",
+                    "Discharge",
+                    "Wind Speed",
+                    "Temperature",
+                    "Humidity",
+                    "Pressure",
+                ]
+            ],
+            days,
+            on="When",
+        )
+
+        df = df.round(3)
+        # CSV output
+        df.rename(
+            columns={
+                "Wind Speed": "v_a",
+                "Temperature": "T_a",
+                "Humidity": "RH",
+                "Pressure": "p_a",
+            },
+            inplace=True,
+        )
+        logger.info(df_in.head())
+        logger.info(df_in.tail())
+        df.to_csv(input_folder + SITE["name"] + "_input_field.csv")
+
+
+    if location == "guttannen21":
         df_in = pd.read_csv(
             raw_folder + SITE["name"] + "_11Feb20.txt",
             header=None,
@@ -99,9 +177,9 @@ def field(site="schwarzsee"):
         )
         df.to_csv(input_folder + SITE["name"] + "_input_field.csv")
 
-    if site == "schwarzsee":
+    if location == "schwarzsee19":
         df_in = pd.read_csv(
-            raw_folder + SITE["name"] + "_aws.txt",
+            raw_folder + SITE["name"][:-2] + "_aws.txt",
             header=None,
             encoding="latin-1",
             skiprows=7,
@@ -207,25 +285,42 @@ def field(site="schwarzsee"):
     return df
 
 
-def era5(df, site="schwarzsee"):
+def era5(df, location="schwarzsee19"):
 
-    if site in ["schwarzsee"]:
+    if location in ["schwarzsee19"]:
         df_in3 = pd.read_csv(
-            "/home/suryab/work/ERA5/outputs/" + site + "_2019.csv",
+            "/home/suryab/work/ERA5/outputs/" + location[:-2] + "_2019.csv",
             sep=",",
             header=0,
             parse_dates=["When"],
         )
 
-    else:
+    if location in ["guttannen20"]:
         df_in3 = pd.read_csv(
-            "/home/suryab/work/ERA5/outputs/" + site + "_2021.csv",
+            "/home/suryab/work/ERA5/outputs/" + location[:-2] + "_2019.csv",
             sep=",",
             header=0,
             parse_dates=["When"],
         )
         df_in2 = pd.read_csv(
-            "/home/suryab/work/ERA5/outputs/" + site + "_2020.csv",
+            "/home/suryab/work/ERA5/outputs/" + location[:-2] + "_2020.csv",
+            sep=",",
+            header=0,
+            parse_dates=["When"],
+        )
+        df_in3 = df_in3.set_index("When")
+        df_in2 = df_in2.set_index("When")
+        df_in3 = pd.concat([df_in2, df_in3])
+        df_in3 = df_in3.reset_index()
+    if location in ["guttannen21"]:
+        df_in3 = pd.read_csv(
+            "/home/suryab/work/ERA5/outputs/" + location[:-2] + "_2021.csv",
+            sep=",",
+            header=0,
+            parse_dates=["When"],
+        )
+        df_in2 = pd.read_csv(
+            "/home/suryab/work/ERA5/outputs/" + location[:-2] + "_2020.csv",
             sep=",",
             header=0,
             parse_dates=["When"],
@@ -323,8 +418,8 @@ def era5(df, site="schwarzsee"):
         ]
     ]
 
-    logger.debug(df_ERA5.head())
-    logger.debug(df_ERA5.tail())
+    logger.info(df_ERA5.head())
+    logger.info(df_ERA5.tail())
     return df_ERA5, df_in3
 
 
@@ -397,12 +492,14 @@ def meteoswiss_parameter(parameter):
     return value
 
 
-def meteoswiss(site="schwarzsee"):
+def meteoswiss(location="schwarzsee19"):
 
-    if site == "schwarzsee":
-        site = "plaffeien"
+    if location == "schwarzsee19":
+        location = "plaffeien19"
+    location = location[:-2]
+
     df = pd.read_csv(
-        os.path.join(raw_folder, site + "_meteoswiss.txt"),
+        os.path.join(raw_folder, location + "_meteoswiss.txt"),
         # sep="\s+",
         sep=";",
         skiprows=2,
@@ -426,26 +523,27 @@ def meteoswiss(site="schwarzsee"):
     )
     mask = (df["When"] >= SITE["start_date"]) & (df["When"] <= SITE["end_date"])
     df = df.loc[mask]
+    logger.warning(df.columns)
     return df
 
 
 if __name__ == "__main__":
 
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
     coloredlogs.install(
         fmt="%(name)s %(levelname)s %(message)s",
+        level=logging.INFO,
         logger=logger,
     )
 
-    SITE, FOUNTAIN = config("Guttannen")
+    SITE, FOUNTAIN, FOLDER = config("Guttannen 2021")
 
     raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
 
-    if SITE["name"] in ["schwarzsee"]:
-        df = field(site=SITE["name"])
-    else:
+    if SITE["name"] in ["schwarzsee19", "guttannen20"]:
+        df = field(location=SITE["name"])
+    if SITE["name"] in ["guttannen21"]:
         df = meteoswiss(SITE["name"])
 
     df_ERA5, df_in3 = era5(df, SITE["name"])
@@ -460,7 +558,13 @@ if __name__ == "__main__":
     )
 
     # Fit ERA5 to field data
-    for column in ["T_a", "RH", "v_a", "p_a"]:
+
+    if SITE["name"] in ["guttannen21"]:
+        fit_list = ["T_a", "RH", "v_a"]
+    else:
+        fit_list = ["T_a", "RH", "v_a", "p_a"]
+
+    for column in fit_list:
         Y = df[column].values.reshape(-1, 1)
         X = df_ERA5[mask][column].values.reshape(-1, 1)
         slope, intercept = linreg(X, Y)
@@ -469,35 +573,44 @@ if __name__ == "__main__":
     df_ERA5 = df_ERA5.set_index("When")
 
     # Fill from ERA5
-    logger.debug(df.loc[df["T_a"].isnull()])
+    logger.warning("Temperature NaN rows: %s" %df["T_a"].isna().sum())
 
-    if SITE["name"] in ["guttannen"]:
+    if SITE["name"] in ["guttannen20", "guttannen21"]:
         for col in ["T_a", "RH", "v_a"]:
-            df.loc[df[col].isnull(), "missing"] = 1
-            df.loc[df[col].isnull(), "missing_type"] = col
-            df.loc[df[col].isnull(), col] = df_ERA5[col]
+            df.loc[df[col].isna(), "missing"] = 1
+            df.loc[df[col].isna(), "missing_type"] = col
+            df.loc[df[col].isna(), col] = df_ERA5[col]
 
-        for col in ["p_a", "SW_direct", "SW_diffuse", "LW_in"]:
+        # for col in ["p_a", "SW_direct", "SW_diffuse", "LW_in"]:
+        for col in ["p_a", "SW_direct", "SW_diffuse", "LW_in", "Prec"]:
             logger.info("%s from ERA5" % col)
             df[col] = df_ERA5[col]
 
-    if SITE["name"] in ["schwarzsee"]:
+    # if SITE["name"] in ["guttannen20"]:
+    #     for col in ["Prec", "vp_a"]:
+    #         logger.info("%s from meteoswiss" % col)
+    #         df[col] = df_swiss[col]
+
+    if SITE["name"] in ["schwarzsee19"]:
+        df["v_a"] = df["v_a"].replace(0, np.NaN)
         for col in ["T_a", "RH", "v_a", "p_a"]:
-            df.loc[df[col].isnull(), "missing"] = 1
-            df.loc[df[col].isnull(), "missing_type"] = col
-            df.loc[df[col].isnull(), col] = df_ERA5[col]
+            df.loc[df[col].isna(), "missing"] = 1
+            df.loc[df[col].isna(), "missing_type"] = col
+            df.loc[df[col].isna(), col] = df_ERA5[col]
 
         for col in ["SW_direct", "SW_diffuse", "LW_in"]:
             logger.info("%s from ERA5" % col)
             df[col] = df_ERA5[col]
 
-    if SITE["name"] in ["schwarzsee"]:
-        df_in2 = meteoswiss(SITE["name"])
+    if SITE["name"] in ["schwarzsee19"]:
+        df_swiss = meteoswiss(SITE["name"])
 
-        df_in2 = df_in2.set_index("When")
+        df_swiss = df_swiss.set_index("When")
 
-        df["Prec"] = df_in2["Prec"]
-        df_in2 = df_in2.reset_index()
+        for col in ["Prec"]:
+            logger.info("%s from meteoswiss" % col)
+            df[col] = df_swiss[col]
+        df_swiss = df_swiss.reset_index()
 
     df = df.reset_index()
 
@@ -509,11 +622,11 @@ if __name__ == "__main__":
     #     )
     #     print("ERA5", column, r_value)
     # slope, intercept, r_value, p_value, std_err = stats.linregress(
-    #     df[column].values, df_in2[column].values
+    #     df[column].values, df_swiss[column].values
     # )
     # print("Plf", column, r_value)
 
-    if SITE["name"] in ["schwarzsee"]:
+    if SITE["name"] in ["schwarzsee19", "guttannen20"]:
         cols = [
             "When",
             "T_a",
@@ -544,15 +657,72 @@ if __name__ == "__main__":
 
     df_out = df[cols]
 
-    if df_out.isnull().values.any():
-        print("Warning: Null values present")
-        print(df_out[cols].isnull().sum())
-
-    df_out.loc[:, "Prec"] = df_out.Prec.interpolate()
-    df_out.loc[:, "vp_a"] = df_out.Prec.interpolate()
+    if df_out.isna().values.any():
+        print(df_out[cols].isna().sum())
+        for column in cols:
+            if df_out[column].isna().sum() > 0:
+                logger.warning("Warning: Null values filled in %s" %column)
+                df_out.loc[:, column] = df_out[column].interpolate()
 
     df_out = df_out.round(3)
-    logger.error(df_out[df_out.index.duplicated()])
+    logger.warning(df_out[df_out.index.duplicated()])
     logger.info(df_out.tail())
     df_out.to_csv(input_folder + SITE["name"] + "_input_model.csv")
+
+    if SITE["name"] in ['schwarzsee19']:
+        df_ERA5["Prec"] = 0
+        df_ERA5["missing"] = 1
+        df_ERA5 = df_ERA5.reset_index()
+        mask = (df_ERA5["When"] > df_out["When"].iloc[-1]) & (
+            df_ERA5["When"] <= datetime(2019, 5, 30)
+        )
+        df_ERA5 = df_ERA5.loc[mask]
+        mask = (df_swiss["When"] >df_out["When"].iloc[-1] ) & ( df_swiss["When"] <= SITE["end_date"]
+                )
+        df_swiss = df_swiss.loc[mask]
+        df_swiss = df_swiss.set_index("When")
+
+        df_out = df_out.set_index("When")
+        df_ERA5 = df_ERA5.set_index("When")
+
+        df_ERA5["Prec"] = df_swiss["Prec"]
+        concat = pd.concat([df_out, df_ERA5])
+        concat.loc[concat["Prec"].isnull(), "Prec"] = 0
+        concat.loc[concat["v_a"] < 0, "v_a"] = 0
+        logger.warning(concat[concat.index.duplicated()])
+        logger.info(concat.tail())
+
+        concat = concat.reset_index()
+
+        if concat.isnull().values.any():
+            print("Warning: Null values present")
+            print(
+                concat[
+                    [
+                        "When",
+                        "T_a",
+                        "RH",
+                        "v_a",
+                        # "Discharge",
+                        "SW_direct",
+                        "SW_diffuse",
+                        "Prec",
+                        "p_a",
+                        "missing",
+                    ]
+                ]
+                .isnull()
+                .sum()
+            )
+
+        concat.to_csv(input_folder + SITE["name"] + "_input_model.csv")
+        concat.to_hdf(
+            input_folder + SITE["name"] + "_input_model.h5",
+            key="df",
+            mode="w",
+        )
+        fig = plt.figure()
+        plt.plot(concat.v_a)
+        plt.ylabel('some numbers')
+        plt.savefig(input_folder + SITE["name"] + "test.png")
 

@@ -16,13 +16,13 @@ logging.getLogger("numexpr").setLevel(logging.CRITICAL)
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 
-def config(location="Schwarzsee", trigger="Manual"):
+def config(location="Schwarzsee 2019", trigger="Manual"):
 
     logger.info("Location is %s" % location)
-    if location == "Guttannen":
+    if location == "Guttannen 2021":
 
         SITE = dict(
-            name="guttannen",
+            name="guttannen21",
             start_date=datetime(2020, 11, 22),
             end_date=datetime(2021, 3, 19),
             utc_offset=1,
@@ -40,9 +40,31 @@ def config(location="Schwarzsee", trigger="Manual"):
             trigger=trigger,
         )
 
-    if location == "Schwarzsee":
+    if location == "Guttannen 2020":
+
         SITE = dict(
-            name="schwarzsee",
+            name="guttannen20",
+            start_date=datetime(2019, 12, 28),
+            end_date=datetime(2020, 3, 20),
+            utc_offset=1,
+            latitude=46.649999,
+            longitude=8.283333,
+            h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
+            altitude_aws=1054,
+            h_i=0.005,
+        )
+
+        FOUNTAIN = dict(
+            fountain_off_date=datetime(2020, 2, 27),
+            dia_f=0.005,  # FOUNTAIN aperture diameter
+            h_f=2.5,  # FOUNTAIN steps h_f
+            discharge=10,  # FOUNTAIN on discharge
+            trigger=trigger,
+        )
+
+    if location == "Schwarzsee 2019":
+        SITE = dict(
+            name="schwarzsee19",
             start_date=datetime(2019, 1, 30, 17),
             end_date=datetime(2019, 3, 17),
             utc_offset=1,
@@ -61,7 +83,7 @@ def config(location="Schwarzsee", trigger="Manual"):
 
     if location == "Gangles":
         SITE = dict(
-            name="gangles",
+            name="gangles21",
             # end_date=datetime(2021, 2, 22),
             start_date=datetime(2020, 12, 14),
             utc_offset=5.5,

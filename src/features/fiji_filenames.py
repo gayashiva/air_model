@@ -18,8 +18,9 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 
 sys.path.append(dirname)
 
-oldpath = "/home/suryab/Pictures/Schwarzsee_2019/"
-newpath = "/home/suryab/Pictures/Schwarzsee_2019/timelapse/"
+# oldpath = "/home/suryab/Pictures/Schwarzsee_2019/"
+oldpath = "/home/suryab/ownCloud/Sites/Guttannen/timelapse/Guttannen_2020/"
+newpath = "/home/suryab/Pictures/Guttannen_2020/"
 # newpath = "/home/suryab/ownCloud/Sites/Schwarzsee/Schwarzsee_2019_timelapse/"
 onlyfiles = [f for f in listdir(oldpath) if isfile(join(oldpath, f))]
 df_names = pd.DataFrame({"col": onlyfiles})

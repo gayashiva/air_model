@@ -24,44 +24,54 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    q = [
-        inquirer.List(
-            "location",
-            message="Where is the Icestupa?",
-            choices=["Guttannen", "Schwarzsee"],
-            default="Guttannen",
-        ),
-        inquirer.List(
-            "trigger",
-            message="How is fountain switched on?",
-            choices=["Manual", "NetEnergy"],
-            default="Manual",
-        ),
-        inquirer.List(
-            "run", message="Regenerate results?", choices=["yes", "no"], default="yes"
-        ),
-    ]
+    # q = [
+    #     inquirer.List(
+    #         "location",
+    #         message="Where is the Icestupa?",
+    #         choices=["Guttannen 2020", "Guttannen 2021", "Schwarzsee 2019"],
+    #         default="Guttannen 2020",
+    #     ),
+    #     inquirer.List(
+    #         "trigger",
+    #         message="How is fountain switched on?",
+    #         choices=["None", "Manual", "Temperature", "Weather"],
+    #         default="None",
+    #     ),
+    #     inquirer.List(
+    #         "run", message="Regenerate results?", choices=["yes", "no"], default="yes"
+    #     ),
+    # ]
 
-    answers = inquirer.prompt(q)
+    # answers = inquirer.prompt(q)
+
+    answers = dict(
+        location = "Guttannen 2021",
+        trigger='Weather',
+        run='yes',
+    )
 
     # Get settings for given location and trigger
     SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
+    if SITE["name"] in ['guttannen20', 'guttannen21'] and FOUNTAIN['trigger'] == 'Manual':
+        logger.error('Sorry, manual fountain control not recorded. Please choose a different fountain control')
 
-    # Initialise icestupa object
-    icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)
-
-    if answers["run"] == "yes":
-        # Derive all the input parameters
-        icestupa.derive_parameters()
-
-        # Generate results
-        icestupa.melt_freeze()
-
-        # Summarise and save model results
-        icestupa.summary()
-
-        # Create figures for web interface
-        icestupa.summary_figures()
     else:
-        # Use output parameters from cache
-        icestupa.read_output()
+
+        # Initialise icestupa object
+        icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)
+
+        if answers["run"] == "yes":
+            # Derive all the input parameters
+            icestupa.derive_parameters()
+
+            # Generate results
+            icestupa.melt_freeze()
+
+            # Summarise and save model results
+            icestupa.summary()
+
+            # Create figures for web interface
+            icestupa.summary_figures()
+        else:
+            # Use output parameters from cache
+            icestupa.read_output()

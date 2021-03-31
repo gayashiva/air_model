@@ -93,14 +93,11 @@ class Icestupa:
         self,
     ):  # Derives additional parameters required for simulation
         df_c = get_calibration(site=self.name, input=self.input)
-        if self.name in ["guttannen"]:
+        if self.name in ["guttannen21"]:
             self.r_spray = df_c.loc[0, "dia"] / 2
             self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
-        else:
-            self.df["h_s"] = np.NaN
 
         self.df = pd.merge(self.df, df_c, on="When", how="left")
-        # logger.info(self.df[self.df.When==datetime(2020, 11, 22, 14)])
         unknown = ["a", "vp_a", "LW_in", "cld"]  # Possible unknown variables
         for i in range(len(unknown)):
             if unknown[i] in list(self.df.columns):
@@ -324,22 +321,25 @@ class Icestupa:
                 STATE = 1
 
                 # Special Initialisaton for specific sites
-                if self.name == "schwarzsee":
+                if self.name == "schwarzsee19":
                     self.df.loc[i - 1, "r_ice"] = self.r_spray
                     self.df.loc[i - 1, "h_ice"] = self.DX
 
-                if self.name == "guttannen":
-                    if hasattr(self, "r_spray"):
+                if self.name == "guttannen20":
+                    if hasattr(self, "h_i"):
                         self.df.loc[i - 1, "h_ice"] = self.h_i
                         self.df.loc[i - 1, "r_ice"] = self.r_spray
                     else:
                         self.df.loc[i - 1, "h_ice"] = self.DX
                         self.df.loc[i - 1, "r_ice"] = self.r_spray
 
-                new_sites = ["hial", "gangles", "secmol", "leh"]
-                if self.name in new_sites:
-                    self.df.loc[i - 1, "r_ice"] = self.r_spray
-                    self.df.loc[i - 1, "h_ice"] = self.DX
+                if self.name == "guttannen21":
+                    if hasattr(self, "h_i"):
+                        self.df.loc[i - 1, "h_ice"] = self.h_i
+                        self.df.loc[i - 1, "r_ice"] = self.r_spray
+                    else:
+                        self.df.loc[i - 1, "h_ice"] = self.DX
+                        self.df.loc[i - 1, "r_ice"] = self.r_spray
 
                 self.df.loc[i - 1, "s_cone"] = (
                     self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
@@ -371,7 +371,7 @@ class Icestupa:
 
             if STATE == 1:
                 # Change in fountain height
-                if not np.isnan(row.h_s):
+                if not np.isnan(self.df.loc[i, "h_s"]):
                     self.h_f += row.h_s
                     logger.warning(
                         "Height increased to %s on %s" % (self.h_f, self.df.When[i])
@@ -401,6 +401,7 @@ class Icestupa:
                 self.liquid = (
                     self.df.Discharge.loc[i] * (1 - self.ftl) * self.TIME_STEP / 60
                 )
+
 
                 if self.df.loc[i, "SA"]:
                     self.get_energy(row)
@@ -485,9 +486,10 @@ class Icestupa:
 
                     if self.liquid < 0:
                         # Cooling Ice
-                        self.df.loc[i, "$q_{T}$"] += (self.liquid * self.L_F) / (
-                            self.TIME_STEP * self.df.loc[i, "SA"]
-                        )
+                        # self.df.loc[i, "$q_{T}$"] = 0
+                        # self.df.loc[i, "$q_{T}$"] += (self.liquid * self.L_F) / (
+                        #     self.TIME_STEP * self.df.loc[i, "SA"]
+                        # )
                         self.liquid -= (
                             self.df.loc[i, "TotalE"]
                             * self.TIME_STEP
@@ -533,6 +535,7 @@ class Icestupa:
                         )
                         sys.exit("Ice Temperature nan")
 
+
                 if self.df.loc[i, "$q_{melt}$"] < 0:
                     self.df.loc[i, "solid"] -= (
                         self.df.loc[i, "$q_{melt}$"]
@@ -547,6 +550,10 @@ class Icestupa:
                         * self.df.loc[i, "SA"]
                         / (self.L_F)
                     )
+
+                if math.fabs(self.df.delta_T_s[i]) > 50:
+                    logger.warning("%s, %s"%(self.df.loc[i, "When"], self.df.loc[i, "T_s"]))
+                    logger.warning("High temperature changes")
 
                 """ Quantities of all phases """
                 self.df.loc[i + 1, "T_s"] = (
@@ -588,6 +595,5 @@ class Icestupa:
                     + self.df.loc[i, "ppt"]
                 ) / (self.df.loc[i, "SA"] * self.RHO_I)
 
-                # logger.warning("%s, %s"%(self.df.loc[i, "When"], self.df.loc[i, "Discharge"]))
 
                 self.liquid = [0] * 1

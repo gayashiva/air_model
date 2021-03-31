@@ -17,7 +17,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
     self.df["Discharge"] = 0
 
     if self.trigger == "Temperature":
-        self.df["Prec"] = 0
+        # self.df["Prec"] = 0
         mask = (self.df["T_a"] < self.crit_temp) & (self.df["SW_direct"] < 100)
         mask_index = self.df[mask].index
         self.df.loc[mask_index, "Discharge"] = 1 * self.discharge
@@ -27,7 +27,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             % (self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP / 3600)
         )
 
-    if self.trigger == "NetEnergy":
+    if self.trigger == "Weather":
 
         col = [
             "T_s",  # Surface Temperature
@@ -78,19 +78,19 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             % (self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP / 3600)
         )
 
-    if self.trigger == "Manual" and self.name == "guttannen":
+    if self.trigger == "None":
         self.df["Discharge"] = self.discharge
 
-    if self.trigger == "Manual" and self.name == "schwarzsee":
-
+    if self.trigger == "Manual":
         mask = self.df["When"] >= self.start_date
         self.df = self.df.loc[mask]
         self.df = self.df.reset_index(drop=True)
         logger.warning(f"Start date changed to %s" % (self.start_date))
 
         df_f = pd.read_csv(
-            os.path.join("data/" + "schwarzsee" + "/interim/")
-            + "schwarzsee_input_field.csv"
+            os.path.join("data/" + self.name + "/interim/")
+            + self.name
+            + "_input_field.csv"
         )
         df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")
         df_f = (
@@ -102,10 +102,11 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         self.df.loc[f_on, "Discharge"] = df_f["Discharge"]
         self.df = self.df.reset_index()
         self.df["Discharge"] = self.df.Discharge.replace(np.nan, 0)
-        logger.debug(
-            f"Hours of spray : %.2f"
-            % (self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP / 3600)
-        )
+        self.discharge = self.df.Discharge.replace(0, np.nan).mean()
+        logger.info(
+            f"Hours of spray : %.2f\n Mean Discharge:%.2f"
+            % ((self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP / 3600), (self.df.Discharge.replace(0, np.nan).mean())
+        ))
 
     mask = self.df["When"] > self.fountain_off_date
     mask_index = self.df[mask].index
