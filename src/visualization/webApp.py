@@ -190,14 +190,10 @@ if __name__ == "__main__":
         st.write(
             "### Meltwater Released: %.2f litres" % icestupa.df["meltwater"].iloc[-1]
         )
-        col1, mid, col2 = st.beta_columns([14, 2, 14])
-        with col1:
-            st.write("## Input variables")
-            st.image(output_folder + "paper_figures/Model_Input_" + trigger + ".jpg")
-
-        with col2:
-            st.write("## Output variables")
-            st.image(output_folder + "paper_figures/Model_Output_" + trigger + ".jpg")
+        st.write("## Input variables")
+        st.image(output_folder + "paper_figures/Model_Input_" + trigger + ".jpg")
+        st.write("## Output variables")
+        st.image(output_folder + "paper_figures/Model_Output_" + trigger + ".jpg")
 
     if input:
         st.write("## Input variables")
