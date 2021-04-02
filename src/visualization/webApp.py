@@ -174,13 +174,13 @@ if __name__ == "__main__":
         st.sidebar.map(map_data, zoom=10)
         if timelapse:
             if location == "Schwarzsee 2019":
-                st.write("## %s Timelapse" % (location))
+                # st.write("## %s Timelapse" % (location))
                 url = "https://youtu.be/GhljRBGpxMg"
             if location == "Guttannen 2021":
-                st.write("## %s Timelapse" % (location))
+                # st.write("## %s Timelapse" % (location))
                 url = "https://youtu.be/DBHoL1Z7H6U"
             if location == "Guttannen 2020":
-                st.write("## %s Timelapse" % (location))
+                # st.write("## %s Timelapse" % (location))
                 url = "https://youtu.be/kcrvhU20OOE"
 
             st.video(url)
@@ -225,8 +225,7 @@ if __name__ == "__main__":
             variable1 = st.multiselect(
                 "Choose",
                 options=(input_cols),
-                # default=["Fountain Spray", "Temperature"],
-                default=["Temperature"],
+                default=["Fountain Spray", "Temperature"],
             )
             if not (variable1):
                 st.error("Please select at least one variable.")
@@ -248,7 +247,7 @@ if __name__ == "__main__":
             variable2 = st.multiselect(
                 "Choose",
                 options=(output_cols),
-                default=["Ice Volume"],
+                default=["Meltwater"],
             )
             if not (variable2):
                 st.error("Please select at least one variable.")
@@ -267,8 +266,7 @@ if __name__ == "__main__":
             variable3 = st.multiselect(
                 "Choose",
                 options=(derived_cols),
-                # default=["Fountain Spray", "Temperature"],
-                # default=["Temperature"],
+                default=["Albedo"],
             )
             if not (variable3):
                 st.error("Please select at least one variable.")
