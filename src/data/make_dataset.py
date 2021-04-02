@@ -541,10 +541,12 @@ if __name__ == "__main__":
     raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
 
+    # if SITE["name"] in ["schwarzsee19", "guttannen20"]:
     if SITE["name"] in ["schwarzsee19"]:
         df = field(location=SITE["name"])
-        logger.warning(df.v_a.mean())
+        logger.warning("Is wind speed too low: %s"%df.v_a.mean())
     if SITE["name"] in ["guttannen21", "guttannen20"]:
+    # if SITE["name"] in ["guttannen21"]:
         df = meteoswiss(SITE["name"])
 
     df_ERA5, df_in3 = era5(df, SITE["name"])
@@ -561,6 +563,7 @@ if __name__ == "__main__":
     # Fit ERA5 to field data
 
     if SITE["name"] in ["guttannen21", "guttannen20"]:
+    # if SITE["name"] in ["guttannen21"]:
         fit_list = ["T_a", "RH", "v_a"]
     else:
         fit_list = ["T_a", "RH", "v_a", "p_a"]
@@ -577,6 +580,7 @@ if __name__ == "__main__":
     logger.warning("Temperature NaN rows: %s" %df["T_a"].isna().sum())
 
     if SITE["name"] in ["guttannen20", "guttannen21"]:
+    # if SITE["name"] in ["guttannen21"]:
         for col in ["T_a", "RH", "v_a"]:
             df.loc[df[col].isna(), "missing"] = 1
             df.loc[df[col].isna(), "missing_type"] = col
@@ -587,12 +591,7 @@ if __name__ == "__main__":
             logger.info("%s from ERA5" % col)
             df[col] = df_ERA5[col]
 
-    # if SITE["name"] in ["guttannen20"]:
-    #     for col in ["Prec", "vp_a"]:
-    #         logger.info("%s from meteoswiss" % col)
-    #         df[col] = df_swiss[col]
-
-    if SITE["name"] in ["schwarzsee19"]:
+    if SITE["name"] in ["schwarzsee19", "guttannen20"]:
         df["v_a"] = df["v_a"].replace(0, np.NaN)
         for col in ["T_a", "RH", "v_a", "p_a"]:
             df.loc[df[col].isna(), "missing"] = 1
@@ -603,7 +602,7 @@ if __name__ == "__main__":
             logger.info("%s from ERA5" % col)
             df[col] = df_ERA5[col]
 
-    if SITE["name"] in ["schwarzsee19"]:
+    if SITE["name"] in ["schwarzsee19", "guttannen20"]:
         df_swiss = meteoswiss(SITE["name"])
 
         df_swiss = df_swiss.set_index("When")
@@ -611,6 +610,10 @@ if __name__ == "__main__":
         for col in ["Prec"]:
             logger.info("%s from meteoswiss" % col)
             df[col] = df_swiss[col]
+        if SITE["name"] in ["guttannen20"]:
+            for col in ["Prec","v_a"]:
+                logger.info("%s from meteoswiss" % col)
+                df[col] = df_swiss[col]
         df_swiss = df_swiss.reset_index()
 
     df = df.reset_index()

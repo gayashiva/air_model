@@ -45,7 +45,7 @@ if __name__ == "__main__":
     # answers = inquirer.prompt(q)
 
     answers = dict(
-        location="Guttannen 2020",
+        location="Guttannen 2021",
         trigger="Weather",
         run="yes",
     )
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     # Get settings for given location and trigger
     SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
     if (
-        SITE["name"] in ["guttannen20", "guttannen21"]
+        SITE["name"] in ["guttannen21"]
         and FOUNTAIN["trigger"] == "Manual"
     ):
         logger.error(

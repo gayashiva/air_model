@@ -94,6 +94,7 @@ class Icestupa:
     ):  # Derives additional parameters required for simulation
         df_c = get_calibration(site=self.name, input=self.input)
         if self.name in ["guttannen21", "guttannen20"]:
+        # if self.name in ["guttannen21"]:
             self.r_spray = df_c.loc[0, "dia"] / 2
             self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
 
