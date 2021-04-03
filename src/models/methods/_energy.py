@@ -97,9 +97,9 @@ def get_energy(self, row, mode="normal"):
         )
 
     # Change in paper
-    #     self.df.loc[i, "Qf"] += (
-    #         self.RHO_I * self.DX * self.C_I * (self.df.loc[i, "T_s"]) / self.TIME_STEP
-    #     )
+        self.df.loc[i, "Qf"] += (
+            self.RHO_I * self.DX * self.C_I * (self.df.loc[i, "T_s"]) / self.TIME_STEP
+        )
 
     if mode != "trigger":
         self.df.loc[i, "Qg"] = (

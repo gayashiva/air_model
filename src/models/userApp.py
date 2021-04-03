@@ -45,17 +45,16 @@ if __name__ == "__main__":
     # answers = inquirer.prompt(q)
 
     answers = dict(
+        # location="Schwarzsee 2019",
         location="Guttannen 2021",
-        trigger="Weather",
+        trigger="Manual",
+        # trigger="None",
         run="yes",
     )
 
     # Get settings for given location and trigger
     SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
-    if (
-        SITE["name"] in ["guttannen21"]
-        and FOUNTAIN["trigger"] == "Manual"
-    ):
+    if SITE["name"] in ["guttannen20"] and FOUNTAIN["trigger"] == "Manual":
         logger.error(
             "Sorry, manual fountain control not recorded. Please choose a different fountain control"
         )

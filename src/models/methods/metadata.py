@@ -24,6 +24,11 @@ def get_parameter_metadata(
             "kind": "Misc",
             "units": "($m$)",
         },
+        "cam_temp": {
+            "name": "Thermal Cam Validation",
+            "kind": "Derived",
+            "units": "($\\degree C$)",
+        },
         "DroneV": {
             "name": "Drone Validation",
             "kind": "Derived",
@@ -75,7 +80,7 @@ def get_parameter_metadata(
             "units": "($m$)",
         },
         "Discharge": {
-            "name": "Fountain Spray",
+            "name": "Discharge",
             "kind": "Input",
             "units": "($l\\, min^{-1}$)",
         },

@@ -33,7 +33,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
         )
 
         FOUNTAIN = dict(
-            fountain_off_date=datetime(2021, 2, 27),
+            fountain_off_date=datetime(2021, 2, 21),
             dia_f=0.007,  # FOUNTAIN aperture diameter
             h_f=2.5,  # FOUNTAIN steps h_f
             discharge=12.33,  # FOUNTAIN on discharge

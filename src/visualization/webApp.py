@@ -106,7 +106,7 @@ if __name__ == "__main__":
     SITE, FOUNTAIN, FOLDER = config(location, trigger=trigger)
 
     if (
-        SITE["name"] in ["guttannen21", "guttannen20"]
+        SITE["name"] in ["guttannen20"]
         and FOUNTAIN["trigger"] == "Manual"
     ):
         st.error(
@@ -137,7 +137,6 @@ if __name__ == "__main__":
             st.image(air_logo, width=180)
         with col2:
             st.write("## Artificial Ice Reservoir Simulation")
-            # st.write("## **%s** Icestupa " % (location))
             if trigger == "None":
                 st.write(
                     "### Fountain was always kept on until **%s** "
@@ -186,21 +185,21 @@ if __name__ == "__main__":
             st.video(url)
             st.write("## Volume Estimation and Validation")
             fig, ax = plt.subplots()
-            ax.set_ylabel("Ice Volume[$m^3$]")
             CB91_Blue = "#2CBDFE"
             CB91_Green = "#47DBCD"
             x = icestupa.df.When
             y1 = icestupa.df.iceV
             y2 = icestupa.df.DroneV
+            ax.set_ylabel("Ice Volume[$m^3$]")
             ax.plot(
                 x,
                 y1,
                 "b-",
-                label="Modelled Ice Volume",
+                label="Modelled Volume",
                 linewidth=1,
                 color=CB91_Blue,
             )
-            ax.scatter(x, y2, color=CB91_Green, label="Drone Volume")
+            ax.scatter(x, y2, color=CB91_Green, label="Measured Volume")
             ax.set_ylim(bottom=0)
             plt.legend()
             ax.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -208,6 +207,32 @@ if __name__ == "__main__":
             ax.xaxis.set_minor_locator(mdates.DayLocator())
             fig.autofmt_xdate()
             st.pyplot(fig)
+
+            if SITE["name"] in ["guttannen21", "guttannen20"] :
+                fig, ax = plt.subplots()
+                CB91_Purple = "#9D2EC5"
+                CB91_Violet = "#661D98"
+                CB91_Amber = "#F5B14C"
+                x = icestupa.df.When
+                y1 = icestupa.df.T_s
+                y2 = icestupa.df.cam_temp
+                ax.plot(
+                    x,
+                    y1,
+                    "b-",
+                    label="Modelled Temperature",
+                    linewidth=1,
+                    color=CB91_Amber,
+                    zorder=0,
+                )
+                ax.scatter(x, y2, color=CB91_Violet, s=1, label="Measured Temperature", zorder=1)#, marker='+')
+                # ax.set_ylim(bottom=0)
+                plt.legend()
+                ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+                ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+                ax.xaxis.set_minor_locator(mdates.DayLocator())
+                fig.autofmt_xdate()
+                st.pyplot(fig)
 
         if summary:
             st.write("### Maximum Ice Volume: %.2f m3" % icestupa.df["iceV"].max())

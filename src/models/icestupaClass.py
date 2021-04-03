@@ -92,13 +92,17 @@ class Icestupa:
     def derive_parameters(
         self,
     ):  # Derives additional parameters required for simulation
-        df_c = get_calibration(site=self.name, input=self.input)
         if self.name in ["guttannen21", "guttannen20"]:
         # if self.name in ["guttannen21"]:
+            df_c,df_cam = get_calibration(site=self.name, input=self.input)
             self.r_spray = df_c.loc[0, "dia"] / 2
             self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
+            self.df = pd.merge(self.df, df_c, on="When", how="left")
+            self.df = pd.merge(self.df, df_cam, on="When", how="left")
+        else:
+            df_c= get_calibration(site=self.name, input=self.input)
+            self.df = pd.merge(self.df, df_c, on="When", how="left")
 
-        self.df = pd.merge(self.df, df_c, on="When", how="left")
         unknown = ["a", "vp_a", "LW_in", "cld"]  # Possible unknown variables
         for i in range(len(unknown)):
             if unknown[i] in list(self.df.columns):
@@ -306,7 +310,7 @@ class Icestupa:
         logger.debug("AIR simulation begins...")
         for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]):
             i = row.Index
-            ice_melted = self.df.loc[i, "ice"] < 0.001
+            ice_melted = self.df.loc[i, "ice"] < 1
 
             if (
                 ice_melted and STATE == 1
@@ -498,7 +502,6 @@ class Icestupa:
                         self.df.loc[i, "$q_{melt}$"] += self.df.loc[i, "TotalE"]
 
                 else:
-                    # Heating Ice
                     self.df.loc[i, "$q_{T}$"] += self.df.loc[i, "TotalE"]
 
                 self.df.loc[i, "delta_T_s"] += (
@@ -546,8 +549,8 @@ class Icestupa:
                     )
 
                 if math.fabs(self.df.delta_T_s[i]) > 50:
-                    logger.warning("%s, %s"%(self.df.loc[i, "When"], self.df.loc[i, "T_s"]))
-                    logger.warning("High temperature changes")
+                    logger.warning("%s,Surface Temperature %s,Mass %s"%(self.df.loc[i, "When"], self.df.loc[i, "T_s"]), self.df.loc[i, "ice"])
+                    sys.exit("High temperature changes")
 
                 """ Quantities of all phases """
                 self.df.loc[i + 1, "T_s"] = (
@@ -575,15 +578,6 @@ class Icestupa:
                     self.df.loc[i + 1, "ice"] / self.RHO_I
                     + self.df.loc[self.start, "iceV"]
                 )
-                # if hasattr(self, "hollowV"):  # Include Hollow Volume
-                #     if self.name == 'guttannen20' and self.df.When[i] >= datetime(2020,1,1,16):
-                #         self.df.loc[i , "iceV"] += self.hollowV
-                #         self.df.loc[i, "h_ice"] = (
-                #             3 * self.df.loc[i, "iceV"] / (math.pi * self.df.loc[i, "r_ice"] ** 2)
-                #         )
-                #         self.df.loc[i , "s_cone"] = (
-                #             self.df.loc[i , "h_ice"] / self.df.loc[i , "r_ice"]
-                #         )
 
                 self.df.loc[i + 1, "input"] = (
                     self.df.loc[i, "input"]
@@ -598,7 +592,5 @@ class Icestupa:
                     - self.df.loc[i, "melted"]
                     + self.df.loc[i, "ppt"]
                 ) / (self.df.loc[i, "SA"] * self.RHO_I)
-
-
 
                 self.liquid = [0] * 1
