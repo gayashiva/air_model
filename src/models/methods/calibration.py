@@ -39,6 +39,14 @@ def get_calibration(site, input):
         df_c = df_c.reset_index()
         df_c = pd.concat([df_c, df_h], ignore_index=True, sort=False)
         df_c = df_c.set_index("When").sort_index().reset_index()
+        df_cam = pd.read_csv(
+            input + site + "_cam_temp.csv",
+            sep=",",
+            header=0,
+            parse_dates=["When"],
+        )
+        df_cam = df_cam.set_index("When")
+        return df_c, df_cam
 
     if site in ["schwarzsee19"]:
         data = [
@@ -47,5 +55,5 @@ def get_calibration(site, input):
         ]
         df_c = pd.DataFrame(data)
         df_c['h_s'] = np.NaN
-    logger.info(df_c.head(10))
-    return df_c
+        logger.info(df_c.head(10))
+        return df_c
