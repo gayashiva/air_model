@@ -82,7 +82,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         self.df["Discharge"] = self.discharge
 
     if self.trigger == "Manual":
-        if self.name in ["guttannen21"]:
+        if self.name in ["guttannen21", "guttannen20"]:
             df_f = pd.read_csv(
                 os.path.join("data/" + self.name + "/raw/")
                 + self.name
@@ -91,23 +91,34 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             df_f["Label"] = df_f["Label"].str.split("_").str[-1]
             df_f["Label"] = df_f["Label"].str[:-3]
             logger.info(df_f.head())
-            df_f["When"] = pd.to_datetime(df_f["Label"], format="%y-%b-%d %H")
-            df_f= df_f.set_index("When").sort_index().reset_index()
-            df_f.loc[df_f.index % 2 == 0, 'fountain'] = 0
-            df_f.loc[df_f.index % 2 != 0, 'fountain'] = 1
-            df_f = df_f[['When', 'fountain']]
+            df_f["When"] = pd.to_datetime(df_f["Label"], format="%b-%d %H")
+            for index, row in df_f.iterrows():
+                if row.When.month in [11, 12]:
+                    df_f.loc[index, "When"] += pd.DateOffset(years=120)
+                else:
+                    df_f.loc[index, "When"] += pd.DateOffset(years=121)
+            df_f = df_f.set_index("When").sort_index().reset_index()
+            df_f.loc[df_f.index % 2 == 0, "fountain"] = 1
+            df_f.loc[df_f.index % 2 != 0, "fountain"] = 0
+            if self.name in ["guttannen20"]:
+                df_f["When"] = df_f["When"] - pd.DateOffset(years=1)
+                mask = df_f["When"] >= self.start_date
+                df_f = df_f.loc[mask]
+                df_f = df_f.reset_index(drop=True)
+                df_f.loc[df_f.index % 2 == 0, "fountain"] = 0
+                df_f.loc[df_f.index % 2 != 0, "fountain"] = 1
+            df_f = df_f[["When", "fountain"]]
             df_f = (
-                df_f.set_index("When").resample(str(int(self.TIME_STEP / 60)) + "T").ffill()
+                df_f.set_index("When")
+                .resample(str(int(self.TIME_STEP / 60)) + "T")
+                .ffill()
             )
+            logger.info(df_f.head())
             logger.info(df_f.tail())
             self.df = self.df.set_index("When")
             self.df.loc[df_f.index, "Discharge"] = self.discharge * df_f["fountain"]
             self.df = self.df.reset_index()
         if self.name == "schwarzsee19":
-            # mask = self.df["When"] >= self.start_date
-            # self.df = self.df.loc[mask]
-            # self.df = self.df.reset_index(drop=True)
-            # logger.warning(f"Start date changed to %s" % (self.start_date))
 
             df_f = pd.read_csv(
                 os.path.join("data/" + self.name + "/interim/")
@@ -116,7 +127,9 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             )
             df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")
             df_f = (
-                df_f.set_index("When").resample(str(int(self.TIME_STEP / 60)) + "T").mean()
+                df_f.set_index("When")
+                .resample(str(int(self.TIME_STEP / 60)) + "T")
+                .mean()
             )
             self.df = self.df.set_index("When")
             mask = df_f["Discharge"] != 0
@@ -127,8 +140,15 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             self.discharge = self.df.Discharge.replace(0, np.nan).mean()
             logger.info(
                 f"Hours of spray : %.2f\n Mean Discharge:%.2f"
-                % ((self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP / 3600), (self.df.Discharge.replace(0, np.nan).mean())
-            ))
+                % (
+                    (
+                        self.df.Discharge.astype(bool).sum(axis=0)
+                        * self.TIME_STEP
+                        / 3600
+                    ),
+                    (self.df.Discharge.replace(0, np.nan).mean()),
+                )
+            )
 
     mask = self.df["When"] > self.fountain_off_date
     mask_index = self.df[mask].index

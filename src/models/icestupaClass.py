@@ -51,7 +51,8 @@ class Icestupa:
     T_RAIN = 1  # Temperature condition for liquid precipitation
 
     """Model constants"""
-    DX = 5e-03  # Initial Ice layer thickness
+    # DX = 5e-03  # Initial Ice layer thickness
+    DX = 5e-02  # Initial Ice layer thickness
     theta_f = 45  # FOUNTAIN angle
     ftl = 0  # FOUNTAIN flight time loss ftl
     T_w = 5  # FOUNTAIN Water temperature
@@ -468,32 +469,41 @@ class Icestupa:
 
                 if self.df.loc[i, "TotalE"] < 0 and self.liquid > 0:
                     """Freezing water"""
-                    self.liquid += (
-                        self.df.loc[i, "TotalE"] * self.TIME_STEP * self.df.loc[i, "SA"]
-                    ) / (self.L_F)
-
-                    # DUE TO qF force surface temperature zero
-                    self.df.loc[i, "$q_{T}$"] += (
-                        -self.df.loc[i, "T_s"]
+                    # Change in paper
+                    self.df.loc[i, "TotalE"] += (
+                        self.df.loc[i, "T_s"]
                         * self.RHO_I
                         * self.DX
                         * self.C_I
                         / self.TIME_STEP
-                        - self.df.loc[i, "Ql"]
                     )
+                    # DUE TO qF force surface temperature zero
+                    self.df.loc[i, "$q_{T}$"] -= (
+                        self.df.loc[i, "T_s"]
+                        * self.RHO_I
+                        * self.DX
+                        * self.C_I
+                        / self.TIME_STEP
+                        # - self.df.loc[i, "Ql"]
+                    )
+
+                    self.liquid += (
+                        self.df.loc[i, "TotalE"] * self.TIME_STEP * self.df.loc[i, "SA"]
+                    ) / (self.L_F)
+
 
                     if self.liquid < 0:
                         # Cooling Ice
-                        # self.df.loc[i, "$q_{T}$"] = 0
-                        # self.df.loc[i, "$q_{T}$"] += (self.liquid * self.L_F) / (
-                        #     self.TIME_STEP * self.df.loc[i, "SA"]
-                        # )
+                        self.df.loc[i, "$q_{T}$"] = 0
+                        self.df.loc[i, "$q_{T}$"] += (self.liquid * self.L_F) / (
+                            self.TIME_STEP * self.df.loc[i, "SA"]
+                        )
                         self.liquid -= (
                             self.df.loc[i, "TotalE"]
                             * self.TIME_STEP
                             * self.df.loc[i, "SA"]
                         ) / (self.L_F)
-                        self.df.loc[i, "$q_{melt}$"] += (-self.liquid * self.L_F) / (
+                        self.df.loc[i, "$q_{melt}$"] -= (self.liquid * self.L_F) / (
                             self.TIME_STEP * self.df.loc[i, "SA"]
                         )
                         self.liquid = 0
@@ -549,7 +559,7 @@ class Icestupa:
                     )
 
                 if math.fabs(self.df.delta_T_s[i]) > 50:
-                    logger.warning("%s,Surface Temperature %s,Mass %s"%(self.df.loc[i, "When"], self.df.loc[i, "T_s"]), self.df.loc[i, "ice"])
+                    logger.error("%s,Surface Temperature %s,Mass %s"%(self.df.loc[i, "When"], self.df.loc[i, "T_s"], self.df.loc[i, "ice"]))
                     sys.exit("High temperature changes")
 
                 """ Quantities of all phases """

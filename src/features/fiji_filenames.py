@@ -18,9 +18,10 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 
 sys.path.append(dirname)
 
+site = 'guttannen20'
 # oldpath = "/home/suryab/Pictures/Schwarzsee_2019/"
-oldpath = "/home/suryab/ownCloud/Sites/Guttannen/timelapse/Guttannen_2020/"
-newpath = "/home/suryab/Pictures/Guttannen_2020/"
+oldpath = "/home/suryab/ownCloud/Sites/Guttannen/timelapse/"+ site + "/"
+newpath = "/home/suryab/Pictures/" + site + '_thermal' + "/"
 # newpath = "/home/suryab/ownCloud/Sites/Schwarzsee/Schwarzsee_2019_timelapse/"
 onlyfiles = [f for f in listdir(oldpath) if isfile(join(oldpath, f))]
 df_names = pd.DataFrame({"col": onlyfiles})
@@ -66,13 +67,13 @@ print(df_names.head())
 
 for i in range(0, df_names.shape[0]):
 
-    if 6 < df_names.loc[i, "When"].hour < 17:
-        if df_names.loc[i, "When"].hour % 4 == 0:
-            shutil.copy(oldpath + df_names.loc[i, "col"], newpath)
-            os.rename(
-                newpath + df_names.loc[i, "col"],
-                newpath
-                + str(i)
-                + "_"
-                + str(df_names.loc[i, "When"].strftime("%b-%d %H") + ":00"),
-            )
+    # if 6 < df_names.loc[i, "When"].hour < 19:
+        # if df_names.loc[i, "When"].hour % 4 == 0:
+    shutil.copy(oldpath + df_names.loc[i, "col"], newpath)
+    os.rename(
+        newpath + df_names.loc[i, "col"],
+        newpath
+        + str(i)
+        + "_"
+        + str(df_names.loc[i, "When"].strftime("%b-%d %H") + ":00"),
+    )
