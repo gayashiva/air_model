@@ -5,11 +5,12 @@
 import pandas as pd
 import sys, os, math, time
 from datetime import datetime
-from tqdm import tqdm
+# from tqdm import tqdm
 import numpy as np
 from functools import lru_cache
 from pandas_profiling import ProfileReport
 import logging
+from rich.progress import track
 
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -109,11 +110,10 @@ class Icestupa:
             if unknown[i] in list(self.df.columns):
                 unknown[i] = np.NaN  # Removes known variable
             else:
-                logger.warning("%s is unknown" % (unknown[i]))
+                logger.warning(" %s is unknown\n" % (unknown[i]))
                 self.df[unknown[i]] = 0
 
-        logger.debug("Creating model input file...")
-        for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
+        for row in track(self.df[1:].itertuples(), total=self.df.shape[0], description="Creating AIR input..."):
             i = row.Index
 
             """ Vapour Pressure"""
@@ -152,7 +152,7 @@ class Icestupa:
         ].tolist()  # List of all timesteps when fountain on
         self.start_date = f_on[0]
         logger.info("Model starts at %s" % (self.start_date))
-        logger.warning("Fountain ends %s" % f_on[-1])
+        logger.warning("\n Fountain ends %s\n" % f_on[-1])
 
         mask = self.df["When"] >= self.start_date
         self.df = self.df.loc[mask]
@@ -172,7 +172,7 @@ class Icestupa:
         self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
         s = 0
         f = 0
-        for row in tqdm(self.df[1:].itertuples(), total=self.df.shape[0]):
+        for row in track(self.df[1:].itertuples(), total=self.df.shape[0], description="Estimating Albedo..."):
             s, f = self.get_albedo(row, s, f, site=self.name)
 
         self.df = self.df.round(3)
@@ -227,7 +227,7 @@ class Icestupa:
             prof.to_file(output_file=self.output + "input_report.html")
 
         if self.df.isnull().values.any():
-            logger.warning("Null values present")
+            logger.warning("\n Null values present\n")
 
     def read_output(
         self, report=False
@@ -309,7 +309,7 @@ class Icestupa:
             )
 
         logger.debug("AIR simulation begins...")
-        for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]):
+        for row in track(self.df[1:-1].itertuples(), total=self.df.shape[0], description = 'Simulating AIR'):
             i = row.Index
             ice_melted = self.df.loc[i, "ice"] < 1
 
@@ -358,7 +358,7 @@ class Icestupa:
                 )
                 self.df.loc[i, "input"] = self.df.loc[i, "ice"]
                 logger.warning(
-                    "Initialise: radius %s, height %s, iceV %s"
+                    "\n Initialise: radius %s, height %s, iceV %s\n"
                     % (
                         self.df.loc[i - 1, "r_ice"],
                         self.df.loc[i - 1, "h_ice"],
@@ -373,7 +373,7 @@ class Icestupa:
                 if not np.isnan(self.df.loc[i, "h_s"]):
                     self.h_f += row.h_s
                     logger.warning(
-                        "Height increased to %s on %s" % (self.h_f, self.df.When[i])
+                        "\n Height increased to %s on %s" % (self.h_f, self.df.When[i])
                     )
                     # self.get_height_steps(i)
                     self.r_spray = get_droplet_projectile(
@@ -507,7 +507,7 @@ class Icestupa:
                             self.TIME_STEP * self.df.loc[i, "SA"]
                         )
                         self.liquid = 0
-                        logger.warning("Discharge froze completely")
+                        logger.warning("\n Discharge froze completely")
                     else:
                         self.df.loc[i, "$q_{melt}$"] += self.df.loc[i, "TotalE"]
 

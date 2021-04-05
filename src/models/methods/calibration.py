@@ -32,7 +32,7 @@ def get_calibration(site, input):
         if site in ["guttannen20"]:
             data = [
                 {"When": datetime(2020, 1, 24, 12), "h_s": 1},
-                {"When": datetime(2020, 2, 5, 16), "h_s": -1},
+                {"When": datetime(2020, 2, 5, 19), "h_s": -1},
             ]
 
         df_h = pd.DataFrame(data)
