@@ -106,6 +106,7 @@ if __name__ == "__main__":
     SITE, FOUNTAIN, FOLDER = config(location, trigger=trigger)
 
     icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)
+
     try:
         icestupa.read_output()
         df_in = icestupa.df
