@@ -457,7 +457,7 @@ class Icestupa:
                         )
 
                         # Removing gas quantity generated from meltwater
-                        self.df.loc[i, "meltwater"] += (
+                        self.df.loc[i, "melted"] -= (
                             self.df.loc[i, "$q_{T}$"]
                             * self.TIME_STEP
                             * self.df.loc[i, "SA"]

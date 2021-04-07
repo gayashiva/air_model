@@ -22,6 +22,8 @@ from src.models.methods.metadata import get_parameter_metadata
 from src.models.icestupaClass import Icestupa
 from src.data.settings import config
 
+# SETTING PAGE CONFIG TO WIDE MODE
+st.set_page_config(layout="wide")
 
 def download_csv(name, df):
 
@@ -115,31 +117,63 @@ if __name__ == "__main__":
         df = df_in
         input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
         output_folder = os.path.join(dirname, "data/" + SITE["name"] + "/processed/")
-        col1, mid, col2 = st.beta_columns([4, 6, 20])
-        (
-            input_cols,
-            input_vars,
-            output_cols,
-            output_vars,
-            derived_cols,
-            derived_vars,
-        ) = vars(df_in)
+# LAYING OUT THE TOP SECTION OF THE APP
+        row1_1, row1_2 = st.beta_columns((1,3))
 
-        with col1:
+        with row1_1:
             air_logo = os.path.join(dirname, "src/visualization/AIR_logo.png")
             st.image(air_logo, width=180)
-        with col2:
-            st.write("## Artificial Ice Reservoir Simulation")
+            # hour_selected = st.slider("Select hour of pickup", 0, 23)
+
+        with row1_2:
+            st.title("Artificial Ice Reservoir Simulation")
+            #st.write(
+            #"""
+            ###
+            #Examining how Uber pickups vary over time in New York City's and at its major regional airports.
+            #By sliding the slider on the left you can view different slices of time and explore different transportation trends.
+            #""")
+        # col1, mid, col2 = st.beta_columns([4, 6, 20])
+        # (
+        #     input_cols,
+        #     input_vars,
+        #     output_cols,
+        #     output_vars,
+        #     derived_cols,
+        #     derived_vars,
+        # ) = vars(df_in)
+
+        # with col1:
+        #     air_logo = os.path.join(dirname, "src/visualization/AIR_logo.png")
+        #     st.image(air_logo, width=180)
+        # with col2:
+            # st.write("## Artificial Ice Reservoir Simulation")
             if trigger == "None":
                 st.write(
-                    "### Fountain was always kept on until **%s** "
+                """
+                ##
+                    Fountain was always kept on until **%s**
+                Examining how Uber pickups vary over time in New York City's and at its major regional airports.
+                By sliding the slider on the left you can view different slices of time and explore different transportation trends.
+                """
+                % (icestupa.fountain_off_date.date())
+                )
+                st.write(
+                    "## Fountain was always kept on until **%s** "
                     % (icestupa.fountain_off_date.date())
                 )
             if trigger == "Manual":
                 st.write(
-                    "### Fountain was controlled **%s** until **%s**"
-                    % (trigger + "ly", (icestupa.fountain_off_date.date()))
+                """
+                ##
+                Fountain was controlled **%s** until **%s**
+                """
+                % (trigger + "ly", (icestupa.fountain_off_date.date()))
                 )
+                # st.write(
+                #     "## Fountain was controlled **%s** until **%s**"
+                #     % (trigger + "ly", (icestupa.fountain_off_date.date()))
+                # )
             if trigger == "Temperature":
                 st.write(
                     "### Fountain was switched on/off after sunset when temperature was below **%s** until **%s**"

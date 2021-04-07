@@ -49,18 +49,13 @@ if __name__ == "__main__":
         location="Guttannen 2021",
         # location="Gangles 2021",
         trigger="Manual",
+        # trigger="None",
         # trigger="Temperature",
         run="yes",
     )
 
     # Get settings for given location and trigger
     SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
-    # if SITE["name"] in ["guttannen20"] and FOUNTAIN["trigger"] == "Manual":
-    #     logger.error(
-    #         "Sorry, manual fountain control not recorded. Please choose a different fountain control"
-    #     )
-
-    # else:
 
     # Initialise icestupa object
     icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)
