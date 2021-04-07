@@ -87,6 +87,7 @@ seaborn==0.11.1
 Send2Trash==1.5.0
 six==1.15.0
 smmap==3.0.5
+stqdm==0.0.3
 streamlit==0.79.0
 tables==3.6.1
 tangled-up-in-unicode==0.0.7
