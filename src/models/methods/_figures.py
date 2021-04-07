@@ -12,6 +12,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def summary_figures(self):
 
     # # Class variables used
@@ -20,7 +21,7 @@ def summary_figures(self):
     # RHO_I = self.RHO_I
     # TIME_STEP = self.TIME_STEP
 
-    np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
+    np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
     output = self.output
     CB91_Blue = "#2CBDFE"
     CB91_Green = "#47DBCD"
@@ -106,9 +107,7 @@ def summary_figures(self):
     ax2.set_ylabel("Temperature [$\\degree C$]")
 
     y3 = self.df.SW_direct
-    lns2 = ax3.plot(
-        x, y3, linestyle="-", label="Shortwave Direct", color=CB91_Amber
-    )
+    lns2 = ax3.plot(x, y3, linestyle="-", label="Shortwave Direct", color=CB91_Amber)
     lns1 = ax3.plot(
         x,
         self.df.SW_diffuse,
@@ -116,9 +115,7 @@ def summary_figures(self):
         label="Shortwave Diffuse",
         color=CB91_Blue,
     )
-    lns3 = ax3.plot(
-        x, self.df.LW_in, linestyle="-", label="Longwave", color=CB91_Green
-    )
+    lns3 = ax3.plot(x, self.df.LW_in, linestyle="-", label="Longwave", color=CB91_Green)
     ax3.axvspan(
         self.df.When.head(1).values,
         self.df.When.tail(1).values,
@@ -137,9 +134,7 @@ def summary_figures(self):
     ax4.plot(x, y4, linestyle="-", color="#284D58", linewidth=1)
     ax4.plot(x, y4_ERA5, linestyle="-", color="#284D58")
     for ev in events:
-        ax4.axvspan(
-            ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25
-        )
+        ax4.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
     ax4.set_ylabel("Humidity [$\\%$]")
 
     y5 = df_SZ.p_a
@@ -147,9 +142,7 @@ def summary_figures(self):
     ax5.plot(x, y5, linestyle="-", color="#264653", linewidth=1)
     ax5.plot(x, y5_ERA5, linestyle="-", color="#284D58")
     for ev in events:
-        ax5.axvspan(
-            ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25
-        )
+        ax5.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
     ax5.set_ylabel("Pressure [$hPa$]")
 
     y6 = df_SZ.v_a
@@ -158,14 +151,10 @@ def summary_figures(self):
     ax6.plot(x, y6, linestyle="-", color="#264653", linewidth=1, label="Schwarzsee")
     ax6.plot(x, y6_ERA5, linestyle="-", color="#284D58")
     ax6.plot(x, y6_ERA52, linestyle="-", color="#284D58")
-    for ev in events: # Creates DeprecationWarning
-        ax6.axvspan(
-            ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25
-        )
+    for ev in events:  # Creates DeprecationWarning
+        ax6.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
     for ev in events2:
-        ax6.axvspan(
-            ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25
-        )
+        ax6.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
     ax6.set_ylabel("Wind speed [$m\\,s^{-1}$]")
 
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -173,7 +162,9 @@ def summary_figures(self):
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
     fig.autofmt_xdate()
     plt.savefig(
-        output+ "paper_figures/Model_Input_" + self.trigger + ".jpg", dpi=300, bbox_inches="tight"
+        output + "paper_figures/Model_Input_" + self.trigger + ".jpg",
+        dpi=300,
+        bbox_inches="tight",
     )
     plt.clf()
 
@@ -232,14 +223,13 @@ def summary_figures(self):
     dfd = self.df.set_index("When").resample("D").mean().reset_index()
     dfd["When"] = dfd["When"].dt.strftime("%b %d")
 
-
     dfds2 = self.df.set_index("When").resample("D").mean().reset_index()
     dfds2["When"] = dfds2["When"].dt.strftime("%b %d")
     dfds2 = dfds2.set_index("When")
     dfds = dfds.set_index("When")
     y3 = dfds2["SA"]
     y4 = dfds2["iceV"]
-    y0 = dfds["Discharge"] * self.TIME_STEP / (60*1000)
+    y0 = dfds["Discharge"] * self.TIME_STEP / (60 * 1000)
 
     z = dfd[["$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
 
@@ -319,7 +309,9 @@ def summary_figures(self):
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.savefig(
-        output + "paper_figures/Model_Output_" + self.trigger + ".jpg", dpi=300, bbox_inches="tight"
+        output + "paper_figures/Model_Output_" + self.trigger + ".jpg",
+        dpi=300,
+        bbox_inches="tight",
     )
     plt.clf()
 
@@ -356,8 +348,74 @@ def summary_figures(self):
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
     fig.autofmt_xdate()
     plt.savefig(
-        output+ "paper_figures/albedo_temperature.jpg", dpi=300, bbox_inches="tight"
+        output + "paper_figures/albedo_temperature.jpg", dpi=300, bbox_inches="tight"
     )
+    plt.clf()
+
+    fig, ax = plt.subplots()
+    CB91_Blue = "#2CBDFE"
+    CB91_Green = "#47DBCD"
+    x = self.df.When
+    y1 = self.df.iceV
+    y2 = self.df.DroneV
+    ax.set_ylabel("Ice Volume[$m^3$]")
+    ax.plot(
+        x,
+        y1,
+        "b-",
+        label="Modelled Volume",
+        linewidth=1,
+        color=CB91_Blue,
+    )
+    ax.scatter(x, y2, color=CB91_Green, label="Measured Volume")
+    ax.set_ylim(bottom=0)
+    plt.legend()
+    ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    ax.xaxis.set_minor_locator(mdates.DayLocator())
+    fig.autofmt_xdate()
+    plt.savefig(
+        output + "paper_figures/Vol_Validation_" + self.trigger + ".jpg",
+        dpi=300,
+        bbox_inches="tight",
+    )
+    plt.clf()
+
+    if self.name in ["guttannen21", "guttannen20"]:
+        fig, ax = plt.subplots()
+        CB91_Purple = "#9D2EC5"
+        CB91_Violet = "#661D98"
+        CB91_Amber = "#F5B14C"
+        x = self.df.When
+        y1 = self.df.T_s
+        y2 = self.df.cam_temp
+        ax.plot(
+            x,
+            y1,
+            "b-",
+            label="Modelled Temperature",
+            linewidth=1,
+            color=CB91_Amber,
+            zorder=0,
+        )
+        ax.scatter(
+            x,
+            y2,
+            color=CB91_Violet,
+            s=1,
+            label="Measured Temperature",
+            zorder=1,
+        )
+        plt.legend()
+        ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax.xaxis.set_minor_locator(mdates.DayLocator())
+        fig.autofmt_xdate()
+        plt.savefig(
+            output + "paper_figures/Temp_Validation_" + self.trigger + ".jpg",
+            dpi=300,
+            bbox_inches="tight",
+        )
     plt.close("all")
 
     self.df = self.df.rename(
@@ -371,4 +429,4 @@ def summary_figures(self):
         },
         axis=1,
     )
-
+    logger.info("Outputs produced")

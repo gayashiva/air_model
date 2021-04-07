@@ -10,6 +10,7 @@ from functools import lru_cache
 from pandas_profiling import ProfileReport
 import logging
 from rich.progress import track
+from stqdm import stqdm
 
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -121,10 +122,15 @@ class Icestupa:
                 logger.info(" %s is unknown\n" % (unknown[i]))
                 self.df[unknown[i]] = 0
 
-        for row in track(
+        # for row in track(
+        #     self.df[1:].itertuples(),
+        #     total=self.df.shape[0],
+        #     description="Creating AIR input...",
+        # ):
+        for row in stqdm(
             self.df[1:].itertuples(),
             total=self.df.shape[0],
-            description="Creating AIR input...",
+            desc="Creating AIR input...",
         ):
             i = row.Index
 
@@ -323,11 +329,15 @@ class Icestupa:
                 dia=self.dia_f, h=self.h_f, d=self.discharge
             )
 
-        logger.debug("AIR simulation begins...")
-        for row in track(
+        # for row in track(
+        #     self.df[1:-1].itertuples(),
+        #     total=self.df.shape[0],
+        #     description="Simulating AIR",
+        # ):
+        for row in stqdm(
             self.df[1:-1].itertuples(),
             total=self.df.shape[0],
-            description="Simulating AIR",
+            desc="Simulating AIR",
         ):
             i = row.Index
             ice_melted = self.df.loc[i, "ice"] < 1
@@ -388,7 +398,8 @@ class Icestupa:
 
             if STATE == 1:
                 # Change in fountain height
-                if (self.df.loc[i, "h_s"]) > 0:
+                # if (self.df.loc[i, "h_s"]) > 0:
+                if not np.isnan(self.df.loc[i, "h_s"]):
                     self.h_f += row.h_s
                     logger.warning(
                         "\n Height increased to %s on %s" % (self.h_f, self.df.When[i])

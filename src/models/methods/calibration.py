@@ -50,7 +50,8 @@ def get_calibration(site, input):
             return df_c, df_cam
 
         if site in ["gangles21"]:
-            df_c["h_s"] = 0
+            # df_c["h_s"] = 0
+            df_c["h_s"] = np.NaN
             df_c = df_c.reset_index()
             return df_c
 
@@ -60,6 +61,6 @@ def get_calibration(site, input):
             {"When": datetime(2019, 3, 10, 18), "DroneV": 0.1295},
         ]
         df_c = pd.DataFrame(data)
-        df_c["h_s"] = 0
+        df_c["h_s"] = np.NaN
         logger.info(df_c.head(10))
         return df_c
