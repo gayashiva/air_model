@@ -46,8 +46,9 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Gangles 2021",
-        trigger="None",
+        location="Guttannen 2021",
+        # location="Gangles 2021",
+        trigger="Manual",
         # trigger="Temperature",
         run="yes",
     )

@@ -94,21 +94,21 @@ class Icestupa:
         self,
     ):  # Derives additional parameters required for simulation
         if self.name in ["gangles21"]:
-            df_c= get_calibration(site=self.name, input=self.input)
+            df_c = get_calibration(site=self.name, input=self.input)
             self.r_spray = df_c.loc[1, "dia"] / 2
             self.h_i = self.DX
-            df_c.loc[:,"DroneV"] -= df_c.loc[0, "DroneV"]
+            df_c.loc[:, "DroneV"] -= df_c.loc[0, "DroneV"]
             self.df = pd.merge(self.df, df_c, on="When", how="left")
 
         if self.name in ["guttannen21", "guttannen20"]:
-            df_c,df_cam = get_calibration(site=self.name, input=self.input)
+            df_c, df_cam = get_calibration(site=self.name, input=self.input)
             self.r_spray = df_c.loc[0, "dia"] / 2
             self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
             self.df = pd.merge(self.df, df_c, on="When", how="left")
             self.df = pd.merge(self.df, df_cam, on="When", how="left")
 
         if self.name in ["schwarzsee19"]:
-            df_c= get_calibration(site=self.name, input=self.input)
+            df_c = get_calibration(site=self.name, input=self.input)
             self.df = pd.merge(self.df, df_c, on="When", how="left")
 
         logger.info(df_c.head())
@@ -121,7 +121,11 @@ class Icestupa:
                 logger.info(" %s is unknown\n" % (unknown[i]))
                 self.df[unknown[i]] = 0
 
-        for row in track(self.df[1:].itertuples(), total=self.df.shape[0], description="Creating AIR input..."):
+        for row in track(
+            self.df[1:].itertuples(),
+            total=self.df.shape[0],
+            description="Creating AIR input...",
+        ):
             i = row.Index
 
             """ Vapour Pressure"""
@@ -176,13 +180,15 @@ class Icestupa:
         self.df = pd.merge(solar_df, self.df, on="When")
         self.df.Prec = self.df.Prec * self.TIME_STEP  # mm
 
-        """Albedo Decay parameters initialized"""
-        self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
-        s = 0
-        f = 0
-        for i, row in self.df.iterrows():
-        # for row in range(self.df[1:].itertuples(), self.df.shape[0]):
-            s, f = self.get_albedo(i, s, f, site=self.name)
+        """Albedo"""
+        if "a" in unknown:
+            """Albedo Decay parameters initialized"""
+            self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
+            s = 0
+            f = 1
+            for i, row in self.df.iterrows():
+                # for row in range(self.df[1:].itertuples(), self.df.shape[0]):
+                s, f = self.get_albedo(i, s, f, site=self.name)
 
         self.df = self.df.round(3)
         self.df = self.df[
@@ -207,7 +213,7 @@ class Icestupa:
             * 100
         )
 
-        Duration = self.df.index[-1] * self.TIME_STEP / (60*60 * 24)
+        Duration = self.df.index[-1] * self.TIME_STEP / (60 * 60 * 24)
 
         print("\nIce Volume Max", float(round(self.df["iceV"].max(), 2)))
         print("Fountain efficiency", round(Efficiency, 3))
@@ -252,7 +258,7 @@ class Icestupa:
             * 100
         )
 
-        Duration = self.df.index[-1] * self.TIME_STEP / (60*60 * 24)
+        Duration = self.df.index[-1] * self.TIME_STEP / (60 * 60 * 24)
 
         print("\nIce Volume Max", float(round(self.df["iceV"].max(), 2)))
         print("Fountain efficiency", round(Efficiency, 3))
@@ -318,7 +324,11 @@ class Icestupa:
             )
 
         logger.debug("AIR simulation begins...")
-        for row in track(self.df[1:-1].itertuples(), total=self.df.shape[0], description = 'Simulating AIR'):
+        for row in track(
+            self.df[1:-1].itertuples(),
+            total=self.df.shape[0],
+            description="Simulating AIR",
+        ):
             i = row.Index
             ice_melted = self.df.loc[i, "ice"] < 1
 
@@ -339,7 +349,6 @@ class Icestupa:
                 if self.name == "schwarzsee19":
                     self.df.loc[i - 1, "r_ice"] = self.r_spray
                     self.df.loc[i - 1, "h_ice"] = self.DX
-
 
                 if self.name in ["guttannen21", "guttannen20", "gangles21"]:
                     if hasattr(self, "h_i"):
@@ -409,7 +418,6 @@ class Icestupa:
                 self.liquid = (
                     self.df.Discharge.loc[i] * (1 - self.ftl) * self.TIME_STEP / 60
                 )
-
 
                 if self.df.loc[i, "SA"]:
                     self.get_energy(row)
@@ -500,7 +508,6 @@ class Icestupa:
                         self.df.loc[i, "TotalE"] * self.TIME_STEP * self.df.loc[i, "SA"]
                     ) / (self.L_F)
 
-
                     if self.liquid < 0:
                         # Cooling Ice
                         self.df.loc[i, "$q_{T}$"] = 0
@@ -551,7 +558,6 @@ class Icestupa:
                         )
                         sys.exit("Ice Temperature nan")
 
-
                 if self.df.loc[i, "$q_{melt}$"] < 0:
                     self.df.loc[i, "solid"] -= (
                         self.df.loc[i, "$q_{melt}$"]
@@ -568,7 +574,14 @@ class Icestupa:
                     )
 
                 if math.fabs(self.df.delta_T_s[i]) > 50:
-                    logger.error("%s,Surface Temperature %s,Mass %s"%(self.df.loc[i, "When"], self.df.loc[i, "T_s"], self.df.loc[i, "ice"]))
+                    logger.error(
+                        "%s,Surface Temperature %s,Mass %s"
+                        % (
+                            self.df.loc[i, "When"],
+                            self.df.loc[i, "T_s"],
+                            self.df.loc[i, "ice"],
+                        )
+                    )
                     sys.exit("High temperature changes")
 
                 """ Quantities of all phases """

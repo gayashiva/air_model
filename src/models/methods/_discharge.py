@@ -90,7 +90,6 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             )
             df_f["Label"] = df_f["Label"].str.split("_").str[-1]
             df_f["Label"] = df_f["Label"].str[:-3]
-            logger.info(df_f.head())
             df_f["When"] = pd.to_datetime(df_f["Label"], format="%b-%d %H")
             for index, row in df_f.iterrows():
                 if row.When.month in [11, 12]:
@@ -113,8 +112,19 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                 .resample(str(int(self.TIME_STEP / 60)) + "T")
                 .ffill()
             )
-            logger.info(df_f.head())
-            logger.info(df_f.tail())
+            logger.debug(df_f.head())
+            logger.debug(df_f.tail())
+            logger.info(
+                f"Hours of spray : %.2f\n Mean Discharge:%.2f"
+                % (
+                    (
+                        self.df.Discharge.astype(bool).sum(axis=0)
+                        * self.TIME_STEP
+                        / 3600
+                    ),
+                    (self.df.Discharge.replace(0, np.nan).mean()),
+                )
+            )
             self.df = self.df.set_index("When")
             self.df.loc[df_f.index, "Discharge"] = self.discharge * df_f["fountain"]
             self.df = self.df.reset_index()
