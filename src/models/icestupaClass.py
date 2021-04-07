@@ -5,7 +5,6 @@
 import pandas as pd
 import sys, os, math, time
 from datetime import datetime
-# from tqdm import tqdm
 import numpy as np
 from functools import lru_cache
 from pandas_profiling import ProfileReport
@@ -94,23 +93,32 @@ class Icestupa:
     def derive_parameters(
         self,
     ):  # Derives additional parameters required for simulation
+        if self.name in ["gangles21"]:
+            df_c= get_calibration(site=self.name, input=self.input)
+            self.r_spray = df_c.loc[1, "dia"] / 2
+            self.h_i = self.DX
+            df_c.loc[:,"DroneV"] -= df_c.loc[0, "DroneV"]
+            self.df = pd.merge(self.df, df_c, on="When", how="left")
+
         if self.name in ["guttannen21", "guttannen20"]:
-        # if self.name in ["guttannen21"]:
             df_c,df_cam = get_calibration(site=self.name, input=self.input)
             self.r_spray = df_c.loc[0, "dia"] / 2
             self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
             self.df = pd.merge(self.df, df_c, on="When", how="left")
             self.df = pd.merge(self.df, df_cam, on="When", how="left")
-        else:
+
+        if self.name in ["schwarzsee19"]:
             df_c= get_calibration(site=self.name, input=self.input)
             self.df = pd.merge(self.df, df_c, on="When", how="left")
+
+        logger.info(df_c.head())
 
         unknown = ["a", "vp_a", "LW_in", "cld"]  # Possible unknown variables
         for i in range(len(unknown)):
             if unknown[i] in list(self.df.columns):
                 unknown[i] = np.NaN  # Removes known variable
             else:
-                logger.warning(" %s is unknown\n" % (unknown[i]))
+                logger.info(" %s is unknown\n" % (unknown[i]))
                 self.df[unknown[i]] = 0
 
         for row in track(self.df[1:].itertuples(), total=self.df.shape[0], description="Creating AIR input..."):
@@ -152,7 +160,7 @@ class Icestupa:
         ].tolist()  # List of all timesteps when fountain on
         self.start_date = f_on[0]
         logger.info("Model starts at %s" % (self.start_date))
-        logger.warning("\n Fountain ends %s\n" % f_on[-1])
+        logger.info("\n Fountain ends %s\n" % f_on[-1])
 
         mask = self.df["When"] >= self.start_date
         self.df = self.df.loc[mask]
@@ -172,8 +180,9 @@ class Icestupa:
         self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
         s = 0
         f = 0
-        for row in track(self.df[1:].itertuples(), total=self.df.shape[0], description="Estimating Albedo..."):
-            s, f = self.get_albedo(row, s, f, site=self.name)
+        for i, row in self.df.iterrows():
+        # for row in range(self.df[1:].itertuples(), self.df.shape[0]):
+            s, f = self.get_albedo(i, s, f, site=self.name)
 
         self.df = self.df.round(3)
         self.df = self.df[
@@ -332,7 +341,7 @@ class Icestupa:
                     self.df.loc[i - 1, "h_ice"] = self.DX
 
 
-                if self.name in ["guttannen21", "guttannen20"]:
+                if self.name in ["guttannen21", "guttannen20", "gangles21"]:
                     if hasattr(self, "h_i"):
                         self.df.loc[i - 1, "h_ice"] = self.h_i
                         self.df.loc[i - 1, "r_ice"] = self.r_spray
@@ -370,7 +379,7 @@ class Icestupa:
 
             if STATE == 1:
                 # Change in fountain height
-                if not np.isnan(self.df.loc[i, "h_s"]):
+                if (self.df.loc[i, "h_s"]) > 0:
                     self.h_f += row.h_s
                     logger.warning(
                         "\n Height increased to %s on %s" % (self.h_f, self.df.When[i])

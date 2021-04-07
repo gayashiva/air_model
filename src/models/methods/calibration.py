@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 def get_calibration(site, input):
     # Add Validation data to input
-    if site in ["guttannen21", "guttannen20"]:
+    if site in ["guttannen21", "guttannen20", "gangles21"]:
         df_c = pd.read_csv(
             input + site + "_drone.csv",
             sep=",",
@@ -35,18 +35,24 @@ def get_calibration(site, input):
                 {"When": datetime(2020, 2, 5, 19), "h_s": -1},
             ]
 
-        df_h = pd.DataFrame(data)
-        df_c = df_c.reset_index()
-        df_c = pd.concat([df_c, df_h], ignore_index=True, sort=False)
-        df_c = df_c.set_index("When").sort_index().reset_index()
-        df_cam = pd.read_csv(
-            input + site + "_cam_temp.csv",
-            sep=",",
-            header=0,
-            parse_dates=["When"],
-        )
-        df_cam = df_cam.set_index("When")
-        return df_c, df_cam
+        if site in ["guttannen21", "guttannen20"]:
+            df_h = pd.DataFrame(data)
+            df_c = df_c.reset_index()
+            df_c = pd.concat([df_c, df_h], ignore_index=True, sort=False)
+            df_c = df_c.set_index("When").sort_index().reset_index()
+            df_cam = pd.read_csv(
+                input + site + "_cam_temp.csv",
+                sep=",",
+                header=0,
+                parse_dates=["When"],
+            )
+            df_cam = df_cam.set_index("When")
+            return df_c, df_cam
+
+        if site in ["gangles21"]:
+            df_c["h_s"] = 0
+            df_c = df_c.reset_index()
+            return df_c
 
     if site in ["schwarzsee19"]:
         data = [
@@ -54,6 +60,6 @@ def get_calibration(site, input):
             {"When": datetime(2019, 3, 10, 18), "DroneV": 0.1295},
         ]
         df_c = pd.DataFrame(data)
-        df_c['h_s'] = np.NaN
+        df_c["h_s"] = 0
         logger.info(df_c.head(10))
         return df_c

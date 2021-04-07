@@ -11,18 +11,16 @@ logger = logging.getLogger(__name__)
 
 
 def get_albedo(
-    self, row, s=0, f=0, site="schwarzsee"
+    self, i, s=0, f=0, site="schwarzsee"
 ):  # Albedo Scheme described in Section 3.2.1
-
-    i = row.Index
 
     """Albedo"""
     if site in ["schwarzsee19"]:
-        if row.T_a < self.T_RAIN and row.Prec>0:  # Snow event
+        if self.df.T_a[i] < self.T_RAIN and self.df.Prec[i]>0:  # Snow event
             s = 0
             f = 0
 
-        if row.Discharge > 0:  # Spray event
+        if self.df.Discharge[i] > 0:  # Spray event
             f = 1
             s = 0
 
@@ -35,11 +33,11 @@ def get_albedo(
 
             self.df.loc[i, "a"] = self.A_I
 
-    if site in ["guttannen20", "guttannen21"]:
+    if site in ["guttannen20", "guttannen21", "gangles21"]:
 
         # Precipitation event
-        if row.Prec > 0:
-            if row.T_a < self.T_RAIN:  # Snow event
+        if self.df.Prec[i] > 0:
+            if self.df.T_a < self.T_RAIN:  # Snow event
                 s = 0
         self.df.loc[i, "a"] = self.A_I + (self.A_S - self.A_I) * math.exp(
             -s / self.T_DECAY

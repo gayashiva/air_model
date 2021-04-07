@@ -98,7 +98,7 @@ if __name__ == "__main__":
 
     location = st.sidebar.radio(
         "Select Icestupa",
-        ("Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020"),
+        ("Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"),
     )
     trigger = st.sidebar.radio(
         "Select Fountain control", ("Manual", "Weather", "Temperature", "None")
@@ -156,7 +156,7 @@ if __name__ == "__main__":
             )
 
     st.sidebar.write("Display Variables")
-    timelapse = st.sidebar.checkbox("Timelapse", value=True)
+    timelapse = st.sidebar.checkbox("Timelapse", value=False)
     validate = st.sidebar.checkbox("Validation", value=True)
     summary = st.sidebar.checkbox("Data Overview")
     input = st.sidebar.checkbox("Input")
@@ -171,10 +171,10 @@ if __name__ == "__main__":
         if location == "Schwarzsee 2019":
             # st.write("## %s Timelapse" % (location))
             url = "https://youtu.be/GhljRBGpxMg"
-        if location == "Guttannen 2021":
+        elif location == "Guttannen 2021":
             # st.write("## %s Timelapse" % (location))
             url = "https://youtu.be/DBHoL1Z7H6U"
-        if location == "Guttannen 2020":
+        elif location == "Guttannen 2020":
             # st.write("## %s Timelapse" % (location))
             url = "https://youtu.be/kcrvhU20OOE"
         st.video(url)

@@ -104,6 +104,11 @@ def get_parameter_metadata(
             "kind": "Input",
             "units": "($hPa$)",
         },
+        "SW_global": {
+            "name": "Shortwave Global",
+            "kind": "Misc",
+            "units": "($W\\,m^{-2}$)",
+        },
         "SW_direct": {
             "name": "Shortwave Direct",
             "kind": "Input",
