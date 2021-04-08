@@ -187,95 +187,95 @@ if __name__ == "__main__":
 
         if not (display):
             st.error("Please select at least one visualization.")
+        else:
+            if "Timelapse" in display:
+                if location == "Schwarzsee 2019":
+                    url = "https://youtu.be/GhljRBGpxMg"
+                elif location == "Guttannen 2021":
+                    url = "https://youtu.be/DBHoL1Z7H6U"
+                elif location == "Guttannen 2020":
+                    url = "https://youtu.be/kcrvhU20OOE"
+                st.video(url)
 
-        elif "Timelapse" in display:
-            if location == "Schwarzsee 2019":
-                url = "https://youtu.be/GhljRBGpxMg"
-            elif location == "Guttannen 2021":
-                url = "https://youtu.be/DBHoL1Z7H6U"
-            elif location == "Guttannen 2020":
-                url = "https://youtu.be/kcrvhU20OOE"
-            st.video(url)
-
-        elif "Validation" in display:
-            st.write("## Validation")
-            path = output_folder + "paper_figures/Vol_Validation_" + icestupa.trigger + ".jpg"
-            st.image(path)
-
-            if SITE["name"] in ["guttannen21", "guttannen20"]:
-                path = output_folder + "paper_figures/Temp_Validation_" + icestupa.trigger + ".jpg"
+            if "Validation" in display:
+                st.write("## Validation")
+                path = output_folder + "paper_figures/Vol_Validation_" + icestupa.trigger + ".jpg"
                 st.image(path)
 
-        elif "Input" in display:
-            st.write("## Input variables")
-            variable1 = st.multiselect(
-                "Choose",
-                options=(input_cols),
-                default=["Discharge", "Temperature"],
-                # default=["Temperature"],
-            )
-            if not (variable1):
-                st.error("Please select at least one variable.")
-            else:
-                variable_in = [input_vars[input_cols.index(item)] for item in variable1]
-                variable = variable_in
-                for v in variable:
+                if SITE["name"] in ["guttannen21", "guttannen20"]:
+                    path = output_folder + "paper_figures/Temp_Validation_" + icestupa.trigger + ".jpg"
+                    st.image(path)
 
-                    meta = get_parameter_metadata(v)
-                    st.header("%s" % (meta["name"] + " " + meta["units"]))
-                    st.line_chart(df[v])
+            if "Input" in display:
+                st.write("## Input variables")
+                variable1 = st.multiselect(
+                    "Choose",
+                    options=(input_cols),
+                    default=["Discharge", "Temperature"],
+                    # default=["Temperature"],
+                )
+                if not (variable1):
+                    st.error("Please select at least one variable.")
+                else:
+                    variable_in = [input_vars[input_cols.index(item)] for item in variable1]
+                    variable = variable_in
+                    for v in variable:
 
-        elif "Output" in display:
-            st.write("## Output variables")
+                        meta = get_parameter_metadata(v)
+                        st.header("%s" % (meta["name"] + " " + meta["units"]))
+                        st.line_chart(df[v])
 
-            variable2 = st.multiselect(
-                "Choose",
-                options=(output_cols),
-                default=["Meltwater"],
-            )
-            if not (variable2):
-                st.error("Please select at least one variable.")
-            else:
-                variable_out = [
-                    output_vars[output_cols.index(item)] for item in variable2
-                ]
-                variable = variable_out
-                for v in variable:
-                    meta = get_parameter_metadata(v)
-                    st.header("%s" % (meta["name"] + " " + meta["units"]))
-                    st.line_chart(df[v])
+            if "Output" in display:
+                st.write("## Output variables")
 
-        elif "Derived" in display:
-            st.write("## Derived variables")
-            variable3 = st.multiselect(
-                "Choose",
-                options=(derived_cols),
-                default=["Albedo"],
-            )
-        elif "Data Overview" in display:
-            st.write("### Maximum Ice Volume: %.2f m3" % icestupa.df["iceV"].max())
-            st.write(
-                "### Meltwater Released: %.2f litres"
-                % icestupa.df["meltwater"].iloc[-1]
-            )
-            st.write("## Input variables")
-            st.image(output_folder + "paper_figures/Model_Input_" + trigger + ".jpg")
-            st.write("## Output variables")
-            st.image(output_folder + "paper_figures/Model_Output_" + trigger + ".jpg")
+                variable2 = st.multiselect(
+                    "Choose",
+                    options=(output_cols),
+                    default=["Meltwater"],
+                )
+                if not (variable2):
+                    st.error("Please select at least one variable.")
+                else:
+                    variable_out = [
+                        output_vars[output_cols.index(item)] for item in variable2
+                    ]
+                    variable = variable_out
+                    for v in variable:
+                        meta = get_parameter_metadata(v)
+                        st.header("%s" % (meta["name"] + " " + meta["units"]))
+                        st.line_chart(df[v])
 
-            if not (variable3):
-                st.error("Please select at least one variable.")
+            if "Derived" in display:
+                st.write("## Derived variables")
+                variable3 = st.multiselect(
+                    "Choose",
+                    options=(derived_cols),
+                    default=["Albedo"],
+                )
+                if not (variable3):
+                    st.error("Please select at least one variable.")
 
-            else:
-                variable_in = [
-                    derived_vars[derived_cols.index(item)] for item in variable3
-                ]
-                variable = variable_in
-                for v in variable:
+                else:
+                    variable_in = [
+                        derived_vars[derived_cols.index(item)] for item in variable3
+                    ]
+                    variable = variable_in
+                    for v in variable:
+                        meta = get_parameter_metadata(v)
+                        st.header("%s" % (meta["name"] + " " + meta["units"]))
+                        st.line_chart(df[v])
 
-                    meta = get_parameter_metadata(v)
-                    st.header("%s" % (meta["name"] + " " + meta["units"]))
-                    st.line_chart(df[v])
+            if "Data Overview" in display:
+                st.write("### Maximum Ice Volume: %.2f m3" % icestupa.df["iceV"].max())
+                st.write(
+                    "### Meltwater Released: %.2f litres"
+                    % icestupa.df["meltwater"].iloc[-1]
+                )
+                st.write("## Input variables")
+                st.image(output_folder + "paper_figures/Model_Input_" + trigger + ".jpg")
+                st.write("## Output variables")
+                st.image(output_folder + "paper_figures/Model_Output_" + trigger + ".jpg")
+
     except FileNotFoundError:
         st.info(
             "Creating Output files..."
@@ -292,9 +292,9 @@ if __name__ == "__main__":
         # Summarise and save model results
         icestupa.summary()
 
-    except:
-        st.error( 
-            "Unknown Error. Please choose different fountain trigger..."
-        )
+    # except:
+    #     st.error( 
+    #         "Unknown Error. Please choose different fountain trigger..."
+    #     )
 
 
