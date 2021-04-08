@@ -291,7 +291,7 @@ if __name__ == "__main__":
         icestupa.melt_freeze()
 
         # Summarise and save model results
-        # icestupa.summary()
+        icestupa.summary()
 
     # except:
     #     st.error( 

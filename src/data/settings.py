@@ -188,10 +188,14 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
     # Define directory structure
     FOLDER = dict(
-        raw=os.path.join(dirname, "data/" + SITE["name"] + "/raw/"),
-        input=os.path.join(dirname, "data/" + SITE["name"] + "/interim/"),
-        output=os.path.join(dirname, "data/" + SITE["name"] + "/processed/"),
-        sim=os.path.join(dirname, "data/" + SITE["name"] + "/processed/simulations"),
+        # raw=os.path.join(dirname, "data/" + SITE["name"] + "/raw/"),
+        # input=os.path.join(dirname, "data/" + SITE["name"] + "/interim/"),
+        # output=os.path.join(dirname, "data/" + SITE["name"] + "/processed/"),
+        # sim=os.path.join(dirname, "data/" + SITE["name"] + "/processed/simulations"),
+        raw="data/" + SITE["name"] + "/raw/",
+        input="data/" + SITE["name"] + "/interim/",
+        output="data/" + SITE["name"] + "/processed/",
+        sim="data/" + SITE["name"] + "/processed/simulations",
     )
 
     return SITE, FOUNTAIN, FOLDER
