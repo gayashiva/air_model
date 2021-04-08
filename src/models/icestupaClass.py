@@ -201,12 +201,12 @@ class Icestupa:
             self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
         ]  # Remove junk columns
 
-        self.df.to_hdf(
-            self.input + "model_input_" + self.trigger + ".h5",
-            key="df",
-            mode="w",
-        )
-        self.df.to_csv(self.input + "model_input_" + self.trigger + ".csv")
+        # self.df.to_hdf(
+        #     self.input + "model_input_" + self.trigger + ".h5",
+        #     key="df",
+        #     mode="w",
+        # )
+        # self.df.to_csv(self.input + "model_input_" + self.trigger + ".csv")
 
     def summary(self):  # Summarizes results and saves output
 
