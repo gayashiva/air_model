@@ -252,8 +252,20 @@ if __name__ == "__main__":
                 options=(derived_cols),
                 default=["Albedo"],
             )
+        elif "Data Overview" in display:
+            st.write("### Maximum Ice Volume: %.2f m3" % icestupa.df["iceV"].max())
+            st.write(
+                "### Meltwater Released: %.2f litres"
+                % icestupa.df["meltwater"].iloc[-1]
+            )
+            st.write("## Input variables")
+            st.image(output_folder + "paper_figures/Model_Input_" + trigger + ".jpg")
+            st.write("## Output variables")
+            st.image(output_folder + "paper_figures/Model_Output_" + trigger + ".jpg")
+
             if not (variable3):
                 st.error("Please select at least one variable.")
+
             else:
                 variable_in = [
                     derived_vars[derived_cols.index(item)] for item in variable3

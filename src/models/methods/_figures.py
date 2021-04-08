@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def summary_figures(self):
+    logger.info("Creating figures")
 
     # # Class variables used
     # df = self.df
