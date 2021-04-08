@@ -23,11 +23,13 @@ from src.models.icestupaClass import Icestupa
 from src.data.settings import config
 
 # SETTING PAGE CONFIG TO WIDE MODE
+air_logo = os.path.join(dirname, "src/visualization/AIR_logo.png")
 st.set_page_config(
-	layout="centered",  # Can be "centered" or "wide". In the future also "dashboard", etc.
+	layout="wide",  # Can be "centered" or "wide". In the future also "dashboard", etc.
 	initial_sidebar_state="expanded",  # Can be "auto", "expanded", "collapsed"
 	page_title="Icestupa",  # String or None. Strings get appended with "• Streamlit". 
-	page_icon=None,  # String, anything supported by st.image, or None.
+	# page_icon=None,  # String, anything supported by st.image, or None.
+	page_icon=air_logo,  # String, anything supported by st.image, or None.
 )
 
 def download_csv(name, df):
@@ -133,7 +135,6 @@ if __name__ == "__main__":
         row1_1, row1_2 = st.beta_columns((2,6))
 
         with row1_1:
-            air_logo = os.path.join(dirname, "src/visualization/AIR_logo.png")
             st.image(air_logo, width=160)
 
         with row1_2:

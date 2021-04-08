@@ -83,7 +83,7 @@ def summary_figures(self):
 
     y1 = self.df.Discharge
     ax1.plot(x, y1, linestyle="-", color="#284D58", linewidth=1)
-    ax1.set_ylabel("Fountain Spray [$l\\, min^{-1}$]")
+    ax1.set_ylabel("Discharge [$l\\, min^{-1}$]")
 
     ax1t = ax1.twinx()
     ax1t.plot(
@@ -232,7 +232,8 @@ def summary_figures(self):
     y4 = dfds2["iceV"]
     y0 = dfds["Discharge"] * self.TIME_STEP / (60 * 1000)
 
-    z = dfd[["$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
+    dfd[["$q_{melt}$", "$q_{T}$"]] *=-1
+    z = dfd[["$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$", "$q_{melt}$", "$q_{T}$"]]
 
     ax0 = fig.add_subplot(5, 1, 1)
     ax0 = y0.plot.bar(
@@ -252,7 +253,7 @@ def summary_figures(self):
     ax1.xaxis.set_label_text("")
     ax1.grid(color="black", alpha=0.3, linewidth=0.5, which="major")
     plt.ylabel("Energy Flux [$W\\,m^{-2}$]")
-    plt.legend(loc="upper center", ncol=6)
+    plt.legend(loc="upper center", ncol=8)
     # plt.ylim(-125, 125)
     x_axis = ax1.axes.get_xaxis()
     x_axis.set_visible(False)
