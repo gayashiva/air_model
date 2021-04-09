@@ -1,4 +1,4 @@
-<a href="url"><img src="https://github.com/Gayashiva/air_model/blob/master/reports/figures/AIR_logo.png" align="left" height="148" width="148" ></a>
+<a href="url"><img src="https://github.com/Gayashiva/air_model/blob/master/src/visualization/AIR_logo_circle.png" align="left" height="148" width="148" ></a>
 
 # Artificial Ice Reservoirs
 
