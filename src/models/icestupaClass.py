@@ -122,11 +122,6 @@ class Icestupa:
                 logger.info(" %s is unknown\n" % (unknown[i]))
                 self.df[unknown[i]] = 0
 
-        # for row in track(
-        #     self.df[1:].itertuples(),
-        #     total=self.df.shape[0],
-        #     description="Creating AIR input...",
-        # ):
         for row in stqdm(
             self.df[1:].itertuples(),
             total=self.df.shape[0],
@@ -170,7 +165,7 @@ class Icestupa:
         ].tolist()  # List of all timesteps when fountain on
         self.start_date = f_on[0]
         logger.info("Model starts at %s" % (self.start_date))
-        logger.info("\n Fountain ends %s\n" % f_on[-1])
+        logger.info("Fountain ends %s\n" % f_on[-1])
 
         mask = self.df["When"] >= self.start_date
         self.df = self.df.loc[mask]
@@ -329,16 +324,17 @@ class Icestupa:
                 dia=self.dia_f, h=self.h_f, d=self.discharge
             )
 
-        # for row in track(
-        #     self.df[1:-1].itertuples(),
-        #     total=self.df.shape[0],
-        #     description="Simulating AIR",
-        # ):
-        for row in stqdm(
+        t = stqdm(
             self.df[1:-1].itertuples(),
             total=self.df.shape[0],
             desc="Simulating AIR",
-        ):
+        )
+        # for row in stqdm(
+        #     self.df[1:-1].itertuples(),
+        #     total=self.df.shape[0],
+        #     desc="Simulating AIR",
+        # ):
+        for row in t:
             i = row.Index
             ice_melted = self.df.loc[i, "ice"] < 1
 
@@ -368,6 +364,8 @@ class Icestupa:
                         self.df.loc[i - 1, "h_ice"] = self.DX
                         self.df.loc[i - 1, "r_ice"] = self.r_spray
 
+                t.set_description("Simulating %s Icestupa" % self.name[:-2])
+
                 self.df.loc[i - 1, "s_cone"] = (
                     self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
                 )
@@ -386,7 +384,7 @@ class Icestupa:
                 )
                 self.df.loc[i, "input"] = self.df.loc[i, "ice"]
                 logger.warning(
-                    "\n Initialise: radius %s, height %s, iceV %s\n"
+                    "Initialise: radius %s, height %s, iceV %s\n"
                     % (
                         self.df.loc[i - 1, "r_ice"],
                         self.df.loc[i - 1, "h_ice"],
@@ -437,14 +435,13 @@ class Icestupa:
                     sys.exit("SA zero")
 
                 # Latent Heat
-                self.df.loc[i, "$q_{T}$"] = self.df.loc[i, "Ql"]
 
                 if self.df.loc[i, "Ql"] < 0:
                     # Sublimation
                     if self.df.loc[i, "RH"] < 60:
                         L = self.L_S
                         self.df.loc[i, "gas"] -= (
-                            self.df.loc[i, "$q_{T}$"]
+                            self.df.loc[i, "Ql"]
                             * self.TIME_STEP
                             * self.df.loc[i, "SA"]
                             / L
@@ -452,7 +449,7 @@ class Icestupa:
 
                         # Removing gas quantity generated from ice
                         self.df.loc[i, "solid"] += (
-                            self.df.loc[i, "$q_{T}$"]
+                            self.df.loc[i, "Ql"]
                             * self.TIME_STEP
                             * self.df.loc[i, "SA"]
                             / L
@@ -461,7 +458,7 @@ class Icestupa:
                     else:
                         L = self.L_E
                         self.df.loc[i, "gas"] -= (
-                            self.df.loc[i, "$q_{T}$"]
+                            self.df.loc[i, "Ql"]
                             * self.TIME_STEP
                             * self.df.loc[i, "SA"]
                             / L
@@ -469,7 +466,7 @@ class Icestupa:
 
                         # Removing gas quantity generated from meltwater
                         self.df.loc[i, "melted"] -= (
-                            self.df.loc[i, "$q_{T}$"]
+                            self.df.loc[i, "Ql"]
                             * self.TIME_STEP
                             * self.df.loc[i, "SA"]
                             / L
@@ -480,7 +477,7 @@ class Icestupa:
                     if self.df.loc[i, "RH"] < 60:
                         L = self.L_S
                         self.df.loc[i, "dpt"] += (
-                            self.df.loc[i, "$q_{T}$"]
+                            self.df.loc[i, "Ql"]
                             * self.TIME_STEP
                             * self.df.loc[i, "SA"]
                             / self.L_S
@@ -489,30 +486,31 @@ class Icestupa:
                     else:
                         L = self.L_E
                         self.df.loc[i, "cdt"] += (
-                            self.df.loc[i, "$q_{T}$"]
+                            self.df.loc[i, "Ql"]
                             * self.TIME_STEP
                             * self.df.loc[i, "SA"]
                             / self.L_S
                         )
 
+                self.df.loc[i, "$q_{T}$"] += self.df.loc[i, "Ql"]
+
                 if self.df.loc[i, "TotalE"] < 0 and self.liquid > 0:
                     """Freezing water"""
                     # Change in paper
                     self.df.loc[i, "TotalE"] += (
-                        self.df.loc[i, "T_s"]
+                        (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
                         * self.RHO_I
                         * self.DX
                         * self.C_I
                         / self.TIME_STEP
                     )
-                    # DUE TO qF force surface temperature zero
+                    # DUE TO qF force surface temperature bulk temp
                     self.df.loc[i, "$q_{T}$"] -= (
-                        self.df.loc[i, "T_s"]
+                        (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
                         * self.RHO_I
                         * self.DX
                         * self.C_I
                         / self.TIME_STEP
-                        # - self.df.loc[i, "Ql"]
                     )
 
                     self.liquid += (
@@ -541,7 +539,7 @@ class Icestupa:
                 else:
                     self.df.loc[i, "$q_{T}$"] += self.df.loc[i, "TotalE"]
 
-                self.df.loc[i, "delta_T_s"] += (
+                self.df.loc[i, "delta_T_s"] = (
                     self.df.loc[i, "$q_{T}$"]
                     * self.TIME_STEP
                     / (self.RHO_I * self.DX * self.C_I)
@@ -550,24 +548,35 @@ class Icestupa:
                 """Ice temperature above zero"""
                 if (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]) > 0:
                     self.df.loc[i, "$q_{melt}$"] += (
-                        (self.RHO_I * self.DX * self.C_I)
-                        * (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"])
+                        (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"])
+                        * self.RHO_I
+                        * self.DX
+                        * self.C_I
                         / self.TIME_STEP
                     )
 
                     self.df.loc[i, "$q_{T}$"] -= (
-                        (self.RHO_I * self.DX * self.C_I)
-                        * (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"])
+                        (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"])
+                        * self.RHO_I
+                        * self.DX
+                        * self.C_I
                         / self.TIME_STEP
                     )
 
-                    self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
-                    logger.debug("Hot Ice")
+                    self.df.loc[i, "delta_T_s"] = (
+                        self.df.loc[i, "$q_{T}$"]
+                        * self.TIME_STEP
+                        / (self.RHO_I * self.DX * self.C_I)
+                    )
+
+                    # self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
+                    # logger.warning("Hot Ice", self.df.loc[i, "$q_{T}$"], self.df.loc[i, "delta_T_s"], self.df.loc[i, "T_s"])
                     if np.isnan(self.df.loc[i, "delta_T_s"]):
                         logger.error(
                             f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
                         )
                         sys.exit("Ice Temperature nan")
+
 
                 if self.df.loc[i, "$q_{melt}$"] < 0:
                     self.df.loc[i, "solid"] -= (

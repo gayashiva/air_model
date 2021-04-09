@@ -6,10 +6,11 @@ import numpy as np
 from functools import lru_cache
 import logging
 import coloredlogs
+from redis_cache import cache_it
 
 logger = logging.getLogger(__name__)
 
-
+@cache_it(limit=1000, expire=None)
 def get_albedo(
     self, i, s=0, f=0, site="schwarzsee"
 ):  # Albedo Scheme described in Section 3.2.1

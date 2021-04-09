@@ -5,13 +5,14 @@ import pandas as pd
 import math
 import numpy as np
 from functools import lru_cache
+from redis_cache import cache_it
 
 import logging
 import coloredlogs
 
 logger = logging.getLogger(__name__)
 
-
+@cache_it(limit=1000, expire=None)
 def get_droplet_projectile(
     dia, h, d=0, x=0
 ):  # returns discharge or spray radius using projectile motion

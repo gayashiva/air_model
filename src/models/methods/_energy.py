@@ -23,17 +23,17 @@ def get_energy(self, row, mode="normal"):
         self.liquid = 0
         self.df.loc[i, "f_cone"] = 1
 
-    self.df.loc[i, "vp_ice"] = (
-        (
-            1.0016
-            + 3.15 * math.pow(10, -6) * self.df.loc[i, "p_a"]
-            - 0.074 * math.pow(self.df.loc[i, "p_a"], -1)
-        )
-        * 6.112
-        * np.exp(22.46 * (self.df.loc[i, "T_s"]) / ((self.df.loc[i, "T_s"]) + 272.62))
-    )
 
     if mode != "trigger":
+        self.df.loc[i, "vp_ice"] = (
+            (
+                1.0016
+                + 3.15 * math.pow(10, -6) * self.df.loc[i, "p_a"]
+                - 0.074 * math.pow(self.df.loc[i, "p_a"], -1)
+            )
+            * 6.112
+            * np.exp(22.46 * (self.df.loc[i, "T_s"]) / ((self.df.loc[i, "T_s"]) + 272.62))
+        )
         self.df.loc[i, "Ql"] = (
             0.623
             * self.L_S
@@ -45,10 +45,8 @@ def get_energy(self, row, mode="normal"):
             / ((np.log(self.h_aws / self.Z_I)) ** 2)
         )
         if np.isnan(self.df.loc[i, "Ql"]):
-            logger.error(
-                f"When {self.df.When[i]},p_a {self.df.p_a[i]}"
-            )
-            sys.exit('Ql nan')
+            logger.error(f"When {self.df.When[i]},p_a {self.df.p_a[i]}")
+            sys.exit("Ql nan")
 
     # Sensible Heat Qs
     self.df.loc[i, "Qs"] = (
@@ -95,7 +93,6 @@ def get_energy(self, row, mode="normal"):
             * self.T_w
             / (self.TIME_STEP * self.df.loc[i, "SA"])
         )
-
 
     if mode != "trigger":
         self.df.loc[i, "Qg"] = (

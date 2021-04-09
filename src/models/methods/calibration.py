@@ -8,10 +8,12 @@ from functools import lru_cache
 from datetime import datetime
 import logging
 import coloredlogs
+from redis_cache import cache_it
 
 logger = logging.getLogger(__name__)
 
 
+@cache_it(limit=1000, expire=None)
 def get_calibration(site, input):
     # Add Validation data to input
     if site in ["guttannen21", "guttannen20", "gangles21"]:

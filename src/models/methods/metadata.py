@@ -2,8 +2,9 @@
 """
 
 import streamlit as st
+from redis_cache import cache_it
 
-
+@cache_it(limit=1000, expire=None)
 @st.cache
 def get_parameter_metadata(
     parameter,
@@ -156,12 +157,12 @@ def get_parameter_metadata(
         },
         "$q_{T}$": {
             "name": "Temperature flux",
-            "kind": "Derived",
+            "kind": "Output",
             "units": "($W\\,m^{-2}$)",
         },
         "$q_{melt}$": {
             "name": "Melt energy",
-            "kind": "Derived",
+            "kind": "Output",
             "units": "($W\\,m^{-2}$)",
         },
         "Prec": {
