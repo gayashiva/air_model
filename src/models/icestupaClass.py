@@ -327,8 +327,9 @@ class Icestupa:
         t = stqdm(
             self.df[1:-1].itertuples(),
             total=self.df.shape[0],
-            desc="Simulating AIR",
+            # desc="Simulating AIR",
         )
+        t.set_description("Simulating %s Icestupa" % self.name[:-2])
         # for row in stqdm(
         #     self.df[1:-1].itertuples(),
         #     total=self.df.shape[0],
@@ -364,7 +365,6 @@ class Icestupa:
                         self.df.loc[i - 1, "h_ice"] = self.DX
                         self.df.loc[i - 1, "r_ice"] = self.r_spray
 
-                t.set_description("Simulating %s Icestupa" % self.name[:-2])
 
                 self.df.loc[i - 1, "s_cone"] = (
                     self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
