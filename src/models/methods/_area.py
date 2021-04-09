@@ -14,7 +14,7 @@ def get_area(self, i):
     if (self.df.solid[i - 1] - self.df.melted[i - 1] > 0) & (
         self.df.loc[i - 1, "r_ice"] >= self.r_spray
     ):  # Growth rate positive and radius goes beyond spray radius
-        self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"]
+        self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"] #+ self.df.loc[i - 1, "thickness"]
 
         self.df.loc[i, "h_ice"] = (
             3 * self.df.loc[i, "iceV"] / (math.pi * self.df.loc[i, "r_ice"] ** 2)

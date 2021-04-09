@@ -304,6 +304,7 @@ class Icestupa:
             "ppt",
             "dpt",
             "cdt",
+            "thickness",
             "$q_{T}$",
             "$q_{melt}$",
         ]
