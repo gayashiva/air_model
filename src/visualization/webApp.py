@@ -23,7 +23,7 @@ from src.models.icestupaClass import Icestupa
 from src.data.settings import config
 
 # SETTING PAGE CONFIG TO WIDE MODE
-air_logo = os.path.join(dirname, "src/visualization/AIR_logo.png")
+air_logo = os.path.join(dirname, "src/visualization/AIR_logo_circle.png")
 st.set_page_config(
 	layout="centered",  # Can be "centered" or "wide". In the future also "dashboard", etc.
 	initial_sidebar_state="expanded",  # Can be "auto", "expanded", "collapsed"
