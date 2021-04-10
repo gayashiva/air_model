@@ -18,7 +18,7 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 
 def config(location="Schwarzsee 2019", trigger="Manual"):
 
-    logger.info("Location is %s" % location)
+    logger.info("Location is %s and trigger is %s" % (location, trigger))
     if location == "Guttannen 2021":
 
         SITE = dict(

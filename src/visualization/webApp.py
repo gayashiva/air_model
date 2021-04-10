@@ -285,20 +285,21 @@ if __name__ == "__main__":
                 st.image(output_folder + "paper_figures/Model_Output_" + trigger + ".jpg")
 
     except FileNotFoundError:
-        st.info(
-            "Creating Output files..."
-        )
-        SITE, FOUNTAIN, FOLDER = config(location, trigger=trigger)
+        st.error("Sorry, yet to produce relevant outputs for fountain trigger %s. Try another fountain trigger." % icestupa.trigger)
+        # st.info(
+        #     "Output files..."
+        # )
+        # SITE, FOUNTAIN, FOLDER = config(location, trigger=trigger)
 
-        icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)
-        # Derive all the input parameters
-        icestupa.derive_parameters()
+        # icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)
+        # # Derive all the input parameters
+        # icestupa.derive_parameters()
 
-        # Generate results
-        icestupa.melt_freeze()
+        # # Generate results
+        # icestupa.melt_freeze()
 
-        # Summarise and save model results
-        icestupa.summary()
+        # # Summarise and save model results
+        # icestupa.summary()
 
     # except:
     #     st.error( 

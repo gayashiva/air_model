@@ -64,11 +64,11 @@ class Icestupa:
         for dictionary in initial_data:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
-                logger.info(f"%s -> %s" % (key, str(dictionary[key])))
+                logger.debug(f"%s -> %s" % (key, str(dictionary[key])))
         # Initialise other variables
         for key in kwargs:
             setattr(self, key, kwargs[key])
-            logger.info(f"%s -> %s" % (key, str(dictionary[key])))
+            logger.debug(f"%s -> %s" % (key, str(dictionary[key])))
 
         # Initialize input dataset
         input_file = self.input + self.name + "_input_model.csv"
@@ -76,7 +76,7 @@ class Icestupa:
         self.TIME_STEP = (
             int(pd.infer_freq(self.df["When"])[:-1]) * 60
         )  # Extract time step from datetime column
-        logger.info(f"Time steps -> %s minutes" % (str(self.TIME_STEP / 60)))
+        logger.debug(f"Time steps -> %s minutes" % (str(self.TIME_STEP / 60)))
         mask = self.df["When"] >= self.start_date
         self.df = self.df.loc[mask]
         self.df = self.df.reset_index(drop=True)

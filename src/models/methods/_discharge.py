@@ -127,7 +127,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             )
             self.df = self.df.set_index("When")
             self.df.loc[df_f.index, "Discharge"] = self.discharge * df_f["fountain"]
-            self.df.loc[~self.df.index.isin(df_f.index), "Discharge"] = 5
+            self.df.loc[self.df[self.df.Discharge == 0].index, "Discharge"] = 5 # Fountain was always on
             self.df = self.df.reset_index()
         if self.name == "schwarzsee19":
 

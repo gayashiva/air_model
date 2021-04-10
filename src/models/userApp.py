@@ -45,13 +45,13 @@ if __name__ == "__main__":
     # answers = inquirer.prompt(q)
 
     answers = dict(
-        # location="Schwarzsee 2019",
-        location="Guttannen 2021",
+        location="Schwarzsee 2019",
+        # location="Guttannen 2021",
         # location="Gangles 2021",
-        trigger="Manual",
+        # trigger="Manual",
         # trigger="None",
         # trigger="Temperature",
-        # trigger="Weather",
+        trigger="Weather",
         run="yes",
     )
 
