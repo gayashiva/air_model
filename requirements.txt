@@ -80,6 +80,8 @@ PyWavelets==1.1.1
 PyYAML==5.4.1
 pyzmq==22.0.3
 readchar==2.0.1
+redis==3.5.3
+redis-simple-cache==0.1.6
 requests==2.25.1
 rich==10.1.0
 scipy==1.6.1
@@ -100,7 +102,7 @@ tqdm==4.59.0
 traitlets==5.0.5
 typing-extensions==3.7.4.3
 tzlocal==2.1
-urllib3==1.26.4
+urllib3==1.26.3
 validators==0.18.2
 visions==0.6.0
 watchdog==2.0.2
