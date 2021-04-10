@@ -141,7 +141,7 @@ if __name__ == "__main__":
             display = st.multiselect(
                 "Choose type of visualization below:",
                 options=(visualize),
-                default=["Validation"],
+                default=["Validation", "Timelapse"],
                 # default=["Validation", "Timelapse"],
             )
 
