@@ -72,6 +72,19 @@ def df_filter(message, df):
 
     return filtered_df
 
+def mpl_scatter(dataset, x, y):
+    fig, ax = plt.subplots()
+    dataset.plot.scatter(x=x, y=y, alpha=0.8, ax=ax)
+    return fig
+
+
+def altair_scatter(dataset, x, y):
+    plot = (
+        alt.Chart(dataset, height=400, width=400)
+        .mark_point(filled=True, opacity=0.8)
+        .encode(x=x, y=y)
+    )
+    return plot
 
 @st.cache
 def vars(df_in):
@@ -298,10 +311,5 @@ if __name__ == "__main__":
 
         # # Summarise and save model results
         # icestupa.summary()
-
-    # except:
-    #     st.error( 
-    #         "Unknown Error. Please choose different fountain trigger..."
-    #     )
 
 
