@@ -182,6 +182,8 @@ class Icestupa:
         self.df.Prec = self.df.Prec * self.TIME_STEP  # mm
 
         """Albedo"""
+        if self.name in ["schwarzsee19"]:
+            f = 0  # Start with snow event
         if "a" in unknown:
             """Albedo Decay parameters initialized"""
             self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
@@ -365,7 +367,6 @@ class Icestupa:
                     else:
                         self.df.loc[i - 1, "h_ice"] = self.DX
                         self.df.loc[i - 1, "r_ice"] = self.r_spray
-
 
                 self.df.loc[i - 1, "s_cone"] = (
                     self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
@@ -577,7 +578,6 @@ class Icestupa:
                             f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
                         )
                         sys.exit("Ice Temperature nan")
-
 
                 if self.df.loc[i, "$q_{melt}$"] < 0:
                     self.df.loc[i, "solid"] -= (
