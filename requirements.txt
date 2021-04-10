@@ -102,7 +102,7 @@ tqdm==4.59.0
 traitlets==5.0.5
 typing-extensions==3.7.4.3
 tzlocal==2.1
-urllib3==1.26.3
+urllib3==1.26.4
 validators==0.18.2
 visions==0.6.0
 watchdog==2.0.2
