@@ -3,12 +3,6 @@
 # Default: true
 showWarningOnDirectExecution = false
 
-# [theme]
-# primaryColor="#f63366"
-# backgroundColor="#0e1117"
-# secondaryBackgroundColor="#31333F"
-# textColor="#fafafa"
-# font="sans serif"
 [theme]
 primaryColor="#39a9db"
 backgroundColor="#003049"
