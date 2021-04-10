@@ -115,8 +115,3 @@ def get_energy(self, row, mode="normal"):
         + self.df.loc[i, "Qg"]
     )
 
-    if np.isnan(self.df.loc[i, "TotalE"]):
-        logger.error(
-            f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}"
-        )
-        sys.exit("Energy nan")

@@ -507,6 +507,13 @@ class Icestupa:
                         * self.C_I
                         / self.TIME_STEP
                     )
+                    self.df.loc[i, "Qf"] += (
+                        (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
+                        * self.RHO_I
+                        * self.DX
+                        * self.C_I
+                        / self.TIME_STEP
+                    )
                     # DUE TO qF force surface temperature bulk temp
                     self.df.loc[i, "$q_{T}$"] -= (
                         (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
@@ -572,8 +579,6 @@ class Icestupa:
                         / (self.RHO_I * self.DX * self.C_I)
                     )
 
-                    # self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
-                    # logger.warning("Hot Ice", self.df.loc[i, "$q_{T}$"], self.df.loc[i, "delta_T_s"], self.df.loc[i, "T_s"])
                     if np.isnan(self.df.loc[i, "delta_T_s"]):
                         logger.error(
                             f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
@@ -606,6 +611,25 @@ class Icestupa:
                     )
                     sys.exit("High temperature changes")
 
+                if np.isnan(self.df.loc[i, "TotalE"]):
+                    logger.error(
+                        f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}"
+                    )
+                    sys.exit("Energy nan")
+
+                if math.fabs(self.df.loc[i, "TotalE"]) > 500:
+                    logger.warning(
+                        "%s,Fountain water %s,Sensible %s, SW %s, LW %s, Qg %s"
+                        % (
+                            self.df.loc[i, "When"],
+                            self.df.loc[i, "Qf"],
+                            self.df.loc[i, "Qs"],
+                            self.df.loc[i, "SW"],
+                            self.df.loc[i, "LW"],
+                            self.df.loc[i, "Qg"],
+                        )
+                    )
+                    # sys.exit("Energy high")
                 """ Quantities of all phases """
                 self.df.loc[i + 1, "T_s"] = (
                     self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]

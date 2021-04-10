@@ -276,7 +276,7 @@ if __name__ == "__main__":
                     % icestupa.df["meltwater"].iloc[-1]
                 )
                 st.write(
-                    "### Storage efficiency: %.2f litres"
+                    "### Storage efficiency: %.2f percent"
                     % Efficiency
                 )
                 st.write("## Input variables")
