@@ -136,7 +136,7 @@ if __name__ == "__main__":
             st.image(air_logo, width=160)
 
         with row1_2:
-            st.title("Artificial Ice Reservoir Simulation")
+            st.title("Artificial Ice Reservoirs")
             visualize = ["Timelapse", "Validation", "Data Overview", "Input", "Output", "Derived"]
             display = st.multiselect(
                 "Choose type of visualization below:",
@@ -205,6 +205,27 @@ if __name__ == "__main__":
                     path = output_folder + "paper_figures/Temp_Validation_" + icestupa.trigger + ".jpg"
                     st.image(path)
 
+
+            if "Data Overview" in display:
+                Efficiency = (
+                    (icestupa.df["meltwater"].iloc[-1] + icestupa.df["ice"].iloc[-1])
+                    / icestupa.df["input"].iloc[-1]
+                    * 100
+                )
+                st.write("### Maximum Ice Volume: %.2f m3" % icestupa.df["iceV"].max())
+                st.write(
+                    "### Meltwater Released: %.2f litres"
+                    % icestupa.df["meltwater"].iloc[-1]
+                )
+                st.write(
+                    "### Storage efficiency: %.2f percent"
+                    % Efficiency
+                )
+                st.write("## Input variables")
+                st.image(output_folder + "paper_figures/Model_Input_" + trigger + ".jpg")
+                st.write("## Output variables")
+                st.image(output_folder + "paper_figures/Model_Output_" + trigger + ".jpg")
+
             if "Input" in display:
                 st.write("## Input variables")
                 variable1 = st.multiselect(
@@ -263,26 +284,6 @@ if __name__ == "__main__":
                         meta = get_parameter_metadata(v)
                         st.header("%s" % (meta["name"] + " " + meta["units"]))
                         st.line_chart(df[v])
-
-            if "Data Overview" in display:
-                Efficiency = (
-                    (icestupa.df["meltwater"].iloc[-1] + icestupa.df["ice"].iloc[-1])
-                    / icestupa.df["input"].iloc[-1]
-                    * 100
-                )
-                st.write("### Maximum Ice Volume: %.2f m3" % icestupa.df["iceV"].max())
-                st.write(
-                    "### Meltwater Released: %.2f litres"
-                    % icestupa.df["meltwater"].iloc[-1]
-                )
-                st.write(
-                    "### Storage efficiency: %.2f percent"
-                    % Efficiency
-                )
-                st.write("## Input variables")
-                st.image(output_folder + "paper_figures/Model_Input_" + trigger + ".jpg")
-                st.write("## Output variables")
-                st.image(output_folder + "paper_figures/Model_Output_" + trigger + ".jpg")
 
     except FileNotFoundError:
         st.error("Sorry, yet to produce relevant outputs for fountain trigger %s. Try another fountain trigger." % icestupa.trigger)
