@@ -148,7 +148,6 @@ if __name__ == "__main__":
             if trigger == "None":
                 st.write(
                 """
-                ##
                 Fountain was always kept on until **%s**
                 """
                 % (icestupa.fountain_off_date.date())
