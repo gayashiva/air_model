@@ -47,7 +47,7 @@ class Icestupa:
     IE = 0.95  # Ice Emissivity IE
     A_I = 0.35  # Albedo of Ice A_I
     A_S = 0.85  # Albedo of Fresh Snow A_S
-    T_DECAY = 10  # Albedo decay rate decay_t_d
+    T_DECAY = 22  # Albedo decay rate decay_t_d
     Z_I = 0.0017  # Ice Momentum and Scalar roughness length
     T_RAIN = 1  # Temperature condition for liquid precipitation
 
@@ -182,16 +182,16 @@ class Icestupa:
         self.df.Prec = self.df.Prec * self.TIME_STEP  # mm
 
         """Albedo"""
-        if self.name in ["schwarzsee19"]:
-            f = 0  # Start with snow event
 
         if "a" in unknown:
             """Albedo Decay parameters initialized"""
             self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
             s = 0
-            f = 1
+            if self.name in ["schwarzsee19", "guttannen20"]:
+                f = 0  # Start with snow event
+            else:
+                f = 1
             for i, row in self.df.iterrows():
-                # for row in range(self.df[1:].itertuples(), self.df.shape[0]):
                 s, f = self.get_albedo(i, s, f, site=self.name)
 
         self.df = self.df.round(3)
