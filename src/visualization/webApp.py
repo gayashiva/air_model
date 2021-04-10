@@ -265,10 +265,19 @@ if __name__ == "__main__":
                         st.line_chart(df[v])
 
             if "Data Overview" in display:
+                Efficiency = (
+                    (icestupa.df["meltwater"].iloc[-1] + icestupa.df["ice"].iloc[-1])
+                    / icestupa.df["input"].iloc[-1]
+                    * 100
+                )
                 st.write("### Maximum Ice Volume: %.2f m3" % icestupa.df["iceV"].max())
                 st.write(
                     "### Meltwater Released: %.2f litres"
                     % icestupa.df["meltwater"].iloc[-1]
+                )
+                st.write(
+                    "### Storage efficiency: %.2f litres"
+                    % Efficiency
                 )
                 st.write("## Input variables")
                 st.image(output_folder + "paper_figures/Model_Input_" + trigger + ".jpg")
