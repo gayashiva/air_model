@@ -2,9 +2,10 @@
 """
 
 import streamlit as st
-from redis_cache import cache_it
 
-@cache_it(limit=1000, expire=None)
+# from redis_cache import cache_it
+
+# @cache_it(limit=1000, expire=None)
 @st.cache
 def get_parameter_metadata(
     parameter,

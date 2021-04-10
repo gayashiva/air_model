@@ -5,11 +5,11 @@ from pvlib import location
 import numpy as np
 import pandas as pd
 import logging
-from redis_cache import cache_it
+# from redis_cache import cache_it
 
 logger = logging.getLogger(__name__)
 
-@cache_it(limit=1000, expire=None)
+# @cache_it(limit=1000, expire=None)
 def get_solar(
     latitude, longitude, start, end, TIME_STEP
 ):  # Provides solar angle for each time step
