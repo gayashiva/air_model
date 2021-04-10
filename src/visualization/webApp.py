@@ -145,38 +145,38 @@ if __name__ == "__main__":
                 # default=["Validation", "Timelapse"],
             )
 
-        if trigger == "None":
-            st.write(
-            """
-            ##
-            Fountain was always kept on until **%s**
-            """
-            % (icestupa.fountain_off_date.date())
-            )
-        if trigger == "Manual":
-            st.write(
-            """
-            ##
-            Fountain was controlled **%s** until **%s**
-            """
-            % (trigger + "ly", (icestupa.fountain_off_date.date()))
-            )
-        if trigger == "Temperature":
-            st.write(
-            """
-            ##
-            Fountain was switched on/off after sunset when temperature was below **%s** until **%s**
-            """
-            % (icestupa.crit_temp, (icestupa.fountain_off_date.date()))
-            )
-        if trigger == "Weather":
-            st.write(
-            """
-            ##
-            Fountain was switched on/off whenever surface energy balance was negative/positive respectively until **%s**
-            """
-            % (icestupa.fountain_off_date.date())
-            )
+            if trigger == "None":
+                st.write(
+                """
+                ##
+                Fountain was always kept on until **%s**
+                """
+                % (icestupa.fountain_off_date.date())
+                )
+            if trigger == "Manual":
+                st.write(
+                """
+                ##
+                Fountain was controlled **%s** until **%s**
+                """
+                % (trigger + "ly", (icestupa.fountain_off_date.date()))
+                )
+            if trigger == "Temperature":
+                st.write(
+                """
+                ##
+                Fountain was switched on/off after sunset when temperature was below **%s** until **%s**
+                """
+                % (icestupa.crit_temp, (icestupa.fountain_off_date.date()))
+                )
+            if trigger == "Weather":
+                st.write(
+                """
+                ##
+                Fountain was switched on/off whenever surface energy balance was negative/positive respectively until **%s**
+                """
+                % (icestupa.fountain_off_date.date())
+                )
 
         st.sidebar.write("# Map of %s" % location)
         lat = SITE["latitude"]
