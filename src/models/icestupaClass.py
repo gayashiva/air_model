@@ -184,6 +184,7 @@ class Icestupa:
         """Albedo"""
         if self.name in ["schwarzsee19"]:
             f = 0  # Start with snow event
+
         if "a" in unknown:
             """Albedo Decay parameters initialized"""
             self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
