@@ -7,8 +7,6 @@ import pandas as pd
 import sys
 from datetime import datetime
 import os
-import matplotlib.dates as mdates
-import matplotlib.pyplot as plt
 import numpy as np
 import re
 import base64
