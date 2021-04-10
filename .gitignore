@@ -85,9 +85,6 @@ target/
 *.swp
 *.swo
 
-# Streamlit
-.streamlit/
-
 # Mypy cache
 .mypy_cache/
 .tasks
