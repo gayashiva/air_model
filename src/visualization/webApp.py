@@ -184,6 +184,7 @@ if __name__ == "__main__":
             st.error("Please select at least one visualization.")
         else:
             if "Timelapse" in display:
+                st.write("## Timelapse")
                 if location == "Schwarzsee 2019":
                     url = "https://youtu.be/GhljRBGpxMg"
                 elif location == "Guttannen 2021":
