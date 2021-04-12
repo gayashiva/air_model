@@ -13,6 +13,27 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def shade(df_in, col):
+    mask = df_in.missing_type.str.contains(col, na=False)
+    df_ERA5 = df_in.copy()
+    df = df_in.copy()
+    df.loc[
+        mask , ["When", "T_a", "SW_direct", "SW_diffuse", "v_a", "p_a", "RH"]
+    ] = np.NaN
+
+    df_ERA5.loc[
+        ~mask , ["When", "T_a", "SW_direct", "SW_diffuse", "v_a", "p_a", "RH", "missing_type"]
+    ] = np.NaN
+
+    events = np.split(df_ERA5.When, np.where(np.isnan(df_ERA5.When.values))[0])
+    # removing NaN entries
+    events = [
+        ev[~np.isnan(ev.values)] for ev in events if not isinstance(ev, np.ndarray)
+    ]
+    # removing empty DataFrames
+    events = [ev for ev in events if not ev.empty]
+    return df, df_ERA5, events
+
 def summary_figures(self):
     logger.info("Creating figures")
 
@@ -43,38 +64,6 @@ def summary_figures(self):
         axis=1,
     )
 
-    mask = self.df.missing != 1
-    nmask = self.df.missing != 0
-    ymask = self.df.missing == 1
-    pmask = self.df.missing != 2
-    df_ERA5 = self.df.copy()
-    df_ERA52 = self.df.copy()
-    df_SZ = self.df.copy()
-    df_SZ.loc[
-        ymask, ["When", "T_a", "SW_direct", "SW_diffuse", "v_a", "p_a", "RH"]
-    ] = np.NaN
-    df_ERA5.loc[
-        mask, ["When", "T_a", "SW_direct", "SW_diffuse", "v_a", "p_a", "RH"]
-    ] = np.NaN
-    df_ERA52.loc[
-        pmask, ["When", "T_a", "SW_direct", "SW_diffuse", "v_a", "p_a", "RH"]
-    ] = np.NaN
-
-    events = np.split(df_ERA5.When, np.where(np.isnan(df_ERA5.When.values))[0])
-    # removing NaN entries
-    events = [
-        ev[~np.isnan(ev.values)] for ev in events if not isinstance(ev, np.ndarray)
-    ]
-    # removing empty DataFrames
-    events = [ev for ev in events if not ev.empty]
-    events2 = np.split(df_ERA52.When, np.where(np.isnan(df_ERA52.When.values))[0])
-    # removing NaN entries
-    events2 = [
-        ev[~np.isnan(ev.values)] for ev in events2 if not isinstance(ev, np.ndarray)
-    ]
-    # removing empty DataFrames
-    events2 = [ev for ev in events2 if not ev.empty]
-
     fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
         nrows=6, ncols=1, sharex="col", sharey="row", figsize=(12, 18)
     )
@@ -97,6 +86,7 @@ def summary_figures(self):
     for tl in ax1t.get_yticklabels():
         tl.set_color(CB91_Blue)
 
+    df_SZ, df_ERA5, events = shade(df_in = self.df, col = 'T_a')
     y2 = df_SZ.T_a
     y2_ERA5 = df_ERA5.T_a
     ax2.plot(x, y2, linestyle="-", color="#284D58", linewidth=1)
@@ -130,6 +120,7 @@ def summary_figures(self):
     labs = [l.get_label() for l in lns]
     ax3.legend(lns, labs, ncol=3, loc="best")
 
+    df_SZ, df_ERA5, events= shade(df_in = self.df, col = 'RH')
     y4 = df_SZ.RH
     y4_ERA5 = df_ERA5.RH
     ax4.plot(x, y4, linestyle="-", color="#284D58", linewidth=1)
@@ -138,24 +129,32 @@ def summary_figures(self):
         ax4.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
     ax4.set_ylabel("Humidity [$\\%$]")
 
+    df_SZ, df_ERA5, events= shade(df_in = self.df, col = 'p_a')
     y5 = df_SZ.p_a
     y5_ERA5 = df_ERA5.p_a
     ax5.plot(x, y5, linestyle="-", color="#264653", linewidth=1)
-    ax5.plot(x, y5_ERA5, linestyle="-", color="#284D58")
-    for ev in events:
-        ax5.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
+    # ax5.plot(x, y5_ERA5, linestyle="-", color="#284D58")
+    # for ev in events:
+    #     ax5.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
+    ax5.axvspan(
+        self.df.When.head(1).values,
+        self.df.When.tail(1).values,
+        facecolor="grey",
+        alpha=0.25,
+    )
     ax5.set_ylabel("Pressure [$hPa$]")
 
+    df_SZ, df_ERA5 , events= shade(df_in = self.df, col = 'v_a')
     y6 = df_SZ.v_a
     y6_ERA5 = df_ERA5.v_a
-    y6_ERA52 = df_ERA52.v_a
+    # y6_ERA52 = df_ERA52.v_a
     ax6.plot(x, y6, linestyle="-", color="#264653", linewidth=1, label="Schwarzsee")
     ax6.plot(x, y6_ERA5, linestyle="-", color="#284D58")
-    ax6.plot(x, y6_ERA52, linestyle="-", color="#284D58")
+    # ax6.plot(x, y6_ERA52, linestyle="-", color="#284D58")
     for ev in events:  # Creates DeprecationWarning
         ax6.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
-    for ev in events2:
-        ax6.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
+    # for ev in events2:
+    #     ax6.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
     ax6.set_ylabel("Wind speed [$m\\,s^{-1}$]")
 
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -317,42 +316,42 @@ def summary_figures(self):
     )
     plt.clf()
 
-    fig, (ax1, ax2) = plt.subplots(
-        nrows=2, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
-    )
+    # fig, (ax1, ax2) = plt.subplots(
+    #     nrows=2, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
+    # )
 
-    x = self.df.When
+    # x = self.df.When
 
-    y1 = self.df.a
-    y2 = self.df.f_cone
-    ax1.plot(x, y1, color="#16697a")
-    ax1.set_ylabel("Albedo")
-    ax1t = ax1.twinx()
-    ax1t.plot(x, y2, color="#ff6d00", linewidth=0.5)
-    ax1t.set_ylabel("$f_{cone}$", color="#ff6d00")
-    for tl in ax1t.get_yticklabels():
-        tl.set_color("#ff6d00")
-    ax1.set_ylim([0, 1])
-    ax1t.set_ylim([0, 1])
+    # y1 = self.df.a
+    # y2 = self.df.f_cone
+    # ax1.plot(x, y1, color="#16697a")
+    # ax1.set_ylabel("Albedo")
+    # ax1t = ax1.twinx()
+    # ax1t.plot(x, y2, color="#ff6d00", linewidth=0.5)
+    # ax1t.set_ylabel("$f_{cone}$", color="#ff6d00")
+    # for tl in ax1t.get_yticklabels():
+    #     tl.set_color("#ff6d00")
+    # ax1.set_ylim([0, 1])
+    # ax1t.set_ylim([0, 1])
 
-    y1 = self.df.T_s
-    y2 = self.df.T_bulk
-    ax2.plot(
-        x, y1, "k-", linestyle="-", color="#00b4d8", linewidth=0.5, label="Surface"
-    )
-    ax2.set_ylabel("Temperature [$\\degree C$]")
-    ax2.plot(x, y2, linestyle="-", color="#023e8a", linewidth=1, label="Bulk")
-    ax2.set_ylim([-20, 1])
-    ax2.legend()
+    # y1 = self.df.T_s
+    # y2 = self.df.T_bulk
+    # ax2.plot(
+    #     x, y1, "k-", linestyle="-", color="#00b4d8", linewidth=0.5, label="Surface"
+    # )
+    # ax2.set_ylabel("Temperature [$\\degree C$]")
+    # ax2.plot(x, y2, linestyle="-", color="#023e8a", linewidth=1, label="Bulk")
+    # ax2.set_ylim([-20, 1])
+    # ax2.legend()
 
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    fig.autofmt_xdate()
-    plt.savefig(
-        output + "paper_figures/albedo_temperature.jpg", dpi=300, bbox_inches="tight"
-    )
-    plt.clf()
+    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    # fig.autofmt_xdate()
+    # plt.savefig(
+    #     output + "paper_figures/albedo_temperature.jpg", dpi=300, bbox_inches="tight"
+    # )
+    # plt.clf()
 
     fig, ax = plt.subplots()
     CB91_Blue = "#2CBDFE"

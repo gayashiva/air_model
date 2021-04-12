@@ -214,9 +214,6 @@ if __name__ == "__main__":
                 if SITE["name"] in ["guttannen21", "guttannen20"]:
                     path = output_folder + "paper_figures/Temp_Validation_" + icestupa.trigger + ".jpg"
                     st.image(path)
-
-
-            if "Data Overview" in display:
                 Efficiency = (
                     (icestupa.df["meltwater"].iloc[-1] + icestupa.df["ice"].iloc[-1])
                     / icestupa.df["input"].iloc[-1]
@@ -231,10 +228,32 @@ if __name__ == "__main__":
                     "### Storage efficiency: %.2f percent"
                     % Efficiency
                 )
+
+
+            if "Data Overview" in display:
                 st.write("## Input variables")
                 st.image(output_folder + "paper_figures/Model_Input_" + trigger + ".jpg")
+                st.write(
+                """
+                Measurements at the AWS of %s were used as main model input
+                data in 15 minute frequency.  Incoming shortwave and longwave radiation
+                were obtained from ERA5 reanalysis dataset. Several data gaps
+                and errors were also filled from the ERA5 dataset (shaded regions).  
+                """
+                % (icestupa.name)
+                )
                 st.write("## Output variables")
                 st.image(output_folder + "paper_figures/Model_Output_" + trigger + ".jpg")
+                st.write(
+                """
+                (a) Fountain discharge (b) energy flux components, (c) mass flux components (d)
+                surface area and (e) volume of the Icestupa in daily time steps. qSW is the net
+                shortwave radiation; qLW is the net longwave radiation; qL and qS are the
+                turbulent latent and sensible heat fluxes. qF represents the interactions of
+                the ice-water boundary during fountain on time steps. qG quantifies the heat
+                conduction process between the Icestupa surface layer and the ice body.
+                """
+                )
 
             if "Input" in display:
                 st.write("## Input variables")

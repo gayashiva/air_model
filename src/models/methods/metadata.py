@@ -46,6 +46,11 @@ def get_parameter_metadata(
             "kind": "Derived",
             "units": "()",
         },
+        "missing_type": {
+            "name": "Column Filled from ERA5",
+            "kind": "Derived",
+            "units": "()",
+        },
         "e_a": {
             "name": "Atmospheric Emissivity",
             "kind": "Derived",

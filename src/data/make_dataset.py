@@ -536,7 +536,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    SITE, FOUNTAIN, FOLDER = config("Guttannen 2020")
+    SITE, FOUNTAIN, FOLDER = config("Guttannen 2021")
 
     raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
@@ -549,11 +549,13 @@ if __name__ == "__main__":
     # if SITE["name"] in ["guttannen21"]:
         df = meteoswiss(SITE["name"])
 
+    # Wind zero values are errors
+    df["v_a"] = df["v_a"].replace(0, np.NaN)
+
     df_ERA5, df_in3 = era5(df, SITE["name"])
 
     df_ERA5 = df_ERA5.set_index("When")
     df = df.set_index("When")
-    df["missing"] = 0
 
     df_ERA5 = df_ERA5.reset_index()
     mask = (df_ERA5["When"] >= SITE["start_date"]) & (
@@ -578,21 +580,35 @@ if __name__ == "__main__":
 
     # Fill from ERA5
     logger.warning("Temperature NaN rows: %s" %df["T_a"].isna().sum())
+    logger.warning("wind NaN rows: %s" %df["v_a"].isna().sum())
 
+    df["missing"] = 0
+    df['missing_type'] = '-'
     if SITE["name"] in ["guttannen20", "guttannen21"]:
     # if SITE["name"] in ["guttannen21"]:
+        col_list = []
         for col in ["T_a", "RH", "v_a"]:
+            # col_list.append(col)
+            mask = df[col].isna()
             df.loc[df[col].isna(), "missing"] = 1
-            df.loc[df[col].isna(), "missing_type"] = col
+            df.loc[df[col].isna(), "missing_type"] = df.loc[df[col].isna(), "missing_type"] + col
+
+            # for i in df[col]:
+            #     logger.error(i)
+            #     df.loc[i.index, "missing_type"] = df.loc[i, "missing_type"] + col
+            # df.loc[df[col].isna(), "missing_type"] = df.loc[df[col].isna(), "missing_type"] + col
+            # df.loc[df[col].isna(), "missing_type"] = '-'.join(col_list)
             df.loc[df[col].isna(), col] = df_ERA5[col]
 
         # for col in ["p_a", "SW_direct", "SW_diffuse", "LW_in"]:
         for col in ["p_a", "SW_direct", "SW_diffuse", "LW_in", "Prec"]:
             logger.info("%s from ERA5" % col)
             df[col] = df_ERA5[col]
+        logger.info(df.missing_type.describe())
+        logger.info(df.missing_type.unique())
+        logger.info(df.missing.describe())
 
     if SITE["name"] in ["schwarzsee19", "guttannen20"]:
-        df["v_a"] = df["v_a"].replace(0, np.NaN)
         for col in ["T_a", "RH", "v_a", "p_a"]:
             df.loc[df[col].isna(), "missing"] = 1
             df.loc[df[col].isna(), "missing_type"] = col
@@ -642,6 +658,7 @@ if __name__ == "__main__":
             # "vp_a",
             "p_a",
             "missing",
+            "missing_type",
             "LW_in",
         ]
     else:
@@ -656,6 +673,7 @@ if __name__ == "__main__":
             "vp_a",
             "p_a",
             "missing",
+            "missing_type",
             "LW_in",
         ]
 
@@ -664,7 +682,7 @@ if __name__ == "__main__":
     if df_out.isna().values.any():
         print(df_out[cols].isna().sum())
         for column in cols:
-            if df_out[column].isna().sum() > 0:
+            if df_out[column].isna().sum() > 0 and column not in ["missing", "missing_type"]:
                 logger.warning("Warning: Null values filled in %s" %column)
                 df_out.loc[:, column] = df_out[column].interpolate()
 
@@ -674,8 +692,8 @@ if __name__ == "__main__":
     df_out.to_csv(input_folder + SITE["name"] + "_input_model.csv")
     fig = plt.figure()
     plt.plot(df_out.v_a)
-    plt.ylabel('some numbers')
-    plt.savefig(input_folder + SITE["name"] + "test.png")
+    # plt.ylabel('some numbers')
+    # plt.savefig(input_folder + SITE["name"] + "test.png")
 
     if SITE["name"] in ['schwarzsee19']:
         df_ERA5["Prec"] = 0
@@ -717,6 +735,7 @@ if __name__ == "__main__":
                         "Prec",
                         "p_a",
                         "missing",
+                        "missing_type",
                     ]
                 ]
                 .isnull()
