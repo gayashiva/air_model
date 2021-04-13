@@ -41,11 +41,6 @@ def get_parameter_metadata(
             "kind": "Derived",
             "units": "()",
         },
-        "missing": {
-            "name": "Filled from ERA5",
-            "kind": "Derived",
-            "units": "()",
-        },
         "missing_type": {
             "name": "Column Filled from ERA5",
             "kind": "Derived",
@@ -122,22 +117,22 @@ def get_parameter_metadata(
             "units": "($W\\,m^{-2}$)",
         },
         "SW": {
-            "name": "Shortwave Radiation",
+            "name": "Net Shortwave Radiation",
             "kind": "Output",
             "units": "($W\\,m^{-2}$)",
         },
         "SW_diffuse": {
-            "name": "Shortwave Diffuse",
+            "name": "Shortwave Diffuse Radiation",
             "kind": "Input",
             "units": "($W\\,m^{-2}$)",
         },
         "LW_in": {
-            "name": "Longwave",
+            "name": "Incoming Longwave Radiation",
             "kind": "Input",
             "units": "($W\\,m^{-2}$)",
         },
         "LW": {
-            "name": "Longwave Radiation",
+            "name": "Net Longwave Radiation",
             "kind": "Output",
             "units": "($W\\,m^{-2}$)",
         },
@@ -167,7 +162,7 @@ def get_parameter_metadata(
             "units": "($W\\,m^{-2}$)",
         },
         "$q_{melt}$": {
-            "name": "Melt energy",
+            "name": "Melt energy flux",
             "kind": "Output",
             "units": "($W\\,m^{-2}$)",
         },
@@ -261,11 +256,6 @@ def get_parameter_metadata(
             "kind": "Output",
             "units": "($kg$)",
         },
-        # "Input": {
-        #     "name": "Water Input",
-        #     "kind": "Output",
-        #     "units": "($kg$)",
-        # },
         "unfrozen_water": {
             "name": "Water Runoff",
             "kind": "Output",

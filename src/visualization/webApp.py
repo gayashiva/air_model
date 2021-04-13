@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
         with row1_2:
             st.title("Artificial Ice Reservoirs")
-            visualize = ["Timelapse", "Validation", "Data Overview", "Input", "Output", "Derived"]
+            visualize = [ "Validation", "Timelapse","Data Overview", "Input", "Output", "Derived"]
             display = st.multiselect(
                 "Choose type of visualization below:",
                 options=(visualize),
