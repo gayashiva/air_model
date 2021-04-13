@@ -9,6 +9,7 @@ import numpy as np
 from functools import lru_cache
 from pandas_profiling import ProfileReport
 import logging
+import pickle5 as pickle
 from rich.progress import track
 from stqdm import stqdm
 
