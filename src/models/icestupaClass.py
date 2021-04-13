@@ -2,14 +2,16 @@
 """
 
 # External modules
+import pickle
+pickle.HIGHEST_PROTOCOL = 4
 import pandas as pd
 import sys, os, math, time
 from datetime import datetime
 import numpy as np
 from functools import lru_cache
-from pandas_profiling import ProfileReport
+# from pandas_profiling import ProfileReport
 import logging
-import pickle5 as pickle
+# import pickle5 as pickle
 from rich.progress import track
 from stqdm import stqdm
 
