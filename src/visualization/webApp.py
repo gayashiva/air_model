@@ -193,6 +193,38 @@ if __name__ == "__main__":
         map_data = pd.DataFrame({"lat": [lat], "lon": [lon]})
         st.sidebar.map(map_data, zoom=10)
 
+        row2_1, row2_2= st.beta_columns((1,1))
+        with row2_1:
+            Efficiency = (
+                (icestupa.df["meltwater"].iloc[-1] + icestupa.df["ice"].iloc[-1])
+                / icestupa.df["input"].iloc[-1]
+                * 100
+            )
+            Duration = icestupa.df.index[-1] * icestupa.TIME_STEP / (60 * 60 * 24)
+            st.markdown(
+                """
+            | Fountain attributes | Value |
+            | --- | --- |
+            | Active from | %s |
+            | Last active on | %s |
+            | Aperture diameter | %.2f $mm$|
+            | Initial height | %s $m$ |
+            """ %(icestupa.start_date.date(),icestupa.fountain_off_date.date(), icestupa.dia_f, icestupa.h_f)
+            )
+
+        with row2_2:
+            st.markdown(
+                """
+            | Icestupa properties | Model output |
+            | --- | --- |
+            | Maximum Ice Volume | %.2f $m^{3}$|
+            | Storage Efficiency | %.2f percent |
+            | Meltwater released | %.2f $l$ |
+            | Total Precipitation | %.2f $kg$ |
+            | Model duration | %.2f days |
+            """ %(icestupa.df["iceV"].max(), Efficiency, icestupa.df["meltwater"].iloc[-1], icestupa.df["ppt"].sum(), Duration)
+            )
+
         if not (display):
             st.error("Please select at least one visualization.")
         else:
@@ -200,11 +232,12 @@ if __name__ == "__main__":
                 st.write("## Timelapse")
                 if location == "Schwarzsee 2019":
                     url = "https://youtu.be/GhljRBGpxMg"
+                    st.video(url)
                 elif location == "Guttannen 2021":
                     url = "https://youtu.be/DBHoL1Z7H6U"
+                    st.video(url)
                 elif location == "Guttannen 2020":
-                    url = "https://youtu.be/kcrvhU20OOE"
-                st.video(url)
+                    st.error("No Timelapse recorded")
 
             if "Validation" in display:
                 st.write("## Validation")
@@ -214,21 +247,6 @@ if __name__ == "__main__":
                 if SITE["name"] in ["guttannen21", "guttannen20"]:
                     path = output_folder + "paper_figures/Temp_Validation_" + icestupa.trigger + ".jpg"
                     st.image(path)
-                Efficiency = (
-                    (icestupa.df["meltwater"].iloc[-1] + icestupa.df["ice"].iloc[-1])
-                    / icestupa.df["input"].iloc[-1]
-                    * 100
-                )
-                st.write("### Maximum Ice Volume: %.2f m3" % icestupa.df["iceV"].max())
-                st.write(
-                    "### Meltwater Released: %.2f litres"
-                    % icestupa.df["meltwater"].iloc[-1]
-                )
-                st.write(
-                    "### Storage efficiency: %.2f percent"
-                    % Efficiency
-                )
-
 
             if "Data Overview" in display:
                 st.write("## Input variables")

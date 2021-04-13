@@ -47,13 +47,13 @@ class Icestupa:
     IE = 0.95  # Ice Emissivity IE
     A_I = 0.35  # Albedo of Ice A_I
     A_S = 0.85  # Albedo of Fresh Snow A_S
-    T_DECAY = 22  # Albedo decay rate decay_t_d
+    T_DECAY = 10  # Albedo decay rate decay_t_d
     Z_I = 0.0017  # Ice Momentum and Scalar roughness length
     T_RAIN = 1  # Temperature condition for liquid precipitation
 
     """Model constants"""
     # DX = 5e-03  # Initial Ice layer thickness
-    DX = 5e-02  # Initial Ice layer thickness
+    DX = 4e-02  # Initial Ice layer thickness
     theta_f = 45  # FOUNTAIN angle
     ftl = 0  # FOUNTAIN flight time loss ftl
     T_w = 5  # FOUNTAIN Water temperature
@@ -433,9 +433,6 @@ class Icestupa:
 
                 if self.df.loc[i, "SA"]:
                     self.get_energy(row)
-                else:
-                    logger.error("SA zero")
-                    sys.exit("SA zero")
 
                 # Latent Heat
 

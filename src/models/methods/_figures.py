@@ -71,16 +71,17 @@ def summary_figures(self):
     x = self.df.When
 
     y1 = self.df.Discharge
+    y2 = self.df.Prec
     ax1.plot(x, y1, linestyle="-", color="#284D58", linewidth=1)
     ax1.set_ylabel("Discharge [$l\\, min^{-1}$]")
 
     ax1t = ax1.twinx()
     ax1t.plot(
         x,
-        self.df.Prec,
+        y2,
         linestyle="-",
         color=CB91_Blue,
-        label="Plaffeien",
+        # label="Plaffeien",
     )
     ax1t.set_ylabel("Precipitation [$mm$]", color=CB91_Blue)
     for tl in ax1t.get_yticklabels():
@@ -97,7 +98,8 @@ def summary_figures(self):
     ax2.plot(x, y2_ERA5, linestyle="-", color="#284D58")
     ax2.set_ylabel("Temperature [$\\degree C$]")
 
-    y3 = self.df.SW_direct
+
+    y3 = df_SZ.SW_direct
     lns2 = ax3.plot(x, y3, linestyle="-", label="Shortwave Direct", color=CB91_Amber)
     lns1 = ax3.plot(
         x,
@@ -133,15 +135,9 @@ def summary_figures(self):
     y5 = df_SZ.p_a
     y5_ERA5 = df_ERA5.p_a
     ax5.plot(x, y5, linestyle="-", color="#264653", linewidth=1)
-    # ax5.plot(x, y5_ERA5, linestyle="-", color="#284D58")
-    # for ev in events:
-    #     ax5.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
-    ax5.axvspan(
-        self.df.When.head(1).values,
-        self.df.When.tail(1).values,
-        facecolor="grey",
-        alpha=0.25,
-    )
+    ax5.plot(x, y5_ERA5, linestyle="-", color="#284D58")
+    for ev in events:
+        ax5.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
     ax5.set_ylabel("Pressure [$hPa$]")
 
     df_SZ, df_ERA5 , events= shade(df_in = self.df, col = 'v_a')

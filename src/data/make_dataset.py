@@ -536,21 +536,35 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    SITE, FOUNTAIN, FOLDER = config("Guttannen 2021")
+    SITE, FOUNTAIN, FOLDER = config("Schwarzsee 2019")
 
     raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
 
-    # if SITE["name"] in ["schwarzsee19", "guttannen20"]:
     if SITE["name"] in ["schwarzsee19"]:
         df = field(location=SITE["name"])
-        logger.warning("Is wind speed too low: %s"%df.v_a.mean())
+        # Wind zero values are errors
+        df["v_a"] = df["v_a"].replace(0, np.NaN)
+
     if SITE["name"] in ["guttannen21", "guttannen20"]:
-    # if SITE["name"] in ["guttannen21"]:
         df = meteoswiss(SITE["name"])
 
-    # Wind zero values are errors
-    df["v_a"] = df["v_a"].replace(0, np.NaN)
+    if SITE["name"] in ["schwarzsee19"]:
+        df_swiss = meteoswiss(SITE["name"])
+
+        df_swiss = df_swiss.set_index("When")
+        df= df.set_index("When")
+
+        for col in ["Prec"]:
+            logger.info("%s from meteoswiss" % col)
+            df[col] = df_swiss[col]
+        # if SITE["name"] in ["guttannen20"]:
+        #     for col in ["Prec","v_a"]:
+        #         logger.info("%s from meteoswiss" % col)
+        #         df[col] = df_swiss[col]
+        df_swiss = df_swiss.reset_index()
+        df= df.reset_index()
+
 
     df_ERA5, df_in3 = era5(df, SITE["name"])
 
@@ -563,11 +577,10 @@ if __name__ == "__main__":
     )
 
     # Fit ERA5 to field data
-
     if SITE["name"] in ["guttannen21", "guttannen20"]:
-    # if SITE["name"] in ["guttannen21"]:
-        fit_list = ["T_a", "RH", "v_a"]
-    else:
+        fit_list = ["T_a", "RH", "v_a", "Prec"]
+
+    if SITE["name"] in ["schwarzsee19"]:
         fit_list = ["T_a", "RH", "v_a", "p_a"]
 
     for column in fit_list:
@@ -579,58 +592,40 @@ if __name__ == "__main__":
     df_ERA5 = df_ERA5.set_index("When")
 
     # Fill from ERA5
-    logger.warning("Temperature NaN rows: %s" %df["T_a"].isna().sum())
-    logger.warning("wind NaN rows: %s" %df["v_a"].isna().sum())
+    logger.warning("Temperature NaN percent: %0.2f" %(df["T_a"].isna().sum()/df.shape[0]*100))
+    logger.warning("wind NaN percent: %0.2f" %(df["v_a"].isna().sum()/df.shape[0]*100))
 
-    df["missing"] = 0
-    df['missing_type'] = '-'
-    if SITE["name"] in ["guttannen20", "guttannen21"]:
-    # if SITE["name"] in ["guttannen21"]:
-        col_list = []
-        for col in ["T_a", "RH", "v_a"]:
-            # col_list.append(col)
+    df['missing_type'] = ''
+    # if SITE["name"] in ["guttannen20", "guttannen21"]:
+    for col in ["T_a", "RH", "v_a", "Prec", "p_a", "SW_direct", "SW_diffuse", "LW_in"]:
+        try:
             mask = df[col].isna()
-            df.loc[df[col].isna(), "missing"] = 1
-            df.loc[df[col].isna(), "missing_type"] = df.loc[df[col].isna(), "missing_type"] + col
-
-            # for i in df[col]:
-            #     logger.error(i)
-            #     df.loc[i.index, "missing_type"] = df.loc[i, "missing_type"] + col
-            # df.loc[df[col].isna(), "missing_type"] = df.loc[df[col].isna(), "missing_type"] + col
-            # df.loc[df[col].isna(), "missing_type"] = '-'.join(col_list)
-            df.loc[df[col].isna(), col] = df_ERA5[col]
-
-        # for col in ["p_a", "SW_direct", "SW_diffuse", "LW_in"]:
-        for col in ["p_a", "SW_direct", "SW_diffuse", "LW_in", "Prec"]:
-            logger.info("%s from ERA5" % col)
+            percent_nan = df[col].isna().sum()/df.shape[0] * 100
+            logger.info(" %s has %s percent NaN values" %(col, percent_nan))
+            if percent_nan > 1 or col in ["Prec"]:
+                logger.warning(" Null values filled with ERA5 in %s" %col)
+                df.loc[df[col].isna(), "missing_type"] = df.loc[df[col].isna(), "missing_type"] + col
+                df.loc[df[col].isna(), col] = df_ERA5[col]
+            else:
+                logger.warning(" Null values interpolated in %s" %col)
+                df.loc[:, col] = df[col].interpolate()
+        except KeyError:
+            logger.warning("%s from ERA5" % col)
             df[col] = df_ERA5[col]
-        logger.info(df.missing_type.describe())
-        logger.info(df.missing_type.unique())
-        logger.info(df.missing.describe())
+            df["missing_type"] = df["missing_type"] + col
+    logger.info(df.missing_type.describe())
+    logger.info(df.missing_type.unique())
 
-    if SITE["name"] in ["schwarzsee19", "guttannen20"]:
-        for col in ["T_a", "RH", "v_a", "p_a"]:
-            df.loc[df[col].isna(), "missing"] = 1
-            df.loc[df[col].isna(), "missing_type"] = col
-            df.loc[df[col].isna(), col] = df_ERA5[col]
+    # if SITE["name"] in ["schwarzsee19"]:
+    #     for col in ["T_a", "RH", "v_a", "p_a"]:
+    #         # df.loc[df[col].isna(), "missing"] = 1
+    #         # df.loc[df[col].isna(), "missing_type"] = col
+    #         df.loc[df[col].isna(), "missing_type"] = df.loc[df[col].isna(), "missing_type"] + col
+    #         df.loc[df[col].isna(), col] = df_ERA5[col]
 
-        for col in ["SW_direct", "SW_diffuse", "LW_in"]:
-            logger.info("%s from ERA5" % col)
-            df[col] = df_ERA5[col]
-
-    if SITE["name"] in ["schwarzsee19", "guttannen20"]:
-        df_swiss = meteoswiss(SITE["name"])
-
-        df_swiss = df_swiss.set_index("When")
-
-        for col in ["Prec"]:
-            logger.info("%s from meteoswiss" % col)
-            df[col] = df_swiss[col]
-        if SITE["name"] in ["guttannen20"]:
-            for col in ["Prec","v_a"]:
-                logger.info("%s from meteoswiss" % col)
-                df[col] = df_swiss[col]
-        df_swiss = df_swiss.reset_index()
+    #     for col in ["SW_direct", "SW_diffuse", "LW_in"]:
+    #         logger.info("%s from ERA5" % col)
+    #         df[col] = df_ERA5[col]
 
     df = df.reset_index()
 
@@ -646,7 +641,7 @@ if __name__ == "__main__":
     # )
     # print("Plf", column, r_value)
 
-    if SITE["name"] in ["schwarzsee19", "guttannen20"]:
+    if SITE["name"] in ["schwarzsee19"]:
         cols = [
             "When",
             "T_a",
@@ -657,11 +652,11 @@ if __name__ == "__main__":
             "Prec",
             # "vp_a",
             "p_a",
-            "missing",
+            # "missing",
             "missing_type",
             "LW_in",
         ]
-    else:
+    if SITE["name"] in ["guttannen20", "guttannen21"]:
         cols = [
             "When",
             "T_a",
@@ -672,7 +667,7 @@ if __name__ == "__main__":
             "Prec",
             "vp_a",
             "p_a",
-            "missing",
+            # "missing",
             "missing_type",
             "LW_in",
         ]
@@ -682,12 +677,13 @@ if __name__ == "__main__":
     if df_out.isna().values.any():
         print(df_out[cols].isna().sum())
         for column in cols:
-            if df_out[column].isna().sum() > 0 and column not in ["missing", "missing_type"]:
-                logger.warning("Warning: Null values filled in %s" %column)
+            if df_out[column].isna().sum() > 0 and column not in ["missing_type"]:
+                logger.warning(" Null values interpolated in %s" %column)
                 df_out.loc[:, column] = df_out[column].interpolate()
 
     df_out = df_out.round(3)
-    logger.warning(df_out[df_out.index.duplicated()])
+    if len(df_out[df_out.index.duplicated()]):
+        logger.error("Duplicate indexes")
     logger.info(df_out.tail())
     df_out.to_csv(input_folder + SITE["name"] + "_input_model.csv")
     fig = plt.figure()
@@ -697,7 +693,7 @@ if __name__ == "__main__":
 
     if SITE["name"] in ['schwarzsee19']:
         df_ERA5["Prec"] = 0
-        df_ERA5["missing"] = 1
+        df_ERA5["missing_type"] = "-".join(df_out.columns)
         df_ERA5 = df_ERA5.reset_index()
         mask = (df_ERA5["When"] > df_out["When"].iloc[-1]) & (
             df_ERA5["When"] <= datetime(2019, 5, 30)
@@ -713,34 +709,39 @@ if __name__ == "__main__":
 
         df_ERA5["Prec"] = df_swiss["Prec"]
         concat = pd.concat([df_out, df_ERA5])
-        concat.loc[concat["Prec"].isnull(), "Prec"] = 0
-        concat.loc[concat["v_a"] < 0, "v_a"] = 0
-        logger.warning(concat[concat.index.duplicated()])
+        if len(concat[concat.index.duplicated()]):
+            logger.error("Duplicate indexes")
         logger.info(concat.tail())
 
         concat = concat.reset_index()
 
-        if concat.isnull().values.any():
-            print("Warning: Null values present")
-            print(
-                concat[
-                    [
-                        "When",
-                        "T_a",
-                        "RH",
-                        "v_a",
-                        # "Discharge",
-                        "SW_direct",
-                        "SW_diffuse",
-                        "Prec",
-                        "p_a",
-                        "missing",
-                        "missing_type",
-                    ]
-                ]
-                .isnull()
-                .sum()
-            )
+        if concat.isna().values.any():
+            print(concat[cols].isna().sum())
+            for column in cols:
+                if concat[column].isna().sum() > 0 and column not in ["missing_type"]:
+                    logger.warning(" Null values interpolated in %s" %column)
+                    concat.loc[:, column] = concat[column].interpolate()
+        # if concat.isnull().values.any():
+        #     logger.warning("Null values present")
+        #     print(
+        #         concat[
+        #             [
+        #                 "When",
+        #                 "T_a",
+        #                 "RH",
+        #                 "v_a",
+        #                 # "Discharge",
+        #                 "SW_direct",
+        #                 "SW_diffuse",
+        #                 "Prec",
+        #                 "p_a",
+        #                 # "missing",
+        #                 "missing_type",
+        #             ]
+        #         ]
+        #         .isnull()
+        #         .sum()
+        #     )
 
         concat.to_csv(input_folder + SITE["name"] + "_input_model.csv")
         concat.to_hdf(
