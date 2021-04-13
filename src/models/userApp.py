@@ -48,15 +48,22 @@ if __name__ == "__main__":
         # location="Schwarzsee 2019",
         # location="Guttannen 2021",
         location="Gangles 2021",
-        trigger="Manual",
+        # trigger="Manual",
         # trigger="None",
         # trigger="Temperature",
-        # trigger="Weather",
-        run="yes",
+        trigger="Weather",
+        run="no",
     )
 
     # Get settings for given location and trigger
     SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
+
+    try:
+        mtime = os.path.getmtime(file_name)
+    except OSError:
+        mtime = 0
+    last_modified_date = datetime.fromtimestamp(mtime)
+    logger.error(last_modified_date)
 
     # Initialise icestupa object
     icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)

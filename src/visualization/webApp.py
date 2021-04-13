@@ -229,6 +229,15 @@ if __name__ == "__main__":
         if not (display):
             st.error("Please select at least one visualization.")
         else:
+            if "Validation" in display:
+                st.write("## Validation")
+                path = output_folder + "paper_figures/Vol_Validation_" + icestupa.trigger + ".jpg"
+                st.image(path)
+
+                if SITE["name"] in ["guttannen21", "guttannen20"]:
+                    path = output_folder + "paper_figures/Temp_Validation_" + icestupa.trigger + ".jpg"
+                    st.image(path)
+
             if "Timelapse" in display:
                 st.write("## Timelapse")
                 if location == "Schwarzsee 2019":
@@ -239,15 +248,6 @@ if __name__ == "__main__":
                     st.video(url)
                 elif location == "Guttannen 2020":
                     st.error("No Timelapse recorded")
-
-            if "Validation" in display:
-                st.write("## Validation")
-                path = output_folder + "paper_figures/Vol_Validation_" + icestupa.trigger + ".jpg"
-                st.image(path)
-
-                if SITE["name"] in ["guttannen21", "guttannen20"]:
-                    path = output_folder + "paper_figures/Temp_Validation_" + icestupa.trigger + ".jpg"
-                    st.image(path)
 
             if "Data Overview" in display:
                 st.write("## Input variables")
