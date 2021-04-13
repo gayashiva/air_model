@@ -12,6 +12,7 @@ import re
 import base64
 import logging
 import coloredlogs
+import pickle5 as pickle
 
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
