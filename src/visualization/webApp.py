@@ -175,14 +175,17 @@ if __name__ == "__main__":
             | --- | --- |
             | Active from | %s |
             | Last active on | %s |
-            | Aperture diameter | %.2f $mm$|
             | Initial height | %s $m$ |
+            | Used for | %s hours |
+            | Water sprayed| %s $m^3$ |
             """
                 % (
                     icestupa.start_date.date(),
                     icestupa.fountain_off_date.date(),
-                    icestupa.dia_f,
+                    # icestupa.dia_f,
                     icestupa.h_f,
+                    icestupa.df.Discharge.astype(bool).sum(axis=0) * icestupa.TIME_STEP / 3600,
+                    round(icestupa.df.Discharge.sum() * icestupa.TIME_STEP / (60 *1000 ),2),
                     # icestupa.r_spray,
                 )
             )
