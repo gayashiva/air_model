@@ -46,13 +46,13 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2021",
-        # location="Gangles 2021",
-        trigger="Manual",
+        # location="Guttannen 2020",
+        location="Gangles 2021",
+        # trigger="Manual",
         # trigger="None",
-        # trigger="Temperature",
+        trigger="Temperature",
         # trigger="Weather",
-        run="no",
+        run="yes",
     )
 
     # Get settings for given location and trigger
@@ -76,4 +76,4 @@ if __name__ == "__main__":
     else:
         # Use output parameters from cache
         icestupa.read_output()
-        # icestupa.summary_figures()
+        icestupa.summary_figures()

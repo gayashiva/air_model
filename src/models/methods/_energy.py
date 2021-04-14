@@ -20,9 +20,7 @@ def get_energy(self, row, mode="normal"):
         self.df.loc[i, "T_s"] = 0
         self.df.loc[i, "Qf"] = 0
         self.df.loc[i, "Qg"] = 0
-        self.liquid = 0
         self.df.loc[i, "f_cone"] = 1
-
 
     if mode != "trigger":
         self.df.loc[i, "vp_ice"] = (
@@ -32,7 +30,9 @@ def get_energy(self, row, mode="normal"):
                 - 0.074 * math.pow(self.df.loc[i, "p_a"], -1)
             )
             * 6.112
-            * np.exp(22.46 * (self.df.loc[i, "T_s"]) / ((self.df.loc[i, "T_s"]) + 272.62))
+            * np.exp(
+                22.46 * (self.df.loc[i, "T_s"]) / ((self.df.loc[i, "T_s"]) + 272.62)
+            )
         )
         self.df.loc[i, "Ql"] = (
             0.623
@@ -85,16 +85,16 @@ def get_energy(self, row, mode="normal"):
         )
         sys.exit("LW nan")
 
-    if self.liquid > 0:  # Can only find Qf if water discharge quantity known
-        self.df.loc[i, "Qf"] = (
-            (self.df.loc[i - 1, "solid"])
-            # self.liquid
-            * self.C_W
-            * self.T_w
-            / (self.TIME_STEP * self.df.loc[i, "SA"])
-        )
-
     if mode != "trigger":
+        if self.df.loc[i,'fountain_in']> 0:  # Can only find Qf if water discharge quantity known
+            self.df.loc[i, "Qf"] = (
+                (self.df.loc[i - 1, "solid"])
+                # self.liquid
+                * self.C_W
+                * self.T_w
+                / (self.TIME_STEP * self.df.loc[i, "SA"])
+            )
+
         self.df.loc[i, "Qg"] = (
             self.K_I
             * (self.df.loc[i, "T_bulk"] - self.df.loc[i, "T_s"])
@@ -115,3 +115,10 @@ def get_energy(self, row, mode="normal"):
         + self.df.loc[i, "Qg"]
     )
 
+    if mode == "trigger":  # Used while deriving discharge rate
+        area = math.pi * self.r_spray * self.r_spray
+        if self.df.loc[i, "TotalE"] < 0:
+            self.df.loc[i, "Discharge"] = -(
+                self.df.loc[i, "TotalE"] * self.TIME_STEP * area
+            ) / (self.L_F)
+            self.df.loc[i, "Discharge"] = self.df.loc[i, "Discharge"] * 60 / self.TIME_STEP

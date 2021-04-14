@@ -114,7 +114,7 @@ if __name__ == "__main__":
             display = st.multiselect(
                 "Choose type of visualization below:",
                 options=(visualize),
-                default=["Validation", "Timelapse"],
+                default=["Validation"],
                 # default=["Validation", "Timelapse"],
             )
 
@@ -135,16 +135,15 @@ if __name__ == "__main__":
             if trigger == "Temperature":
                 st.write(
                     """
-                Fountain was switched on/off after sunset when temperature was below **%s** until **%s**
+                Fountain was switched on/off after sunset when temperature was below **%s**
                 """
-                    % (icestupa.crit_temp, (icestupa.fountain_off_date.date()))
+                    % icestupa.crit_temp
                 )
             if trigger == "Weather":
                 st.write(
                     """
-                Fountain was switched on/off whenever surface energy balance was negative/positive respectively until **%s**
+                Fountain discharge was set based on magnitude of surface energy balance.
                 """
-                    % (icestupa.fountain_off_date.date())
                 )
 
         st.sidebar.write("### Map")
@@ -162,10 +161,12 @@ if __name__ == "__main__":
 
         row2_1, row2_2 = st.beta_columns((1, 1))
         with row2_1:
-            Efficiency = (
-                (icestupa.df["meltwater"].iloc[-1] + icestupa.df["ice"].iloc[-1])
-                / icestupa.df["input"].iloc[-1]
-                * 100
+            used = 100 - (
+                (
+                    icestupa.df["unfrozen_water"].iloc[-1]
+                    / (icestupa.df["Discharge"].sum() * icestupa.TIME_STEP / 60)
+                    * 100
+                )
             )
             Duration = icestupa.df.index[-1] * icestupa.TIME_STEP / (60 * 60 * 24)
             st.markdown(
@@ -182,6 +183,7 @@ if __name__ == "__main__":
                     icestupa.fountain_off_date.date(),
                     icestupa.dia_f,
                     icestupa.h_f,
+                    # icestupa.r_spray,
                 )
             )
 
@@ -191,14 +193,14 @@ if __name__ == "__main__":
             | Icestupa properties | Model output |
             | --- | --- |
             | Maximum Ice Volume | %.2f $m^{3}$|
-            | Storage Efficiency | %.2f percent |
+            | Fountain water frozen| %.2f percent |
             | Meltwater released | %.2f $l$ |
             | Total Precipitation | %.2f $kg$ |
             | Model duration | %.2f days |
             """
                 % (
                     icestupa.df["iceV"].max(),
-                    Efficiency,
+                    used,
                     icestupa.df["meltwater"].iloc[-1],
                     icestupa.df["ppt"].sum(),
                     Duration,

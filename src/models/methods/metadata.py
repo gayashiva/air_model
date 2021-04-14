@@ -86,6 +86,11 @@ def get_parameter_metadata(
             "kind": "Input",
             "units": "($l\\, min^{-1}$)",
         },
+        "fountain_in": {
+            "name": "Discharge",
+            "kind": "Derived",
+            "units": "($kg\\, s^{-1}$)",
+        },
         "T_a": {
             "name": "Temperature",
             "kind": "Input",
@@ -257,7 +262,7 @@ def get_parameter_metadata(
             "units": "($kg$)",
         },
         "unfrozen_water": {
-            "name": "Water Runoff",
+            "name": "Wasted Water Runoff",
             "kind": "Output",
             "units": "($kg$)",
         },

@@ -162,6 +162,15 @@ class Icestupa:
                     * math.pow(row.T_a + 273.15, 4)
                 )
 
+        if hasattr(self, "r_spray"):  # Provide discharge
+            self.discharge = get_droplet_projectile(
+                dia=self.dia_f, h=self.h_f, x=self.r_spray
+            )
+        else:  # Provide spray radius
+            self.r_spray = get_droplet_projectile(
+                dia=self.dia_f, h=self.h_f, d=self.discharge
+            )
+
         self.get_discharge()
         f_on = self.df.When[
             self.df.Discharge != 0
@@ -259,16 +268,17 @@ class Icestupa:
             self.output + "model_output_" + self.trigger + ".h5", "df"
         )
 
-        Efficiency = (
-            (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1])
-            / self.df["input"].iloc[-1]
-            * 100
+        self.efficiency = 1 - (
+            # (self.df["fountain_in"].sum()) 
+            (self.df["unfrozen_water"].iloc[-1]) 
+            / (self.df["Discharge"].sum() * self.TIME_STEP / 60)
         )
+        self.efficiency *= 100
 
         Duration = self.df.index[-1] * self.TIME_STEP / (60 * 60 * 24)
 
         print("\nIce Volume Max", float(round(self.df["iceV"].max(), 2)))
-        print("Fountain efficiency", round(Efficiency, 3))
+        print("Fountain efficiency", round(self.efficiency, 3))
         print("Ice Mass Remaining", round(self.df["ice"].iloc[-1], 2))
         print("Meltwater", round(self.df["meltwater"].iloc[-1], 2))
         print("Input", round(self.df["input"].iloc[-1], 2))
@@ -281,11 +291,13 @@ class Icestupa:
             prof = ProfileReport(self.df)
             prof.to_file(output_file=self.output + "output_report.html")
 
+    def manim_output(self):
         # Output for manim
-        filename2 = os.path.join(self.output, self.name + "_model_gif.csv")
-        self.df["h_f"] = self.h_f
-        cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
-        self.df[cols].set_index('When').to_csv(filename2, sep=",")
+        filename2 = os.path.join(self.output, self.name + "_manim_" + self.trigger + ".csv")
+        df = self.df.copy()
+        cols = ["When", "h_ice", "h_s", "r_ice", "ice", "T_a", "Discharge"]
+        df = df[cols]
+        df.set_index('When').to_csv(filename2, sep=",")
         logger.info("Manim output produced")
 
     def melt_freeze(self):  # Main function
@@ -318,6 +330,7 @@ class Icestupa:
             "dpt",
             "cdt",
             "thickness",
+            "fountain_in",
             "$q_{T}$",
             "$q_{melt}$",
         ]
@@ -325,18 +338,9 @@ class Icestupa:
         for column in col:
             self.df[column] = 0
 
-        self.liquid = [0] * 1
         STATE = 0
         self.start = 0
 
-        if hasattr(self, "r_spray"):  # Provide discharge
-            self.discharge = get_droplet_projectile(
-                dia=self.dia_f, h=self.h_f, x=self.r_spray
-            )
-        else:  # Provide spray radius
-            self.r_spray = get_droplet_projectile(
-                dia=self.dia_f, h=self.h_f, d=self.discharge
-            )
 
         t = stqdm(
             self.df[1:-1].itertuples(),
@@ -437,7 +441,7 @@ class Icestupa:
                     )
 
                 # Fountain water output
-                self.liquid = (
+                self.df.loc[i,"fountain_in"]= (
                     self.df.Discharge.loc[i] * (1 - self.ftl) * self.TIME_STEP / 60
                 )
 
@@ -504,7 +508,8 @@ class Icestupa:
 
                 self.df.loc[i, "$q_{T}$"] += self.df.loc[i, "Ql"]
 
-                if self.df.loc[i, "TotalE"] < 0 and self.liquid > 0:
+
+                if self.df.loc[i, "TotalE"] < 0 and self.df.loc[i,"fountain_in"] > 0:
                     """Freezing water"""
                     # Change in paper
                     self.df.loc[i, "TotalE"] += (
@@ -514,44 +519,49 @@ class Icestupa:
                         * self.C_I
                         / self.TIME_STEP
                     )
-                    self.df.loc[i, "Qf"] += (
-                        (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
-                        * self.RHO_I
-                        * self.DX
-                        * self.C_I
-                        / self.TIME_STEP
-                    )
-                    # DUE TO qF force surface temperature bulk temp
-                    self.df.loc[i, "$q_{T}$"] -= (
-                        (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
-                        * self.RHO_I
-                        * self.DX
-                        * self.C_I
-                        / self.TIME_STEP
-                    )
 
-                    self.liquid += (
-                        self.df.loc[i, "TotalE"] * self.TIME_STEP * self.df.loc[i, "SA"]
-                    ) / (self.L_F)
-
-                    if self.liquid < 0:
-                        # Cooling Ice
-                        self.df.loc[i, "$q_{T}$"] = 0
-                        self.df.loc[i, "$q_{T}$"] += (self.liquid * self.L_F) / (
-                            self.TIME_STEP * self.df.loc[i, "SA"]
-                        )
-                        self.liquid -= (
-                            self.df.loc[i, "TotalE"]
-                            * self.TIME_STEP
-                            * self.df.loc[i, "SA"]
-                        ) / (self.L_F)
-                        self.df.loc[i, "$q_{melt}$"] -= (self.liquid * self.L_F) / (
-                            self.TIME_STEP * self.df.loc[i, "SA"]
-                        )
-                        self.liquid = 0
-                        logger.warning("\n Discharge froze completely")
+                    if self.df.loc[i, "TotalE"] > 0:
+                        self.df.loc[i, "TotalE"]= 0
                     else:
-                        self.df.loc[i, "$q_{melt}$"] += self.df.loc[i, "TotalE"]
+                        self.df.loc[i, "Qf"] += (
+                            (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
+                            * self.RHO_I
+                            * self.DX
+                            * self.C_I
+                            / self.TIME_STEP
+                        )
+                        # DUE TO qF force surface temperature bulk temp
+                        self.df.loc[i, "$q_{T}$"] -= (
+                            (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
+                            * self.RHO_I
+                            * self.DX
+                            * self.C_I
+                            / self.TIME_STEP
+                        )
+
+                        self.df.loc[i,"fountain_in"] += (
+                            self.df.loc[i, "TotalE"] * self.TIME_STEP * self.df.loc[i, "SA"]
+                        ) / (self.L_F)
+
+
+                        if self.df.loc[i,"fountain_in"] < 0:
+                            # Cooling Ice
+                            self.df.loc[i, "$q_{T}$"] = 0
+                            self.df.loc[i, "$q_{T}$"] += (self.df.loc[i,"fountain_in"] * self.L_F) / (
+                                self.TIME_STEP * self.df.loc[i, "SA"]
+                            )
+                            self.df.loc[i,"fountain_in"] -= (
+                                self.df.loc[i, "TotalE"]
+                                * self.TIME_STEP
+                                * self.df.loc[i, "SA"]
+                            ) / (self.L_F)
+                            self.df.loc[i, "$q_{melt}$"] -= (self.df.loc[i,"fountain_in"] * self.L_F) / (
+                                self.TIME_STEP * self.df.loc[i, "SA"]
+                            )
+                            self.df.loc[i,"fountain_in"] = 0
+                            logger.debug("Discharge froze completely")
+                        else:
+                            self.df.loc[i, "$q_{melt}$"] += self.df.loc[i, "TotalE"]
 
                 else:
                     self.df.loc[i, "$q_{T}$"] += self.df.loc[i, "TotalE"]
@@ -624,18 +634,25 @@ class Icestupa:
                     )
                     sys.exit("Energy nan")
 
-                if math.fabs(self.df.loc[i, "TotalE"]) > 500:
-                    logger.warning(
-                        "%s,Fountain water %s,Sensible %s, SW %s, LW %s, Qg %s"
-                        % (
-                            self.df.loc[i, "When"],
-                            self.df.loc[i, "Qf"],
-                            self.df.loc[i, "Qs"],
-                            self.df.loc[i, "SW"],
-                            self.df.loc[i, "LW"],
-                            self.df.loc[i, "Qg"],
-                        )
+                if self.df.loc[i,'fountain_in'] > self.df.loc[i, 'Discharge'] * self.TIME_STEP / 60:
+
+                    logger.error(
+                        f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}"
                     )
+                    sys.exit("Discharge exceeded")
+
+                # if math.fabs(self.df.loc[i, "TotalE"]) > 500:
+                #     logger.debug(
+                #         "%s,Fountain water %s,Sensible %s, SW %s, LW %s, Qg %s"
+                #         % (
+                #             self.df.loc[i, "When"],
+                #             self.df.loc[i, "Qf"],
+                #             self.df.loc[i, "Qs"],
+                #             self.df.loc[i, "SW"],
+                #             self.df.loc[i, "LW"],
+                #             self.df.loc[i, "Qg"],
+                #         )
+                #     )
                     # sys.exit("Energy high")
                 """ Quantities of all phases """
                 self.df.loc[i + 1, "T_s"] = (
@@ -657,7 +674,7 @@ class Icestupa:
                     self.df.loc[i, "vapour"] + self.df.loc[i, "gas"]
                 )
                 self.df.loc[i + 1, "unfrozen_water"] = (
-                    self.df.loc[i, "unfrozen_water"] + self.liquid
+                    self.df.loc[i, "unfrozen_water"] + self.df.loc[i,"fountain_in"]
                 )
                 self.df.loc[i + 1, "iceV"] = (
                     self.df.loc[i + 1, "ice"] / self.RHO_I
@@ -669,7 +686,7 @@ class Icestupa:
                     + self.df.loc[i, "ppt"]
                     + self.df.loc[i, "dpt"]
                     + self.df.loc[i, "cdt"]
-                    + self.liquid
+                    + self.df.loc[i,"fountain_in"]
                 )
                 self.df.loc[i + 1, "thickness"] = (
                     self.df.loc[i, "solid"]
@@ -677,5 +694,3 @@ class Icestupa:
                     - self.df.loc[i, "melted"]
                     + self.df.loc[i, "ppt"]
                 ) / (self.df.loc[i, "SA"] * self.RHO_I)
-
-                self.liquid = [0] * 1

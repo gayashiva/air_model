@@ -27,13 +27,14 @@ class Forecast(Scene):
     def construct(self):
 
         site = config.output_file
+        trigger = "Manual"
 
         dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
         input_folder = os.path.join(dirname, "data/" + site + "/processed")
 
         # read files
-        filename0 = os.path.join(input_folder, site + "_model_gif.csv")
+        filename0 = os.path.join(input_folder, site + "_manim_"+ trigger + ".csv")
         df = pd.read_csv(filename0)
         df["When"] = pd.to_datetime(df["When"], format="%Y.%m.%d %H:%M:%S")
         df = df.round(2)

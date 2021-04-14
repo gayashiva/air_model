@@ -29,6 +29,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
 
     if self.trigger == "Weather":
 
+        logger.info("Spray radius %s used to calculate energy discharge"%self.r_spray)
         col = [
             "T_s",  # Surface Temperature
             "T_bulk",  # Bulk Temperature
@@ -52,9 +53,14 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         logger.debug("Calculating discharge from energy trigger ...")
         for row in tqdm(self.df[1:-1].itertuples(), total=self.df.shape[0]):
             self.get_energy(row, mode="trigger")
-        mask = self.df["TotalE"] < 0
-        mask_index = self.df[mask].index
-        self.df.loc[mask_index, "Discharge"] = 1 * self.discharge
+
+        # mask = self.df["TotalE"] < 0
+        # mask_index = self.df[mask].index
+        # self.df.loc[mask_index, "Discharge"] = 1 * self.discharge
+        # spray = -(
+        #     self.df.loc[i, "TotalE"] * self.TIME_STEP * self.df.loc[i, "SA"]
+        # ) / (self.L_F)
+        # self.df.loc[mask_index, "Discharge"] = spray
 
         col = [
             "T_s",  # Surface Temperature
@@ -127,7 +133,9 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             )
             self.df = self.df.set_index("When")
             self.df.loc[df_f.index, "Discharge"] = self.discharge * df_f["fountain"]
-            self.df.loc[self.df[self.df.Discharge == 0].index, "Discharge"] = 5 # Fountain was always on
+            self.df.loc[
+                self.df[self.df.Discharge == 0].index, "Discharge"
+            ] = 5  # Fountain was always on
             self.df = self.df.reset_index()
         if self.name == "schwarzsee19":
 
