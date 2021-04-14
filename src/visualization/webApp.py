@@ -236,6 +236,9 @@ if __name__ == "__main__":
                     url = "https://youtu.be/DBHoL1Z7H6U"
                     st.video(url)
                 elif location == "Guttannen 2020":
+                    url = "https://youtu.be/kcrvhU20OOE"
+                    st.video(url)
+                elif location == "Gangles 2021":
                     st.error("No Timelapse recorded")
 
             if "Data Overview" in display:
