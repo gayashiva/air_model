@@ -31,6 +31,7 @@ st.set_page_config(
     page_icon=air_logo,  # String, anything supported by st.image, or None.
 )
 
+
 @st.cache
 def vars(df_in):
     input_cols = []
@@ -51,6 +52,7 @@ def vars(df_in):
             derived_cols.append(v["name"])
             derived_vars.append(variable)
     return input_cols, input_vars, output_cols, output_vars, derived_cols, derived_vars
+
 
 if __name__ == "__main__":
     logger = logging.getLogger(__name__)
@@ -87,14 +89,20 @@ if __name__ == "__main__":
         df = df_in
         input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
         output_folder = os.path.join(dirname, "data/" + SITE["name"] + "/processed/")
-        row1_1, row1_2 = st.beta_columns((2, 6))
+        row1_1, row1_2 = st.beta_columns((2, 5))
 
         with row1_1:
             st.image(air_logo, width=160)
 
         with row1_2:
-            st.title("Artificial Ice Reservoirs")
+            st.markdown(
+                """
+            # Artificial Ice Reservoirs **_of %s_**
 
+            """
+                % location
+            )
+            st.text("")
             visualize = [
                 "Validation",
                 "Timelapse",
@@ -145,11 +153,12 @@ if __name__ == "__main__":
         map_data = pd.DataFrame({"lat": [lat], "lon": [lon]})
         st.sidebar.map(map_data, zoom=10)
         st.sidebar.write(
-        """
+            """
         ### More Info
         [![Star](https://img.shields.io/github/stars/Gayashiva/air_model?logo=github&style=social)](https://gitHub.com/Gayashiva/air_model)
         &nbsp[![Follow](https://img.shields.io/twitter/follow/know_just_ice?style=social)](https://www.twitter.com/know_just_ice)
-        """)
+        """
+        )
 
         row2_1, row2_2 = st.beta_columns((1, 1))
         with row2_1:
