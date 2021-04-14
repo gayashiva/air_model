@@ -12,7 +12,6 @@ import re
 import base64
 import logging
 import coloredlogs
-import pickle5 as pickle
 
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -21,71 +20,16 @@ from src.models.methods.metadata import get_parameter_metadata
 from src.models.icestupaClass import Icestupa
 from src.data.settings import config
 
+
 # SETTING PAGE CONFIG TO WIDE MODE
 air_logo = os.path.join(dirname, "src/visualization/AIR_logo_circle.png")
 st.set_page_config(
-	layout="centered",  # Can be "centered" or "wide". In the future also "dashboard", etc.
-	initial_sidebar_state="expanded",  # Can be "auto", "expanded", "collapsed"
-	page_title="Icestupa",  # String or None. Strings get appended with "• Streamlit". 
-	# page_icon=None,  # String, anything supported by st.image, or None.
-	page_icon=air_logo,  # String, anything supported by st.image, or None.
+    layout="centered",  # Can be "centered" or "wide". In the future also "dashboard", etc.
+    initial_sidebar_state="expanded",  # Can be "auto", "expanded", "collapsed"
+    page_title="Icestupa",  # String or None. Strings get appended with "• Streamlit".
+    # page_icon=None,  # String, anything supported by st.image, or None.
+    page_icon=air_logo,  # String, anything supported by st.image, or None.
 )
-
-def download_csv(name, df):
-
-    csv = df.to_csv()
-    base = base64.b64encode(csv.encode()).decode()
-    file = (
-        f'<a href="data:file/csv;base64,{base}" download="%s.csv">Download file</a>'
-        % (name)
-    )
-
-    return file
-
-
-def df_filter(message, df):
-
-    slider_1, slider_2 = st.sidebar.slider(
-        "%s" % (message), 0, len(df) - 1, [0, len(df) - 1], 1
-    )
-
-    while len(str(df.iloc[slider_1][0]).replace(".0", "")) < 4:
-        df.iloc[slider_1, 1] = "0" + str(df.iloc[slider_1][1]).replace(".0", "")
-
-    while len(str(df.iloc[slider_2][0]).replace(".0", "")) < 4:
-        df.iloc[slider_2, 1] = "0" + str(df.iloc[slider_1][1]).replace(".0", "")
-
-    start_date = datetime.strptime(
-        str(df.iloc[slider_1][0]).replace(".0", ""),
-        "%Y-%m-%d %H:%M:%S",
-    )
-    start_date = start_date.strftime("%d %b %Y, %I:%M%p")
-
-    end_date = datetime.strptime(
-        str(df.iloc[slider_2][0]).replace(".0", ""),
-        "%Y-%m-%d %H:%M:%S",
-    )
-    end_date = end_date.strftime("%d %b %Y, %I:%M%p")
-
-    st.info("Start: **%s** End: **%s**" % (start_date, end_date))
-
-    filtered_df = df.iloc[slider_1 : slider_2 + 1][:].reset_index(drop=True)
-
-    return filtered_df
-
-def mpl_scatter(dataset, x, y):
-    fig, ax = plt.subplots()
-    dataset.plot.scatter(x=x, y=y, alpha=0.8, ax=ax)
-    return fig
-
-
-def altair_scatter(dataset, x, y):
-    plot = (
-        alt.Chart(dataset, height=400, width=400)
-        .mark_point(filled=True, opacity=0.8)
-        .encode(x=x, y=y)
-    )
-    return plot
 
 @st.cache
 def vars(df_in):
@@ -107,7 +51,6 @@ def vars(df_in):
             derived_cols.append(v["name"])
             derived_vars.append(variable)
     return input_cols, input_vars, output_cols, output_vars, derived_cols, derived_vars
-
 
 if __name__ == "__main__":
     logger = logging.getLogger(__name__)
@@ -144,14 +87,22 @@ if __name__ == "__main__":
         df = df_in
         input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
         output_folder = os.path.join(dirname, "data/" + SITE["name"] + "/processed/")
-        row1_1, row1_2 = st.beta_columns((2,6))
+        row1_1, row1_2 = st.beta_columns((2, 6))
 
         with row1_1:
             st.image(air_logo, width=160)
 
         with row1_2:
             st.title("Artificial Ice Reservoirs")
-            visualize = [ "Validation", "Timelapse","Data Overview", "Input", "Output", "Derived"]
+
+            visualize = [
+                "Validation",
+                "Timelapse",
+                "Data Overview",
+                "Input",
+                "Output",
+                "Derived",
+            ]
             display = st.multiselect(
                 "Choose type of visualization below:",
                 options=(visualize),
@@ -161,40 +112,46 @@ if __name__ == "__main__":
 
             if trigger == "None":
                 st.write(
-                """
+                    """
                 Fountain was always kept on until **%s**
                 """
-                % (icestupa.fountain_off_date.date())
+                    % (icestupa.fountain_off_date.date())
                 )
             if trigger == "Manual":
                 st.write(
-                """
+                    """
                 Fountain was controlled **%s** until **%s**
                 """
-                % (trigger + "ly", (icestupa.fountain_off_date.date()))
+                    % (trigger + "ly", (icestupa.fountain_off_date.date()))
                 )
             if trigger == "Temperature":
                 st.write(
-                """
+                    """
                 Fountain was switched on/off after sunset when temperature was below **%s** until **%s**
                 """
-                % (icestupa.crit_temp, (icestupa.fountain_off_date.date()))
+                    % (icestupa.crit_temp, (icestupa.fountain_off_date.date()))
                 )
             if trigger == "Weather":
                 st.write(
-                """
+                    """
                 Fountain was switched on/off whenever surface energy balance was negative/positive respectively until **%s**
                 """
-                % (icestupa.fountain_off_date.date())
+                    % (icestupa.fountain_off_date.date())
                 )
 
-        st.sidebar.write("# Map of %s" % location)
+        st.sidebar.write("### Map")
         lat = SITE["latitude"]
         lon = SITE["longitude"]
         map_data = pd.DataFrame({"lat": [lat], "lon": [lon]})
         st.sidebar.map(map_data, zoom=10)
+        st.sidebar.write(
+        """
+        ### More Info
+        [![Star](https://img.shields.io/github/stars/Gayashiva/air_model?logo=github&style=social)](https://gitHub.com/Gayashiva/air_model)
+        &nbsp[![Follow](https://img.shields.io/twitter/follow/know_just_ice?style=social)](https://www.twitter.com/know_just_ice)
+        """)
 
-        row2_1, row2_2= st.beta_columns((1,1))
+        row2_1, row2_2 = st.beta_columns((1, 1))
         with row2_1:
             Efficiency = (
                 (icestupa.df["meltwater"].iloc[-1] + icestupa.df["ice"].iloc[-1])
@@ -210,7 +167,13 @@ if __name__ == "__main__":
             | Last active on | %s |
             | Aperture diameter | %.2f $mm$|
             | Initial height | %s $m$ |
-            """ %(icestupa.start_date.date(),icestupa.fountain_off_date.date(), icestupa.dia_f, icestupa.h_f)
+            """
+                % (
+                    icestupa.start_date.date(),
+                    icestupa.fountain_off_date.date(),
+                    icestupa.dia_f,
+                    icestupa.h_f,
+                )
             )
 
         with row2_2:
@@ -223,7 +186,14 @@ if __name__ == "__main__":
             | Meltwater released | %.2f $l$ |
             | Total Precipitation | %.2f $kg$ |
             | Model duration | %.2f days |
-            """ %(icestupa.df["iceV"].max(), Efficiency, icestupa.df["meltwater"].iloc[-1], icestupa.df["ppt"].sum(), Duration)
+            """
+                % (
+                    icestupa.df["iceV"].max(),
+                    Efficiency,
+                    icestupa.df["meltwater"].iloc[-1],
+                    icestupa.df["ppt"].sum(),
+                    Duration,
+                )
             )
 
         if not (display):
@@ -231,11 +201,21 @@ if __name__ == "__main__":
         else:
             if "Validation" in display:
                 st.write("## Validation")
-                path = output_folder + "paper_figures/Vol_Validation_" + icestupa.trigger + ".jpg"
+                path = (
+                    output_folder
+                    + "paper_figures/Vol_Validation_"
+                    + icestupa.trigger
+                    + ".jpg"
+                )
                 st.image(path)
 
                 if SITE["name"] in ["guttannen21", "guttannen20"]:
-                    path = output_folder + "paper_figures/Temp_Validation_" + icestupa.trigger + ".jpg"
+                    path = (
+                        output_folder
+                        + "paper_figures/Temp_Validation_"
+                        + icestupa.trigger
+                        + ".jpg"
+                    )
                     st.image(path)
 
             if "Timelapse" in display:
@@ -251,20 +231,24 @@ if __name__ == "__main__":
 
             if "Data Overview" in display:
                 st.write("## Input variables")
-                st.image(output_folder + "paper_figures/Model_Input_" + trigger + ".jpg")
+                st.image(
+                    output_folder + "paper_figures/Model_Input_" + trigger + ".jpg"
+                )
                 st.write(
-                """
+                    """
                 Measurements at the AWS of %s were used as main model input
                 data in 15 minute frequency.  Incoming shortwave and longwave radiation
                 were obtained from ERA5 reanalysis dataset. Several data gaps
                 and errors were also filled from the ERA5 dataset (shaded regions).  
                 """
-                % (icestupa.name)
+                    % (icestupa.name)
                 )
                 st.write("## Output variables")
-                st.image(output_folder + "paper_figures/Model_Output_" + trigger + ".jpg")
+                st.image(
+                    output_folder + "paper_figures/Model_Output_" + trigger + ".jpg"
+                )
                 st.write(
-                """
+                    """
                 (a) Fountain discharge (b) energy flux components, (c) mass flux components (d)
                 surface area and (e) volume of the Icestupa in daily time steps. qSW is the net
                 shortwave radiation; qLW is the net longwave radiation; qL and qS are the
@@ -285,7 +269,9 @@ if __name__ == "__main__":
                 if not (variable1):
                     st.error("Please select at least one variable.")
                 else:
-                    variable_in = [input_vars[input_cols.index(item)] for item in variable1]
+                    variable_in = [
+                        input_vars[input_cols.index(item)] for item in variable1
+                    ]
                     variable = variable_in
                     for v in variable:
 
@@ -334,20 +320,7 @@ if __name__ == "__main__":
                         st.line_chart(df[v])
 
     except FileNotFoundError:
-        st.error("Sorry, yet to produce relevant outputs for fountain trigger %s. Try another fountain trigger." % icestupa.trigger)
-        # st.info(
-        #     "Output files..."
-        # )
-        # SITE, FOUNTAIN, FOLDER = config(location, trigger=trigger)
-
-        # icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)
-        # # Derive all the input parameters
-        # icestupa.derive_parameters()
-
-        # # Generate results
-        # icestupa.melt_freeze()
-
-        # # Summarise and save model results
-        # icestupa.summary()
-
-
+        st.error(
+            "Sorry, yet to produce relevant outputs for fountain trigger %s. Try another fountain trigger."
+            % icestupa.trigger
+        )
