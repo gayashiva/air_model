@@ -281,6 +281,13 @@ class Icestupa:
             prof = ProfileReport(self.df)
             prof.to_file(output_file=self.output + "output_report.html")
 
+        # Output for manim
+        filename2 = os.path.join(self.output, self.name + "_model_gif.csv")
+        self.df["h_f"] = self.h_f
+        cols = ["When", "h_ice", "h_f", "r_ice", "ice", "T_a", "Discharge"]
+        self.df[cols].set_index('When').to_csv(filename2, sep=",")
+        logger.info("Manim output produced")
+
     def melt_freeze(self):  # Main function
 
         # Initialise required columns
