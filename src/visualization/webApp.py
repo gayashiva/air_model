@@ -97,7 +97,7 @@ if __name__ == "__main__":
         with row1_2:
             st.markdown(
                 """
-            # Artificial Ice Reservoirs **_of %s_**
+            # Artificial Ice Reservoirs of **_%s_**
 
             """
                 % location
