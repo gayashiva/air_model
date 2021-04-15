@@ -62,13 +62,19 @@ if __name__ == "__main__":
         logger=logger,
     )
 
+    st.sidebar.write("### Icestupa")
     location = st.sidebar.radio(
-        "Select Icestupa",
+        "built at",
         ("Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"),
     )
+
+    st.sidebar.write("### Fountain")
     trigger = st.sidebar.radio(
-        "Select Fountain control", ("Manual", "Weather", "Temperature", "None")
+        "controlled by", ("Field staff", "Weather", "Temperature", "None")
     )
+    if trigger == 'Field staff':
+        trigger ="Manual"
+
     SITE, FOUNTAIN, FOLDER = config(location, trigger=trigger)
 
     icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)
@@ -171,25 +177,18 @@ if __name__ == "__main__":
                 """
             | Fountain attributes | Value |
             | --- | --- |
-            | Active from | %s |
-            | Last active on | %s |
+            | Water frozen| %.1f percent |
             | Spray Radius | %.1f $m$|
             | Used for | %.0f hours |
             | Water sprayed| %.0f $m^3$ |
-            | Fountain water frozen| %.1f percent |
             """
                 % (
-                    icestupa.start_date.date(),
-                    icestupa.fountain_off_date.date(),
+                    f_efficiency,
                     icestupa.df.r_ice.max(),
                     icestupa.df.Discharge.astype(bool).sum(axis=0)
                     * icestupa.TIME_STEP
                     / 3600,
-                    round(
-                        icestupa.df.Discharge.sum() * icestupa.TIME_STEP / (60 * 1000),
-                        2,
-                    ),
-                    f_efficiency,
+                    icestupa.df.Discharge.sum() * icestupa.TIME_STEP / (60 * 1000),
                 )
             )
 
