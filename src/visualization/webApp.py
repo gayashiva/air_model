@@ -72,8 +72,8 @@ if __name__ == "__main__":
     trigger = st.sidebar.radio(
         "controlled by", ("Field staff", "Weather", "Temperature", "None")
     )
-    if trigger == 'Field staff':
-        trigger ="Manual"
+    if trigger == "Field staff":
+        trigger = "Manual"
 
     SITE, FOUNTAIN, FOLDER = config(location, trigger=trigger)
 
@@ -165,6 +165,7 @@ if __name__ == "__main__":
 
         row2_1, row2_2 = st.beta_columns((1, 1))
         with row2_1:
+            f_mean = icestupa.df.Discharge.replace(0, np.nan).mean()
             f_efficiency = 100 - (
                 (
                     icestupa.df["unfrozen_water"].iloc[-1]
@@ -175,40 +176,38 @@ if __name__ == "__main__":
             Duration = icestupa.df.index[-1] * icestupa.TIME_STEP / (60 * 60 * 24)
             st.markdown(
                 """
-            | Fountain attributes | Value |
+            | Fountain | Estimation |
             | --- | --- |
+            | Mean discharge | %.1f $l/min$|
             | Water frozen| %.1f percent |
-            | Spray Radius | %.1f $m$|
-            | Used for | %.0f hours |
             | Water sprayed| %.0f $m^3$ |
+            | Used for | %.0f hours |
             """
                 % (
+                    f_mean,
                     f_efficiency,
-                    icestupa.df.r_ice.max(),
+                    icestupa.df.Discharge.sum() * icestupa.TIME_STEP / (60 * 1000),
                     icestupa.df.Discharge.astype(bool).sum(axis=0)
                     * icestupa.TIME_STEP
                     / 3600,
-                    icestupa.df.Discharge.sum() * icestupa.TIME_STEP / (60 * 1000),
                 )
             )
 
         with row2_2:
             st.markdown(
                 """
-            | Icestupa properties | Model output |
+            | Icestupa| Estimation |
             | --- | --- |
-            | Maximum Ice Volume | %.0f $m^{3}$|
+            | Max Ice Volume | %.0f $m^{3}$|
             | Meltwater released | %.0f $kg$ |
+            | Ice remaining | %.0f $kg$ |
             | Vapour loss | %.0f $kg$ |
-            | Precipitation | %.0f $kg$ |
-            | Model duration | %.0f days |
             """
                 % (
                     icestupa.df["iceV"].max(),
                     icestupa.df["meltwater"].iloc[-1],
+                    icestupa.df["ice"].iloc[-1],
                     icestupa.df["vapour"].iloc[-1],
-                    icestupa.df["ppt"].sum(),
-                    Duration,
                 )
             )
 
