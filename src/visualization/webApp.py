@@ -97,27 +97,11 @@ if __name__ == "__main__":
         with row1_2:
             st.markdown(
                 """
-            # Artificial Ice Reservoirs of **_%s_**
+            # **_%s_** Ice Reservoir
 
             """
-                % location
+                % location.split()[0]
             )
-            st.text("")
-            visualize = [
-                "Validation",
-                "Timelapse",
-                "Data Overview",
-                "Input",
-                "Output",
-                "Derived",
-            ]
-            display = st.multiselect(
-                "Choose type of visualization below:",
-                options=(visualize),
-                default=["Validation"],
-                # default=["Validation", "Timelapse"],
-            )
-
             if trigger == "None":
                 st.write(
                     """
@@ -145,6 +129,20 @@ if __name__ == "__main__":
                 Fountain discharge was set based on magnitude of surface energy balance.
                 """
                 )
+            visualize = [
+                "Validation",
+                "Timelapse",
+                "Data Overview",
+                "Input",
+                "Output",
+                "Derived",
+            ]
+            display = st.multiselect(
+                "Choose type of visualization below:",
+                options=(visualize),
+                default=["Validation"],
+                # default=["Validation", "Timelapse"],
+            )
 
         st.sidebar.write("### Map")
         lat = SITE["latitude"]
@@ -161,7 +159,7 @@ if __name__ == "__main__":
 
         row2_1, row2_2 = st.beta_columns((1, 1))
         with row2_1:
-            used = 100 - (
+            f_efficiency = 100 - (
                 (
                     icestupa.df["unfrozen_water"].iloc[-1]
                     / (icestupa.df["Discharge"].sum() * icestupa.TIME_STEP / 60)
@@ -175,16 +173,23 @@ if __name__ == "__main__":
             | --- | --- |
             | Active from | %s |
             | Last active on | %s |
-            | Spray Radius | %.2f |
+            | Spray Radius | %.1f $m$|
             | Used for | %.0f hours |
-            | Water sprayed| %.2f $m^3$ |
+            | Water sprayed| %.0f $m^3$ |
+            | Fountain water frozen| %.1f percent |
             """
                 % (
                     icestupa.start_date.date(),
                     icestupa.fountain_off_date.date(),
                     icestupa.df.r_ice.max(),
-                    icestupa.df.Discharge.astype(bool).sum(axis=0) * icestupa.TIME_STEP / 3600,
-                    round(icestupa.df.Discharge.sum() * icestupa.TIME_STEP / (60 *1000 ),2),
+                    icestupa.df.Discharge.astype(bool).sum(axis=0)
+                    * icestupa.TIME_STEP
+                    / 3600,
+                    round(
+                        icestupa.df.Discharge.sum() * icestupa.TIME_STEP / (60 * 1000),
+                        2,
+                    ),
+                    f_efficiency,
                 )
             )
 
@@ -193,16 +198,16 @@ if __name__ == "__main__":
                 """
             | Icestupa properties | Model output |
             | --- | --- |
-            | Maximum Ice Volume | %.2f $m^{3}$|
-            | Fountain water frozen| %.2f percent |
-            | Meltwater released | %.2f $l$ |
-            | Total Precipitation | %.2f $kg$ |
-            | Model duration | %.2f days |
+            | Maximum Ice Volume | %.0f $m^{3}$|
+            | Meltwater released | %.0f $kg$ |
+            | Vapour loss | %.0f $kg$ |
+            | Precipitation | %.0f $kg$ |
+            | Model duration | %.0f days |
             """
                 % (
                     icestupa.df["iceV"].max(),
-                    used,
                     icestupa.df["meltwater"].iloc[-1],
+                    icestupa.df["vapour"].iloc[-1],
                     icestupa.df["ppt"].sum(),
                     Duration,
                 )
