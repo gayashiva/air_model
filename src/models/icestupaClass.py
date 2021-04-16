@@ -632,7 +632,7 @@ class Icestupa:
                             self.df.loc[i, "ice"],
                         )
                     )
-                    sys.exit("High temperature changes")
+                    # sys.exit("High temperature changes")
 
                 if np.isnan(self.df.loc[i, "TotalE"]):
                     logger.error(

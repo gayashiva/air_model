@@ -52,7 +52,6 @@ def optimum_dx(result, dx, icev_max, sim_folder):
 
 
 class UQ_Icestupa(un.Model, Icestupa):
-    # def __init__(self):
     def __init__(self, location="Guttannen 2021", trigger="Manual"):
         super(UQ_Icestupa, self).__init__(
             labels=["Time (days)", "Ice Volume ($m^3$)"], interpolate=True
@@ -161,6 +160,20 @@ if __name__ == "__main__":
         logger=logger,
     )
 
+    answers = dict(
+        # location="Schwarzsee 2019",
+        location="Guttannen 2021",
+        # location="Gangles 2021",
+        trigger="Manual",
+        # trigger="None",
+        # trigger="Temperature",
+        # trigger="Weather",
+        run="yes",
+    )
+
+    # Get settings for given location and trigger
+    SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
+
     list_of_feature_functions = [max_volume]
 
     features = un.Features(
@@ -214,19 +227,6 @@ if __name__ == "__main__":
         # "TIME_STEP": time_steps_dist,
     }
 
-    answers = dict(
-        # location="Schwarzsee 2019",
-        location="Guttannen 2021",
-        # location="Gangles 2021",
-        trigger="Manual",
-        # trigger="None",
-        # trigger="Temperature",
-        # trigger="Weather",
-        run="yes",
-    )
-
-    # Get settings for given location and trigger
-    SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
 
     # Create the parameters
     for k, v in parameters_single.items():
