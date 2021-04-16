@@ -3,8 +3,8 @@
 import yaml
 import os
 import sys
-from logging import config
 import logging
+import logging.config
 import coloredlogs
 
 dirname = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
