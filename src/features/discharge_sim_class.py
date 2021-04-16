@@ -1,4 +1,3 @@
-import logging
 import os
 import sys
 import math
@@ -83,22 +82,22 @@ class Discharge_Icestupa(Icestupa):
         )
 
 
-param_values = np.arange(0.002, 0.015, 0.001).tolist()
-print(param_values)
-
-
-experiments = pd.DataFrame(param_values, columns=["dia_f"])
-
-model = Discharge_Icestupa()
-
-variables = ["When", "SA", "iceV", "solid", "Discharge", "input", "meltwater"]
-
-df_out = pd.DataFrame()
-
-results = []
-
 if __name__ == "__main__":
-    with Pool(2) as executor:
+
+    param_values = np.arange(0.002, 0.015, 0.001).tolist()
+    print(param_values)
+
+    experiments = pd.DataFrame(param_values, columns=["dia_f"])
+
+    model = Discharge_Icestupa()
+
+    variables = ["When", "SA", "iceV", "solid", "Discharge", "input", "meltwater"]
+
+    df_out = pd.DataFrame()
+
+    results = []
+
+    with Pool(4) as executor:
 
         for (
             key,

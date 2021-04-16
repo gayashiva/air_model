@@ -13,7 +13,7 @@ sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
 
-from src.data.config import SITE, FOUNTAIN, FOLDERS
+from src.data.settings import config
 
 
 def draw_plot(data, edge_color, fill_color, labels):
@@ -26,61 +26,77 @@ def draw_plot(data, edge_color, fill_color, labels):
         patch.set(facecolor=fill_color)
 
 
-input = FOLDERS["sim_folder"] + "/"
-output = FOLDERS["sim_folder"] + "/"
-
-names = [
-    "full",
-    "T_RAIN",
-    "IE",
-    "A_I",
-    "A_S",
-    "T_DECAY",
-    "dia_f",
-    "h_f",
-    "h_aws",
-    "T_w",
-    "DX",
-]
-variance = []
-mean = []
-evaluations = []
-
-for name in names:
-    data = un.Data()
-    filename1 = input + name + ".h5"
-    data.load(filename1)
-    variance.append(data["max_volume"].variance)
-    mean.append(data["max_volume"].mean)
-    evaluations.append(data["max_volume"].evaluations)
-
-    eval = data["max_volume"].evaluations
-
-    print(
-        f"95 percent confidence interval caused by {name} is {round(st.mean(eval),2)} and {round(2 * st.stdev(eval),2)}"
+if __name__ == "__main__":
+    answers = dict(
+        # location="Schwarzsee 2019",
+        location="Guttannen 2021",
+        # location="Gangles 2021",
+        trigger="Manual",
+        # trigger="None",
+        # trigger="Temperature",
+        # trigger="Weather",
+        run="yes",
     )
 
-names = [
-    "$T_{ppt}$",
-    "$\\epsilon_{ice}$",
-    r"$\alpha_{ice}$",
-    r"$\alpha_{snow}$",
-    "$t_{decay}$",
-    "$dia_{F}$",
-    "$h_F$",
-    "$h_{AWS}$",
-    "$T_{water}$",
-    "$\\Delta x$",
-]
+    # Get settings for given location and trigger
+    SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
+    input = FOLDER["sim"] + "/"
+    output = FOLDER["sim"] + "/"
 
-fig, ax = plt.subplots()
-draw_plot(evaluations, "k", "xkcd:grey", names)
-ax.set_xlabel("Parameter")
-ax.set_ylabel("Sensitivity of Maximum Ice Volume [$m^3$]")
-ax.grid(axis="y")
-plt.savefig(output + "sensitivities.jpg", bbox_inches="tight", dpi=300)
-plt.savefig(
-    FOLDERS["output_folder"] + "jpg/Figure_9.jpg",
-    bbox_inches="tight",
-    dpi=300,
-)
+    names = [
+        # "full",
+        # "T_RAIN",
+        # "IE",
+        # "A_I",
+        # "A_S",
+        # "T_DECAY",
+        # "dia_f",
+        # "h_f",
+        # "h_aws",
+        # "T_w",
+        "DX",
+    ]
+    variance = []
+    mean = []
+    evaluations = []
+
+    for name in names:
+        data = un.Data()
+        filename1 = input + name + ".h5"
+        data.load(filename1)
+        variance.append(data["max_volume"].variance)
+        mean.append(data["max_volume"].mean)
+        evaluations.append(data["max_volume"].evaluations)
+
+        eval = data["max_volume"].evaluations
+        print(data)
+
+
+        print(
+            f"95 percent confidence interval caused by {name} is {round(st.mean(eval),2)} and {round(2 * st.stdev(eval),2)}"
+        )
+
+# names = [
+#     "$T_{ppt}$",
+#     "$\\epsilon_{ice}$",
+#     r"$\alpha_{ice}$",
+#     r"$\alpha_{snow}$",
+#     "$t_{decay}$",
+#     "$dia_{F}$",
+#     "$h_F$",
+#     "$h_{AWS}$",
+#     "$T_{water}$",
+#     "$\\Delta x$",
+# ]
+
+# fig, ax = plt.subplots()
+# draw_plot(evaluations, "k", "xkcd:grey", names)
+# ax.set_xlabel("Parameter")
+# ax.set_ylabel("Sensitivity of Maximum Ice Volume [$m^3$]")
+# ax.grid(axis="y")
+# plt.savefig(output + "sensitivities.jpg", bbox_inches="tight", dpi=300)
+# plt.savefig(
+#     FOLDERS["output_folder"] + "jpg/Figure_9.jpg",
+#     bbox_inches="tight",
+#     dpi=300,
+# )

@@ -45,21 +45,21 @@ if __name__ == "__main__":
     # answers = inquirer.prompt(q)
 
     answers = dict(
-        # location="Schwarzsee 2019",
+        location="Schwarzsee 2019",
         # location="Guttannen 2020",
-        location="Gangles 2021",
-        # trigger="Manual",
+        # location="Gangles 2021",
+        trigger="Manual",
         # trigger="None",
-        trigger="Temperature",
+        # trigger="Temperature",
         # trigger="Weather",
         run="yes",
     )
 
-    # Get settings for given location and trigger
-    SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
+    # # Get settings for given location and trigger
+    # SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
 
     # Initialise icestupa object
-    icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)
+    icestupa = Icestupa(location = answers["location"], trigger = answers["trigger"])
 
     if answers["run"] == "yes":
         # Derive all the input parameters
