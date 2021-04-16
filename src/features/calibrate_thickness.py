@@ -67,6 +67,7 @@ class DX_Icestupa(Icestupa):
         )
 
         Max_IceV = self.df["iceV"].max()
+        Min_T_s = self.df["T_s"].min()
         Efficiency = (
             (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1])
             / (self.df["input"].iloc[-1])
@@ -86,6 +87,7 @@ class DX_Icestupa(Icestupa):
                 experiment.get("DX"),
                 Max_IceV,
                 Duration,
+                Min_T_s,
             ]
         )
         self.df = self.df.set_index("When").resample("1H").mean().reset_index()
@@ -95,6 +97,7 @@ class DX_Icestupa(Icestupa):
             self.df["When"].values,
             self.df["SA"].values,
             self.df["iceV"].values,
+            self.df["T_s"].values,
             result,
         )
 
@@ -110,7 +113,7 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2020",
+        location="Guttannen 2021",
         # location="Gangles 2021",
         trigger="Manual",
         # trigger="None",
@@ -126,11 +129,11 @@ if __name__ == "__main__":
     model = DX_Icestupa(location=answers["location"], trigger=answers["trigger"])
     # model = DX_Icestupa()
 
-    param_values = np.arange(0.001, 0.04, 0.001).tolist()
+    param_values = np.arange(0.001, 0.05, 0.001).tolist()
     print(param_values)
 
     experiments = pd.DataFrame(param_values, columns=["DX"])
-    variables = ["When", "SA", "iceV"]
+    variables = ["When", "SA", "iceV", "T_s"]
 
     df_out = pd.DataFrame()
 
@@ -144,6 +147,7 @@ if __name__ == "__main__":
             When,
             SA,
             iceV,
+            T_s,
             result,
         ) in executor.map(model.run, experiments.to_dict("records")):
             iterables = [[key], variables]
@@ -153,6 +157,7 @@ if __name__ == "__main__":
                     (key, "When"): When,
                     (key, "SA"): SA,
                     (key, "iceV"): iceV,
+                    (key, "T_s"): T_s,
                 },
                 columns=index,
             )
@@ -166,6 +171,7 @@ if __name__ == "__main__":
                 0: "DX",
                 1: "Max_IceV",
                 2: "Duration",
+                3: "Min_T_s",
             }
         )
 
