@@ -39,7 +39,7 @@ if __name__ == "__main__":
     # trigger="Weather",
     # run="yes",
     # )
-    locations = ["Schwarzsee 2019", "Guttannen 2021"]#, "Guttannen 2020"]
+    locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020"]
 
     figures = "data/DX_sim.pdf"
     pp = PdfPages(figures)
@@ -57,13 +57,12 @@ if __name__ == "__main__":
         x = df["DX"] * 1000
         y = df["Max_IceV"]/ df.Max_IceV.max()
 
-        # fig, ax = plt.subplots()
-        # ax.plot(x, y)
-        plt.plot(x, y)
-        plt.ylabel("Maximum Ice Volume ($m^3$)")
-        # ax.set_ylabel("Maximum Ice Volume ($m^3$)")
-        # ax.set_xlabel("Ice Layer Thickness ($mm$)")
+        plt.scatter(x, y, label=location)
+        plt.text(x[0],y[0],str(round(df.loc[0,"Max_IceV"],2)))
+        plt.text(x[38],y[38],str(round(df.loc[38,"Max_IceV"],2)))
+        plt.ylabel("Maximum Ice Volume Sensitivity ($m^3$)")
         plt.xlabel("Ice Layer Thickness ($mm$)")
+    plt.legend()
     plt.grid()
     pp.savefig(bbox_inches="tight")
 
