@@ -39,11 +39,16 @@ if __name__ == "__main__":
     # trigger="Weather",
     # run="yes",
     # )
-    locations = ["Schwarzsee 2019", "Guttannen 2021"]#, "Guttannen 2020"]
+    locations = ["Guttannen 2021", "Guttannen 2020"]
 
     figures = "data/DX_sim.pdf"
+    cmap = plt.cm.rainbow  # define the colormap
+    norm = mpl.colors.Normalize(vmin=-100, vmax=0)
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
     pp = PdfPages(figures)
-    plt.figure()
+    # plt.figure()
+    fig, ax = plt.subplots()
     for location in locations:
         logger.info(f"Location -> %s" % (location))
         # Get settings for given location and trigger
@@ -55,16 +60,44 @@ if __name__ == "__main__":
 
         logger.info(df)
         x = df["DX"] * 1000
-        y = df["Max_IceV"]/ df.Max_IceV.max()
+        y = df["Max_IceV"] / df.Max_IceV.max()
         y1 = df["Min_T_s"]
+        ctr = 0
 
-        plt.plot(x, y1, label=location)
-        # plt.text(x[0],y[0],str(round(df.loc[0,"Max_IceV"],2)))
-        # plt.text(x[38],y[38],str(round(df.loc[38,"Max_IceV"],2)))
-        plt.ylabel("Maximum Ice Volume Sensitivity ($m^3$)")
-        plt.xlabel("Ice Layer Thickness ($mm$)")
-    plt.legend()
-    plt.grid()
+        for i in range(0, df.shape[0]):
+            if location == "Guttannen 2021":
+                lo = ax.scatter(x[i], y[i], marker=".", color=cmap(norm(y1[i])))
+                if y1[i] > -20 and ctr == 0:
+                    ax.scatter(x[i], y[i], s=80, facecolors="none", edgecolors="k")
+                    ctr = 1
+
+            if location == "Guttannen 2020":
+                lx = ax.scatter(x[i], y[i], marker="+", color=cmap(norm(y1[i])))
+                if y1[i] > -20 and ctr == 0:
+                    ax.scatter(x[i], y[i], s=80, facecolors="none", edgecolors="k")
+                    ctr = 1
+            if location == "Schwarzsee 2019":
+                lp = ax.scatter(x[i], y[i], marker="x", color=cmap(norm(y1[i])))
+                if y1[i] > -15 and ctr == 0:
+                    ax.scatter(x[i], y[i], s=80, facecolors="none", edgecolors="k")
+                    ctr = 1
+        ax.text(x[0], y[0], str(round(df.loc[0, "Max_IceV"], 2)))
+        ax.text(x[37], y[37], str(round(df.loc[37, "Max_IceV"], 2)))
+        ax.set_ylabel("Maximum Ice Volume Sensitivity ($m^3$)")
+        ax.set_xlabel("Ice Layer Thickness ($mm$)")
+    ax.legend(
+        (lo, lx),
+        (locations[0], locations[1]),
+        scatterpoints=1,
+        loc='lower right',
+        ncol=1,
+        # fontsize=8
+    )
+    ax.grid()
+    fig.subplots_adjust(right=0.78)
+    cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+    cbar = fig.colorbar(sm, cax=cbar_ax)
+    cbar.set_label("Minimum Surface Temperature [$\\degree C$]")
     pp.savefig(bbox_inches="tight")
 
     plt.close()
