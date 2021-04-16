@@ -29,39 +29,43 @@ if __name__ == "__main__":
         level=logging.INFO,
         logger=logger,
     )
-    answers = dict(
-        # location="Schwarzsee 2019",
-        location="Guttannen 2021",
-        # location="Gangles 2021",
-        trigger="Manual",
-        # trigger="None",
-        # trigger="Temperature",
-        # trigger="Weather",
-        run="yes",
-    )
+    # answers = dict(
+    #     location="Schwarzsee 2019",
+    #     location="Guttannen 2021",
+    #     location="Gangles 2021",
+    # trigger="Manual",
+    # trigger="None",
+    # trigger="Temperature",
+    # trigger="Weather",
+    # run="yes",
+    # )
+    locations = ["Schwarzsee 2019", "Guttannen 2021"]#, "Guttannen 2020"]
 
-    # Get settings for given location and trigger
-    SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
-    filename = FOLDER["sim"] + "/DX_sim.csv"
-
-    filename2 = FOLDER["sim"] + "/DX_sim.h5"
-
-    figures = FOLDER["sim"] + "/DX_sim.pdf"
-
-    df = pd.read_csv(filename, sep=",")
-
-    logger.info(df)
+    figures = "data/DX_sim.pdf"
     pp = PdfPages(figures)
-    x = df["DX"] * 1000
-    y = df["Max_IceV"]
+    plt.figure()
+    for location in locations:
+        logger.info(f"Location -> %s" % (location))
+        # Get settings for given location and trigger
+        SITE, FOUNTAIN, FOLDER = config(location, "Manual")
 
-    fig, ax = plt.subplots()
-    ax.plot(x, y)
-    ax.set_ylabel("Maximum Ice Volume ($m^3$)")
-    ax.set_xlabel("Ice Layer Thickness ($mm$)")
-    ax.grid()
+        filename = FOLDER["sim"] + "/DX_sim.csv"
+
+        df = pd.read_csv(filename, sep=",")
+
+        logger.info(df)
+        x = df["DX"] * 1000
+        y = df["Max_IceV"]/ df.Max_IceV.max()
+
+        # fig, ax = plt.subplots()
+        # ax.plot(x, y)
+        plt.plot(x, y)
+        plt.ylabel("Maximum Ice Volume ($m^3$)")
+        # ax.set_ylabel("Maximum Ice Volume ($m^3$)")
+        # ax.set_xlabel("Ice Layer Thickness ($mm$)")
+        plt.xlabel("Ice Layer Thickness ($mm$)")
+    plt.grid()
     pp.savefig(bbox_inches="tight")
-    plt.clf()
 
     plt.close()
     pp.close()

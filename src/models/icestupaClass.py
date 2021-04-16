@@ -61,12 +61,7 @@ class Icestupa:
     crit_temp = 0  # FOUNTAIN runtime temperature
 
 
-    # def __init__(self, *initial_data, **kwargs):
     def __init__(self, location = "Guttannen 2021", trigger = "Manual"):
-        # # Initialise other variables
-        # for key in kwargs:
-        #     setattr(self, key, kwargs[key])
-        #     logger.debug(f"%s -> %s" % (key, str(dictionary[key])))
 
         SITE, FOUNTAIN, FOLDER = config(location, trigger)
         initial_data = [SITE, FOUNTAIN, FOLDER]
