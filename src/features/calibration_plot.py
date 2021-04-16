@@ -39,7 +39,7 @@ if __name__ == "__main__":
     # trigger="Weather",
     # run="yes",
     # )
-    locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020"]
+    locations = ["Schwarzsee 2019", "Guttannen 2021"]#, "Guttannen 2020"]
 
     figures = "data/DX_sim.pdf"
     pp = PdfPages(figures)
@@ -56,10 +56,11 @@ if __name__ == "__main__":
         logger.info(df)
         x = df["DX"] * 1000
         y = df["Max_IceV"]/ df.Max_IceV.max()
+        y1 = df["Min_T_s"]
 
-        plt.scatter(x, y, label=location)
-        plt.text(x[0],y[0],str(round(df.loc[0,"Max_IceV"],2)))
-        plt.text(x[38],y[38],str(round(df.loc[38,"Max_IceV"],2)))
+        plt.plot(x, y1, label=location)
+        # plt.text(x[0],y[0],str(round(df.loc[0,"Max_IceV"],2)))
+        # plt.text(x[38],y[38],str(round(df.loc[38,"Max_IceV"],2)))
         plt.ylabel("Maximum Ice Volume Sensitivity ($m^3$)")
         plt.xlabel("Ice Layer Thickness ($mm$)")
     plt.legend()
