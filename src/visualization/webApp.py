@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     SITE, FOUNTAIN, FOLDER = config(location, trigger=trigger)
 
-    icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)
+    icestupa = Icestupa(location, trigger)
 
     try:
         icestupa.read_output()
