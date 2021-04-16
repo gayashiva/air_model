@@ -54,19 +54,14 @@ class Icestupa:
 
     """Model constants"""
     # DX = 5e-03  # Initial Ice layer thickness
-    DX = 4e-02  # Initial Ice layer thickness
+    DX = 17e-03  # Initial Ice layer thickness
     theta_f = 45  # FOUNTAIN angle
     ftl = 0  # FOUNTAIN flight time loss ftl
     T_w = 5  # FOUNTAIN Water temperature
     crit_temp = 0  # FOUNTAIN runtime temperature
 
 
-    # def __init__(self, *initial_data, **kwargs):
     def __init__(self, location = "Guttannen 2021", trigger = "Manual"):
-        # # Initialise other variables
-        # for key in kwargs:
-        #     setattr(self, key, kwargs[key])
-        #     logger.debug(f"%s -> %s" % (key, str(dictionary[key])))
 
         SITE, FOUNTAIN, FOLDER = config(location, trigger)
         initial_data = [SITE, FOUNTAIN, FOLDER]
@@ -76,11 +71,6 @@ class Icestupa:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
                 logger.info(f"%s -> %s" % (key, str(dictionary[key])))
-
-        if hasattr(self, "input"):
-            logger.warning("initialised")
-        else:
-            logger.warning("not initialised")
 
         # Initialize input dataset
         input_file = self.input + self.name + "_input_model.csv"

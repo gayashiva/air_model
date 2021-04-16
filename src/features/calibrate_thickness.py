@@ -12,12 +12,12 @@ sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
 
+from src.data.settings import config
 from src.models.icestupaClass import Icestupa
 from src.models.methods.calibration import get_calibration
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
-from src.data.settings import config
 
 
 class DX_Icestupa(Icestupa):

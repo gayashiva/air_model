@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     SITE, FOUNTAIN, FOLDER = config(location, trigger=trigger)
 
-    icestupa = Icestupa(SITE, FOUNTAIN, FOLDER)
+    icestupa = Icestupa(location, trigger)
 
     try:
         icestupa.read_output()
@@ -198,7 +198,7 @@ if __name__ == "__main__":
                 """
             | Icestupa| Estimation |
             | --- | --- |
-            | Max Ice Volume | %.0f $m^{3}$|
+            | Max Ice Volume | %.1f $m^{3}$|
             | Meltwater released | %.0f $kg$ |
             | Ice remaining | %.0f $kg$ |
             | Vapour loss | %.0f $kg$ |
