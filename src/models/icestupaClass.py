@@ -62,16 +62,27 @@ class Icestupa:
     T_w = 5  # FOUNTAIN Water temperature
     crit_temp = 0  # FOUNTAIN runtime temperature
 
-    def __init__(self, *initial_data, **kwargs):
+
+    # def __init__(self, *initial_data, **kwargs):
+    def __init__(self, location = "Guttannen 2021", trigger = "Manual"):
+        # # Initialise other variables
+        # for key in kwargs:
+        #     setattr(self, key, kwargs[key])
+        #     logger.debug(f"%s -> %s" % (key, str(dictionary[key])))
+
+        SITE, FOUNTAIN, FOLDER = config(location, trigger)
+        initial_data = [SITE, FOUNTAIN, FOLDER]
+
         # Initialise all variables of dictionary
         for dictionary in initial_data:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
-                logger.debug(f"%s -> %s" % (key, str(dictionary[key])))
-        # Initialise other variables
-        for key in kwargs:
-            setattr(self, key, kwargs[key])
-            logger.debug(f"%s -> %s" % (key, str(dictionary[key])))
+                logger.info(f"%s -> %s" % (key, str(dictionary[key])))
+
+        if hasattr(self, "input"):
+            logger.warning("initialised")
+        else:
+            logger.warning("not initialised")
 
         # Initialize input dataset
         input_file = self.input + self.name + "_input_model.csv"
@@ -248,7 +259,6 @@ class Icestupa:
         )
 
     def read_input(self, report=False):  # Use processed input dataset
-
         self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
 
         logger.debug(self.df.head())
@@ -341,6 +351,7 @@ class Icestupa:
         STATE = 0
         self.start = 0
 
+        logger.warning(self.DX)
 
         t = stqdm(
             self.df[1:-1].itertuples(),
@@ -348,11 +359,6 @@ class Icestupa:
             # desc="Simulating AIR",
         )
         t.set_description("Simulating %s Icestupa" % self.name[:-2])
-        # for row in stqdm(
-        #     self.df[1:-1].itertuples(),
-        #     total=self.df.shape[0],
-        #     desc="Simulating AIR",
-        # ):
         for row in t:
             i = row.Index
             ice_melted = self.df.loc[i, "ice"] < 1
