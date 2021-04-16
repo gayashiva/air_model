@@ -60,7 +60,6 @@ pandocfilters==1.4.3
 parso==0.8.1
 pexpect==4.8.0
 phik==0.11.2
-pickle5==0.0.11
 pickleshare==0.7.5
 Pillow==8.1.2
 prometheus-client==0.9.0
