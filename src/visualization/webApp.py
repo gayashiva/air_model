@@ -65,15 +65,17 @@ if __name__ == "__main__":
     st.sidebar.write("### Icestupa")
     location = st.sidebar.radio(
         "built at",
-        ("Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"),
+        # ("Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"),
+        ("Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020"),
     )
 
-    st.sidebar.write("### Fountain")
-    trigger = st.sidebar.radio(
-        "controlled by", ("Field staff", "Weather", "Temperature", "None")
-    )
-    if trigger == "Field staff":
-        trigger = "Manual"
+    # st.sidebar.write("### Fountain")
+    # trigger = st.sidebar.radio(
+    #     "controlled by", ("Field staff", "Weather", "Temperature", "None")
+    # )
+    # if trigger == "Field staff":
+    #     trigger = "Manual"
+    trigger = "Manual"
 
     SITE, FOUNTAIN, FOLDER = config(location, trigger=trigger)
 
@@ -150,11 +152,11 @@ if __name__ == "__main__":
                 # default=["Validation", "Timelapse"],
             )
 
-        st.sidebar.write("### Map")
-        lat = SITE["latitude"]
-        lon = SITE["longitude"]
-        map_data = pd.DataFrame({"lat": [lat], "lon": [lon]})
-        st.sidebar.map(map_data, zoom=10)
+        # st.sidebar.write("### Map")
+        # lat = SITE["latitude"]
+        # lon = SITE["longitude"]
+        # map_data = pd.DataFrame({"lat": [lat], "lon": [lon]})
+        # st.sidebar.map(map_data, zoom=10)
         st.sidebar.write(
             """
         ### More Info
