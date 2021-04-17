@@ -26,42 +26,42 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    q = [
-        inquirer.List(
-            "location",
-            message="Where is the Icestupa?",
-            choices=["Guttannen 2020", "Guttannen 2021", "Schwarzsee 2019"],
-            default="Guttannen 2020",
-        ),
-        inquirer.List(
-            "trigger",
-            message="How is fountain switched on?",
-            choices=["None", "Manual", "Temperature", "Weather"],
-            default="None",
-        ),
-        inquirer.List(
-            "run", message="Regenerate results?", choices=["yes", "no"], default="yes"
-        ),
-    ]
+    # q = [
+    #     inquirer.List(
+    #         "location",
+    #         message="Where is the Icestupa?",
+    #         choices=["Guttannen 2020", "Guttannen 2021", "Schwarzsee 2019"],
+    #         default="Guttannen 2020",
+    #     ),
+    #     inquirer.List(
+    #         "trigger",
+    #         message="How is fountain switched on?",
+    #         choices=["None", "Manual", "Temperature", "Weather"],
+    #         default="None",
+    #     ),
+    #     inquirer.List(
+    #         "run", message="Regenerate results?", choices=["yes", "no"], default="yes"
+    #     ),
+    # ]
 
-    answers = inquirer.prompt(q)
+    # answers = inquirer.prompt(q)
 
-    # answers = dict(
-    #     location="Schwarzsee 2019",
-    #     # location="Guttannen 2020",
-    #     # location="Gangles 2021",
-    #     trigger="Manual",
-    #     # trigger="None",
-    #     # trigger="Temperature",
-    #     # trigger="Weather",
-    #     run="yes",
-    # )
+    answers = dict(
+        # location="Schwarzsee 2019",
+        # location="Guttannen 2020",
+        location="Gangles 2021",
+        # trigger="Manual",
+        trigger="None",
+        # trigger="Temperature",
+        # trigger="Weather",
+        run="yes",
+    )
 
-    # # Get settings for given location and trigger
-    # SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
+    # Get settings for given location and trigger
+    SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
 
     # Initialise icestupa object
-    icestupa = Icestupa(location, trigger)
+    icestupa = Icestupa(answers["location"], answers["trigger"])
 
     if answers["run"] == "yes":
         # Derive all the input parameters

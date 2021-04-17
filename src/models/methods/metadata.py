@@ -21,6 +21,11 @@ def get_parameter_metadata(
             "kind": "Misc",
             "units": "()",
         },
+        "h_f": {
+            "name": "Fountain Height",
+            "kind": "Derived",
+            "units": "()",
+        },
         "dia": {
             "name": "Measured diameter",
             "kind": "Misc",

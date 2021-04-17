@@ -115,6 +115,8 @@ class Icestupa:
             self.df = pd.merge(self.df, df_c, on="When", how="left")
 
         logger.info(df_c.head())
+        self.df["h_f"] = 0
+        self.df.loc[0,"h_f"] = self.h_f
 
         unknown = ["a", "vp_a", "LW_in", "cld"]  # Possible unknown variables
         for i in range(len(unknown)):
@@ -130,6 +132,12 @@ class Icestupa:
             desc="Creating AIR input...",
         ):
             i = row.Index
+
+            """Fountain height"""
+            if not np.isnan(self.df.loc[i, "h_s"]):
+                self.df.loc[i,"h_f"] = self.df.loc[i-1,"h_f"] + self.df.loc[i,"h_s"]
+            else:
+                self.df.loc[i,"h_f"] = self.df.loc[i-1,"h_f"]
 
             """ Vapour Pressure"""
             if "vp_a" in unknown:
@@ -408,14 +416,14 @@ class Icestupa:
             if STATE == 1:
                 # Change in fountain height
                 # if (self.df.loc[i, "h_s"]) > 0:
-                if not np.isnan(self.df.loc[i, "h_s"]):
-                    self.h_f += row.h_s
+                # if not np.isnan(self.df.loc[i, "h_s"]):
+                    # self.h_f += row.h_s
+                if self.df.loc[i, "h_f"] != self.df.loc[i-1, "h_f"]:
                     logger.warning(
-                        "\n Height increased to %s on %s" % (self.h_f, self.df.When[i])
+                        "Height increased to %s on %s" % (self.df.loc[i, "h_f"], self.df.When[i])
                     )
-                    # self.get_height_steps(i)
                     self.r_spray = get_droplet_projectile(
-                        dia=self.dia_f, h=self.h_f, d=self.discharge
+                        dia=self.dia_f, h=self.df.loc[i, "h_f"], d=self.discharge
                     )
                     self.df.loc[i - 1, "r_ice"] = self.r_spray
                     self.df.loc[i - 1, "h_ice"] = (
