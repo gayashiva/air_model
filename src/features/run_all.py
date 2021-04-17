@@ -16,28 +16,28 @@ locations = ["Guttannen 2021", "Guttannen 2020", "Schwarzsee 2019"]
 triggers = ["Manual", "None", "Temperature", "Weather"]
 
 
-def work_log(location, trigger):
-    # Initialise icestupa object
-    icestupa = Icestupa(location, trigger)
-    # Derive all the input parameters
-    icestupa.derive_parameters()
+def work_log(locations, triggers):
+    for location in locations:
+        for trigger in triggers:
+            # Initialise icestupa object
+            icestupa = Icestupa(location, trigger)
+            # Derive all the input parameters
+            icestupa.derive_parameters()
 
-    # Generate results
-    icestupa.melt_freeze()
+            # Generate results
+            icestupa.melt_freeze()
 
-    # Summarise and save model results
-    icestupa.summary()
+            # Summarise and save model results
+            icestupa.summary()
 
-    # Create figures for web interface
-    icestupa.summary_figures()
+            # Create figures for web interface
+            icestupa.summary_figures()
 
 
 def pool_handler():
     logger.info("CPUs running %s" % multiprocessing.cpu_count())
     p = Pool(multiprocessing.cpu_count())
-    for location in locations:
-        for trigger in triggers:
-            p.apply(work_log, [location, trigger])
+    p.apply(work_log, [locations, triggers])
 
 
 if __name__ == "__main__":

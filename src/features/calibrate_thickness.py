@@ -21,7 +21,7 @@ from src.models.methods.droplet import get_droplet_projectile
 
 
 class DX_Icestupa(Icestupa):
-    def __init__(self, location="Guttannen 2021", trigger="Manual"):
+    def __init__(self, location="Guttannen 2020", trigger="Manual"):
         SITE, FOUNTAIN, FOLDER = config(location, trigger)
         initial_data = [SITE, FOUNTAIN, FOLDER]
 
@@ -32,7 +32,14 @@ class DX_Icestupa(Icestupa):
                 logger.info(f"%s -> %s" % (key, str(dictionary[key])))
 
         self.TIME_STEP = 15 * 60
-        self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
+        
+        result = []
+       
+
+    def run(self, experiment):
+
+        key = experiment.get("DX")
+        self.DX = key
         if self.name in ["gangles21"]:
             df_c = get_calibration(site=self.name, input=self.input)
             self.r_spray = df_c.loc[1, "dia"] / 2
@@ -51,12 +58,8 @@ class DX_Icestupa(Icestupa):
             self.r_spray = get_droplet_projectile(
                 dia=self.dia_f, h=self.h_f, d=self.discharge
             )
-        result = []
 
-    def run(self, experiment):
-
-        key = experiment.get("DX")
-        self.DX = key
+        self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
 
         self.melt_freeze()
 
@@ -100,7 +103,6 @@ class DX_Icestupa(Icestupa):
             self.df["SA"].values,
             self.df["iceV"].values,
             self.df["T_s"].values,
-            self.df["cam_temp"].values,
             result,
         )
 
@@ -132,17 +134,17 @@ if __name__ == "__main__":
     model = DX_Icestupa(location=answers["location"], trigger=answers["trigger"])
     # model = DX_Icestupa()
 
-    param_values = np.arange(0.001, 0.004, 0.001).tolist()
+    param_values = np.arange(0.001, 0.05, 0.001).tolist()
 
     experiments = pd.DataFrame(param_values, columns=["DX"])
-    variables = ["When", "SA", "iceV", "T_s", "cam_temp"]
+    variables = ["When", "SA", "iceV", "T_s"]
 
     df_out = pd.DataFrame()
 
     results = []
 
     logger.info("CPUs running %s" % multiprocessing.cpu_count())
-    with Pool(multiprocessing.cpu_count()) as executor:
+    with Pool(12) as executor:
 
         for (
             key,
@@ -150,7 +152,6 @@ if __name__ == "__main__":
             SA,
             iceV,
             T_s,
-            cam_temp,
             result,
         ) in executor.map(model.run, experiments.to_dict("records")):
             iterables = [[key], variables]
@@ -161,7 +162,6 @@ if __name__ == "__main__":
                     (key, "SA"): SA,
                     (key, "iceV"): iceV,
                     (key, "T_s"): T_s,
-                    (key, "cam_temp"): cam_temp,
                 },
                 columns=index,
             )
