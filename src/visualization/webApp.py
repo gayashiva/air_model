@@ -173,11 +173,13 @@ if __name__ == "__main__":
         to meet their farming water demand in early spring. With the invention of
         [icestupas](https://www.youtube.com/watch?v=2xuBvI98-n4&t=2s) this
         practice of storing water as ice now shows great potential over
-        traditional water storage techniques. But this technology is only
-        viable in regions with suitable weather conditions. In order to
-        identify such suitable regions, we developed a physical model that
-        takes weather conditions and water availability as input and estimates
-        the amount of meltwater expected.
+        traditional water storage techniques. It doesn't need any energy to
+        construct and the materials needed like pipelines and fountain are
+        often already available. The only major limitation though is where this
+        technology can be applied, since it requires certain favourable weather
+        conditions in order to freeze the available water.  In order to identify such suitable regions, we developed a
+        physical model that takes weather conditions and water availability as
+        input and estimates the amount of meltwater expected.
 
         In the winters of 2019, 2020 and 2021, several scientific
         icestupas were built in India and Switzerland to calibrate and

@@ -128,7 +128,7 @@ def get_parameter_metadata(
         },
         "SW": {
             "name": "Net Shortwave Radiation",
-            "kind": "Output",
+            "kind": "Derived",
             "units": "($W\\,m^{-2}$)",
         },
         "SW_diffuse": {
@@ -143,37 +143,37 @@ def get_parameter_metadata(
         },
         "LW": {
             "name": "Net Longwave Radiation",
-            "kind": "Output",
+            "kind": "Derived",
             "units": "($W\\,m^{-2}$)",
         },
         "Qs": {
             "name": "Sensible Heat flux",
-            "kind": "Output",
+            "kind": "Derived",
             "units": "($W\\,m^{-2}$)",
         },
         "Ql": {
             "name": "Latent Heat flux",
-            "kind": "Output",
+            "kind": "Derived",
             "units": "($W\\,m^{-2}$)",
         },
         "Qf": {
             "name": "Fountain water heat flux",
-            "kind": "Output",
+            "kind": "Derived",
             "units": "($W\\,m^{-2}$)",
         },
         "Qg": {
             "name": "Bulk Icestupa heat flux",
-            "kind": "Output",
+            "kind": "Derived",
             "units": "($W\\,m^{-2}$)",
         },
         "$q_{T}$": {
             "name": "Temperature flux",
-            "kind": "Output",
+            "kind": "Derived",
             "units": "($W\\,m^{-2}$)",
         },
         "$q_{melt}$": {
             "name": "Melt energy flux",
-            "kind": "Output",
+            "kind": "Derived",
             "units": "($W\\,m^{-2}$)",
         },
         "Prec": {
@@ -228,7 +228,7 @@ def get_parameter_metadata(
         },
         "T_bulk": {
             "name": "Bulk Temperature",
-            "kind": "Output",
+            "kind": "Derived",
             "units": "($\\degree C$)",
         },
         "sea": {
@@ -248,17 +248,17 @@ def get_parameter_metadata(
         },
         "cdt": {
             "name": "Condensation",
-            "kind": "Output",
+            "kind": "Derived",
             "units": "($kg$)",
         },
         "dpt": {
             "name": "Deposition",
-            "kind": "Output",
+            "kind": "Derived",
             "units": "($kg$)",
         },
         "vapour": {
             "name": "Vapour loss",
-            "kind": "Output",
+            "kind": "Derived",
             "units": "($kg$)",
         },
         "meltwater": {
