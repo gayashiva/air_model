@@ -62,7 +62,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    st.sidebar.write("### Icestupa")
+    st.sidebar.write("### Select Icestupa")
     location = st.sidebar.radio(
         "built at",
         ("Guttannen 2021", "Gangles 2021", "Guttannen 2020",  "Schwarzsee 2019"),
