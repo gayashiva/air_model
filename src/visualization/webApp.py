@@ -65,8 +65,8 @@ if __name__ == "__main__":
     st.sidebar.write("### Icestupa")
     location = st.sidebar.radio(
         "built at",
-        # ("Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"),
-        ("Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020"),
+        ("Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"),
+        # ("Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020"),
     )
 
     # st.sidebar.write("### Fountain")
@@ -75,9 +75,15 @@ if __name__ == "__main__":
     # )
     # if trigger == "Field staff":
     #     trigger = "Manual"
-    trigger = "Manual"
+
+
+    if location in ['Gangles 2021']:
+        trigger = "None"
+    else:
+        trigger = "Manual"
 
     SITE, FOUNTAIN, FOLDER = config(location, trigger=trigger)
+
 
     icestupa = Icestupa(location, trigger)
 
@@ -152,16 +158,36 @@ if __name__ == "__main__":
                 # default=["Validation", "Timelapse"],
             )
 
-        # st.sidebar.write("### Map")
-        # lat = SITE["latitude"]
-        # lon = SITE["longitude"]
-        # map_data = pd.DataFrame({"lat": [lat], "lon": [lon]})
-        # st.sidebar.map(map_data, zoom=10)
+        st.sidebar.write("### Map")
+        lat = SITE["latitude"]
+        lon = SITE["longitude"]
+        map_data = pd.DataFrame({"lat": [lat], "lon": [lon]})
+        st.sidebar.map(map_data, zoom=10)
+
         st.sidebar.write(
             """
-        ### More Info
+        ### About
+        Several villages in the arid high Himalayas have been constructing
+        [artificial ice
+        reservoirs](https://www.thethirdpole.net/en/climate/the-glacier-marriages-in-pakistans-high-himalayas/)
+        to meet their farming water demand in early spring. With the invention of
+        [icestupas](https://www.youtube.com/watch?v=2xuBvI98-n4&t=2s) this
+        practice of storing water as ice now shows great potential over
+        traditional water storage techniques. But this technology is only
+        viable in regions with suitable weather conditions. In order to
+        identify such suitable regions, we developed a physical model that
+        takes weather conditions and water availability as input and estimates
+        the amount of meltwater expected.
+
+        In the winters of 2019, 2020 and 2021, several scientific
+        icestupas were built in India and Switzerland to calibrate and
+        validate this physical model. Here we present the model results.
+
+        [Abstract](https://www.unifr.ch/geo/cryosphere/en/projects/smd4gc/artificial-ice-reservoirs.html)
+
         [![Star](https://img.shields.io/github/stars/Gayashiva/air_model?logo=github&style=social)](https://gitHub.com/Gayashiva/air_model)
-        &nbsp[![Follow](https://img.shields.io/twitter/follow/know_just_ice?style=social)](https://www.twitter.com/know_just_ice)
+
+        [![Follow](https://img.shields.io/twitter/follow/know_just_ice?style=social)](https://www.twitter.com/know_just_ice)
         """
         )
 
