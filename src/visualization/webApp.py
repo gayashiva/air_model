@@ -144,12 +144,12 @@ if __name__ == "__main__":
                 """
                 )
             visualize = [
-                "Validation",
                 "Timelapse",
+                "Validation",
                 "Data Overview",
                 "Input",
                 "Output",
-                "Derived",
+                # "Derived",
             ]
             display = st.multiselect(
                 "Choose type of visualization below:",
