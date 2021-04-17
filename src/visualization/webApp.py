@@ -65,7 +65,8 @@ if __name__ == "__main__":
     st.sidebar.write("### Icestupa")
     location = st.sidebar.radio(
         "built at",
-        ("Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"),
+        ("Guttannen 2021", "Gangles 2021", "Guttannen 2020",  "Schwarzsee 2019"),
+        # ("Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"),
         # ("Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020"),
     )
 
@@ -254,14 +255,14 @@ if __name__ == "__main__":
                 )
                 st.image(path)
 
-                if SITE["name"] in ["guttannen21", "guttannen20"]:
-                    path = (
-                        output_folder
-                        + "paper_figures/Temp_Validation_"
-                        + icestupa.trigger
-                        + ".jpg"
-                    )
-                    st.image(path)
+                # if SITE["name"] in ["guttannen21", "guttannen20"]:
+                #     path = (
+                #         output_folder
+                #         + "paper_figures/Temp_Validation_"
+                #         + icestupa.trigger
+                #         + ".jpg"
+                #     )
+                #     st.image(path)
 
             if "Timelapse" in display:
                 st.write("## Timelapse")
