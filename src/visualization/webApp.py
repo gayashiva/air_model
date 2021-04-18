@@ -18,7 +18,8 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 sys.path.append(dirname)
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.icestupaClass import Icestupa
-from src.data.settings import config
+from src.utils.settings import config
+from src.utils import setup_logger
 
 
 # SETTING PAGE CONFIG TO WIDE MODE

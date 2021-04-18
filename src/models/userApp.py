@@ -6,14 +6,13 @@ import os, sys, time
 import logging
 import coloredlogs
 import inquirer
-import multiprocessing
-from multiprocessing import Pool
 
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 from src.models.icestupaClass import Icestupa
-from src.data.settings import config
+from src.utils.settings import config
+from src.utils import setup_logger
 
 
 if __name__ == "__main__":

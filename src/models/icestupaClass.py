@@ -20,7 +20,8 @@ from src.models.methods.calibration import get_calibration
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
-from src.data.settings import config
+from src.utils.settings import config
+from src.utils import setup_logger
 
 # Module logger
 logger = logging.getLogger(__name__)
