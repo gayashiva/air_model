@@ -3,13 +3,12 @@
 
 # External modules
 import pickle
-pickle.HIGHEST_PROTOCOL = 4
+pickle.HIGHEST_PROTOCOL = 4 # For python version 2.7
 import pandas as pd
 import sys, os, math, time
 from datetime import datetime
 import numpy as np
 from functools import lru_cache
-# from pandas_profiling import ProfileReport
 import logging
 from stqdm import stqdm
 

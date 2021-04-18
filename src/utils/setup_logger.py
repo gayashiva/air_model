@@ -7,11 +7,10 @@ import logging
 import logging.config
 import coloredlogs
 
-dirname = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-
+dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 def setup_logging(
-    default_path=dirname + "/src/logs/logging.yaml",
+    default_path=dirname + "/src/utils/logging.yaml",
     default_level=logging.INFO,
     env_key="LOG_CFG",
 ):
