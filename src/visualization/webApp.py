@@ -188,7 +188,7 @@ if __name__ == "__main__":
         st.markdown(intro_markdown, unsafe_allow_html=True)
         st.sidebar.write(
             """
-            ### Partners:
+            ### Partners
             """
         )
         row2_1, row2_2, row2_3 = st.sidebar.beta_columns((1, 1, 1))
