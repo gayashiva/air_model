@@ -68,8 +68,6 @@ if __name__ == "__main__":
     location = st.sidebar.radio(
         "built at",
         ("Guttannen 2021", "Gangles 2021", "Guttannen 2020", "Schwarzsee 2019"),
-        # ("Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"),
-        # ("Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020"),
     )
 
     # st.sidebar.write("### Fountain")
@@ -181,10 +179,6 @@ if __name__ == "__main__":
         conditions in order to freeze the available water.  In order to identify such suitable regions, we developed a
         physical model that takes weather conditions and water availability as
         input and estimates the amount of meltwater expected.
-
-        In the winters of 2019, 2020 and 2021, several scientific
-        icestupas were built in India and Switzerland to calibrate and
-        validate this physical model. Here we present the model results.
 
         [![Follow](https://img.shields.io/twitter/follow/know_just_ice?style=social)](https://www.twitter.com/know_just_ice)
         """
