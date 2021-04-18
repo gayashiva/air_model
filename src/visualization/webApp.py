@@ -216,6 +216,9 @@ if __name__ == "__main__":
             st.image(
                 "src/visualization/logos/guttannen-bewegt.png", caption="Guttannen Moves", use_column_width=True
             )
+            st.image(
+                "src/visualization/logos/Logo-Swiss-Polar-Institute.png", caption="Swiss Polar Institute", use_column_width=True
+            )
 
         with row3_1:
             f_mean = icestupa.df.Discharge.replace(0, np.nan).mean()
