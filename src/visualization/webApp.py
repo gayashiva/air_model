@@ -12,6 +12,7 @@ import re
 import base64
 import logging
 import coloredlogs
+from pathlib import Path
 
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -23,7 +24,7 @@ from src.utils import setup_logger
 
 
 # SETTING PAGE CONFIG TO WIDE MODE
-air_logo = os.path.join(dirname, "src/visualization/AIR_logo_circle.png")
+air_logo = os.path.join(dirname, "src/visualization/logos/AIR_logo_circle.png")
 st.set_page_config(
     layout="centered",  # Can be "centered" or "wide". In the future also "dashboard", etc.
     initial_sidebar_state="expanded",  # Can be "auto", "expanded", "collapsed"
@@ -66,7 +67,7 @@ if __name__ == "__main__":
     st.sidebar.write("### Select Icestupa")
     location = st.sidebar.radio(
         "built at",
-        ("Guttannen 2021", "Gangles 2021", "Guttannen 2020",  "Schwarzsee 2019"),
+        ("Guttannen 2021", "Gangles 2021", "Guttannen 2020", "Schwarzsee 2019"),
         # ("Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"),
         # ("Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020"),
     )
@@ -78,14 +79,12 @@ if __name__ == "__main__":
     # if trigger == "Field staff":
     #     trigger = "Manual"
 
-
-    if location in ['Gangles 2021']:
+    if location in ["Gangles 2021"]:
         trigger = "None"
     else:
         trigger = "Manual"
 
     SITE, FOUNTAIN, FOLDER = config(location, trigger=trigger)
-
 
     icestupa = Icestupa(location, trigger)
 
@@ -177,7 +176,7 @@ if __name__ == "__main__":
         practice of storing water as ice now shows great potential over
         traditional water storage techniques. It doesn't need any energy to
         construct and the materials needed like pipelines and fountain are
-        often already available. The only major limitation though is where this
+        often already available to a farmer. One major limitation though is where this
         technology can be applied, since it requires certain favourable weather
         conditions in order to freeze the available water.  In order to identify such suitable regions, we developed a
         physical model that takes weather conditions and water availability as
@@ -187,16 +186,44 @@ if __name__ == "__main__":
         icestupas were built in India and Switzerland to calibrate and
         validate this physical model. Here we present the model results.
 
-        [Abstract](https://www.unifr.ch/geo/cryosphere/en/projects/smd4gc/artificial-ice-reservoirs.html)
-
-        [![Star](https://img.shields.io/github/stars/Gayashiva/air_model?logo=github&style=social)](https://gitHub.com/Gayashiva/air_model)
-
         [![Follow](https://img.shields.io/twitter/follow/know_just_ice?style=social)](https://www.twitter.com/know_just_ice)
         """
         )
 
-        row2_1, row2_2 = st.beta_columns((1, 1))
+        intro_markdown = Path("src/visualization/intro.md").read_text()
+        st.markdown(intro_markdown, unsafe_allow_html=True)
+        st.sidebar.write(
+            """
+            ### Partners:
+            """
+        )
+        row2_1, row2_2, row2_3 = st.sidebar.beta_columns((1, 1, 1))
+        st.markdown("---")
+        row3_1, row3_2 = st.beta_columns((1, 1))
         with row2_1:
+            st.image(
+                "src/visualization/logos/unifr.png",
+                caption="UniFR",
+                use_column_width=True,
+            )
+            st.image(
+                "src/visualization/logos/GA.png",
+                caption="GlaciersAlive",
+                use_column_width=True,
+            )
+        with row2_2:
+            st.image(
+                "src/visualization/logos/HIAL-logo.png", caption="HIAL", use_column_width=True
+            )
+            st.image(
+                "src/visualization/logos/logo-schwarzsee.png", caption="Schwarzsee Tourism", use_column_width=True
+            )
+        with row2_3:
+            st.image(
+                "src/visualization/logos/guttannen-bewegt.png", caption="Guttannen Moves", use_column_width=True
+            )
+
+        with row3_1:
             f_mean = icestupa.df.Discharge.replace(0, np.nan).mean()
             f_efficiency = 100 - (
                 (
@@ -225,7 +252,7 @@ if __name__ == "__main__":
                 )
             )
 
-        with row2_2:
+        with row3_2:
             st.markdown(
                 """
             | Icestupa| Estimation |
@@ -243,6 +270,7 @@ if __name__ == "__main__":
                 )
             )
 
+        st.markdown("---")
         if not (display):
             st.error("Please select at least one visualization.")
         else:
