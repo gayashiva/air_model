@@ -204,11 +204,11 @@ if __name__ == "__main__":
             caption="GlaciersAlive",
             use_column_width=True,
         )
-        # st.image(
-        #     "src/visualization/logos/ng-logo.webp",
-        #     # caption="GlaciersAlive",
-        #     use_column_width=True,
-        # )
+        st.image(
+            "src/visualization/logos/ng-logo.png",
+            # caption="GlaciersAlive",
+            use_column_width=True,
+        )
     with row2_2:
         st.image(
             "src/visualization/logos/HIAL-logo.png", caption="HIAL", use_column_width=True
