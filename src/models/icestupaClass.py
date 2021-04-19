@@ -28,7 +28,6 @@ logger = logging.getLogger(__name__)
 
 class Icestupa:
     """Physical Constants"""
-
     L_S = 2848 * 1000  # J/kg Sublimation
     L_E = 2514 * 1000  # J/kg Evaporation
     L_F = 334 * 1000  # J/kg Fusion
@@ -55,9 +54,16 @@ class Icestupa:
     """Model constants"""
     # DX = 5e-03  # Initial Ice layer thickness
     DX = 17e-03  # Initial Ice layer thickness
+    TIME_STEP = 15 # Model time step
+
+    """Fountain constants"""
     theta_f = 45  # FOUNTAIN angle
     ftl = 0  # FOUNTAIN flight time loss ftl
     T_w = 5  # FOUNTAIN Water temperature
+
+    """Simulation constants"""
+    location = "Guttannen 2021"
+    trigger = "Manual"
     crit_temp = 0  # FOUNTAIN runtime temperature
 
 
