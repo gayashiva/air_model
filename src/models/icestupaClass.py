@@ -98,17 +98,20 @@ class Icestupa:
     ):  # Derives additional parameters required for simulation
         if self.name in ["gangles21"]:
             df_c = get_calibration(site=self.name, input=self.input)
-            self.r_spray = df_c.loc[1, "dia"] / 2
-            self.h_i = self.DX
+            # self.r_spray = df_c.loc[1, "dia"] / 2
             df_c.loc[:, "DroneV"] -= df_c.loc[0, "DroneV"]
             self.df = pd.merge(self.df, df_c, on="When", how="left")
+            self.r_spray = (self.df.dia.loc[~self.df.dia.isnull()].iloc[1])/2
+            self.h_i = self.DX
 
         if self.name in ["guttannen21", "guttannen20"]:
             df_c, df_cam = get_calibration(site=self.name, input=self.input)
-            self.r_spray = df_c.loc[0, "dia"] / 2
-            self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
+            # self.r_spray = df_c.loc[0, "dia"] / 2
+            # self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
             self.df = pd.merge(self.df, df_c, on="When", how="left")
             self.df = pd.merge(self.df, df_cam, on="When", how="left")
+            self.r_spray = (self.df.dia.loc[~self.df.dia.isnull()].iloc[0])/2
+            self.h_i = 3 * (self.df.DroneV.loc[~self.df.dia.isnull()].iloc[0])/(math.pi * self.r_spray ** 2)
 
         if self.name in ["schwarzsee19"]:
             df_c = get_calibration(site=self.name, input=self.input)
@@ -173,7 +176,8 @@ class Icestupa:
             self.discharge = get_droplet_projectile(
                 dia=self.dia_f, h=self.h_f, x=self.r_spray
             )
-        else:  # Provide spray radius
+        elif hasattr(self, "discharge"):  # Provide spray radius
+            print("Working")
             self.r_spray = get_droplet_projectile(
                 dia=self.dia_f, h=self.h_f, d=self.discharge
             )
@@ -214,6 +218,7 @@ class Icestupa:
                 s, f = self.get_albedo(i, s, f, site=self.name)
 
         self.df = self.df.round(3)
+        self.df = self.df.drop(columns=['h_s'])
         self.df = self.df[
             self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
         ]  # Remove junk columns
@@ -347,7 +352,23 @@ class Icestupa:
         STATE = 0
         self.start = 0
 
-        logger.warning(self.DX)
+        if self.name in ["gangles21"]:
+            self.r_spray = (self.df.dia.loc[~self.df.dia.isnull()].iloc[1])/2
+            self.h_i = self.DX
+
+        if self.name in ["guttannen21", "guttannen20"]:
+            self.r_spray = (self.df.dia.loc[~self.df.dia.isnull()].iloc[0])/2
+            self.h_i = 3 * (self.df.DroneV.loc[~self.df.dia.isnull()].iloc[0])/(math.pi * self.r_spray ** 2)
+
+        if hasattr(self, "r_spray"):  # Provide discharge
+            self.discharge = get_droplet_projectile(
+                dia=self.dia_f, h=self.h_f, x=self.r_spray
+            )
+        elif hasattr(self, "discharge"):  # Provide spray radius
+            print("Working")
+            self.r_spray = get_droplet_projectile(
+                dia=self.dia_f, h=self.h_f, d=self.discharge
+            )
 
         t = stqdm(
             self.df[1:-1].itertuples(),

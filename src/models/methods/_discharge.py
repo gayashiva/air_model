@@ -137,6 +137,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                 self.df[self.df.Discharge == 0].index, "Discharge"
             ] = 5  # Fountain was always on
             self.df = self.df.reset_index()
+
         if self.name == "schwarzsee19":
 
             df_f = pd.read_csv(

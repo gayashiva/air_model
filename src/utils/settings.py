@@ -53,7 +53,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             longitude=8.283333,
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
             altitude_aws=1054,
-            hollowV=44.6,
+            # hollowV=44.6,
         )
 
         FOUNTAIN = dict(
