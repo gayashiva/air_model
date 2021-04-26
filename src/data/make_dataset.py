@@ -541,7 +541,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    SITE, FOUNTAIN, FOLDER = config("Schwarzsee 2019")
+    SITE, FOUNTAIN, FOLDER = config("Guttannen 2021")
 
     raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
@@ -606,6 +606,9 @@ if __name__ == "__main__":
         X = df_ERA5[mask][column].values.reshape(-1, 1)
         slope, intercept = linreg(X, Y)
         df_ERA5[column] = slope * df_ERA5[column] + intercept
+        if column in ["v_a"]:
+            # Correct negative wind
+            df_ERA5.v_a.loc[df_ERA5.v_a<0] = 0
 
     df_ERA5 = df_ERA5.set_index("When")
 
@@ -633,6 +636,7 @@ if __name__ == "__main__":
             df["missing_type"] = df["missing_type"] + col
     logger.info(df.missing_type.describe())
     logger.info(df.missing_type.unique())
+
 
     # if SITE["name"] in ["schwarzsee19"]:
     #     for col in ["T_a", "RH", "v_a", "p_a"]:
@@ -702,6 +706,8 @@ if __name__ == "__main__":
     df_out = df_out.round(3)
     if len(df_out[df_out.index.duplicated()]):
         logger.error("Duplicate indexes")
+
+
     logger.info(df_out.tail())
     df_out.to_csv(input_folder + SITE["name"] + "_input_model.csv")
     fig = plt.figure()

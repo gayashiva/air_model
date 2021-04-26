@@ -126,6 +126,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             self.df.loc[
                 self.df[self.df.Discharge == 0].index, "Discharge"
             ] = 5  # Fountain was always on
+            # ] = 0  # Fountain was always on
             self.df = self.df.reset_index()
             logger.info(
                 f"Hours of spray : %.2f\n Mean Discharge:%.2f"

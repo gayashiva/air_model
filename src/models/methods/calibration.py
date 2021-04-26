@@ -54,7 +54,7 @@ def get_calibration(site, input):
             mask = df_cam["When"] >= datetime(2020,12,5) #No ice
             df_cam = df_cam.loc[mask]
             df_cam = df_cam.reset_index(drop=True)
-            mask = (df_cam["cam_temp_full"] >= -7.5) & (df_cam["cam_temp_full"] <= 5) # Cloudy and sunny times
+            mask = (df_cam["cam_temp_full"] >= -7.247) & (df_cam["cam_temp_full"] <= 5) # Cloudy and sunny times
             df_cam = df_cam.loc[mask]
             df_cam = df_cam.reset_index(drop=True)
             correct = df_cam.loc[df_cam.When == datetime(2021, 2, 11,11),  "cam_temp"].values + 0.9

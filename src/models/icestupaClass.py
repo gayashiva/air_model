@@ -50,9 +50,11 @@ class Icestupa:
     T_DECAY = 10  # Albedo decay rate decay_t_d
     Z_I = 0.0017  # Ice Momentum and Scalar roughness length
     T_RAIN = 1  # Temperature condition for liquid precipitation
+    v_a_limit = 8  # All fountain water lost at this wind speed
 
     """Model constants"""
     # DX = 5e-03  # Initial Ice layer thickness
+    # DX = 10e-03  # Initial Ice layer thickness
     DX = 17e-03  # Initial Ice layer thickness
     TIME_STEP = 15 # Model time step
 
@@ -469,6 +471,12 @@ class Icestupa:
                     self.df.Discharge.loc[i] * (1 - self.ftl) * self.TIME_STEP / 60
                 )
 
+                # Water loss due to wind
+                if self.df.v_a.loc[i] < self.v_a_limit:
+                    self.df.loc[i,"fountain_in"]*= (1 - self.df.v_a.loc[i]/self.v_a_limit)
+                else:
+                    self.df.loc[i,"fountain_in"]= 0
+
                 if self.df.loc[i, "SA"]:
                     self.get_energy(row)
 
@@ -582,7 +590,7 @@ class Icestupa:
                                 self.TIME_STEP * self.df.loc[i, "SA"]
                             )
                             self.df.loc[i,"fountain_in"] = 0
-                            logger.debug("Discharge froze completely")
+                            logger.warning("Discharge froze completely")
                         else:
                             self.df.loc[i, "$q_{melt}$"] += self.df.loc[i, "TotalE"]
 
@@ -660,9 +668,9 @@ class Icestupa:
                 if self.df.loc[i,'fountain_in'] > self.df.loc[i, 'Discharge'] * self.TIME_STEP / 60:
 
                     logger.error(
-                        f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}"
+                        f"Discharge exceeded When {self.df.When[i]}, Fountain in {self.df.fountain_in[i]}, Discharge in {self.df.Discharge[i]* self.TIME_STEP / 60}"
                     )
-                    sys.exit("Discharge exceeded")
+                    # sys.exit("Discharge exceeded")
 
                 # if math.fabs(self.df.loc[i, "TotalE"]) > 500:
                 #     logger.debug(
