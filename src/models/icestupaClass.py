@@ -104,17 +104,29 @@ class Icestupa:
         self,
     ):  # Derives additional parameters required for simulation
         if self.name in ["gangles21"]:
+<<<<<<< HEAD
             df_c = get_calibration(site=self.name, input=self.input)
             # self.r_spray = df_c.loc[1, "dia"] / 2
+=======
+            df_c = get_calibration(site=self.name, input=self.raw)
+            self.r_spray = df_c.loc[1, "dia"] / 2
+            self.h_i = self.DX
+>>>>>>> dev
             df_c.loc[:, "DroneV"] -= df_c.loc[0, "DroneV"]
             self.df = pd.merge(self.df, df_c, on="When", how="left")
             self.r_spray = (self.df.dia.loc[~self.df.dia.isnull()].iloc[1])/2
             self.h_i = self.DX
 
         if self.name in ["guttannen21", "guttannen20"]:
+<<<<<<< HEAD
             df_c, df_cam = get_calibration(site=self.name, input=self.input)
             # self.r_spray = df_c.loc[0, "dia"] / 2
             # self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
+=======
+            df_c, df_cam = get_calibration(site=self.name, input=self.raw)
+            self.r_spray = df_c.loc[0, "dia"] / 2
+            self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
+>>>>>>> dev
             self.df = pd.merge(self.df, df_c, on="When", how="left")
             self.df = pd.merge(self.df, df_cam, on="When", how="left")
             self.r_spray = (self.df.dia.loc[~self.df.dia.isnull()].iloc[0])/2
@@ -124,7 +136,7 @@ class Icestupa:
             logger.info("Ice temp. on Feb 11 at 1100 was -0.9 C but thermal cam says %0.2f C" % df_cam.loc[df_cam.index == datetime(2021, 2, 11,11),  "cam_temp"])
 
         if self.name in ["schwarzsee19"]:
-            df_c = get_calibration(site=self.name, input=self.input)
+            df_c = get_calibration(site=self.name, input=self.raw)
             self.df = pd.merge(self.df, df_c, on="When", how="left")
 
         logger.info(df_c.head())
