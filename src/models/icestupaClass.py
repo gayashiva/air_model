@@ -60,7 +60,6 @@ class Icestupa:
 
     """Fountain constants"""
     theta_f = 45  # FOUNTAIN angle
-    ftl = 0  # FOUNTAIN flight time loss ftl
     T_w = 5  # FOUNTAIN Water temperature
 
     """Simulation constants"""
@@ -363,6 +362,7 @@ class Icestupa:
             "cdt",
             "thickness",
             "fountain_in",
+            "wind_loss",
             "$q_{T}$",
             "$q_{melt}$",
         ]
@@ -439,9 +439,6 @@ class Icestupa:
 
             if STATE == 1:
                 # Change in fountain height
-                # if (self.df.loc[i, "h_s"]) > 0:
-                # if not np.isnan(self.df.loc[i, "h_s"]):
-                    # self.h_f += row.h_s
                 if self.df.loc[i, "h_f"] != self.df.loc[i-1, "h_f"]:
                     logger.warning(
                         "Height increased to %s on %s" % (self.df.loc[i, "h_f"], self.df.When[i])
@@ -468,17 +465,18 @@ class Icestupa:
 
                 # Fountain water output
                 self.df.loc[i,"fountain_in"]= (
-                    self.df.Discharge.loc[i] * (1 - self.ftl) * self.TIME_STEP / 60
+                    self.df.Discharge.loc[i] * self.TIME_STEP / 60
                 )
 
                 # Water loss due to wind
                 if self.df.v_a.loc[i] < self.v_a_limit:
-                    self.df.loc[i,"fountain_in"]*= (1 - self.df.v_a.loc[i]/self.v_a_limit)
+                    self.df.loc[i,"wind_loss"]*= self.df.loc[i,"fountain_in"] * self.df.v_a.loc[i]/self.v_a_limit
+                    self.df.loc[i,"fountain_in"]-= self.df.loc[i,"wind_loss"]
                 else:
                     self.df.loc[i,"fountain_in"]= 0
 
-                if self.df.loc[i, "SA"]:
-                    self.get_energy(row)
+                # Energy Flux
+                self.get_energy(row)
 
                 # Latent Heat
 
@@ -545,6 +543,7 @@ class Icestupa:
                     """Freezing water"""
                     self.df.loc[i, "TotalE"] += (
                         (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
+                        # (self.df.loc[i, "T_s"])
                         * self.RHO_I
                         * self.DX
                         * self.C_I
@@ -556,6 +555,7 @@ class Icestupa:
                     else:
                         self.df.loc[i, "Qf"] += (
                             (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
+                            # (self.df.loc[i, "T_s"])
                             * self.RHO_I
                             * self.DX
                             * self.C_I
@@ -564,6 +564,7 @@ class Icestupa:
                         # DUE TO qF force surface temperature bulk temp
                         self.df.loc[i, "$q_{T}$"] -= (
                             (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
+                            # (self.df.loc[i, "T_s"])
                             * self.RHO_I
                             * self.DX
                             * self.C_I
@@ -705,7 +706,9 @@ class Icestupa:
                     self.df.loc[i, "vapour"] + self.df.loc[i, "gas"]
                 )
                 self.df.loc[i + 1, "unfrozen_water"] = (
-                    self.df.loc[i, "unfrozen_water"] + self.df.loc[i,"fountain_in"]
+                    self.df.loc[i, "unfrozen_water"] 
+                    + self.df.loc[i,"fountain_in"] 
+                    + self.df.loc[i,"wind_loss"]
                 )
                 self.df.loc[i + 1, "iceV"] = (
                     self.df.loc[i + 1, "ice"] / self.RHO_I

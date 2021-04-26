@@ -360,8 +360,11 @@ if __name__ == "__main__":
 
                         meta = get_parameter_metadata(v)
                         st.header("%s" % (meta["name"] + " " + meta["units"]))
-                        st.line_chart(df[v])
-                        st.write(df[v].describe())
+                        row4_1, row4_2 = st.beta_columns((2, 5))
+                        with row4_1:
+                            st.write(df[v].describe())
+                        with row4_2:
+                            st.line_chart(df[v], use_container_width=True)
 
             if "Output" in display:
                 st.write("## Output variables")
@@ -381,8 +384,11 @@ if __name__ == "__main__":
                     for v in variable:
                         meta = get_parameter_metadata(v)
                         st.header("%s" % (meta["name"] + " " + meta["units"]))
-                        st.line_chart(df[v])
-                        st.write(df[v].describe())
+                        row5_1, row5_2 = st.beta_columns((2, 5))
+                        with row5_1:
+                            st.write(df[v].describe())
+                        with row5_2:
+                            st.line_chart(df[v], use_container_width=True)
 
             if "Derived" in display:
                 st.write("## Derived variables")
@@ -402,10 +408,10 @@ if __name__ == "__main__":
                     for v in variable:
                         meta = get_parameter_metadata(v)
                         st.header("%s" % (meta["name"] + " " + meta["units"]))
-                        row5_1, row5_2 = st.beta_columns((2, 5))
-                        with row5_1:
+                        row6_1, row6_2 = st.beta_columns((2, 5))
+                        with row6_1:
                             st.write(df[v].describe())
-                        with row5_2:
+                        with row6_2:
                             st.line_chart(df[v], use_container_width=True)
 
     except FileNotFoundError:
