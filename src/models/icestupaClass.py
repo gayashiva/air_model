@@ -55,7 +55,7 @@ class Icestupa:
     """Model constants"""
     # DX = 5e-03  # Initial Ice layer thickness
     # DX = 10e-03  # Initial Ice layer thickness
-    DX = 17e-03  # Initial Ice layer thickness
+    DX = 25e-03  # Initial Ice layer thickness
     TIME_STEP = 15 # Model time step
 
     """Fountain constants"""

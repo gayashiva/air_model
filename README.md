@@ -1,4 +1,4 @@
-<a href="url"><img src="https://github.com/Gayashiva/air_model/blob/master/src/visualization/AIR_logo_circle.png" align="left" height="148" width="148" ></a>
+<a href="url"><img src="https://github.com/Gayashiva/air_model/blob/dev/src/visualization/logos/AIR_logo_circle.png" align="left" height="148" width="148" ></a>
 
 # Artificial Ice Reservoirs
 
@@ -40,6 +40,8 @@ A physical model that estimates the meltwater quantity and survival duration of 
     │   │
     │   └── visualization  <- Scripts to create streamlit web app
     │       └── webApp.py
+    │
+    ├── .streamlit         <- Web app theming
     │
     └── tox.ini            <- tox file with settings for running tox; see tox.testrun.org
 

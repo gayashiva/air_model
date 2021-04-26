@@ -541,7 +541,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    SITE, FOUNTAIN, FOLDER = config("Guttannen 2021")
+    SITE, FOUNTAIN, FOLDER = config("Guttannen 2020")
 
     raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
