@@ -23,7 +23,7 @@ from sklearn.linear_model import LinearRegression
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
-from src.data.settings import config
+from src.utils.settings import config
 
 def field(location="schwarzsee"):
     if location == "guttannen20":
@@ -526,6 +526,11 @@ def meteoswiss(location="schwarzsee19"):
     logger.warning(df.columns)
     return df
 
+def correct_zeros(col, threshold=3):
+    mask = col.groupby((col != col.shift()).cumsum()).transform('count').lt(threshold)
+    mask &= col.eq(0)
+    col.update(col.loc[mask].replace(0,1))
+    return col
 
 if __name__ == "__main__":
 
@@ -536,18 +541,31 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    SITE, FOUNTAIN, FOLDER = config("Schwarzsee 2019")
+    SITE, FOUNTAIN, FOLDER = config("Guttannen 2020")
 
     raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
 
     if SITE["name"] in ["schwarzsee19"]:
         df = field(location=SITE["name"])
-        # Wind zero values are errors
-        df["v_a"] = df["v_a"].replace(0, np.NaN)
+        # Replace Wind zero values for 3 hours
+        mask = df.v_a.shift().eq(df.v_a)
+        for i in range(1,3*4):
+            mask &= df.v_a.shift(-1 * i).eq(df.v_a)
+        mask &= (df.v_a ==0)
+        df.v_a = df.v_a.mask(mask)
+        # # Wind zero values are errors
+        # df["v_a"] = df["v_a"].replace(0, np.NaN)
 
     if SITE["name"] in ["guttannen21", "guttannen20"]:
         df = meteoswiss(SITE["name"])
+
+        # Replace Wind zero values for 3 hours
+        mask = df.v_a.shift().eq(df.v_a)
+        for i in range(1,3*4):
+            mask &= df.v_a.shift(-1 * i).eq(df.v_a)
+        mask &= (df.v_a ==0)
+        df.v_a = df.v_a.mask(mask)
 
     if SITE["name"] in ["schwarzsee19"]:
         df_swiss = meteoswiss(SITE["name"])
@@ -588,6 +606,9 @@ if __name__ == "__main__":
         X = df_ERA5[mask][column].values.reshape(-1, 1)
         slope, intercept = linreg(X, Y)
         df_ERA5[column] = slope * df_ERA5[column] + intercept
+        if column in ["v_a"]:
+            # Correct negative wind
+            df_ERA5.v_a.loc[df_ERA5.v_a<0] = 0
 
     df_ERA5 = df_ERA5.set_index("When")
 
@@ -615,6 +636,7 @@ if __name__ == "__main__":
             df["missing_type"] = df["missing_type"] + col
     logger.info(df.missing_type.describe())
     logger.info(df.missing_type.unique())
+
 
     # if SITE["name"] in ["schwarzsee19"]:
     #     for col in ["T_a", "RH", "v_a", "p_a"]:
@@ -684,12 +706,14 @@ if __name__ == "__main__":
     df_out = df_out.round(3)
     if len(df_out[df_out.index.duplicated()]):
         logger.error("Duplicate indexes")
+
+
     logger.info(df_out.tail())
     df_out.to_csv(input_folder + SITE["name"] + "_input_model.csv")
     fig = plt.figure()
     plt.plot(df_out.v_a)
-    # plt.ylabel('some numbers')
-    # plt.savefig(input_folder + SITE["name"] + "test.png")
+    plt.ylabel('some numbers')
+    plt.savefig(input_folder + SITE["name"] + "test.png")
 
     if SITE["name"] in ['schwarzsee19']:
         df_ERA5["Prec"] = 0

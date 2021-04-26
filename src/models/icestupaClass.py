@@ -28,7 +28,6 @@ logger = logging.getLogger(__name__)
 
 class Icestupa:
     """Physical Constants"""
-
     L_S = 2848 * 1000  # J/kg Sublimation
     L_E = 2514 * 1000  # J/kg Evaporation
     L_F = 334 * 1000  # J/kg Fusion
@@ -51,13 +50,21 @@ class Icestupa:
     T_DECAY = 10  # Albedo decay rate decay_t_d
     Z_I = 0.0017  # Ice Momentum and Scalar roughness length
     T_RAIN = 1  # Temperature condition for liquid precipitation
+    v_a_limit = 8  # All fountain water lost at this wind speed
 
     """Model constants"""
     # DX = 5e-03  # Initial Ice layer thickness
-    DX = 17e-03  # Initial Ice layer thickness
+    # DX = 10e-03  # Initial Ice layer thickness
+    DX = 25e-03  # Initial Ice layer thickness
+    TIME_STEP = 15 # Model time step
+
+    """Fountain constants"""
     theta_f = 45  # FOUNTAIN angle
-    ftl = 0  # FOUNTAIN flight time loss ftl
     T_w = 5  # FOUNTAIN Water temperature
+
+    """Simulation constants"""
+    location = "Guttannen 2021"
+    trigger = "Manual"
     crit_temp = 0  # FOUNTAIN runtime temperature
 
 
@@ -112,6 +119,9 @@ class Icestupa:
             self.df = pd.merge(self.df, df_cam, on="When", how="left")
             self.r_spray = (self.df.dia.loc[~self.df.dia.isnull()].iloc[0])/2
             self.h_i = 3 * (self.df.DroneV.loc[~self.df.dia.isnull()].iloc[0])/(math.pi * self.r_spray ** 2)
+
+        if self.name == "guttannen21":
+            logger.info("Ice temp. on Feb 11 at 1100 was -0.9 C but thermal cam says %0.2f C" % df_cam.loc[df_cam.index == datetime(2021, 2, 11,11),  "cam_temp"])
 
         if self.name in ["schwarzsee19"]:
             df_c = get_calibration(site=self.name, input=self.input)
@@ -296,6 +306,21 @@ class Icestupa:
         print("Ppt", round(self.df["ppt"].sum(), 2))
         print("Duration", round(Duration, 2))
 
+        # if self.name == 'guttannen21':
+        #     logger.warning("\nIce temp. on Feb 11 at 1200 was -0.9 C but thermal cam says %0.2f C" % self.df.loc[self.df.When == datetime(2021, 2, 11,12),  "cam_temp"])
+        #     correct = self.df.loc[self.df.When == datetime(2021, 2, 11,12),  "cam_temp"].values + 0.9
+        #     logger.warning("correcting temperature by %0.2f" %correct)
+        #     self.df.cam_temp -= correct
+        #     # self.df.cam_temp = 3.27997 + 0.6033*self.df.cam_temp
+        #     logger.warning("\nIce temp. on Feb 11 at 1200 was -0.9 C but thermal cam says %0.2f C" % self.df.loc[self.df.When == datetime(2021, 2, 11,12),  "cam_temp"])
+
+        # if self.name == 'guttannen20':
+        #     logger.warning("\nIce temp. on jan 24 at 1000 was -3.2 C but thermal cam says %0.2f C" % self.df.loc[self.df.When == datetime(2020, 1, 24,10),  "cam_temp"])
+        #     # correct = self.df.loc[self.df.When == datetime(2020, 1, 24,10),  "cam_temp"].values + 0.9
+        #     # self.df.cam_temp -= correct
+        #     # self.df.cam_temp = 3.27997 + 0.6033*self.df.cam_temp
+        #     # logger.warning("\nIce temp. on Feb 11 at 1200 was -0.9 C but thermal cam says %0.2f C" % self.df.loc[self.df.When == datetime(2020, 1, 24,10),  "cam_temp"])
+
         # self.df = self.df.set_index("When").resample("D").mean().reset_index()
 
         if report == True:
@@ -342,6 +367,7 @@ class Icestupa:
             "cdt",
             "thickness",
             "fountain_in",
+            "wind_loss",
             "$q_{T}$",
             "$q_{melt}$",
         ]
@@ -351,24 +377,6 @@ class Icestupa:
 
         STATE = 0
         self.start = 0
-
-        if self.name in ["gangles21"]:
-            self.r_spray = (self.df.dia.loc[~self.df.dia.isnull()].iloc[1])/2
-            self.h_i = self.DX
-
-        if self.name in ["guttannen21", "guttannen20"]:
-            self.r_spray = (self.df.dia.loc[~self.df.dia.isnull()].iloc[0])/2
-            self.h_i = 3 * (self.df.DroneV.loc[~self.df.dia.isnull()].iloc[0])/(math.pi * self.r_spray ** 2)
-
-        if hasattr(self, "r_spray"):  # Provide discharge
-            self.discharge = get_droplet_projectile(
-                dia=self.dia_f, h=self.h_f, x=self.r_spray
-            )
-        elif hasattr(self, "discharge"):  # Provide spray radius
-            print("Working")
-            self.r_spray = get_droplet_projectile(
-                dia=self.dia_f, h=self.h_f, d=self.discharge
-            )
 
         t = stqdm(
             self.df[1:-1].itertuples(),
@@ -436,9 +444,6 @@ class Icestupa:
 
             if STATE == 1:
                 # Change in fountain height
-                # if (self.df.loc[i, "h_s"]) > 0:
-                # if not np.isnan(self.df.loc[i, "h_s"]):
-                    # self.h_f += row.h_s
                 if self.df.loc[i, "h_f"] != self.df.loc[i-1, "h_f"]:
                     logger.warning(
                         "Height increased to %s on %s" % (self.df.loc[i, "h_f"], self.df.When[i])
@@ -465,11 +470,18 @@ class Icestupa:
 
                 # Fountain water output
                 self.df.loc[i,"fountain_in"]= (
-                    self.df.Discharge.loc[i] * (1 - self.ftl) * self.TIME_STEP / 60
+                    self.df.Discharge.loc[i] * self.TIME_STEP / 60
                 )
 
-                if self.df.loc[i, "SA"]:
-                    self.get_energy(row)
+                # Water loss due to wind
+                if self.df.v_a.loc[i] < self.v_a_limit:
+                    self.df.loc[i,"wind_loss"]*= self.df.loc[i,"fountain_in"] * self.df.v_a.loc[i]/self.v_a_limit
+                    self.df.loc[i,"fountain_in"]-= self.df.loc[i,"wind_loss"]
+                else:
+                    self.df.loc[i,"fountain_in"]= 0
+
+                # Energy Flux
+                self.get_energy(row)
 
                 # Latent Heat
 
@@ -534,9 +546,9 @@ class Icestupa:
 
                 if self.df.loc[i, "TotalE"] < 0 and self.df.loc[i,"fountain_in"] > 0:
                     """Freezing water"""
-                    # Change in paper
                     self.df.loc[i, "TotalE"] += (
                         (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
+                        # (self.df.loc[i, "T_s"])
                         * self.RHO_I
                         * self.DX
                         * self.C_I
@@ -548,6 +560,7 @@ class Icestupa:
                     else:
                         self.df.loc[i, "Qf"] += (
                             (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
+                            # (self.df.loc[i, "T_s"])
                             * self.RHO_I
                             * self.DX
                             * self.C_I
@@ -556,6 +569,7 @@ class Icestupa:
                         # DUE TO qF force surface temperature bulk temp
                         self.df.loc[i, "$q_{T}$"] -= (
                             (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
+                            # (self.df.loc[i, "T_s"])
                             * self.RHO_I
                             * self.DX
                             * self.C_I
@@ -582,7 +596,7 @@ class Icestupa:
                                 self.TIME_STEP * self.df.loc[i, "SA"]
                             )
                             self.df.loc[i,"fountain_in"] = 0
-                            logger.debug("Discharge froze completely")
+                            logger.warning("Discharge froze completely")
                         else:
                             self.df.loc[i, "$q_{melt}$"] += self.df.loc[i, "TotalE"]
 
@@ -660,9 +674,9 @@ class Icestupa:
                 if self.df.loc[i,'fountain_in'] > self.df.loc[i, 'Discharge'] * self.TIME_STEP / 60:
 
                     logger.error(
-                        f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}"
+                        f"Discharge exceeded When {self.df.When[i]}, Fountain in {self.df.fountain_in[i]}, Discharge in {self.df.Discharge[i]* self.TIME_STEP / 60}"
                     )
-                    sys.exit("Discharge exceeded")
+                    # sys.exit("Discharge exceeded")
 
                 # if math.fabs(self.df.loc[i, "TotalE"]) > 500:
                 #     logger.debug(
@@ -697,7 +711,9 @@ class Icestupa:
                     self.df.loc[i, "vapour"] + self.df.loc[i, "gas"]
                 )
                 self.df.loc[i + 1, "unfrozen_water"] = (
-                    self.df.loc[i, "unfrozen_water"] + self.df.loc[i,"fountain_in"]
+                    self.df.loc[i, "unfrozen_water"] 
+                    + self.df.loc[i,"fountain_in"] 
+                    + self.df.loc[i,"wind_loss"]
                 )
                 self.df.loc[i + 1, "iceV"] = (
                     self.df.loc[i + 1, "ice"] / self.RHO_I

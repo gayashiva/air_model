@@ -103,6 +103,7 @@ class DX_Icestupa(Icestupa):
             self.df["SA"].values,
             self.df["iceV"].values,
             self.df["T_s"].values,
+            self.df["T_s"].values,
             result,
         )
 

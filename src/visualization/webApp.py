@@ -147,7 +147,7 @@ if __name__ == "__main__":
             "Data Overview",
             "Input",
             "Output",
-            # "Derived",
+            "Derived",
         ]
         display = st.multiselect(
             "Choose type of visualization below:",
@@ -204,24 +204,27 @@ if __name__ == "__main__":
             caption="GlaciersAlive",
             use_column_width=True,
         )
-        st.image(
-            "src/visualization/logos/ng-logo.png",
-            # caption="GlaciersAlive",
-            use_column_width=True,
-        )
     with row2_2:
         st.image(
-            "src/visualization/logos/HIAL-logo.png", caption="HIAL", use_column_width=True
+            "src/visualization/logos/HIAL-logo.png",
+            caption="HIAL",
+            use_column_width=True,
         )
         st.image(
-            "src/visualization/logos/logo-schwarzsee.png", caption="Schwarzsee Tourism", use_column_width=True
+            "src/visualization/logos/logo-schwarzsee.png",
+            caption="Schwarzsee Tourism",
+            use_column_width=True,
         )
     with row2_3:
         st.image(
-            "src/visualization/logos/guttannen-bewegt.png", caption="Guttannen Moves", use_column_width=True
+            "src/visualization/logos/guttannen-bewegt.png",
+            caption="Guttannen Moves",
+            use_column_width=True,
         )
         st.image(
-            "src/visualization/logos/Logo-Swiss-Polar-Institute.png", caption="Swiss Polar Institute", use_column_width=True
+            "src/visualization/logos/Logo-Swiss-Polar-Institute.png",
+            caption="Swiss Polar Institute",
+            use_column_width=True,
         )
 
     with row3_1:
@@ -272,7 +275,6 @@ if __name__ == "__main__":
         )
 
     st.markdown("---")
-
     if not (display):
         st.error("Please select at least one visualization.")
     else:
@@ -286,14 +288,14 @@ if __name__ == "__main__":
             )
             st.image(path)
 
-            # if SITE["name"] in ["guttannen21", "guttannen20"]:
-            #     path = (
-            #         output_folder
-            #         + "paper_figures/Temp_Validation_"
-            #         + icestupa.trigger
-            #         + ".jpg"
-            #     )
-            #     st.image(path)
+            if SITE["name"] in ["guttannen21", "guttannen20"]:
+                path = (
+                    output_folder
+                    + "paper_figures/Temp_Validation_"
+                    + icestupa.trigger
+                    + ".jpg"
+                )
+                st.image(path)
 
         if "Timelapse" in display:
             st.write("## Timelapse")
@@ -357,7 +359,11 @@ if __name__ == "__main__":
 
                     meta = get_parameter_metadata(v)
                     st.header("%s" % (meta["name"] + " " + meta["units"]))
-                    st.line_chart(df[v])
+                    row4_1, row4_2 = st.beta_columns((2, 5))
+                    with row4_1:
+                        st.write(df[v].describe())
+                    with row4_2:
+                        st.line_chart(df[v], use_container_width=True)
 
         if "Output" in display:
             st.write("## Output variables")
@@ -377,7 +383,11 @@ if __name__ == "__main__":
                 for v in variable:
                     meta = get_parameter_metadata(v)
                     st.header("%s" % (meta["name"] + " " + meta["units"]))
-                    st.line_chart(df[v])
+                    row5_1, row5_2 = st.beta_columns((2, 5))
+                    with row5_1:
+                        st.write(df[v].describe())
+                    with row5_2:
+                        st.line_chart(df[v], use_container_width=True)
 
         if "Derived" in display:
             st.write("## Derived variables")
@@ -397,10 +407,8 @@ if __name__ == "__main__":
                 for v in variable:
                     meta = get_parameter_metadata(v)
                     st.header("%s" % (meta["name"] + " " + meta["units"]))
-                    st.line_chart(df[v])
-
-# except FileNotFoundError:
-#     st.error(
-#         "Sorry, yet to produce relevant outputs for fountain trigger %s. Try another fountain trigger."
-#         % icestupa.trigger
-#     )
+                    row6_1, row6_2 = st.beta_columns((2, 5))
+                    with row6_1:
+                        st.write(df[v].describe())
+                    with row6_2:
+                        st.line_chart(df[v], use_container_width=True)

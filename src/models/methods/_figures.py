@@ -385,6 +385,7 @@ def summary_figures(self):
         CB91_Amber = "#F5B14C"
         x = self.df.When
         y1 = self.df.T_s
+        # y1 = self.df.T_bulk
         y2 = self.df.cam_temp
         ax.plot(
             x,

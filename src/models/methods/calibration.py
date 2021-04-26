@@ -48,6 +48,31 @@ def get_calibration(site, input):
                 header=0,
                 parse_dates=["When"],
             )
+
+        # Correct thermal cam temp.
+        if site == "guttannen20":
+            mask = df_cam["When"] >= datetime(2019,12,31) #No ice
+            df_cam = df_cam.loc[mask]
+            df_cam = df_cam.reset_index(drop=True)
+            mask = (df_cam["cam_temp_full"] >= -7.247) & (df_cam["cam_temp_full"] <= 5) # Cloudy and sunny times
+            df_cam = df_cam.loc[mask]
+            df_cam = df_cam.reset_index(drop=True)
+            # correct = df_cam.loc[df_cam.When == datetime(2021, 2, 11,11),  "cam_temp"].values + 0.9
+            # print("correcting temperature by %0.2f" %correct)
+            # df_cam.cam_temp -= correct
+            df_cam = df_cam.set_index("When")
+            return df_c, df_cam
+        # Correct thermal cam temp.
+        if site == "guttannen21":
+            mask = df_cam["When"] >= datetime(2020,12,5) #No ice
+            df_cam = df_cam.loc[mask]
+            df_cam = df_cam.reset_index(drop=True)
+            mask = (df_cam["cam_temp_full"] >= -7.247) & (df_cam["cam_temp_full"] <= 5) # Cloudy and sunny times
+            df_cam = df_cam.loc[mask]
+            df_cam = df_cam.reset_index(drop=True)
+            correct = df_cam.loc[df_cam.When == datetime(2021, 2, 11,11),  "cam_temp"].values + 0.9
+            print("correcting temperature by %0.2f" %correct)
+            df_cam.cam_temp -= correct
             df_cam = df_cam.set_index("When")
             return df_c, df_cam
 
