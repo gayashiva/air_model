@@ -105,6 +105,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             df_f = df_f.set_index("When").sort_index().reset_index()
             df_f.loc[df_f.index % 2 == 0, "fountain"] = 1
             df_f.loc[df_f.index % 2 != 0, "fountain"] = 0
+
             if self.name in ["guttannen20"]:
                 df_f["When"] = df_f["When"] - pd.DateOffset(years=1)
                 mask = df_f["When"] >= self.start_date
@@ -120,6 +121,12 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             )
             logger.debug(df_f.head())
             logger.debug(df_f.tail())
+            self.df = self.df.set_index("When")
+            self.df.loc[df_f.index, "Discharge"] = self.discharge * df_f["fountain"]
+            self.df.loc[
+                self.df[self.df.Discharge == 0].index, "Discharge"
+            ] = 5  # Fountain was always on
+            self.df = self.df.reset_index()
             logger.info(
                 f"Hours of spray : %.2f\n Mean Discharge:%.2f"
                 % (
@@ -131,12 +138,6 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                     (self.df.Discharge.replace(0, np.nan).mean()),
                 )
             )
-            self.df = self.df.set_index("When")
-            self.df.loc[df_f.index, "Discharge"] = self.discharge * df_f["fountain"]
-            self.df.loc[
-                self.df[self.df.Discharge == 0].index, "Discharge"
-            ] = 5  # Fountain was always on
-            self.df = self.df.reset_index()
         if self.name == "schwarzsee19":
 
             df_f = pd.read_csv(

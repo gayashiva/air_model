@@ -148,7 +148,7 @@ if __name__ == "__main__":
                 "Data Overview",
                 "Input",
                 "Output",
-                # "Derived",
+                "Derived",
             ]
             display = st.multiselect(
                 "Choose type of visualization below:",
@@ -207,17 +207,25 @@ if __name__ == "__main__":
             )
         with row2_2:
             st.image(
-                "src/visualization/logos/HIAL-logo.png", caption="HIAL", use_column_width=True
+                "src/visualization/logos/HIAL-logo.png",
+                caption="HIAL",
+                use_column_width=True,
             )
             st.image(
-                "src/visualization/logos/logo-schwarzsee.png", caption="Schwarzsee Tourism", use_column_width=True
+                "src/visualization/logos/logo-schwarzsee.png",
+                caption="Schwarzsee Tourism",
+                use_column_width=True,
             )
         with row2_3:
             st.image(
-                "src/visualization/logos/guttannen-bewegt.png", caption="Guttannen Moves", use_column_width=True
+                "src/visualization/logos/guttannen-bewegt.png",
+                caption="Guttannen Moves",
+                use_column_width=True,
             )
             st.image(
-                "src/visualization/logos/Logo-Swiss-Polar-Institute.png", caption="Swiss Polar Institute", use_column_width=True
+                "src/visualization/logos/Logo-Swiss-Polar-Institute.png",
+                caption="Swiss Polar Institute",
+                use_column_width=True,
             )
 
         with row3_1:
@@ -281,14 +289,14 @@ if __name__ == "__main__":
                 )
                 st.image(path)
 
-                # if SITE["name"] in ["guttannen21", "guttannen20"]:
-                #     path = (
-                #         output_folder
-                #         + "paper_figures/Temp_Validation_"
-                #         + icestupa.trigger
-                #         + ".jpg"
-                #     )
-                #     st.image(path)
+                if SITE["name"] in ["guttannen21", "guttannen20"]:
+                    path = (
+                        output_folder
+                        + "paper_figures/Temp_Validation_"
+                        + icestupa.trigger
+                        + ".jpg"
+                    )
+                    st.image(path)
 
             if "Timelapse" in display:
                 st.write("## Timelapse")
@@ -353,6 +361,7 @@ if __name__ == "__main__":
                         meta = get_parameter_metadata(v)
                         st.header("%s" % (meta["name"] + " " + meta["units"]))
                         st.line_chart(df[v])
+                        st.write(df[v].describe())
 
             if "Output" in display:
                 st.write("## Output variables")
@@ -373,6 +382,7 @@ if __name__ == "__main__":
                         meta = get_parameter_metadata(v)
                         st.header("%s" % (meta["name"] + " " + meta["units"]))
                         st.line_chart(df[v])
+                        st.write(df[v].describe())
 
             if "Derived" in display:
                 st.write("## Derived variables")
@@ -392,7 +402,11 @@ if __name__ == "__main__":
                     for v in variable:
                         meta = get_parameter_metadata(v)
                         st.header("%s" % (meta["name"] + " " + meta["units"]))
-                        st.line_chart(df[v])
+                        row5_1, row5_2 = st.beta_columns((2, 5))
+                        with row5_1:
+                            st.write(df[v].describe())
+                        with row5_2:
+                            st.line_chart(df[v], use_container_width=True)
 
     except FileNotFoundError:
         st.error(

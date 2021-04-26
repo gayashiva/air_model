@@ -21,6 +21,11 @@ def get_parameter_metadata(
             "kind": "Misc",
             "units": "()",
         },
+        "cam_temp_full": {
+            "name": "Camera errors",
+            "kind": "Misc",
+            "units": "()",
+        },
         "h_f": {
             "name": "Fountain Height",
             "kind": "Derived",

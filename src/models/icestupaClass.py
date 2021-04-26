@@ -116,6 +116,9 @@ class Icestupa:
             self.df = pd.merge(self.df, df_c, on="When", how="left")
             self.df = pd.merge(self.df, df_cam, on="When", how="left")
 
+        if self.name == "guttannen21":
+            logger.info("Ice temp. on Feb 11 at 1100 was -0.9 C but thermal cam says %0.2f C" % df_cam.loc[df_cam.index == datetime(2021, 2, 11,11),  "cam_temp"])
+
         if self.name in ["schwarzsee19"]:
             df_c = get_calibration(site=self.name, input=self.input)
             self.df = pd.merge(self.df, df_c, on="When", how="left")
@@ -297,6 +300,21 @@ class Icestupa:
         print("Ppt", round(self.df["ppt"].sum(), 2))
         print("Duration", round(Duration, 2))
 
+        # if self.name == 'guttannen21':
+        #     logger.warning("\nIce temp. on Feb 11 at 1200 was -0.9 C but thermal cam says %0.2f C" % self.df.loc[self.df.When == datetime(2021, 2, 11,12),  "cam_temp"])
+        #     correct = self.df.loc[self.df.When == datetime(2021, 2, 11,12),  "cam_temp"].values + 0.9
+        #     logger.warning("correcting temperature by %0.2f" %correct)
+        #     self.df.cam_temp -= correct
+        #     # self.df.cam_temp = 3.27997 + 0.6033*self.df.cam_temp
+        #     logger.warning("\nIce temp. on Feb 11 at 1200 was -0.9 C but thermal cam says %0.2f C" % self.df.loc[self.df.When == datetime(2021, 2, 11,12),  "cam_temp"])
+
+        # if self.name == 'guttannen20':
+        #     logger.warning("\nIce temp. on jan 24 at 1000 was -3.2 C but thermal cam says %0.2f C" % self.df.loc[self.df.When == datetime(2020, 1, 24,10),  "cam_temp"])
+        #     # correct = self.df.loc[self.df.When == datetime(2020, 1, 24,10),  "cam_temp"].values + 0.9
+        #     # self.df.cam_temp -= correct
+        #     # self.df.cam_temp = 3.27997 + 0.6033*self.df.cam_temp
+        #     # logger.warning("\nIce temp. on Feb 11 at 1200 was -0.9 C but thermal cam says %0.2f C" % self.df.loc[self.df.When == datetime(2020, 1, 24,10),  "cam_temp"])
+
         # self.df = self.df.set_index("When").resample("D").mean().reset_index()
 
         if report == True:
@@ -352,8 +370,6 @@ class Icestupa:
 
         STATE = 0
         self.start = 0
-
-        logger.warning(self.DX)
 
         t = stqdm(
             self.df[1:-1].itertuples(),
@@ -519,7 +535,6 @@ class Icestupa:
 
                 if self.df.loc[i, "TotalE"] < 0 and self.df.loc[i,"fountain_in"] > 0:
                     """Freezing water"""
-                    # Change in paper
                     self.df.loc[i, "TotalE"] += (
                         (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
                         * self.RHO_I
