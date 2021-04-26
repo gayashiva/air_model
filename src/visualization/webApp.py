@@ -67,7 +67,8 @@ if __name__ == "__main__":
     st.sidebar.write("### Select Icestupa")
     location = st.sidebar.radio(
         "built at",
-        ("Guttannen 2021", "Gangles 2021", "Guttannen 2020", "Schwarzsee 2019"),
+        # ("Guttannen 2021", "Gangles 2021", "Guttannen 2020", "Schwarzsee 2019"),
+        ("Guttannen 2021", "Guttannen 2020", "Schwarzsee 2019"),
     )
 
     # st.sidebar.write("### Fountain")
