@@ -75,6 +75,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             longitude=7.297543,
             latitude=46.693723,
             h_aws=3,
+            DX = 3e-03,  # Initial Ice layer thickness
         )
 
         FOUNTAIN = dict(
