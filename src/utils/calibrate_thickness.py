@@ -12,7 +12,7 @@ sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
 
-from src.data.settings import config
+from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
 from src.models.methods.calibration import get_calibration
 from src.models.methods.metadata import get_parameter_metadata
@@ -41,12 +41,12 @@ class DX_Icestupa(Icestupa):
         key = experiment.get("DX")
         self.DX = key
         if self.name in ["gangles21"]:
-            df_c = get_calibration(site=self.name, input=self.input)
+            df_c = get_calibration(site=self.name, input=self.raw)
             self.r_spray = df_c.loc[1, "dia"] / 2
             self.h_i = self.DX
 
         if self.name in ["guttannen21", "guttannen20"]:
-            df_c, df_cam = get_calibration(site=self.name, input=self.input)
+            df_c, df_cam = get_calibration(site=self.name, input=self.raw)
             self.r_spray = df_c.loc[0, "dia"] / 2
             self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
 
@@ -84,6 +84,7 @@ class DX_Icestupa(Icestupa):
         print("Ice Mass Remaining", self.df["ice"].iloc[-1])
         print("Meltwater", self.df["meltwater"].iloc[-1])
         print("Duration", Duration)
+        print("Correlation with thermal temp", round(self.df['cam_temp'].corr(self.df['T_s']), 2))
         print("\n")
 
         result = pd.Series(
@@ -93,6 +94,7 @@ class DX_Icestupa(Icestupa):
                 Duration,
                 Min_T_s,
                 Min_T_c,
+                self.df['cam_temp'].corr(self.df['T_s']),
             ]
         )
         self.df = self.df.set_index("When").resample("1H").mean().reset_index()
@@ -103,7 +105,7 @@ class DX_Icestupa(Icestupa):
             self.df["SA"].values,
             self.df["iceV"].values,
             self.df["T_s"].values,
-            self.df["T_s"].values,
+            self.df["cam_temp"].values,
             result,
         )
 
@@ -135,7 +137,7 @@ if __name__ == "__main__":
     model = DX_Icestupa(location=answers["location"], trigger=answers["trigger"])
     # model = DX_Icestupa()
 
-    param_values = np.arange(0.001, 0.05, 0.001).tolist()
+    param_values = np.arange(0.001, 0.02, 0.001).tolist()
 
     experiments = pd.DataFrame(param_values, columns=["DX"])
     variables = ["When", "SA", "iceV", "T_s"]
@@ -153,6 +155,7 @@ if __name__ == "__main__":
             SA,
             iceV,
             T_s,
+            cam_temp,
             result,
         ) in executor.map(model.run, experiments.to_dict("records")):
             iterables = [[key], variables]
@@ -163,6 +166,7 @@ if __name__ == "__main__":
                     (key, "SA"): SA,
                     (key, "iceV"): iceV,
                     (key, "T_s"): T_s,
+                    (key, "cam_temp"): cam_temp,
                 },
                 columns=index,
             )
@@ -178,6 +182,7 @@ if __name__ == "__main__":
                 2: "Duration",
                 3: "Min_T_s",
                 4: "Min_T_c",
+                5: "Corr",
             }
         )
 

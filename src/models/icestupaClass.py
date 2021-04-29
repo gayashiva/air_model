@@ -53,7 +53,7 @@ class Icestupa:
     v_a_limit = 8  # All fountain water lost at this wind speed
 
     """Model constants"""
-    DX = 8e-03  # Initial Ice layer thickness
+    DX = 6e-03  # Initial Ice layer thickness
     # DX = 17e-03  # Initial Ice layer thickness
     # DX = 25e-03  # Initial Ice layer thickness
     TIME_STEP = 15 # Model time step
@@ -261,6 +261,7 @@ class Icestupa:
         print("Meltwater", round(self.df["meltwater"].iloc[-1], 2))
         print("Ppt", round(self.df["ppt"].sum(), 2))
         print("Duration", round(Duration, 2))
+        print("Correlation with thermal temp", round(self.df['cam_temp'].corr(self.df['T_s']), 2))
 
         # Full Output
         filename4 = self.output + "model_output_" + self.trigger + ".csv"
@@ -307,7 +308,7 @@ class Icestupa:
         print("Input", round(self.df["input"].iloc[-1], 2))
         print("Ppt", round(self.df["ppt"].sum(), 2))
         print("Duration", round(Duration, 2))
-        print("Correlation with thermal temp", round(self.df['cam_temp'].corr(self.df['T_s']), 2))
+        
 
         # if self.name == 'guttannen21':
         #     logger.warning("\nIce temp. on Feb 11 at 1200 was -0.9 C but thermal cam says %0.2f C" % self.df.loc[self.df.When == datetime(2021, 2, 11,12),  "cam_temp"])
