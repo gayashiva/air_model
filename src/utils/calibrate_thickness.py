@@ -139,7 +139,7 @@ if __name__ == "__main__":
     model = DX_Icestupa(location=answers["location"], trigger=answers["trigger"])
     # model = DX_Icestupa()
 
-    param_values = np.arange(0.001, 0.02, 0.001).tolist()
+    param_values = np.arange(0.001, 0.03, 0.001).tolist()
 
     experiments = pd.DataFrame(param_values, columns=["DX"])
     variables = ["When", "SA", "iceV", "T_s"]
@@ -158,6 +158,7 @@ if __name__ == "__main__":
             iceV,
             T_s,
             cam_temp,
+            DroneV,
             result,
         ) in executor.map(model.run, experiments.to_dict("records")):
             iterables = [[key], variables]
