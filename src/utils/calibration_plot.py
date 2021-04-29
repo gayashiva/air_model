@@ -40,7 +40,7 @@ if __name__ == "__main__":
     # run="yes",
     # )
     # locations = ["Guttannen 2021", "Guttannen 2020", "Schwarzsee 2019"]
-    location = "Guttannen 2021"
+    location = "Guttannen 2020"
 
     SITE, FOUNTAIN, FOLDER = config(location, "Manual")
     cmap = plt.cm.rainbow  # define the colormap
