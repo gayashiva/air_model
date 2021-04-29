@@ -3,6 +3,7 @@
 import os, sys, time
 import pandas as pd
 import math
+from datetime import datetime
 import numpy as np
 from tqdm import tqdm
 from functools import lru_cache
@@ -105,28 +106,70 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             df_f = df_f.set_index("When").sort_index().reset_index()
             df_f.loc[df_f.index % 2 == 0, "fountain"] = 1
             df_f.loc[df_f.index % 2 != 0, "fountain"] = 0
-
-            if self.name in ["guttannen20"]:
-                df_f["When"] = df_f["When"] - pd.DateOffset(years=1)
-                mask = df_f["When"] >= self.start_date
-                df_f = df_f.loc[mask]
-                df_f = df_f.reset_index(drop=True)
-                df_f.loc[df_f.index % 2 == 0, "fountain"] = 0
-                df_f.loc[df_f.index % 2 != 0, "fountain"] = 1
             df_f = df_f[["When", "fountain"]]
             df_f = (
                 df_f.set_index("When")
                 .resample(str(int(self.TIME_STEP / 60)) + "T")
-                .ffill()
+                .ffill().reset_index()
             )
-            logger.debug(df_f.head())
-            logger.debug(df_f.tail())
+
+            mask = df_f["When"] >= self.start_date
+            mask &= df_f["When"] <= self.end_date
+            df_f = df_f.loc[mask]
+            df_f = df_f.reset_index(drop=True)
+
             self.df = self.df.set_index("When")
-            self.df.loc[df_f.index, "Discharge"] = self.discharge * df_f["fountain"]
-            self.df.loc[
-                self.df[self.df.Discharge == 0].index, "Discharge"
-            ] = 5  # Fountain was always on
-            # ] = 0  # Fountain was always on
+
+            if self.name in ["guttannen20"]:
+                df_f["When"] = df_f["When"] - pd.DateOffset(years=1)
+                df_f.loc[df_f.index % 2 == 0, "fountain"] = 0
+                df_f.loc[df_f.index % 2 != 0, "fountain"] = 1
+
+                # Use field discharge
+                df_field = pd.read_csv(
+                    os.path.join("data/" + self.name + "/interim/")
+                    + self.name
+                    + "_input_field.csv"
+                )
+                df_field["When"] = pd.to_datetime(df_field["When"])
+
+                mask = df_field["When"] >= self.start_date
+                mask &= df_field["When"] <= self.end_date
+                df_field = df_field.loc[mask]
+                df_field = df_field.reset_index(drop=True)
+
+                df_field = df_field.set_index("When")
+                mask = df_field.Discharge != np.NaN
+                mask &= df_field.Discharge != 0
+                df_field = df_field.loc[mask]
+                logger.info("Discharge min %s, max %s" %(5,df_field.Discharge.max()))
+                logger.info("Field discharge ends at %s" %df_field.index[-1])
+                self.df.loc[df_field.index, "Discharge"] = df_field["Discharge"]
+
+                df_f = df_f.set_index("When")
+                self.df["Discharge_fill"] = 0
+                self.df.loc[df_f.index, "Discharge_fill"] = df_f["fountain"] * df_field.Discharge.max()
+                self.df.loc[
+                    self.df[self.df.Discharge_fill == 0].index, "Discharge_fill"
+                # ] = df_field.Discharge.min()  # Fountain was always on
+                ] = 5  # Fountain was always on
+                self.df['Discharge'] = self.df.apply(
+                    lambda row: row['Discharge_fill'] if np.isnan(row['Discharge']) else row['Discharge'],
+                    axis=1
+                )
+                self.df = self.df.drop(['Discharge_fill'], axis = 1)
+
+            if self.name in ["guttannen21"]:
+                self.df.loc[df_f.index, "Discharge"] = self.discharge * df_f["fountain"]
+                self.df.loc[
+                    self.df[self.df.Discharge== 0].index & self.df[self.df.index <= datetime(2020,12,26)].index, "Discharge"
+                ] = 0  # Wood leak
+                self.df.loc[
+                    self.df[self.df.Discharge== 0].index & self.df[self.df.index >= datetime(2020,12,26)].index, "Discharge"
+                # ] = 3.5  # Fountain was always on
+                ] = 5  # Fountain was always on
+
+            logger.debug(self.df.Discharge.head())
             self.df = self.df.reset_index()
             logger.info(
                 f"Hours of spray : %.2f\n Mean Discharge:%.2f"

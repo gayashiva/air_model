@@ -24,7 +24,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
         SITE = dict(
             name="guttannen21",
             start_date=datetime(2020, 11, 22),
-            end_date=datetime(2021, 3, 19),
+            end_date=datetime(2021, 4, 26, 23),
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
@@ -46,7 +46,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             name="guttannen20",
             # start_date=datetime(2019, 12, 28),
             start_date=datetime(2020, 1, 3,16),
-            end_date=datetime(2020, 4, 6),
+            # end_date=datetime(2020, 4, 6),
+            end_date=datetime(2020, 1, 20),
             # end_date=datetime(2020, 2, 10),
             utc_offset=1,
             latitude=46.649999,
@@ -58,6 +59,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
         FOUNTAIN = dict(
             fountain_off_date=datetime(2020, 2, 27),
+            # fountain_off_date=datetime(2020, 3, 17, 18),
             dia_f=0.005,  # FOUNTAIN aperture diameter
             h_f=2.5,  # FOUNTAIN steps h_f
             discharge=10,  # FOUNTAIN on discharge

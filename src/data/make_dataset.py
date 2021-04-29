@@ -28,7 +28,7 @@ from src.utils.settings import config
 def field(location="schwarzsee"):
     if location == "guttannen20":
         df_in = pd.read_csv(
-            raw_folder + SITE["name"] + ".txt",
+            raw_folder + SITE["name"] + "_field.txt",
             header=None,
             encoding="latin-1",
             skiprows=7,
@@ -106,7 +106,7 @@ def field(location="schwarzsee"):
 
     if location == "guttannen21":
         df_in = pd.read_csv(
-            raw_folder + SITE["name"] + "_11Feb20.txt",
+            raw_folder + SITE["name"] + "_field.txt",
             header=None,
             encoding="latin-1",
             skiprows=7,
@@ -437,7 +437,6 @@ def linreg(X, Y):
     slope, intercept, r_value, p_value, std_err = stats.linregress(X[mask], Y[mask])
     return slope, intercept
 
-
 def meteoswiss_parameter(parameter):
     # d = {"time":{"name":"When", "units":"()"}}
     d = {
@@ -491,7 +490,6 @@ def meteoswiss_parameter(parameter):
 
     return value
 
-
 def meteoswiss(location="schwarzsee19"):
 
     if location == "schwarzsee19":
@@ -541,8 +539,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    # SITE, FOUNTAIN, FOLDER = config("Guttannen 2021")
-    SITE, FOUNTAIN, FOLDER = config("Schwarzsee 2019")
+    SITE, FOUNTAIN, FOLDER = config("Guttannen 2021")
+    # SITE, FOUNTAIN, FOLDER = config("Schwarzsee 2019")
 
     raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
@@ -559,6 +557,7 @@ if __name__ == "__main__":
         # df["v_a"] = df["v_a"].replace(0, np.NaN)
 
     if SITE["name"] in ["guttannen21", "guttannen20"]:
+        dfx = field(location=SITE["name"])
         df = meteoswiss(SITE["name"])
 
         # Replace Wind zero values for 3 hours
@@ -652,18 +651,6 @@ if __name__ == "__main__":
 
     df = df.reset_index()
 
-    # Compare ERA5 and field data
-    # for column in ["T_a", "RH", "v_a", "p_a"]:
-
-    #     slope, intercept, r_value, p_value, std_err = stats.linregress(
-    #         df[column].values, df_in3[column].values
-    #     )
-    #     print("ERA5", column, r_value)
-    # slope, intercept, r_value, p_value, std_err = stats.linregress(
-    #     df[column].values, df_swiss[column].values
-    # )
-    # print("Plf", column, r_value)
-
     if SITE["name"] in ["schwarzsee19"]:
         cols = [
             "When",
@@ -675,7 +662,6 @@ if __name__ == "__main__":
             "Prec",
             # "vp_a",
             "p_a",
-            # "missing",
             "missing_type",
             "LW_in",
         ]
@@ -690,7 +676,6 @@ if __name__ == "__main__":
             "Prec",
             "vp_a",
             "p_a",
-            # "missing",
             "missing_type",
             "LW_in",
         ]

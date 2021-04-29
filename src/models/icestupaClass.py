@@ -53,9 +53,9 @@ class Icestupa:
     v_a_limit = 8  # All fountain water lost at this wind speed
 
     """Model constants"""
-    # DX = 5e-03  # Initial Ice layer thickness
-    # DX = 10e-03  # Initial Ice layer thickness
-    DX = 25e-03  # Initial Ice layer thickness
+    DX = 8e-03  # Initial Ice layer thickness
+    # DX = 17e-03  # Initial Ice layer thickness
+    # DX = 25e-03  # Initial Ice layer thickness
     TIME_STEP = 15 # Model time step
 
     """Fountain constants"""
@@ -85,8 +85,9 @@ class Icestupa:
         self.TIME_STEP = (
             int(pd.infer_freq(self.df["When"])[:-1]) * 60
         )  # Extract time step from datetime column
-        logger.debug(f"Time steps -> %s minutes" % (str(self.TIME_STEP / 60)))
+        logger.info(f"Time steps -> %s minutes" % (str(self.TIME_STEP / 60)))
         mask = self.df["When"] >= self.start_date
+        mask &= self.df["When"] <= self.end_date
         self.df = self.df.loc[mask]
         self.df = self.df.reset_index(drop=True)
         logger.debug(self.df.head())
@@ -306,6 +307,7 @@ class Icestupa:
         print("Input", round(self.df["input"].iloc[-1], 2))
         print("Ppt", round(self.df["ppt"].sum(), 2))
         print("Duration", round(Duration, 2))
+        print("Correlation with thermal temp", round(self.df['cam_temp'].corr(self.df['T_s']), 2))
 
         # if self.name == 'guttannen21':
         #     logger.warning("\nIce temp. on Feb 11 at 1200 was -0.9 C but thermal cam says %0.2f C" % self.df.loc[self.df.When == datetime(2021, 2, 11,12),  "cam_temp"])
@@ -384,7 +386,7 @@ class Icestupa:
             total=self.df.shape[0],
             # desc="Simulating AIR",
         )
-        t.set_description("Simulating %s Icestupa" % self.name[:-2])
+        t.set_description("Simulating %s Icestupa" % self.name)
         for row in t:
             i = row.Index
             ice_melted = self.df.loc[i, "ice"] < 1
@@ -664,7 +666,6 @@ class Icestupa:
                             self.df.loc[i, "ice"],
                         )
                     )
-                    # sys.exit("High temperature changes")
 
                 if np.isnan(self.df.loc[i, "TotalE"]):
                     logger.error(
@@ -677,21 +678,20 @@ class Icestupa:
                     logger.error(
                         f"Discharge exceeded When {self.df.When[i]}, Fountain in {self.df.fountain_in[i]}, Discharge in {self.df.Discharge[i]* self.TIME_STEP / 60}"
                     )
-                    # sys.exit("Discharge exceeded")
 
-                # if math.fabs(self.df.loc[i, "TotalE"]) > 500:
-                #     logger.debug(
-                #         "%s,Fountain water %s,Sensible %s, SW %s, LW %s, Qg %s"
-                #         % (
-                #             self.df.loc[i, "When"],
-                #             self.df.loc[i, "Qf"],
-                #             self.df.loc[i, "Qs"],
-                #             self.df.loc[i, "SW"],
-                #             self.df.loc[i, "LW"],
-                #             self.df.loc[i, "Qg"],
-                #         )
-                #     )
-                    # sys.exit("Energy high")
+                if math.fabs(self.df.loc[i, "TotalE"]) > 500:
+                    logger.error(
+                        "Energy above 500 %s,Fountain water %s,Sensible %s, SW %s, LW %s, Qg %s"
+                        % (
+                            self.df.loc[i, "When"],
+                            self.df.loc[i, "Qf"],
+                            self.df.loc[i, "Qs"],
+                            self.df.loc[i, "SW"],
+                            self.df.loc[i, "LW"],
+                            self.df.loc[i, "Qg"],
+                        )
+                    )
+
                 """ Quantities of all phases """
                 self.df.loc[i + 1, "T_s"] = (
                     self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]

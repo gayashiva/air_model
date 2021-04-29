@@ -177,6 +177,7 @@ def summary_figures(self):
             "SA",
             "iceV",
             "Discharge",
+            "fountain_in",
         ]
     ]
 
@@ -225,17 +226,18 @@ def summary_figures(self):
     dfds = dfds.set_index("When")
     y3 = dfds2["SA"]
     y4 = dfds2["iceV"]
-    y0 = dfds["Discharge"] * self.TIME_STEP / (60 * 1000)
+    # y0 = dfds["Discharge"] * self.TIME_STEP / (60 * 1000)
+    y0 = dfds["fountain_in"] /1000
 
     dfd[["$q_{melt}$", "$q_{T}$"]] *=-1
     z = dfd[["$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$", "$q_{melt}$", "$q_{T}$"]]
 
     ax0 = fig.add_subplot(5, 1, 1)
     ax0 = y0.plot.bar(
-        y="Discharge", linewidth=0.5, edgecolor="black", color="#0C70DE", ax=ax0
+        y="fountain_in", linewidth=0.5, edgecolor="black", color="#0C70DE", ax=ax0
     )
     ax0.xaxis.set_label_text("")
-    ax0.set_ylabel("Discharge ($m^3$)")
+    ax0.set_ylabel("Discharge Available ($m^3$)")
     ax0.grid(axis="y", color="#0C70DE", alpha=0.3, linewidth=0.5, which="major")
     at = AnchoredText("(a)", prop=dict(size=10), frameon=True, loc="upper left")
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
