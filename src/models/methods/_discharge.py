@@ -160,6 +160,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                 self.df = self.df.drop(['Discharge_fill'], axis = 1)
 
             if self.name in ["guttannen21"]:
+                df_f = df_f.set_index("When")
                 self.df.loc[df_f.index, "Discharge"] = self.discharge * df_f["fountain"]
                 self.df.loc[
                     self.df[self.df.Discharge== 0].index & self.df[self.df.index <= datetime(2020,12,26)].index, "Discharge"

@@ -95,6 +95,7 @@ class DX_Icestupa(Icestupa):
                 Min_T_s,
                 Min_T_c,
                 self.df['cam_temp'].corr(self.df['T_s']),
+                self.df['DroneV'].corr(self.df['iceV']),
             ]
         )
         self.df = self.df.set_index("When").resample("1H").mean().reset_index()
@@ -106,6 +107,7 @@ class DX_Icestupa(Icestupa):
             self.df["iceV"].values,
             self.df["T_s"].values,
             self.df["cam_temp"].values,
+            self.df["DroneV"].values,
             result,
         )
 
@@ -121,7 +123,7 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2020",
+        location="Guttannen 2021",
         # location="Gangles 2021",
         trigger="Manual",
         # trigger="None",
@@ -167,6 +169,7 @@ if __name__ == "__main__":
                     (key, "iceV"): iceV,
                     (key, "T_s"): T_s,
                     (key, "cam_temp"): cam_temp,
+                    (key, "DroneV"): DroneV,
                 },
                 columns=index,
             )
@@ -182,7 +185,8 @@ if __name__ == "__main__":
                 2: "Duration",
                 3: "Min_T_s",
                 4: "Min_T_c",
-                5: "Corr",
+                5: "Corr_T",
+                6: "Corr_V",
             }
         )
 

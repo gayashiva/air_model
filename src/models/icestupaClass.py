@@ -53,7 +53,7 @@ class Icestupa:
     v_a_limit = 8  # All fountain water lost at this wind speed
 
     """Model constants"""
-    DX = 6e-03  # Initial Ice layer thickness
+    DX = 10e-03  # Initial Ice layer thickness
     # DX = 17e-03  # Initial Ice layer thickness
     # DX = 25e-03  # Initial Ice layer thickness
     TIME_STEP = 15 # Model time step
@@ -262,6 +262,7 @@ class Icestupa:
         print("Ppt", round(self.df["ppt"].sum(), 2))
         print("Duration", round(Duration, 2))
         print("Correlation with thermal temp", round(self.df['cam_temp'].corr(self.df['T_s']), 2))
+        print("Correlation with drone volume", round(self.df['DroneV'].corr(self.df['iceV']), 2))
 
         # Full Output
         filename4 = self.output + "model_output_" + self.trigger + ".csv"

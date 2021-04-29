@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2020",
+        location="Guttannen 2021",
         # location="Gangles 2021",
         trigger="Manual",
         # trigger="None",
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     icestupa = Icestupa(answers["location"], answers["trigger"])
     icestupa.read_output()
     # icestupa.df = icestupa.df.set_index("When").resample("H").mean().reset_index()
-    print(icestupa.df['cam_temp'].corr(icestupa.df['T_s']))
+    print(icestupa.df['DroneV'].corr(icestupa.df['iceV']))
 
     print(icestupa.df[['When', 'cam_temp']].loc[icestupa.df.cam_temp>0])
     pp = PdfPages(FOLDER["output"] + "correlations" + ".pdf")
