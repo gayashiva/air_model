@@ -90,9 +90,9 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
     if location == "Gangles 2021":
         SITE = dict(
             name="gangles21",
-            end_date=datetime(2021, 3, 14),
             # start_date=datetime(2020, 12, 14),
             start_date=datetime(2021, 1, 18),
+            end_date=datetime(2021, 3, 14),
             utc_offset=5.5,
             longitude=77.606949,
             latitude=34.216638,
@@ -104,7 +104,6 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             dia_f=0.01,  # FOUNTAIN aperture diameter
             h_f=5,  # FOUNTAIN steps h_f
             discharge=60,  # FOUNTAIN on discharge
-            trigger=trigger,
         )
     if location == "Hial":
 

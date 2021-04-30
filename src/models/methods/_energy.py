@@ -108,11 +108,11 @@ def get_energy(self, row, mode="normal"):
             i, "Qg"
         ] * self.TIME_STEP * self.df.loc[i, "SA"] / (self.df.loc[i, "ice"] * self.C_I)
 
-        self.df.loc[i + 1, "T_bulk"] = (
-            ((self.df.loc[i, "T_bulk"] * self.df.loc[i, "iceV"])
-            + (self.df.loc[i, "T_s"] * self.DX * self.df.loc[i, "SA"]))
-            /(self.df.loc[i, "iceV"] + self.DX * self.df.loc[i, "SA"])
-        )
+        # self.df.loc[i + 1, "T_bulk"] = (
+        #     ((self.df.loc[i, "T_bulk"] * self.df.loc[i, "iceV"])
+        #     + (self.df.loc[i, "T_s"] * self.DX * self.df.loc[i, "SA"]))
+        #     /(self.df.loc[i, "iceV"] + self.DX * self.df.loc[i, "SA"])
+        # )
         # logger.warning(
         #     f"When {self.df.When[i]},T_bulk {self.df.T_bulk[i]}, T_s {self.df.T_s[i]}, T_bulk {self.df.T_bulk[i+1]}"
         # )
