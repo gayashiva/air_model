@@ -71,7 +71,6 @@ class DX_Icestupa(Icestupa):
 
         Max_IceV = self.df["iceV"].max()
         Min_T_s = self.df["T_s"].min()
-        Min_T_c = self.df["cam_temp"].min()
         Efficiency = (
             (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1])
             / (self.df["input"].iloc[-1])
@@ -84,7 +83,6 @@ class DX_Icestupa(Icestupa):
         print("Ice Mass Remaining", self.df["ice"].iloc[-1])
         print("Meltwater", self.df["meltwater"].iloc[-1])
         print("Duration", Duration)
-        print("Correlation with thermal temp", round(self.df['cam_temp'].corr(self.df['T_s']), 2))
         print("\n")
 
         result = pd.Series(
@@ -93,9 +91,6 @@ class DX_Icestupa(Icestupa):
                 Max_IceV,
                 Duration,
                 Min_T_s,
-                Min_T_c,
-                self.df['cam_temp'].corr(self.df['T_s']),
-                self.df['DroneV'].corr(self.df['iceV']),
             ]
         )
         self.df = self.df.set_index("When").resample("1H").mean().reset_index()
@@ -106,8 +101,6 @@ class DX_Icestupa(Icestupa):
             self.df["SA"].values,
             self.df["iceV"].values,
             self.df["T_s"].values,
-            self.df["cam_temp"].values,
-            self.df["DroneV"].values,
             result,
         )
 
@@ -122,8 +115,8 @@ if __name__ == "__main__":
     )
 
     answers = dict(
-        # location="Schwarzsee 2019",
-        location="Guttannen 2020",
+        location="Schwarzsee 2019",
+        # location="Guttannen 2020",
         # location="Gangles 2021",
         trigger="Manual",
         # trigger="None",
@@ -139,7 +132,7 @@ if __name__ == "__main__":
     model = DX_Icestupa(location=answers["location"], trigger=answers["trigger"])
     # model = DX_Icestupa()
 
-    param_values = np.arange(0.001, 0.03, 0.001).tolist()
+    param_values = np.arange(0.002, 0.03, 0.001).tolist()
 
     experiments = pd.DataFrame(param_values, columns=["DX"])
     variables = ["When", "SA", "iceV", "T_s"]
@@ -157,8 +150,6 @@ if __name__ == "__main__":
             SA,
             iceV,
             T_s,
-            cam_temp,
-            DroneV,
             result,
         ) in executor.map(model.run, experiments.to_dict("records")):
             iterables = [[key], variables]
@@ -169,8 +160,6 @@ if __name__ == "__main__":
                     (key, "SA"): SA,
                     (key, "iceV"): iceV,
                     (key, "T_s"): T_s,
-                    (key, "cam_temp"): cam_temp,
-                    (key, "DroneV"): DroneV,
                 },
                 columns=index,
             )
@@ -185,15 +174,12 @@ if __name__ == "__main__":
                 1: "Max_IceV",
                 2: "Duration",
                 3: "Min_T_s",
-                4: "Min_T_c",
-                5: "Corr_T",
-                6: "Corr_V",
             }
         )
 
         print(results)
 
-        results.to_csv(FOLDER["sim"] + "/DX_sim.csv", sep=",")
+        results.round(3).to_csv(FOLDER["sim"] + "/DX_sim.csv", sep=",")
 
         data_store = pd.HDFStore(FOLDER["sim"] + "/DX_sim.h5")
         data_store["dfd"] = df_out
