@@ -9,11 +9,14 @@ from matplotlib.backends.backend_pdf import PdfPages
 import sys
 import os
 
+
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
 
 from src.utils.settings import config
+from src.utils import setup_logger
+from src.models.icestupaClass import Icestupa
 
 plt.rcParams["figure.figsize"] = (10, 7)
 # mpl.rc('xtick', labelsize=5)
@@ -29,51 +32,63 @@ if __name__ == "__main__":
         level=logging.INFO,
         logger=logger,
     )
-    # answers = dict(
-    #     location="Schwarzsee 2019",
-    #     location="Guttannen 2021",
-    #     location="Gangles 2021",
-    # trigger="Manual",
-    # trigger="None",
-    # trigger="Temperature",
-    # trigger="Weather",
-    # run="yes",
-    # )
-    # locations = ["Guttannen 2021", "Guttannen 2020", "Schwarzsee 2019"]
-    location = "Guttannen 2020"
+    answers = dict(
+        # location="Schwarzsee 2019",
+        location="Guttannen 2021",
+        # location="Gangles 2021",
+        trigger="Manual",
+        # trigger="None",
+        # trigger="Temperature",
+        # trigger="Weather",
+        run="yes",
+    )
 
-    SITE, FOUNTAIN, FOLDER = config(location, "Manual")
+    # Get settings for given location and trigger
+    SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
+
+    # Initialise icestupa object
+    icestupa = Icestupa(answers["location"], answers["trigger"])
+
     cmap = plt.cm.rainbow  # define the colormap
     norm = mpl.colors.Normalize(vmin=-100, vmax=0)
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
 
     filename = FOLDER["sim"] + "/DX_sim.csv"
+    filename2 = FOLDER["sim"] + "/DX_sim.h5"
     figures = FOLDER["sim"] + "/DX_sim.pdf"
+
     df = pd.read_csv(filename, sep=",")
     logger.info(df)
-    x = df["DX"] * 1000
-    y1 = df["Corr_T"]
-    y2 = df["Corr_V"]
 
-    pp = PdfPages(figures)
-    fig, ax = plt.subplots()
-    l1 = ax.scatter(x,y1, facecolors="blue")
-    l2 = ax.scatter(x,y2, facecolors="black")
-    ax.set_ylabel("Correlation")
-    ax.set_xlabel("Ice Layer Thickness ($mm$)")
-    ax.legend(
-        (l1, l2),
-        ("Measured temperature","Measured Volume"),
-        scatterpoints=1,
-        loc="lower right",
-        ncol=1,
-        # fontsize=8
-    )
-    ax.grid()
-    pp.savefig(bbox_inches="tight")
-    plt.close()
-    pp.close()
+    data_store = pd.HDFStore(filename2)
+    dfd = data_store["dfd"]
+    data_store.close()
+    print(dfd.head())
+
+    # x = df["DX"] * 1000
+    # y1 = df["Corr_T"]
+    # y2 = df["Corr_V"]
+    # # print(icestupa.df['cam_temp'].corr(df['T_s']))
+
+    # pp = PdfPages(figures)
+    # fig, ax = plt.subplots()
+    # l1 = ax.scatter(x,y1, facecolors="blue")
+    # l2 = ax.scatter(x,y2, facecolors="black")
+    # ax.set_ylabel("Correlation")
+    # ax.set_xlabel("Ice Layer Thickness ($mm$)")
+    # ax.legend(
+    #     (l1, l2),
+    #     ("Measured temperature","Measured Volume"),
+    #     scatterpoints=1,
+    #     loc="lower right",
+    #     ncol=1,
+    #     # fontsize=8
+    # )
+    # ax.grid()
+    # pp.savefig(bbox_inches="tight")
+    # plt.close()
+    # pp.close()
 
     # for location in locations:
     #     logger.info(f"Location -> %s" % (location))

@@ -55,7 +55,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             longitude=8.283333,
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
             altitude_aws=1054,
-            DX = 20e-03,  # Initial Ice layer thickness
+            DX = 10e-03,  # Initial Ice layer thickness
         )
 
         FOUNTAIN = dict(
