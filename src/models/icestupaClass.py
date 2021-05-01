@@ -53,7 +53,7 @@ class Icestupa:
     v_a_limit = 8  # All fountain water lost at this wind speed
 
     """Model constants"""
-    DX = 15e-03  # Initial Ice layer thickness
+    DX = 6e-03  # Initial Ice layer thickness
     # DX = 17e-03  # Initial Ice layer thickness
     # DX = 25e-03  # Initial Ice layer thickness
     TIME_STEP = 15 # Model time step

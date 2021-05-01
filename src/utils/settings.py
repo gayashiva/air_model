@@ -30,7 +30,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             longitude=8.283333,
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
             altitude_aws=1054,
-            DX = 10e-03,  # Initial Ice layer thickness
+            # DX = 10e-03,  # Initial Ice layer thickness
         )
 
         FOUNTAIN = dict(
@@ -55,7 +55,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             longitude=8.283333,
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
             altitude_aws=1054,
-            DX = 10e-03,  # Initial Ice layer thickness
+            # DX = 10e-03,  # Initial Ice layer thickness
         )
 
         FOUNTAIN = dict(
@@ -76,7 +76,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             longitude=7.297543,
             latitude=46.693723,
             h_aws=3,
-            DX = 4e-03,  # Initial Ice layer thickness
+            # DX = 4e-03,  # Initial Ice layer thickness
         )
 
         FOUNTAIN = dict(

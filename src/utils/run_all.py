@@ -10,10 +10,10 @@ import time
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 from src.models.icestupaClass import Icestupa
-from src.data.settings import config
+from src.utils.settings import config
 
-locations = ["Guttannen 2021", "Guttannen 2020", "Schwarzsee 2019"]
-triggers = ["Manual", "None", "Temperature", "Weather"]
+locations = ["Guttannen 2021", "Guttannen 2020", "Schwarzsee 2019", "Gangles 2021"]
+triggers = ["Manual"]
 
 
 def work_log(locations, triggers):
