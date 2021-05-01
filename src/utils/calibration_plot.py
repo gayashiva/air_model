@@ -34,8 +34,8 @@ if __name__ == "__main__":
     )
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2021",
-        # location="Gangles 2021",
+        # location="Guttannen 2020",
+        location="Gangles 2021",
         trigger="Manual",
         # trigger="None",
         # trigger="Temperature",
@@ -66,29 +66,29 @@ if __name__ == "__main__":
     data_store.close()
     print(dfd.head())
 
-    # x = df["DX"] * 1000
-    # y1 = df["Corr_T"]
-    # y2 = df["Corr_V"]
-    # # print(icestupa.df['cam_temp'].corr(df['T_s']))
+    x = df["DX"]
+    y1 = df["Max_IceV"]
+    y2 = df["Min_T_s"]
+    # print(icestupa.df['cam_temp'].corr(df['T_s']))
 
-    # pp = PdfPages(figures)
-    # fig, ax = plt.subplots()
-    # l1 = ax.scatter(x,y1, facecolors="blue")
-    # l2 = ax.scatter(x,y2, facecolors="black")
-    # ax.set_ylabel("Correlation")
-    # ax.set_xlabel("Ice Layer Thickness ($mm$)")
-    # ax.legend(
-    #     (l1, l2),
-    #     ("Measured temperature","Measured Volume"),
-    #     scatterpoints=1,
-    #     loc="lower right",
-    #     ncol=1,
-    #     # fontsize=8
-    # )
-    # ax.grid()
-    # pp.savefig(bbox_inches="tight")
-    # plt.close()
-    # pp.close()
+    pp = PdfPages(figures)
+    fig, ax = plt.subplots()
+    l1 = ax.scatter(x,y1, facecolors="blue")
+    l2 = ax.scatter(x,y2, facecolors="black")
+    ax.set_ylabel("Correlation")
+    ax.set_xlabel("Ice Layer Thickness ($mm$)")
+    ax.legend(
+        (l1, l2),
+        ("Volume","Temp"),
+        scatterpoints=1,
+        loc="lower right",
+        ncol=1,
+        # fontsize=8
+    )
+    ax.grid()
+    pp.savefig(bbox_inches="tight")
+    plt.close()
+    pp.close()
 
     # for location in locations:
     #     logger.info(f"Location -> %s" % (location))
