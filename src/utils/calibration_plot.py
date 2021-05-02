@@ -33,9 +33,9 @@ if __name__ == "__main__":
         logger=logger,
     )
     answers = dict(
-        # location="Schwarzsee 2019",
+        location="Schwarzsee 2019",
         # location="Guttannen 2020",
-        location="Gangles 2021",
+        # location="Gangles 2021",
         trigger="Manual",
         # trigger="None",
         # trigger="Temperature",
@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
     x = df["DX"]
     y1 = df["Max_IceV"]
-    y2 = df["Min_T_s"]
+    y2 = df["Min_T_bulk"]
     # print(icestupa.df['cam_temp'].corr(df['T_s']))
 
     pp = PdfPages(figures)
