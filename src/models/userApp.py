@@ -5,14 +5,12 @@
 import os, sys
 import logging
 import coloredlogs
-import inquirer
 
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 from src.models.icestupaClass import Icestupa
 from src.utils.settings import config
-from src.utils import setup_logger
 
 
 if __name__ == "__main__":
@@ -24,26 +22,6 @@ if __name__ == "__main__":
         level=logging.INFO,
         logger=logger,
     )
-
-    # q = [
-    #     inquirer.List(
-    #         "location",
-    #         message="Where is the Icestupa?",
-    #         choices=["Guttannen 2020", "Guttannen 2021", "Schwarzsee 2019"],
-    #         default="Guttannen 2020",
-    #     ),
-    #     inquirer.List(
-    #         "trigger",
-    #         message="How is fountain switched on?",
-    #         choices=["None", "Manual", "Temperature", "Weather"],
-    #         default="None",
-    #     ),
-    #     inquirer.List(
-    #         "run", message="Regenerate results?", choices=["yes", "no"], default="yes"
-    #     ),
-    # ]
-
-    # answers = inquirer.prompt(q)
 
     answers = dict(
         # location="Schwarzsee 2019",

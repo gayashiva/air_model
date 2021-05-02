@@ -483,7 +483,6 @@ class Icestupa:
                 self.get_energy(row)
 
                 # Latent Heat
-
                 if self.df.loc[i, "Ql"] < 0:
                     # Sublimation
                     if self.df.loc[i, "RH"] < 60:
@@ -544,15 +543,17 @@ class Icestupa:
 
                 # TODO add to paper
                 extra_freezing_energy = 0
-                if (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"]) < 0:
-                    extra_freezing_energy = (
-                        # (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
-                        (self.df.loc[i, "T_s"])
-                        * self.RHO_I
-                        * self.DX
-                        * self.C_I
-                        / self.TIME_STEP
-                    )
+                extra_freezing_energy = (
+                    # (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
+                    (self.df.loc[i, "T_s"])
+                    * self.RHO_I
+                    * self.DX
+                    * self.C_I
+                    / self.TIME_STEP
+                )
+                if extra_freezing_energy > 0:
+                    logger.error("Freezing energy positive, Ice temp %s" %(self.df.loc[i, "T_s"]))
+                    sys.exit()
 
                 if self.df.loc[i,"fountain_in"] > 0:
 
@@ -563,8 +564,9 @@ class Icestupa:
                             self.df.loc[i, "TotalE"] * self.TIME_STEP * self.df.loc[i, "SA"]
                         ) / (self.L_F)
 
-                        if extra_freezing_energy < 0:
-
+                        if extra_freezing_energy == 0:
+                            freezing_fraction = 1
+                        else:
                             freezing_fraction = -(
                                 self.df.loc[i, "fountain_in"]* self.L_F
                                 / (extra_freezing_energy * self.TIME_STEP * self.df.loc[i, "SA"])
@@ -578,8 +580,6 @@ class Icestupa:
                             self.df.loc[i,"fountain_in"] += (
                                 freezing_fraction * extra_freezing_energy * self.TIME_STEP * self.df.loc[i, "SA"]
                             ) / (self.L_F)
-                        else:
-                            freezing_fraction = 1
 
                         self.df.loc[i, "$q_{melt}$"] += self.df.loc[i, "TotalE"] + freezing_fraction * extra_freezing_energy
                         self.df.loc[i, "$q_{T}$"] += (1-freezing_fraction) * extra_freezing_energy
@@ -612,11 +612,13 @@ class Icestupa:
                         / self.TIME_STEP
                     )
 
-                    self.df.loc[i, "delta_T_s"] = (
-                        self.df.loc[i, "$q_{T}$"]
-                        * self.TIME_STEP
-                        / (self.RHO_I * self.DX * self.C_I)
-                    )
+                    # self.df.loc[i, "delta_T_s"] = (
+                    #     self.df.loc[i, "$q_{T}$"]
+                    #     * self.TIME_STEP
+                    #     / (self.RHO_I * self.DX * self.C_I)
+                    # )
+
+                    self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
 
                     if np.isnan(self.df.loc[i, "delta_T_s"]):
                         logger.error(
