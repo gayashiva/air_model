@@ -42,8 +42,9 @@ class DX_Icestupa(Icestupa):
         self.DX = key
         if self.name in ["gangles21"]:
             df_c = get_calibration(site=self.name, input=self.raw)
+            df_c.loc[0, "DroneV"] = 2/3 * math.pi * 4 ** 3 # Volume of dome
             self.r_spray = df_c.loc[1, "dia"] / 2
-            self.h_i = self.DX
+            self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
 
         if self.name in ["guttannen21", "guttannen20"]:
             df_c, df_cam = get_calibration(site=self.name, input=self.raw)
@@ -134,7 +135,7 @@ if __name__ == "__main__":
     model = DX_Icestupa(location=answers["location"], trigger=answers["trigger"])
     # model = DX_Icestupa()
 
-    param_values = np.arange(0.001, 0.01, 0.0005).tolist()
+    param_values = np.arange(0.001, 0.010, 0.0005).tolist()
 
     experiments = pd.DataFrame(param_values, columns=["DX"])
     variables = ["When", "SA", "iceV", "T_s"]
