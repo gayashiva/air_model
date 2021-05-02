@@ -53,7 +53,7 @@ class Icestupa:
     v_a_limit = 8  # All fountain water lost at this wind speed
 
     """Model constants"""
-    DX = 10e-03  # Initial Ice layer thickness
+    DX = 5e-03  # Initial Ice layer thickness
     # DX = 17e-03  # Initial Ice layer thickness
     # DX = 25e-03  # Initial Ice layer thickness
     TIME_STEP = 15 # Model time step
@@ -546,8 +546,8 @@ class Icestupa:
                 extra_freezing_energy = 0
                 if (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"]) < 0:
                     extra_freezing_energy = (
-                        (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
-                        # (self.df.loc[i, "T_s"])
+                        # (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
+                        (self.df.loc[i, "T_s"])
                         * self.RHO_I
                         * self.DX
                         * self.C_I
@@ -597,7 +597,6 @@ class Icestupa:
                 """Ice temperature above zero"""
                 if (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]) > 0:
                     self.df.loc[i, "$q_{melt}$"] += (
-                        # (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]- self.df.loc[i, "T_bulk"])
                         (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"])
                         * self.RHO_I
                         * self.DX

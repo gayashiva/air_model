@@ -2,7 +2,7 @@
 """
 
 # External modules
-import os, sys, time
+import os, sys
 import logging
 import coloredlogs
 import inquirer

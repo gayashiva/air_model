@@ -103,7 +103,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             fountain_off_date=datetime(2021, 3, 10, 18),
             dia_f=0.01,  # FOUNTAIN aperture diameter
             h_f=5,  # FOUNTAIN steps h_f
-            discharge=60,  # FOUNTAIN on discharge
+            discharge=120,  # FOUNTAIN on discharge
         )
     if location == "Hial":
 
