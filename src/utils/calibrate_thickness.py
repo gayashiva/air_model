@@ -21,7 +21,7 @@ from src.models.methods.droplet import get_droplet_projectile
 
 
 class DX_Icestupa(Icestupa):
-    def __init__(self, location="Guttannen 2020", trigger="Manual"):
+    def __init__(self, location="Guttannen 2021", trigger="Manual"):
         SITE, FOUNTAIN, FOLDER = config(location, trigger)
         initial_data = [SITE, FOUNTAIN, FOLDER]
 
@@ -119,7 +119,7 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        # location="Guttannen 2021",
+        # location="Guttannen 2020",
         location="Gangles 2021",
         trigger="Manual",
         # trigger="None",
