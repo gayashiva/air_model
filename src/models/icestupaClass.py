@@ -53,7 +53,7 @@ class Icestupa:
     v_a_limit = 8  # All fountain water lost at this wind speed
 
     """Model constants"""
-    DX = 4e-03  # Initial Ice layer thickness
+    DX = 2e-03  # Initial Ice layer thickness
     # DX = 17e-03  # Initial Ice layer thickness
     # DX = 25e-03  # Initial Ice layer thickness
     TIME_STEP = 15 # Model time step
@@ -541,51 +541,39 @@ class Icestupa:
 
                 self.df.loc[i, "$q_{T}$"] += self.df.loc[i, "Ql"]
 
-                # TODO add to paper
-                extra_freezing_energy = 0
-                extra_freezing_energy = (
-                    # (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
-                    (self.df.loc[i, "T_s"])
-                    * self.RHO_I
-                    * self.DX
-                    * self.C_I
-                    / self.TIME_STEP
+                # extra_freezing_energy = 0
+                # extra_freezing_energy = (
+                #     # (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
+                #     (self.df.loc[i, "T_s"])
+                #     * self.RHO_I
+                #     * self.DX
+                #     * self.C_I
+                #     / self.TIME_STEP
+                # )
+                # if extra_freezing_energy > 0:
+                #     logger.error("Freezing energy positive, Ice temp %s" %(self.df.loc[i, "T_s"]))
+                #     sys.exit()
+
+                freezing_fraction= 0
+                freezing_fraction = -(
+                    self.df.loc[i, "fountain_in"]* self.L_F
+                    / (self.df.loc[i, "TotalE"] * self.TIME_STEP * self.df.loc[i, "SA"])
                 )
-                if extra_freezing_energy > 0:
-                    logger.error("Freezing energy positive, Ice temp %s" %(self.df.loc[i, "T_s"]))
-                    sys.exit()
 
-                if self.df.loc[i,"fountain_in"] > 0:
-
-                    """Freezing water"""
-                    if self.df.loc[i, "TotalE"] < 0:
-
-                        self.df.loc[i,"fountain_in"] += (
-                            self.df.loc[i, "TotalE"] * self.TIME_STEP * self.df.loc[i, "SA"]
-                        ) / (self.L_F)
-
-                        if extra_freezing_energy == 0:
-                            freezing_fraction = 1
-                        else:
-                            freezing_fraction = -(
-                                self.df.loc[i, "fountain_in"]* self.L_F
-                                / (extra_freezing_energy * self.TIME_STEP * self.df.loc[i, "SA"])
-                            )
-
-                            if freezing_fraction > 1:
-                                freezing_fraction = 1
-                            else:
-                                logger.warning("Discharge froze completely with freezing_fraction %s" %freezing_fraction)
-
-                            self.df.loc[i,"fountain_in"] += (
-                                freezing_fraction * extra_freezing_energy * self.TIME_STEP * self.df.loc[i, "SA"]
-                            ) / (self.L_F)
-
-                        self.df.loc[i, "$q_{melt}$"] += self.df.loc[i, "TotalE"] + freezing_fraction * extra_freezing_energy
-                        self.df.loc[i, "$q_{T}$"] += (1-freezing_fraction) * extra_freezing_energy
-
+                if freezing_fraction <= 0: # Energy flux positive or no fountain
+                    freezing_fraction = 0
                 else:
-                    self.df.loc[i, "$q_{T}$"] += self.df.loc[i, "TotalE"]
+                    if freezing_fraction > 1: # Enough water available
+                        freezing_fraction = 1
+                        self.df.loc[i,"fountain_in"] += (
+                            freezing_fraction * self.df.loc[i, "TotalE"] * self.TIME_STEP * self.df.loc[i, "SA"]
+                        ) / (self.L_F)
+                    if freezing_fraction < 1: # Not Enough water available
+                        self.df.loc[i,"fountain_in"] = 0
+                        logger.warning("Discharge froze completely with freezing_fraction %.2f" %freezing_fraction)
+
+                self.df.loc[i, "$q_{melt}$"] += freezing_fraction * self.df.loc[i, "TotalE"]
+                self.df.loc[i, "$q_{T}$"] += (1-freezing_fraction) * self.df.loc[i, "TotalE"]
 
                 self.df.loc[i, "delta_T_s"] = (
                     self.df.loc[i, "$q_{T}$"]

@@ -95,6 +95,16 @@ def get_energy(self, row, mode="normal"):
                 / (self.TIME_STEP * self.df.loc[i, "SA"])
             )
 
+            # TODO add to paper
+            self.df.loc[i, "Qf"] += (
+                # (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
+                (self.df.loc[i, "T_s"])
+                * self.RHO_I
+                * self.DX
+                * self.C_I
+                / self.TIME_STEP
+            )
+
         # TODO add to paper
         self.df.loc[i, "Qg"] = (
             self.K_I

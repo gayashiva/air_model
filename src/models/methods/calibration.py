@@ -41,6 +41,10 @@ def get_calibration(site, input):
             df_h = pd.DataFrame(data)
             df_c = df_c.reset_index()
             df_c = pd.concat([df_c, df_h], ignore_index=True, sort=False)
+            data = [
+                {"When": datetime(2020, 1, 24, 12), "h_s": 1},
+                {"When": datetime(2020, 2, 5, 19), "h_s": -1},
+            ]
             df_c = df_c.set_index("When").sort_index().reset_index()
             df_cam = pd.read_csv(
                 input + site + "_cam_temp.csv",
