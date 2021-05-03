@@ -369,10 +369,14 @@ class Icestupa:
             "wind_loss",
             "$q_{T}$",
             "$q_{melt}$",
+            "freezing_discharge_fraction",
         ]
 
         for column in col:
-            self.df[column] = 0
+            if column not in ["freezing_discharge_fraction"]:
+                self.df[column] = 0
+            else:
+                self.df[column] = np.NaN 
 
         STATE = 0
         self.start = 0
@@ -430,7 +434,7 @@ class Icestupa:
                 )
                 self.df.loc[i, "input"] = self.df.loc[i, "ice"]
                 logger.warning(
-                    "Initialise: radius %s, height %s, iceV %s\n"
+                    "Initialise: radius %.1f, height %.1f, iceV %.1f\n"
                     % (
                         self.df.loc[i - 1, "r_ice"],
                         self.df.loc[i - 1, "h_ice"],
@@ -541,39 +545,26 @@ class Icestupa:
 
                 self.df.loc[i, "$q_{T}$"] += self.df.loc[i, "Ql"]
 
-                # extra_freezing_energy = 0
-                # extra_freezing_energy = (
-                #     # (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
-                #     (self.df.loc[i, "T_s"])
-                #     * self.RHO_I
-                #     * self.DX
-                #     * self.C_I
-                #     / self.TIME_STEP
-                # )
-                # if extra_freezing_energy > 0:
-                #     logger.error("Freezing energy positive, Ice temp %s" %(self.df.loc[i, "T_s"]))
-                #     sys.exit()
-
-                freezing_fraction= 0
-                freezing_fraction = -(
+                self.df.loc[i,"freezing_discharge_fraction"] = -(
                     self.df.loc[i, "fountain_in"]* self.L_F
-                    / (self.df.loc[i, "TotalE"] * self.TIME_STEP * self.df.loc[i, "SA"])
+                    / ((self.df.loc[i, "TotalE"] - self.df.loc[i, "Ql"]) * self.TIME_STEP * self.df.loc[i, "SA"])
                 )
 
-                if freezing_fraction <= 0: # Energy flux positive or no fountain
-                    freezing_fraction = 0
+                if self.df.loc[i,"freezing_discharge_fraction"] < 0: # Energy flux positive or no fountain
+                    self.df.loc[i,"freezing_discharge_fraction"] = 0
                 else:
-                    if freezing_fraction > 1: # Enough water available
-                        freezing_fraction = 1
+                    if self.df.loc[i,"freezing_discharge_fraction"] > 1: # Enough water available
+                        self.df.loc[i,"freezing_discharge_fraction"] = 1
                         self.df.loc[i,"fountain_in"] += (
-                            freezing_fraction * self.df.loc[i, "TotalE"] * self.TIME_STEP * self.df.loc[i, "SA"]
+                            self.df.loc[i,"freezing_discharge_fraction"] * (self.df.loc[i, "TotalE"] - self.df.loc[i, "Ql"])* self.TIME_STEP * self.df.loc[i, "SA"]
                         ) / (self.L_F)
-                    if freezing_fraction < 1: # Not Enough water available
+                    if self.df.loc[i,"freezing_discharge_fraction"] < 1 : # Not Enough water available
                         self.df.loc[i,"fountain_in"] = 0
-                        logger.warning("Discharge froze completely with freezing_fraction %.2f" %freezing_fraction)
+                        # logger.warning("Discharge froze completely with freezing_discharge_fraction %.2f" %self.df[i,"freezing_discharge_fraction"])
 
-                self.df.loc[i, "$q_{melt}$"] += freezing_fraction * self.df.loc[i, "TotalE"]
-                self.df.loc[i, "$q_{T}$"] += (1-freezing_fraction) * self.df.loc[i, "TotalE"]
+                self.df.loc[i, "$q_{melt}$"] += self.df.loc[i,"freezing_discharge_fraction"] * (self.df.loc[i, "TotalE"] - self.df.loc[i, "Ql"])
+                self.df.loc[i, "$q_{T}$"] += (1- self.df.loc[i,"freezing_discharge_fraction"]) * (self.df.loc[i, "TotalE"] - self.df.loc[i, "Ql"])
+                # self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "$q_{melt}$"] / self.df.loc[i, "TotalE"]
 
                 self.df.loc[i, "delta_T_s"] = (
                     self.df.loc[i, "$q_{T}$"]
@@ -599,6 +590,8 @@ class Icestupa:
                         * self.C_I
                         / self.TIME_STEP
                     )
+                    # self.df.loc[i, "$q_{T}$"] += self.df.loc[i, "Ql"]
+                    # self.df.loc[i, "$q_{melt}$"] -= self.df.loc[i, "Ql"]
 
                     # self.df.loc[i, "delta_T_s"] = (
                     #     self.df.loc[i, "$q_{T}$"]
@@ -608,11 +601,15 @@ class Icestupa:
 
                     self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
 
-                    if np.isnan(self.df.loc[i, "delta_T_s"]):
-                        logger.error(
-                            f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
-                        )
-                        sys.exit("Ice Temperature nan")
+                    self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "$q_{melt}$"] / (self.df.loc[i, "TotalE"] - self.df.loc[i, "Ql"])
+                    self.df.loc[i,"freezing_discharge_fraction"] = -1 * math.fabs(self.df.loc[i,"freezing_discharge_fraction"])
+                    # self.df.loc[i,"freezing_discharge_fraction"] = -self.df.loc[i, "$q_{melt}$"] / self.df.loc[i, "TotalE"]
+
+                if np.isnan(self.df.loc[i, "delta_T_s"]):
+                    logger.error(
+                        f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+                    )
+                    sys.exit("Ice Temperature nan")
 
                 if self.df.loc[i, "$q_{melt}$"] < 0:
                     self.df.loc[i, "solid"] -= (
@@ -645,15 +642,15 @@ class Icestupa:
                     )
                     sys.exit("Energy nan")
 
-                if self.df.loc[i,'fountain_in'] > self.df.loc[i, 'Discharge'] * self.TIME_STEP / 60:
+                if self.df.loc[i,'fountain_in'] - self.df.loc[i, 'Discharge'] * self.TIME_STEP / 60 > 2:
 
                     logger.error(
                         f"Discharge exceeded When {self.df.When[i]}, Fountain in {self.df.fountain_in[i]}, Discharge in {self.df.Discharge[i]* self.TIME_STEP / 60}"
                     )
 
-                if math.fabs(self.df.loc[i, "TotalE"]) > 500:
-                    logger.error(
-                        "Energy above 500 %s,Fountain water %s,Sensible %s, SW %s, LW %s, Qg %s"
+                if math.fabs(self.df.loc[i, "TotalE"]) > 800:
+                    logger.warning(
+                        "Energy above 800 %s,Fountain water %s,Sensible %s, SW %s, LW %s, Qg %s"
                         % (
                             self.df.loc[i, "When"],
                             self.df.loc[i, "Qf"],
@@ -664,14 +661,26 @@ class Icestupa:
                         )
                     )
 
-                if math.fabs(self.df.loc[i, "delta_T_s"]) > 5:
-                    logger.error(
-                        "Temperature change above 5C %s,Surface temp %s,Bulk temp %s,Freezing energy %s"
+                if math.fabs(self.df.loc[i, "delta_T_s"]) > 20:
+                    logger.warning(
+                        "Temperature change above 20C %s,Surface temp %i,Bulk temp %i"
                         % (
                             self.df.loc[i, "When"],
                             self.df.loc[i, "T_s"],
                             self.df.loc[i, "T_bulk"],
-                            self.df.loc[i, "Qf"],
+                        )
+                    )
+
+                if (self.df.loc[i,"freezing_discharge_fraction"]) > 1.2: 
+                    logger.error(
+                        "%s,temp flux %.1f,melt flux %.1f,total %.1f, Ql %.1f,freezing_discharge_fraction %.2f"
+                        % (
+                            self.df.loc[i, "When"],
+                            self.df.loc[i, "$q_{T}$"],
+                            self.df.loc[i, "$q_{melt}$"],
+                            self.df.loc[i, "TotalE"], 
+                            self.df.loc[i, "Ql"], 
+                            self.df.loc[i, "freezing_discharge_fraction"],
                         )
                     )
 

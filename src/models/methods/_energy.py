@@ -126,6 +126,7 @@ def get_energy(self, row, mode="normal"):
         + self.df.loc[i, "Qs"]
         + self.df.loc[i, "Qf"]
         + self.df.loc[i, "Qg"]
+        + self.df.loc[i, "Ql"]
     )
 
     if mode == "trigger":  # Used while deriving discharge rate

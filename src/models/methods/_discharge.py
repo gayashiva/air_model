@@ -201,7 +201,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             logger.debug(self.df.Discharge.head())
             self.df = self.df.reset_index()
             logger.info(
-                f"Hours of spray : %.2f\n Mean Discharge:%.2f"
+                f"Hours of spray : %.2f Mean Discharge:%.2f"
                 % (
                     (
                         self.df.Discharge.astype(bool).sum(axis=0)
@@ -232,7 +232,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             self.df["Discharge"] = self.df.Discharge.replace(np.nan, 0)
             self.discharge = self.df.Discharge.replace(0, np.nan).mean()
             logger.info(
-                f"Hours of spray : %.2f\n Mean Discharge:%.2f"
+                f"Hours of spray : %.2f Mean Discharge:%.2f"
                 % (
                     (
                         self.df.Discharge.astype(bool).sum(axis=0)

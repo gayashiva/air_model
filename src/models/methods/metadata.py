@@ -26,6 +26,11 @@ def get_parameter_metadata(
             "kind": "Misc",
             "units": "()",
         },
+        "freezing_discharge_fraction": {
+            "name": "Fraction of Discharge freezing",
+            "kind": "Output",
+            "units": "()",
+        },
         "h_f": {
             "name": "Fountain Height",
             "kind": "Derived",
