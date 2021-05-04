@@ -139,9 +139,8 @@ if __name__ == "__main__":
 
     # Initialise icestupa object
     model = DX_Icestupa(location=answers["location"], trigger=answers["trigger"])
-    # model = DX_Icestupa()
 
-    param_values = np.arange(0.002, 0.005, 0.001).tolist()
+    param_values = np.arange(0.003, 0.005, 0.001).tolist()
 
     experiments = pd.DataFrame(param_values, columns=["DX"])
     variables = ["When", "iceV", "T_s"]
@@ -151,12 +150,11 @@ if __name__ == "__main__":
     results = []
 
     logger.info("CPUs running %s" % multiprocessing.cpu_count())
-    with Pool(12) as executor:
+    with Pool(multiprocessing.cpu_count()) as executor:
 
         for (
             key,
             When,
-            SA,
             iceV,
             T_s,
             result,
