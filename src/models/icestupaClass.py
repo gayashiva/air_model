@@ -544,10 +544,11 @@ class Icestupa:
                         )
 
                 self.df.loc[i, "$q_{T}$"] += self.df.loc[i, "Ql"]
+                freezing_energy = (self.df.loc[i, "TotalE"] - self.df.loc[i, "Ql"])
 
                 self.df.loc[i,"freezing_discharge_fraction"] = -(
                     self.df.loc[i, "fountain_in"]* self.L_F
-                    / ((self.df.loc[i, "TotalE"] - self.df.loc[i, "Ql"]) * self.TIME_STEP * self.df.loc[i, "SA"])
+                    / (freezing_energy * self.TIME_STEP * self.df.loc[i, "SA"])
                 )
 
                 if self.df.loc[i,"freezing_discharge_fraction"] < 0: # Energy flux positive or no fountain
@@ -556,14 +557,14 @@ class Icestupa:
                     if self.df.loc[i,"freezing_discharge_fraction"] > 1: # Enough water available
                         self.df.loc[i,"freezing_discharge_fraction"] = 1
                         self.df.loc[i,"fountain_in"] += (
-                            self.df.loc[i,"freezing_discharge_fraction"] * (self.df.loc[i, "TotalE"] - self.df.loc[i, "Ql"])* self.TIME_STEP * self.df.loc[i, "SA"]
+                            self.df.loc[i,"freezing_discharge_fraction"] * freezing_energy * self.TIME_STEP * self.df.loc[i, "SA"]
                         ) / (self.L_F)
                     if self.df.loc[i,"freezing_discharge_fraction"] < 1 : # Not Enough water available
                         self.df.loc[i,"fountain_in"] = 0
                         # logger.warning("Discharge froze completely with freezing_discharge_fraction %.2f" %self.df[i,"freezing_discharge_fraction"])
 
-                self.df.loc[i, "$q_{melt}$"] += self.df.loc[i,"freezing_discharge_fraction"] * (self.df.loc[i, "TotalE"] - self.df.loc[i, "Ql"])
-                self.df.loc[i, "$q_{T}$"] += (1- self.df.loc[i,"freezing_discharge_fraction"]) * (self.df.loc[i, "TotalE"] - self.df.loc[i, "Ql"])
+                self.df.loc[i, "$q_{melt}$"] += self.df.loc[i,"freezing_discharge_fraction"] * freezing_energy
+                self.df.loc[i, "$q_{T}$"] += (1- self.df.loc[i,"freezing_discharge_fraction"]) * freezing_energy
                 # self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "$q_{melt}$"] / self.df.loc[i, "TotalE"]
 
                 self.df.loc[i, "delta_T_s"] = (
@@ -601,9 +602,10 @@ class Icestupa:
 
                     self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
 
-                    self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "$q_{melt}$"] / (self.df.loc[i, "TotalE"] - self.df.loc[i, "Ql"])
-                    self.df.loc[i,"freezing_discharge_fraction"] = -1 * math.fabs(self.df.loc[i,"freezing_discharge_fraction"])
-                    # self.df.loc[i,"freezing_discharge_fraction"] = -self.df.loc[i, "$q_{melt}$"] / self.df.loc[i, "TotalE"]
+                    # self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "$q_{melt}$"] / (self.df.loc[i, "TotalE"] - self.df.loc[i, "Ql"])
+                    # self.df.loc[i,"freezing_discharge_fraction"] = -1 * math.fabs(self.df.loc[i,"freezing_discharge_fraction"])
+                    # self.df.loc[i,"freezing_discharge_fraction"] = np.NaN
+                    self.df.loc[i,"freezing_discharge_fraction"] = -self.df.loc[i, "$q_{melt}$"] / self.df.loc[i, "TotalE"]
 
                 if np.isnan(self.df.loc[i, "delta_T_s"]):
                     logger.error(
