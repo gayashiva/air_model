@@ -548,6 +548,7 @@ class Icestupa:
 
                 self.df.loc[i,"freezing_discharge_fraction"] = -(
                     self.df.loc[i, "fountain_in"]* self.L_F
+                    # / (self.df.loc[i,"TotalE"] * self.TIME_STEP * self.df.loc[i, "SA"])
                     / (freezing_energy * self.TIME_STEP * self.df.loc[i, "SA"])
                 )
 
@@ -557,7 +558,7 @@ class Icestupa:
                     if self.df.loc[i,"freezing_discharge_fraction"] > 1: # Enough water available
                         self.df.loc[i,"freezing_discharge_fraction"] = 1
                         self.df.loc[i,"fountain_in"] += (
-                            self.df.loc[i,"freezing_discharge_fraction"] * freezing_energy * self.TIME_STEP * self.df.loc[i, "SA"]
+                            self.df.loc[i,"freezing_discharge_fraction"] *freezing_energy* self.TIME_STEP * self.df.loc[i, "SA"]
                         ) / (self.L_F)
                     if self.df.loc[i,"freezing_discharge_fraction"] < 1 : # Not Enough water available
                         self.df.loc[i,"fountain_in"] = 0
@@ -604,7 +605,6 @@ class Icestupa:
 
                     # self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "$q_{melt}$"] / (self.df.loc[i, "TotalE"] - self.df.loc[i, "Ql"])
                     # self.df.loc[i,"freezing_discharge_fraction"] = -1 * math.fabs(self.df.loc[i,"freezing_discharge_fraction"])
-                    # self.df.loc[i,"freezing_discharge_fraction"] = np.NaN
                     self.df.loc[i,"freezing_discharge_fraction"] = -self.df.loc[i, "$q_{melt}$"] / self.df.loc[i, "TotalE"]
 
                 if np.isnan(self.df.loc[i, "delta_T_s"]):
