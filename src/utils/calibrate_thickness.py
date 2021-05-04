@@ -108,7 +108,6 @@ class DX_Icestupa(Icestupa):
         return (
             key,
             self.df["When"].values,
-            self.df["SA"].values,
             self.df["iceV"].values,
             self.df["T_s"].values,
             result,
@@ -125,9 +124,9 @@ if __name__ == "__main__":
     )
 
     answers = dict(
-        # location="Schwarzsee 2019",
-        # location="Guttannen 2020",
-        location="Gangles 2021",
+        location="Schwarzsee 2019",
+        # location="Guttannen 2021",
+        # location="Gangles 2021",
         trigger="Manual",
         # trigger="None",
         # trigger="Temperature",
@@ -142,10 +141,10 @@ if __name__ == "__main__":
     model = DX_Icestupa(location=answers["location"], trigger=answers["trigger"])
     # model = DX_Icestupa()
 
-    param_values = np.arange(0.001, 0.010, 0.0005).tolist()
+    param_values = np.arange(0.002, 0.005, 0.001).tolist()
 
     experiments = pd.DataFrame(param_values, columns=["DX"])
-    variables = ["When", "SA", "iceV", "T_s"]
+    variables = ["When", "iceV", "T_s"]
 
     df_out = pd.DataFrame()
 
@@ -167,7 +166,6 @@ if __name__ == "__main__":
             data = pd.DataFrame(
                 {
                     (key, "When"): When,
-                    (key, "SA"): SA,
                     (key, "iceV"): iceV,
                     (key, "T_s"): T_s,
                 },
