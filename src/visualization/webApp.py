@@ -285,6 +285,13 @@ if __name__ == "__main__":
                 + ".jpg"
             )
             st.image(path)
+            st.write(
+                """
+            Correlation of modelled with measured surface temperature was **%.2f** and RMSE was **%.2f** $m^3$ 
+            """
+                % (icestupa.df['DroneV'].corr(icestupa.df['iceV']),
+                (((icestupa.df.DroneV - icestupa.df.iceV) ** 2).mean() ** .5))
+            )
 
             if SITE["name"] in ["guttannen21", "guttannen20"]:
                 path = (
@@ -294,6 +301,13 @@ if __name__ == "__main__":
                     + ".jpg"
                 )
                 st.image(path)
+                st.write(
+                    """
+                Correlation of modelled with measured surface temperature was **%.2f** and RMSE was **%.2f** C
+                """
+                    % (icestupa.df['cam_temp'].corr(icestupa.df['T_s']),
+                     (((icestupa.df.cam_temp - icestupa.df.T_s) ** 2).mean() ** .5))
+                )
 
         if "Timelapse" in display:
             st.write("## Timelapse")

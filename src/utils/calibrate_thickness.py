@@ -73,6 +73,11 @@ class DX_Icestupa(Icestupa):
         Max_IceV = self.df["iceV"].max()
         Min_T_s = self.df["T_s"].min()
         Min_T_bulk = self.df["T_bulk"].min()
+        rmse_V = (((self.df.DroneV - self.df.iceV) ** 2).mean() ** .5)
+        if self.name in ["guttannen21", "guttannen20"]:
+            rmse_T = (((self.df.cam_temp - self.df.T_s) ** 2).mean() ** .5)
+        else:
+            rmse_T = 0
         Efficiency = (
             (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1])
             / (self.df["input"].iloc[-1])
@@ -94,6 +99,8 @@ class DX_Icestupa(Icestupa):
                 Duration,
                 Min_T_s,
                 Min_T_bulk,
+                rmse_V,
+                rmse_T,
             ]
         )
         self.df = self.df.set_index("When").resample("1H").mean().reset_index()
@@ -178,6 +185,8 @@ if __name__ == "__main__":
                 2: "Duration",
                 3: "Min_T_s",
                 4: "Min_T_bulk",
+                5: "rmse_V",
+                6: "rmse_T",
             }
         )
 
