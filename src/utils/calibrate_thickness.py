@@ -124,8 +124,8 @@ if __name__ == "__main__":
     )
 
     answers = dict(
-        location="Schwarzsee 2019",
-        # location="Guttannen 2021",
+        # location="Schwarzsee 2019",
+        location="Guttannen 2021",
         # location="Gangles 2021",
         trigger="Manual",
         # trigger="None",
@@ -140,7 +140,7 @@ if __name__ == "__main__":
     # Initialise icestupa object
     model = DX_Icestupa(location=answers["location"], trigger=answers["trigger"])
 
-    param_values = np.arange(0.003, 0.005, 0.001).tolist()
+    param_values = np.arange(0.002, 0.008, 0.00025).tolist()
 
     experiments = pd.DataFrame(param_values, columns=["DX"])
     variables = ["When", "iceV", "T_s"]
