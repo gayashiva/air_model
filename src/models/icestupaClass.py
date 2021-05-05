@@ -125,7 +125,7 @@ class Icestupa:
 
         logger.info(df_c.head())
         self.df["h_f"] = 0
-        self.df.loc[0,"h_f"] = self.h_f
+        self.df.loc[1,"h_f"] = self.h_f
 
         unknown = ["a", "vp_a", "LW_in", "cld"]  # Possible unknown variables
         for i in range(len(unknown)):
@@ -183,7 +183,6 @@ class Icestupa:
                 dia=self.dia_f, h=self.h_f, x=self.r_spray
             )
         elif hasattr(self, "discharge"):  # Provide spray radius
-            print("Working")
             self.r_spray = get_droplet_projectile(
                 dia=self.dia_f, h=self.h_f, d=self.discharge
             )
