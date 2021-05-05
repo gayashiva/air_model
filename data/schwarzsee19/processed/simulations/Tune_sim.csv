@@ -1,0 +1,3 @@
+,Experiment,rmse_V,corr_V,rmse_T,corr_T,Max_IceV,Duration
+0,"{'DX': 0.003, 'TIME_STEP': 900}",0.431,1.0,0,0,1.703,44.896
+1,"{'DX': 0.003, 'TIME_STEP': 960}",0.317,1.0,0,0,1.51,39.967
