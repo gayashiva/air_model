@@ -11,6 +11,7 @@ import numpy as np
 from functools import lru_cache
 import logging
 from stqdm import stqdm
+from codetiming import Timer
 
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -101,6 +102,7 @@ class Icestupa:
     from src.models.methods._energy import get_energy
     from src.models.methods._figures import summary_figures
 
+    @Timer(text="%s executed in {:.2f} seconds" % __name__, logger = logging.warning)
     def derive_parameters(
         self,
     ):  # Derives additional parameters required for simulation
@@ -334,6 +336,7 @@ class Icestupa:
         df.set_index('When').to_csv(filename2, sep=",")
         logger.info("Manim output produced")
 
+    @Timer(text="%s executed in {:.2f} seconds" % __name__, logger = logging.warning)
     def melt_freeze(self):  # Main function
 
         # Initialise required columns

@@ -9,6 +9,7 @@ from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 import pandas as pd
 import logging
+from codetiming import Timer
 
 logger = logging.getLogger(__name__)
 
@@ -34,14 +35,9 @@ def shade(df_in, col):
     events = [ev for ev in events if not ev.empty]
     return df, df_ERA5, events
 
+@Timer(text="%s executed in {:.2f} seconds" % __name__, logger = logging.warning)
 def summary_figures(self):
     logger.info("Creating figures")
-
-    # # Class variables used
-    # df = self.df
-    # trigger = self.trigger
-    # RHO_I = self.RHO_I
-    # TIME_STEP = self.TIME_STEP
 
     np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
     output = self.output

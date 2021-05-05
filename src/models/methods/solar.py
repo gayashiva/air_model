@@ -5,6 +5,7 @@ from pvlib import location
 import numpy as np
 import pandas as pd
 import logging
+from codetiming import Timer
 # from redis_cache import cache_it
 
 logger = logging.getLogger(__name__)
