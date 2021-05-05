@@ -78,6 +78,8 @@ class Tune_Icestupa(Icestupa):
 
         rmse_V = (((self.df.DroneV - self.df.iceV) ** 2).mean() ** .5)
         corr_V = self.df['DroneV'].corr(self.df['iceV'])
+        Max_IceV = self.df["iceV"].max()
+        Duration = self.df.index[-1] * self.TIME_STEP / (60 * 60 * 24)
 
         if self.name in ["guttannen21", "guttannen20"]:
             rmse_T = (((self.df.cam_temp - self.df.T_s) ** 2).mean() ** .5)
@@ -93,6 +95,8 @@ class Tune_Icestupa(Icestupa):
                 corr_V,
                 rmse_T,
                 corr_T,
+                Max_IceV,
+                Duration,
             ]
         )
 
@@ -109,8 +113,8 @@ if __name__ == "__main__":
     )
 
     answers = dict(
-        location="Schwarzsee 2019",
-        # location="Guttannen 2021",
+        # location="Schwarzsee 2019",
+        location="Guttannen 2021",
         # location="Gangles 2021",
         trigger="Manual",
     )
@@ -120,7 +124,7 @@ if __name__ == "__main__":
     # Initialise icestupa object
     model = Tune_Icestupa(location=answers["location"], trigger=answers["trigger"])
 
-    param_grid = {'DX': np.arange(0.003, 0.004, 0.001).tolist(), 'TIME_STEP': np.arange(16 * 60, 17*60, 1*60).tolist()}
+    param_grid = {'DX': np.arange(0.003, 0.004, 0.001).tolist(), 'TIME_STEP': np.arange(15 * 60, 17*60, 1*60).tolist()}
     experiments = []
 
     for params in ParameterGrid(param_grid):
@@ -143,6 +147,8 @@ if __name__ == "__main__":
             2: "corr_V",
             3: "rmse_T",
             4: "corr_T",
+            5: "Max_IceV",
+            6: "Duration",
         }
     )
 
