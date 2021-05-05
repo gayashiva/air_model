@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2021",
+        location="Guttannen 2020",
         # location="Gangles 2021",
         trigger="Manual",
     )
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     # Initialise icestupa object
     model = Tune_Icestupa(location=answers["location"], trigger=answers["trigger"])
 
-    param_grid = {'DX': np.arange(0.003, 0.004, 0.001).tolist(), 'TIME_STEP': np.arange(15 * 60, 17*60, 1*60).tolist()}
+    param_grid = {'DX': np.arange(0.002, 0.010, 0.0005).tolist(), 'TIME_STEP': np.arange(15 * 60, 30*60, 5*60).tolist()}
     experiments = []
 
     for params in ParameterGrid(param_grid):
