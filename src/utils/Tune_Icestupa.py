@@ -39,6 +39,7 @@ class Tune_Icestupa(Icestupa):
 
     def run(self, experiment):
 
+        print(experiment)
         if self.name in ["gangles21"]:
             df_c = get_calibration(site=self.name, input=self.raw)
             df_c.loc[0, "DroneV"] = 2/3 * math.pi * 4 ** 3 # Volume of dome
@@ -63,11 +64,13 @@ class Tune_Icestupa(Icestupa):
 
         for key in experiment:
             setattr(self, key, experiment[key])
-            logger.warning(f"%s -> %s" % (key, str(experiment[key])))
+            # logger.warning(f"%s -> %s" % (key, str(experiment[key])))
             if key == 'TIME_STEP':
-                self.df.drop('h_f', axis=1) = self.df.drop('h_f', axis=1).set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index()
-                self.df.h_f = self.df.h_f.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').sum().reset_index()
-        print(self.DX)
+                self.df = self.df.set_index('When')
+                self.df= self.df.resample(str(int(self.TIME_STEP/60))+'T').mean()
+                # self.df.loc[:, self.df.columns != 'h_f'] = self.df.loc[:, self.df.columns != 'h_f'].resample(str(int(self.TIME_STEP/60))+'T').mean()
+                # self.df.h_f = self.df.h_f.resample(str(int(self.TIME_STEP/60))+'T').sum().reset_index()
+                self.df = self.df.reset_index()
 
 
         self.melt_freeze()
@@ -117,7 +120,7 @@ if __name__ == "__main__":
     # Initialise icestupa object
     model = Tune_Icestupa(location=answers["location"], trigger=answers["trigger"])
 
-    param_grid = {'DX': np.arange(0.004, 0.010, 0.001).tolist(), 'TIME_STEP': np.arange(15 * 60, 20*60, 1*60).tolist()}
+    param_grid = {'DX': np.arange(0.005, 0.006, 0.001).tolist(), 'TIME_STEP': np.arange(15 * 60, 21*60, 1*60).tolist()}
     experiments = []
 
     for params in ParameterGrid(param_grid):
