@@ -134,8 +134,7 @@ if __name__ == "__main__":
         run="yes",
     )
 
-    # Get settings for given location and trigger
-    SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
+    # SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
 
     # Initialise icestupa object
     model = DX_Icestupa(location=answers["location"], trigger=answers["trigger"])
@@ -143,6 +142,7 @@ if __name__ == "__main__":
     param_values = np.arange(0.002, 0.008, 0.00025).tolist()
 
     experiments = pd.DataFrame(param_values, columns=["DX"])
+    print(experiments.to_dict())
     variables = ["When", "iceV", "T_s"]
 
     df_out = pd.DataFrame()
