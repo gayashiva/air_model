@@ -113,7 +113,6 @@ if __name__ == "__main__":
         # location="Guttannen 2021",
         # location="Gangles 2021",
         trigger="Manual",
-        run="yes",
     )
 
     SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
@@ -121,7 +120,7 @@ if __name__ == "__main__":
     # Initialise icestupa object
     model = Tune_Icestupa(location=answers["location"], trigger=answers["trigger"])
 
-    param_grid = {'DX': np.arange(0.005, 0.006, 0.001).tolist(), 'TIME_STEP': np.arange(15 * 60, 21*60, 1*60).tolist()}
+    param_grid = {'DX': np.arange(0.003, 0.004, 0.001).tolist(), 'TIME_STEP': np.arange(16 * 60, 17*60, 1*60).tolist()}
     experiments = []
 
     for params in ParameterGrid(param_grid):
