@@ -65,7 +65,8 @@ class Tune_Icestupa(Icestupa):
             setattr(self, key, experiment[key])
             logger.warning(f"%s -> %s" % (key, str(experiment[key])))
             if key == 'TIME_STEP':
-                self.df = self.df.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index()
+                self.df.drop('h_f', axis=1) = self.df.drop('h_f', axis=1).set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index()
+                self.df.h_f = self.df.h_f.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').sum().reset_index()
         print(self.DX)
 
 
@@ -116,7 +117,7 @@ if __name__ == "__main__":
     # Initialise icestupa object
     model = Tune_Icestupa(location=answers["location"], trigger=answers["trigger"])
 
-    param_grid = {'DX': np.arange(0.004, 0.010, 0.001).tolist(), 'TIME_STEP': np.arange(5 * 60, 20*60, 1*60).tolist()}
+    param_grid = {'DX': np.arange(0.004, 0.010, 0.001).tolist(), 'TIME_STEP': np.arange(15 * 60, 20*60, 1*60).tolist()}
     experiments = []
 
     for params in ParameterGrid(param_grid):
