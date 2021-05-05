@@ -180,11 +180,11 @@ class Icestupa:
 
         if hasattr(self, "r_spray"):  # Provide discharge
             self.discharge = get_droplet_projectile(
-                dia=self.dia_f, h=self.h_f, x=self.r_spray
+                dia=self.dia_f, h=self.df.loc[1,"h_f"], x=self.r_spray
             )
         elif hasattr(self, "discharge"):  # Provide spray radius
             self.r_spray = get_droplet_projectile(
-                dia=self.dia_f, h=self.h_f, d=self.discharge
+                dia=self.dia_f, h=self.df.loc[1,"h_f"], d=self.discharge
             )
 
         self.get_discharge()

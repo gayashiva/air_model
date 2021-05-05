@@ -40,6 +40,9 @@ class Tune_Icestupa(Icestupa):
     def run(self, experiment):
 
         print(experiment)
+
+        self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
+
         if self.name in ["gangles21"]:
             df_c = get_calibration(site=self.name, input=self.raw)
             df_c.loc[0, "DroneV"] = 2/3 * math.pi * 4 ** 3 # Volume of dome
@@ -53,14 +56,12 @@ class Tune_Icestupa(Icestupa):
 
         if hasattr(self, "r_spray"):  # Provide discharge
             self.discharge = get_droplet_projectile(
-                dia=self.dia_f, h=self.h_f, x=self.r_spray
+                dia=self.dia_f, h=self.df.loc[1,"h_f"], x=self.r_spray
             )
         else:  # Provide spray radius
             self.r_spray = get_droplet_projectile(
-                dia=self.dia_f, h=self.h_f, d=self.discharge
+                dia=self.dia_f, h=self.df.loc[1,"h_f"], d=self.discharge
             )
-
-        self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
 
         for key in experiment:
             setattr(self, key, experiment[key])
@@ -69,7 +70,7 @@ class Tune_Icestupa(Icestupa):
                 self.df = self.df.set_index('When')
                 self.df= self.df.resample(str(int(self.TIME_STEP/60))+'T').mean()
                 # self.df.loc[:, self.df.columns != 'h_f'] = self.df.loc[:, self.df.columns != 'h_f'].resample(str(int(self.TIME_STEP/60))+'T').mean()
-                # self.df.h_f = self.df.h_f.resample(str(int(self.TIME_STEP/60))+'T').sum().reset_index()
+                # self.df.h_f = self.df.h_f.resample(str(int(self.TIME_STEP/60))+'T').sum()
                 self.df = self.df.reset_index()
 
 
