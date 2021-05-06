@@ -90,7 +90,8 @@ class Tune_Icestupa(Icestupa):
 
         result = pd.Series(
             [
-                experiment,
+                experiment['DX'] * 1000,
+                experiment['TIME_STEP'] / 60,
                 rmse_V,
                 corr_V,
                 rmse_T,
@@ -114,13 +115,13 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2020",
+        location="Guttannen 2021",
         # location="Gangles 2021",
         trigger="Manual",
     )
 
     locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
-    param_grid = {'DX': np.arange(0.003, 0.010, 0.0005).tolist(), 'TIME_STEP': np.arange(15 * 60, 30*60, 5*60).tolist()}
+    param_grid = {'DX': np.arange(0.003, 0.020, 0.0005).tolist(), 'TIME_STEP': np.arange(15 * 60, 35*60, 5*60).tolist()}
 
     experiments = []
     for params in ParameterGrid(param_grid):
@@ -142,13 +143,14 @@ if __name__ == "__main__":
         results = pd.DataFrame(results)
         results = results.rename(
             columns={
-                0: "Experiment",
-                1: "rmse_V",
-                2: "corr_V",
-                3: "rmse_T",
-                4: "corr_T",
-                5: "Max_IceV",
-                6: "Duration",
+                0: "DX",
+                1: "TIME_STEP",
+                2: "rmse_V",
+                3: "corr_V",
+                4: "rmse_T",
+                5: "corr_T",
+                6: "Max_IceV",
+                7: "Duration",
             }
         )
 
