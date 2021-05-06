@@ -102,7 +102,7 @@ class Icestupa:
     from src.models.methods._energy import get_energy
     from src.models.methods._figures import summary_figures
 
-    @Timer(text="%s executed in {:.2f} seconds" % __name__, logger = logging.warning)
+    @Timer(text="Preprocessed data in {:.2f} seconds" , logger = logging.warning)
     def derive_parameters(
         self,
     ):  # Derives additional parameters required for simulation
@@ -305,24 +305,6 @@ class Icestupa:
         print("Ppt", round(self.df["ppt"].sum(), 2))
         print("Duration", round(Duration, 2))
         
-
-        # if self.name == 'guttannen21':
-        #     logger.warning("\nIce temp. on Feb 11 at 1200 was -0.9 C but thermal cam says %0.2f C" % self.df.loc[self.df.When == datetime(2021, 2, 11,12),  "cam_temp"])
-        #     correct = self.df.loc[self.df.When == datetime(2021, 2, 11,12),  "cam_temp"].values + 0.9
-        #     logger.warning("correcting temperature by %0.2f" %correct)
-        #     self.df.cam_temp -= correct
-        #     # self.df.cam_temp = 3.27997 + 0.6033*self.df.cam_temp
-        #     logger.warning("\nIce temp. on Feb 11 at 1200 was -0.9 C but thermal cam says %0.2f C" % self.df.loc[self.df.When == datetime(2021, 2, 11,12),  "cam_temp"])
-
-        # if self.name == 'guttannen20':
-        #     logger.warning("\nIce temp. on jan 24 at 1000 was -3.2 C but thermal cam says %0.2f C" % self.df.loc[self.df.When == datetime(2020, 1, 24,10),  "cam_temp"])
-        #     # correct = self.df.loc[self.df.When == datetime(2020, 1, 24,10),  "cam_temp"].values + 0.9
-        #     # self.df.cam_temp -= correct
-        #     # self.df.cam_temp = 3.27997 + 0.6033*self.df.cam_temp
-        #     # logger.warning("\nIce temp. on Feb 11 at 1200 was -0.9 C but thermal cam says %0.2f C" % self.df.loc[self.df.When == datetime(2020, 1, 24,10),  "cam_temp"])
-
-        # self.df = self.df.set_index("When").resample("D").mean().reset_index()
-
         if report == True:
             prof = ProfileReport(self.df)
             prof.to_file(output_file=self.output + "output_report.html")
@@ -554,7 +536,9 @@ class Icestupa:
                     / (freezing_energy * self.TIME_STEP * self.df.loc[i, "SA"])
                 )
 
-                if self.df.loc[i,"freezing_discharge_fraction"] < 0: # Energy flux positive or no fountain
+                if self.df.loc[i,"TotalE"] > 0 and freezing_energy < 0:
+                    self.df.loc[i,"freezing_discharge_fraction"] = 1
+                elif freezing_energy > 0:
                     self.df.loc[i,"freezing_discharge_fraction"] = 0
                 else:
                     if self.df.loc[i,"freezing_discharge_fraction"] > 1: # Enough water available
@@ -569,6 +553,11 @@ class Icestupa:
                 self.df.loc[i, "$q_{melt}$"] += self.df.loc[i,"freezing_discharge_fraction"] * freezing_energy
                 self.df.loc[i, "$q_{T}$"] += (1- self.df.loc[i,"freezing_discharge_fraction"]) * freezing_energy
                 # self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "$q_{melt}$"] / self.df.loc[i, "TotalE"]
+
+                if self.df.loc[i,"$q_{T}$"] * self.df.loc[i,"$q_{melt}$"] < 0:
+                    self.df.loc[i,"freezing_discharge_fraction"] = np.NaN
+                else:
+                    self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "$q_{melt}$"] / self.df.loc[i, "TotalE"]
 
                 self.df.loc[i, "delta_T_s"] = (
                     self.df.loc[i, "$q_{T}$"]
@@ -607,13 +596,12 @@ class Icestupa:
 
                     # self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "$q_{melt}$"] / (self.df.loc[i, "TotalE"] - self.df.loc[i, "Ql"])
                     # self.df.loc[i,"freezing_discharge_fraction"] = -1 * math.fabs(self.df.loc[i,"freezing_discharge_fraction"])
-                    self.df.loc[i,"freezing_discharge_fraction"] = -self.df.loc[i, "$q_{melt}$"] / self.df.loc[i, "TotalE"]
 
-                if np.isnan(self.df.loc[i, "delta_T_s"]):
-                    logger.error(
-                        f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
-                    )
-                    sys.exit("Ice Temperature nan")
+                    if self.df.loc[i,"$q_{T}$"] * self.df.loc[i,"$q_{melt}$"] < 0:
+                        self.df.loc[i,"freezing_discharge_fraction"] = np.NaN
+                    else:
+                        self.df.loc[i,"freezing_discharge_fraction"] = -self.df.loc[i, "$q_{melt}$"] / self.df.loc[i, "TotalE"]
+
 
                 if self.df.loc[i, "$q_{melt}$"] < 0:
                     self.df.loc[i, "solid"] -= (
@@ -639,6 +627,13 @@ class Icestupa:
                             self.df.loc[i, "ice"],
                         )
                     )
+
+                """ Unit tests """
+                if np.isnan(self.df.loc[i, "delta_T_s"]):
+                    logger.error(
+                        f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+                    )
+                    sys.exit("Ice Temperature nan")
 
                 if np.isnan(self.df.loc[i, "TotalE"]):
                     logger.error(
@@ -675,7 +670,7 @@ class Icestupa:
                         )
                     )
 
-                if (self.df.loc[i,"freezing_discharge_fraction"]) > 1.2: 
+                if math.fabs(self.df.loc[i,"freezing_discharge_fraction"]) > 1.01: 
                     logger.error(
                         "%s,temp flux %.1f,melt flux %.1f,total %.1f, Ql %.1f,freezing_discharge_fraction %.2f"
                         % (

@@ -19,7 +19,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     coloredlogs.install(
         fmt="%(funcName)s %(levelname)s %(message)s",
-        level=logging.INFO,
+        level=logging.ERROR,
         logger=logger,
     )
 
@@ -28,9 +28,6 @@ if __name__ == "__main__":
         location="Guttannen 2021",
         # location="Gangles 2021",
         trigger="Manual",
-        # trigger="None",
-        # trigger="Temperature",
-        # trigger="Weather",
         run="yes",
     )
 
@@ -51,7 +48,7 @@ if __name__ == "__main__":
         icestupa.summary()
 
         # Create figures for web interface
-        icestupa.summary_figures()
+        # icestupa.summary_figures()
     else:
         # Use output parameters from cache
         icestupa.read_output()
