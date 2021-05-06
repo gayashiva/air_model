@@ -390,7 +390,7 @@ class Icestupa:
         t.set_description("Simulating %s Icestupa" % self.name)
         for row in t:
             i = row.Index
-            ice_melted = self.df.loc[i, "ice"] < 1 or self.df.loc[i, "T_bulk"] < -50
+            ice_melted = self.df.loc[i, "ice"] < 1 or self.df.loc[i, "T_bulk"] < -50 or self.df.loc[i, "T_s"] < -100
 
             if (
                 ice_melted and STATE == 1
