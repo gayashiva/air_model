@@ -24,8 +24,8 @@ if __name__ == "__main__":
     )
 
     answers = dict(
-        location="Schwarzsee 2019",
-        # location="Guttannen 2021",
+        # location="Schwarzsee 2019",
+        location="Guttannen 2021",
         # location="Gangles 2021",
         trigger="Manual",
         run="yes",
@@ -51,5 +51,6 @@ if __name__ == "__main__":
         icestupa.summary_figures()
     else:
         # Use output parameters from cache
-        icestupa.read_output()
-        icestupa.summary_figures()
+        icestupa.read_input()
+        # icestupa.read_output()
+        # icestupa.summary_figures()

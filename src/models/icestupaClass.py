@@ -83,8 +83,13 @@ class Icestupa:
         input_file = self.input + self.name + "_input_model.csv"
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
         if self.TIME_STEP != (int(pd.infer_freq(self.df["When"])[:-1]) * 60):
-            self.df= self.df.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index()
+            self.df= self.df.set_index('When')
+            dfx = self.df.missing_type.resample(str(int(self.TIME_STEP/60))+'T').first()
+            self.df= self.df.resample(str(int(self.TIME_STEP/60))+'T').mean()
+            self.df["missing_type"] = dfx
+            self.df= self.df.reset_index()
             logger.warning(f"Time steps -> %s minutes" % (str(self.TIME_STEP / 60)))
+
         mask = self.df["When"] >= self.start_date
         mask &= self.df["When"] <= self.end_date
         self.df = self.df.loc[mask]
@@ -268,8 +273,14 @@ class Icestupa:
 
     def read_input(self):  # Use processed input dataset
         self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
+        self.TIME_STEP = 30*60
+        self.df= self.df.set_index('When')
+        df = self.df.missing_type.resample(str(int(self.TIME_STEP/60))+'T').first()
+        self.df= self.df.resample(str(int(self.TIME_STEP/60))+'T').mean()
+        self.df["missing_type"] = df
+        self.df= self.df.reset_index()
 
-        logger.debug(self.df.head())
+        logger.info(self.df[["When", "missing_type"]].head())
 
         if self.df.isnull().values.any():
             logger.warning("\n Null values present\n")
@@ -308,8 +319,8 @@ class Icestupa:
         df.set_index('When').to_csv(filename2, sep=",")
         logger.info("Manim output produced")
 
-    @Timer(text="%s executed in {:.2f} seconds" % __name__, logger = logging.warning)
-    def melt_freeze(self):  # Main function
+    @Timer(text="Simulation executed in {:.2f} seconds", logger = logging.warning)
+    def melt_freeze(self):
 
         # Initialise required columns
         col = [

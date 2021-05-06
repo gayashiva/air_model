@@ -88,8 +88,8 @@ if __name__ == "__main__":
         new_process.start()
 
     # Fill task queue
-    task_list = ["Guttannen 2021", "Guttannen 2020", "Schwarzsee 2019", "Gangles 2021"]
-    # task_list = [ "Schwarzsee 2019", "Gangles 2021"]
+    # task_list = ["Guttannen 2021", "Guttannen 2020", "Schwarzsee 2019", "Gangles 2021"]
+    task_list = [ "Schwarzsee 2019", "Gangles 2021"]
     for single_task in task_list:
         tasks.put(single_task)
 
