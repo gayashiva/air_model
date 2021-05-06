@@ -1,10 +1,8 @@
 import pandas as pd
-import numpy as np
 import logging
 import coloredlogs
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
 import sys
 import os
@@ -29,18 +27,14 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     coloredlogs.install(
         fmt="%(funcName)s %(levelname)s %(message)s",
-        level=logging.INFO,
+        level=logging.ERROR,
         logger=logger,
     )
     answers = dict(
-        location="Schwarzsee 2019",
-        # location="Guttannen 2021",
-        # location="Gangles 2021",
+        # location="Schwarzsee 2019",
+        # location="Guttannen 2020",
+        location="Gangles 2021",
         trigger="Manual",
-        # trigger="None",
-        # trigger="Temperature",
-        # trigger="Weather",
-        run="yes",
     )
 
     # Get settings for given location and trigger
@@ -57,29 +51,34 @@ if __name__ == "__main__":
     filename = FOLDER["sim"] + "/DX_sim.csv"
     filename2 = FOLDER["sim"] + "/DX_sim.h5"
     figures = FOLDER["sim"] + "/DX_sim.pdf"
+    filename = FOLDER["sim"] + "/Tune_sim.csv"
+    figures = FOLDER["sim"] + "/Tune_sim.pdf"
 
     df = pd.read_csv(filename, sep=",")
     logger.info(df)
 
-    data_store = pd.HDFStore(filename2)
-    dfd = data_store["dfd"]
-    data_store.close()
-    print(dfd.head())
+    # data_store = pd.HDFStore(filename2)
+    # dfd = data_store["dfd"]
+    # data_store.close()
+    # print(dfd.head())
 
     x = df["DX"]
-    y1 = df["Max_IceV"]
-    y2 = df["Min_T_bulk"]
-    # print(icestupa.df['cam_temp'].corr(df['T_s']))
+    x2 = df["TIME_STEP"]
+    y = df["rmse_V"]
+    # y2 = df["Min_T_bulk"]
 
     pp = PdfPages(figures)
     fig, ax = plt.subplots()
-    l1 = ax.scatter(x,y1, facecolors="blue")
-    l2 = ax.scatter(x,y2, facecolors="black")
-    ax.set_ylabel("Correlation")
+    for i in range(0, df.shape[0]):
+        if x2[i] == 15:
+            l1 = ax.scatter(x[i],y[i], facecolors="blue")
+        if x2[i] == 30:
+            l2 = ax.scatter(x[i],y[i], facecolors="red")
+    ax.set_ylabel("RMSE")
     ax.set_xlabel("Ice Layer Thickness ($mm$)")
     ax.legend(
         (l1, l2),
-        ("Volume","Temp"),
+        ("15","30"),
         scatterpoints=1,
         loc="lower right",
         ncol=1,

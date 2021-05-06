@@ -5,7 +5,7 @@
 import pickle
 pickle.HIGHEST_PROTOCOL = 4 # For python version 2.7
 import pandas as pd
-import sys, os, math, time
+import sys, os, math
 from datetime import datetime
 import numpy as np
 from functools import lru_cache
@@ -17,7 +17,6 @@ from codetiming import Timer
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 from src.models.methods.calibration import get_calibration
-from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
 from src.utils.settings import config
@@ -57,7 +56,7 @@ class Icestupa:
     DX = 4.75e-03  # Initial Ice layer thickness
     # DX = 17e-03  # Initial Ice layer thickness
     # DX = 25e-03  # Initial Ice layer thickness
-    TIME_STEP = 15 # Model time step
+    TIME_STEP = 15*60 # Model time step
 
     """Fountain constants"""
     theta_f = 45  # FOUNTAIN angle
@@ -83,10 +82,9 @@ class Icestupa:
         # Initialize input dataset
         input_file = self.input + self.name + "_input_model.csv"
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
-        self.TIME_STEP = (
-            int(pd.infer_freq(self.df["When"])[:-1]) * 60
-        )  # Extract time step from datetime column
-        logger.info(f"Time steps -> %s minutes" % (str(self.TIME_STEP / 60)))
+        if self.TIME_STEP != (int(pd.infer_freq(self.df["When"])[:-1]) * 60):
+            self.df= self.df.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index()
+            logger.warning(f"Time steps -> %s minutes" % (str(self.TIME_STEP / 60)))
         mask = self.df["When"] >= self.start_date
         mask &= self.df["When"] <= self.end_date
         self.df = self.df.loc[mask]
@@ -268,20 +266,16 @@ class Icestupa:
             mode="w",
         )
 
-    def read_input(self, report=False):  # Use processed input dataset
+    def read_input(self):  # Use processed input dataset
         self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
 
         logger.debug(self.df.head())
-
-        if report == True:
-            prof = ProfileReport(self.df)
-            prof.to_file(output_file=self.output + "input_report.html")
 
         if self.df.isnull().values.any():
             logger.warning("\n Null values present\n")
 
     def read_output(
-        self, report=False
+        self
     ):  # Reads output and Displays outputs useful for manuscript
 
         self.df = pd.read_hdf(
@@ -305,10 +299,6 @@ class Icestupa:
         print("Ppt", round(self.df["ppt"].sum(), 2))
         print("Duration", round(Duration, 2))
         
-        if report == True:
-            prof = ProfileReport(self.df)
-            prof.to_file(output_file=self.output + "output_report.html")
-
     def manim_output(self):
         # Output for manim
         filename2 = os.path.join(self.output, self.name + "_manim_" + self.trigger + ".csv")
