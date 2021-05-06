@@ -22,7 +22,7 @@ from src.models.methods.droplet import get_droplet_projectile
 
 
 class Tune_Icestupa(Icestupa):
-    def __init__(self, location="Guttannen 2021", trigger="Manual"):
+    def __init__(self, location, trigger="Manual"):
         SITE, FOUNTAIN, FOLDER = config(location, trigger)
         initial_data = [SITE, FOUNTAIN, FOLDER]
 
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     coloredlogs.install(
         fmt="%(funcName)s %(levelname)s %(message)s",
-        level=logging.WARNING,
+        level=logging.ERROR,
         logger=logger,
     )
 
@@ -119,39 +119,39 @@ if __name__ == "__main__":
         trigger="Manual",
     )
 
-    SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
+    locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
+    param_grid = {'DX': np.arange(0.003, 0.010, 0.0005).tolist(), 'TIME_STEP': np.arange(15 * 60, 30*60, 5*60).tolist()}
 
-    # Initialise icestupa object
-    model = Tune_Icestupa(location=answers["location"], trigger=answers["trigger"])
-
-    param_grid = {'DX': np.arange(0.002, 0.010, 0.0005).tolist(), 'TIME_STEP': np.arange(15 * 60, 30*60, 5*60).tolist()}
     experiments = []
-
     for params in ParameterGrid(param_grid):
         experiments.append(params)
 
-    results = []
+    for location in locations:
 
-    logger.info("CPUs running %s" % multiprocessing.cpu_count())
+        SITE, FOUNTAIN, FOLDER = config(location, "Manual")
 
-    with Pool(multiprocessing.cpu_count()) as executor:
+        model = Tune_Icestupa(location)
 
-        for result in executor.map(model.run, experiments):
-            results.append(result)
+        results = []
 
-    results = pd.DataFrame(results)
-    results = results.rename(
-        columns={
-            0: "Experiment",
-            1: "rmse_V",
-            2: "corr_V",
-            3: "rmse_T",
-            4: "corr_T",
-            5: "Max_IceV",
-            6: "Duration",
-        }
-    )
+        with Pool(multiprocessing.cpu_count()) as executor:
 
-    print(results)
+            for result in executor.map(model.run, experiments):
+                results.append(result)
 
-    results.round(3).to_csv(FOLDER["sim"] + "/Tune_sim.csv", sep=",")
+        results = pd.DataFrame(results)
+        results = results.rename(
+            columns={
+                0: "Experiment",
+                1: "rmse_V",
+                2: "corr_V",
+                3: "rmse_T",
+                4: "corr_T",
+                5: "Max_IceV",
+                6: "Duration",
+            }
+        )
+
+        results.round(3).to_csv(FOLDER["sim"] + "/Tune_sim.csv", sep=",")
+
+        print(results)
