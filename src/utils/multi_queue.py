@@ -46,7 +46,7 @@ def calculate(process_name, tasks, results):
 
             # Output which process received the value
             print('[%s] received value: %s' % (process_name, new_value))
-            print('[%s] calculated max ice volume: %i' % (process_name, compute))
+            print('[%s] calculated max ice volume: %.1f' % (process_name, compute))
 
             # Add result to the queue
             results.put(compute)
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     coloredlogs.install(
         fmt="%(funcName)s %(levelname)s %(message)s",
-        level=logging.INFO,
+        level=logging.ERROR,
         logger=logger,
     )
 
