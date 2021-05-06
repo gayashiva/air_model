@@ -53,10 +53,10 @@ class Icestupa:
     v_a_limit = 8  # All fountain water lost at this wind speed
 
     """Model constants"""
-    DX = 4.75e-03  # Initial Ice layer thickness
-    # DX = 17e-03  # Initial Ice layer thickness
+    # DX = 4.75e-03  # Initial Ice layer thickness
+    DX = 10e-03  # Initial Ice layer thickness
     # DX = 25e-03  # Initial Ice layer thickness
-    TIME_STEP = 15*60 # Model time step
+    TIME_STEP = 30*60 # Model time step
 
     """Fountain constants"""
     theta_f = 45  # FOUNTAIN angle
@@ -82,6 +82,11 @@ class Icestupa:
         # Initialize input dataset
         input_file = self.input + self.name + "_input_model.csv"
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
+        mask = self.df["When"] >= self.start_date
+        mask &= self.df["When"] <= self.end_date
+        self.df = self.df.loc[mask]
+        self.df = self.df.reset_index(drop=True)
+
         if self.TIME_STEP != (int(pd.infer_freq(self.df["When"])[:-1]) * 60):
             self.df= self.df.set_index('When')
             dfx = self.df.missing_type.resample(str(int(self.TIME_STEP/60))+'T').first()
@@ -90,10 +95,6 @@ class Icestupa:
             self.df= self.df.reset_index()
             logger.warning(f"Time steps -> %s minutes" % (str(self.TIME_STEP / 60)))
 
-        mask = self.df["When"] >= self.start_date
-        mask &= self.df["When"] <= self.end_date
-        self.df = self.df.loc[mask]
-        self.df = self.df.reset_index(drop=True)
         logger.debug(self.df.head())
         logger.debug(self.df.tail())
 
@@ -335,7 +336,7 @@ class Icestupa:
             "melted",
             "delta_T_s",
             "unfrozen_water",
-            "TotalE",
+            "Qsurf",
             "SW",
             "LW",
             "Qs",
@@ -352,8 +353,8 @@ class Icestupa:
             "thickness",
             "fountain_in",
             "wind_loss",
-            "$q_{T}$",
-            "$q_{melt}$",
+            "Qt",
+            "Qmelt",
             "freezing_discharge_fraction",
         ]
 
@@ -528,16 +529,16 @@ class Icestupa:
                             / self.L_S
                         )
 
-                self.df.loc[i, "$q_{T}$"] += self.df.loc[i, "Ql"]
-                freezing_energy = (self.df.loc[i, "TotalE"] - self.df.loc[i, "Ql"])
+                self.df.loc[i, "Qt"] += self.df.loc[i, "Ql"]
+                freezing_energy = (self.df.loc[i, "Qsurf"] - self.df.loc[i, "Ql"])
 
                 self.df.loc[i,"freezing_discharge_fraction"] = -(
                     self.df.loc[i, "fountain_in"]* self.L_F
-                    # / (self.df.loc[i,"TotalE"] * self.TIME_STEP * self.df.loc[i, "SA"])
+                    # / (self.df.loc[i,"Qsurf"] * self.TIME_STEP * self.df.loc[i, "SA"])
                     / (freezing_energy * self.TIME_STEP * self.df.loc[i, "SA"])
                 )
 
-                if self.df.loc[i,"TotalE"] > 0 and freezing_energy < 0:
+                if self.df.loc[i,"Qsurf"] > 0 and freezing_energy < 0:
                     self.df.loc[i,"freezing_discharge_fraction"] = 1
                 elif freezing_energy > 0:
                     self.df.loc[i,"freezing_discharge_fraction"] = 0
@@ -551,17 +552,17 @@ class Icestupa:
                         self.df.loc[i,"fountain_in"] = 0
                         # logger.warning("Discharge froze completely with freezing_discharge_fraction %.2f" %self.df[i,"freezing_discharge_fraction"])
 
-                self.df.loc[i, "$q_{melt}$"] += self.df.loc[i,"freezing_discharge_fraction"] * freezing_energy
-                self.df.loc[i, "$q_{T}$"] += (1- self.df.loc[i,"freezing_discharge_fraction"]) * freezing_energy
-                # self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "$q_{melt}$"] / self.df.loc[i, "TotalE"]
+                self.df.loc[i, "Qmelt"] += self.df.loc[i,"freezing_discharge_fraction"] * freezing_energy
+                self.df.loc[i, "Qt"] += (1- self.df.loc[i,"freezing_discharge_fraction"]) * freezing_energy
+                # self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "Qmelt"] / self.df.loc[i, "Qsurf"]
 
-                if self.df.loc[i,"$q_{T}$"] * self.df.loc[i,"$q_{melt}$"] < 0:
+                if self.df.loc[i,"Qt"] * self.df.loc[i,"Qmelt"] < 0:
                     self.df.loc[i,"freezing_discharge_fraction"] = np.NaN
                 else:
-                    self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "$q_{melt}$"] / self.df.loc[i, "TotalE"]
+                    self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "Qmelt"] / self.df.loc[i, "Qsurf"]
 
                 self.df.loc[i, "delta_T_s"] = (
-                    self.df.loc[i, "$q_{T}$"]
+                    self.df.loc[i, "Qt"]
                     * self.TIME_STEP
                     / (self.RHO_I * self.DX * self.C_I)
                 )
@@ -569,7 +570,7 @@ class Icestupa:
                 # TODO Add to paper
                 """Ice temperature above zero"""
                 if (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]) > 0:
-                    self.df.loc[i, "$q_{melt}$"] += (
+                    self.df.loc[i, "Qmelt"] += (
                         (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"])
                         * self.RHO_I
                         * self.DX
@@ -577,43 +578,43 @@ class Icestupa:
                         / self.TIME_STEP
                     )
 
-                    self.df.loc[i, "$q_{T}$"] -= (
+                    self.df.loc[i, "Qt"] -= (
                         (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"])
                         * self.RHO_I
                         * self.DX
                         * self.C_I
                         / self.TIME_STEP
                     )
-                    # self.df.loc[i, "$q_{T}$"] += self.df.loc[i, "Ql"]
-                    # self.df.loc[i, "$q_{melt}$"] -= self.df.loc[i, "Ql"]
+                    # self.df.loc[i, "Qt"] += self.df.loc[i, "Ql"]
+                    # self.df.loc[i, "Qmelt"] -= self.df.loc[i, "Ql"]
 
                     # self.df.loc[i, "delta_T_s"] = (
-                    #     self.df.loc[i, "$q_{T}$"]
+                    #     self.df.loc[i, "Qt"]
                     #     * self.TIME_STEP
                     #     / (self.RHO_I * self.DX * self.C_I)
                     # )
 
                     self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
 
-                    # self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "$q_{melt}$"] / (self.df.loc[i, "TotalE"] - self.df.loc[i, "Ql"])
+                    # self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "Qmelt"] / (self.df.loc[i, "Qsurf"] - self.df.loc[i, "Ql"])
                     # self.df.loc[i,"freezing_discharge_fraction"] = -1 * math.fabs(self.df.loc[i,"freezing_discharge_fraction"])
 
-                    if self.df.loc[i,"$q_{T}$"] * self.df.loc[i,"$q_{melt}$"] < 0:
+                    if self.df.loc[i,"Qt"] * self.df.loc[i,"Qmelt"] < 0:
                         self.df.loc[i,"freezing_discharge_fraction"] = np.NaN
                     else:
-                        self.df.loc[i,"freezing_discharge_fraction"] = -self.df.loc[i, "$q_{melt}$"] / self.df.loc[i, "TotalE"]
+                        self.df.loc[i,"freezing_discharge_fraction"] = -self.df.loc[i, "Qmelt"] / self.df.loc[i, "Qsurf"]
 
 
-                if self.df.loc[i, "$q_{melt}$"] < 0:
+                if self.df.loc[i, "Qmelt"] < 0:
                     self.df.loc[i, "solid"] -= (
-                        self.df.loc[i, "$q_{melt}$"]
+                        self.df.loc[i, "Qmelt"]
                         * self.TIME_STEP
                         * self.df.loc[i, "SA"]
                         / (self.L_F)
                     )
                 else:
                     self.df.loc[i, "melted"] += (
-                        self.df.loc[i, "$q_{melt}$"]
+                        self.df.loc[i, "Qmelt"]
                         * self.TIME_STEP
                         * self.df.loc[i, "SA"]
                         / (self.L_F)
@@ -636,7 +637,7 @@ class Icestupa:
                     )
                     sys.exit("Ice Temperature nan")
 
-                if np.isnan(self.df.loc[i, "TotalE"]):
+                if np.isnan(self.df.loc[i, "Qsurf"]):
                     logger.error(
                         f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}"
                     )
@@ -648,7 +649,7 @@ class Icestupa:
                         f"Discharge exceeded When {self.df.When[i]}, Fountain in {self.df.fountain_in[i]}, Discharge in {self.df.Discharge[i]* self.TIME_STEP / 60}"
                     )
 
-                if math.fabs(self.df.loc[i, "TotalE"]) > 800:
+                if math.fabs(self.df.loc[i, "Qsurf"]) > 800:
                     logger.warning(
                         "Energy above 800 %s,Fountain water %s,Sensible %s, SW %s, LW %s, Qg %s"
                         % (
@@ -676,9 +677,9 @@ class Icestupa:
                         "%s,temp flux %.1f,melt flux %.1f,total %.1f, Ql %.1f,freezing_discharge_fraction %.2f"
                         % (
                             self.df.loc[i, "When"],
-                            self.df.loc[i, "$q_{T}$"],
-                            self.df.loc[i, "$q_{melt}$"],
-                            self.df.loc[i, "TotalE"], 
+                            self.df.loc[i, "Qt"],
+                            self.df.loc[i, "Qmelt"],
+                            self.df.loc[i, "Qsurf"], 
                             self.df.loc[i, "Ql"], 
                             self.df.loc[i, "freezing_discharge_fraction"],
                         )
@@ -706,7 +707,6 @@ class Icestupa:
                 self.df.loc[i + 1, "unfrozen_water"] = (
                     self.df.loc[i, "unfrozen_water"] 
                     + self.df.loc[i,"fountain_in"] 
-                    + self.df.loc[i,"wind_loss"]
                 )
                 self.df.loc[i + 1, "iceV"] = (
                     self.df.loc[i + 1, "ice"] / self.RHO_I

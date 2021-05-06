@@ -176,12 +176,12 @@ def get_parameter_metadata(
             "kind": "Derived",
             "units": "($W\\,m^{-2}$)",
         },
-        "$q_{T}$": {
+        "Qt": {
             "name": "Temperature flux",
             "kind": "Output",
             "units": "($W\\,m^{-2}$)",
         },
-        "$q_{melt}$": {
+        "Qmelt": {
             "name": "Melt energy flux",
             "kind": "Output",
             "units": "($W\\,m^{-2}$)",
@@ -246,7 +246,7 @@ def get_parameter_metadata(
             "kind": "Derived",
             "units": "($\\degree$)",
         },
-        "TotalE": {
+        "Qsurf": {
             "name": "Net Energy",
             "kind": "Output",
             "units": "($W\\,m^{-2}$)",

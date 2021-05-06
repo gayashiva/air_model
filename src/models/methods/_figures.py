@@ -56,6 +56,9 @@ def summary_figures(self):
             "Ql": "$q_L$",
             "Qf": "$q_{F}$",
             "Qg": "$q_{G}$",
+            "Qsurf": "$q_{surf}$",
+            "Qmelt": "$q_{melt}$",
+            "Qt": "$q_{T}$",
         },
         axis=1,
     )
@@ -422,6 +425,9 @@ def summary_figures(self):
             "$q_L$": "Ql",
             "$q_{F}$": "Qf",
             "$q_{G}$": "Qg",
+            "$q_{surf}$": "Qsurf",
+            "$q_{melt}$": "Qmelt",
+            "$q_{T}$": "Qt",
         },
         axis=1,
     )

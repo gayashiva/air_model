@@ -161,6 +161,8 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                 )
                 df_field["When"] = pd.to_datetime(df_field["When"])
 
+                df_field= df_field.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index()
+
                 mask = df_field["When"] >= self.start_date
                 mask &= df_field["When"] <= self.end_date
                 df_field = df_field.loc[mask]

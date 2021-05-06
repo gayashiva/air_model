@@ -120,7 +120,7 @@ def get_energy(self, row, mode="normal"):
         ] * self.TIME_STEP * self.df.loc[i, "SA"] / (self.df.loc[i, "ice"] * self.C_I)
 
     # Total Energy W/m2
-    self.df.loc[i, "TotalE"] = (
+    self.df.loc[i, "Qsurf"] = (
         self.df.loc[i, "SW"]
         + self.df.loc[i, "LW"]
         + self.df.loc[i, "Qs"]
@@ -131,8 +131,8 @@ def get_energy(self, row, mode="normal"):
 
     if mode == "trigger":  # Used while deriving discharge rate
         area = math.pi * self.r_spray * self.r_spray
-        if self.df.loc[i, "TotalE"] < 0:
+        if self.df.loc[i, "Qsurf"] < 0:
             self.df.loc[i, "Discharge"] = -(
-                self.df.loc[i, "TotalE"] * self.TIME_STEP * area
+                self.df.loc[i, "Qsurf"] * self.TIME_STEP * area
             ) / (self.L_F)
             self.df.loc[i, "Discharge"] = self.df.loc[i, "Discharge"] * 60 / self.TIME_STEP
