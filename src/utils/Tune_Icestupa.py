@@ -73,8 +73,9 @@ class Tune_Icestupa(Icestupa):
                 self.df= self.df.resample(str(int(self.TIME_STEP/60))+'T').mean()
                 # self.df["missing_type"] = dfx["missing_type"]
                 # self.df["h_f"] = dfx["h_f"]
+                # self.df.h_f= self.df.h_f.ffill()
                 self.df= self.df.reset_index()
-                self.df = self.df.reset_index()
+                # print(self.df[["When", "h_f", "p_a"]].head())
 
 
         self.melt_freeze()
@@ -117,15 +118,15 @@ if __name__ == "__main__":
     )
 
     answers = dict(
-        location="Schwarzsee 2019",
-        # location="Guttannen 2021",
+        # location="Schwarzsee 2019",
+        location="Guttannen 2021",
         # location="Gangles 2021",
         trigger="Manual",
     )
 
     # locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
-    locations = ["Guttannen 2021", "Guttannen 2020"]
-    param_grid = {'DX': np.arange(0.003, 0.050, 0.0005).tolist(), 'TIME_STEP': np.arange(20 * 60, 65*60, 15*60).tolist()}
+    locations = ["Guttannen 2021"]
+    param_grid = {'DX': np.arange(0.003, 0.004, 0.0010).tolist(), 'TIME_STEP': np.arange(30 * 60, 35*60, 15*60).tolist()}
 
     experiments = []
     for params in ParameterGrid(param_grid):
