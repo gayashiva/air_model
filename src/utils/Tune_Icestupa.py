@@ -67,10 +67,13 @@ class Tune_Icestupa(Icestupa):
             setattr(self, key, experiment[key])
             # logger.warning(f"%s -> %s" % (key, str(experiment[key])))
             if key == 'TIME_STEP':
-                self.df = self.df.set_index('When')
+                self.df= self.df.set_index('When')
+                # dfx = self.df.missing_type.resample(str(int(self.TIME_STEP/60))+'T').first()
+                # dfx = self.df["missing_type", "h_f"].resample(str(int(self.TIME_STEP/60))+'T').first()
                 self.df= self.df.resample(str(int(self.TIME_STEP/60))+'T').mean()
-                # self.df.loc[:, self.df.columns != 'h_f'] = self.df.loc[:, self.df.columns != 'h_f'].resample(str(int(self.TIME_STEP/60))+'T').mean()
-                # self.df.h_f = self.df.h_f.resample(str(int(self.TIME_STEP/60))+'T').sum()
+                # self.df["missing_type"] = dfx["missing_type"]
+                # self.df["h_f"] = dfx["h_f"]
+                self.df= self.df.reset_index()
                 self.df = self.df.reset_index()
 
 
@@ -122,7 +125,7 @@ if __name__ == "__main__":
 
     # locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
     locations = ["Guttannen 2021", "Guttannen 2020"]
-    param_grid = {'DX': np.arange(0.003, 0.050, 0.0005).tolist(), 'TIME_STEP': np.arange(15 * 60, 65*60, 15*60).tolist()}
+    param_grid = {'DX': np.arange(0.003, 0.050, 0.0005).tolist(), 'TIME_STEP': np.arange(20 * 60, 65*60, 15*60).tolist()}
 
     experiments = []
     for params in ParameterGrid(param_grid):
