@@ -120,8 +120,9 @@ if __name__ == "__main__":
         trigger="Manual",
     )
 
-    locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
-    param_grid = {'DX': np.arange(0.003, 0.020, 0.0005).tolist(), 'TIME_STEP': np.arange(15 * 60, 35*60, 5*60).tolist()}
+    # locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
+    locations = ["Guttannen 2021", "Guttannen 2020"]
+    param_grid = {'DX': np.arange(0.003, 0.050, 0.0005).tolist(), 'TIME_STEP': np.arange(15 * 60, 65*60, 15*60).tolist()}
 
     experiments = []
     for params in ParameterGrid(param_grid):
