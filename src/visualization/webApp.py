@@ -71,18 +71,12 @@ if __name__ == "__main__":
         # ("Guttannen 2021", "Guttannen 2020", "Schwarzsee 2019"),
     )
 
-    # st.sidebar.write("### Fountain")
-    # trigger = st.sidebar.radio(
-    #     "controlled by", ("Field staff", "Weather", "Temperature", "None")
-    # )
-    # if trigger == "Field staff":
-    #     trigger = "Manual"
-
+    # location = "Gangles 2021"
     trigger = "Manual"
 
     SITE, FOUNTAIN, FOLDER = config(location, trigger=trigger)
 
-    icestupa = Icestupa(location, trigger)
+    icestupa = Icestupa(location)
 
     icestupa.read_output()
     df_in = icestupa.df

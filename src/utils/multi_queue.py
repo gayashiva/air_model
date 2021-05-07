@@ -25,9 +25,8 @@ def calculate(process_name, tasks, results):
             break
         else:
             # Initialise icestupa object
-            trigger = "Manual"
             location = new_value
-            icestupa = Icestupa(location, trigger)
+            icestupa = Icestupa(location)
 
             # Derive all the input parameters
             icestupa.derive_parameters()

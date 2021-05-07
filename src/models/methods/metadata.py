@@ -101,7 +101,7 @@ def get_parameter_metadata(
             "kind": "Input",
             "units": "($l\\, min^{-1}$)",
         },
-        "fountain_in": {
+        "fountain_runoff": {
             "name": "Discharge Available",
             "kind": "Output",
             "units": "($kg\\, s^{-1}$)",

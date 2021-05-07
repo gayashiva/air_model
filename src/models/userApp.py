@@ -25,17 +25,16 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2020",
-        # location="Gangles 2021",
-        trigger="Manual",
-        run="yes",
+        # location="Guttannen 2020",
+        location="Gangles 2021",
+        run="no",
     )
 
     # Get settings for given location and trigger
-    SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
+    SITE, FOUNTAIN, FOLDER = config(answers["location"])
 
     # Initialise icestupa object
-    icestupa = Icestupa(answers["location"], answers["trigger"])
+    icestupa = Icestupa(answers["location"])
 
     if answers["run"] == "yes":
         # Derive all the input parameters
@@ -51,6 +50,5 @@ if __name__ == "__main__":
         icestupa.summary_figures()
     else:
         # Use output parameters from cache
-        icestupa.read_input()
-        # icestupa.read_output()
-        # icestupa.summary_figures()
+        icestupa.read_output()
+        icestupa.summary_figures()
