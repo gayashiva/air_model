@@ -35,6 +35,28 @@ def shade(df_in, col):
     events = [ev for ev in events if not ev.empty]
     return df, df_ERA5, events
 
+def overlapped_bar(df, show=False, width=0.9, alpha=.5,
+                   title='', xlabel='', ylabel='', **plot_kwargs):
+    """Like a stacked bar chart except bars on top of each other with transparency"""
+    xlabel = xlabel or df.index.name
+    N = len(df)
+    M = len(df.columns)
+    indices = np.arange(N)
+    colors = ['steelblue', 'firebrick', 'darksage', 'goldenrod', 'gray'] * int(M / 5. + 1)
+    for i, label, color in zip(range(M), df.columns, colors):
+        kwargs = plot_kwargs
+        kwargs.update({'color': color, 'label': label})
+        plt.bar(indices, df[label], width=width, alpha=alpha if i else 1, **kwargs)
+        plt.xticks(indices + .5 * width,
+                   ['{}'.format(idx) for idx in df.index.values])
+    plt.legend()
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    if show:
+        plt.show()
+    return plt.gcf()
+
 @Timer(text="%s executed in {:.2f} seconds" % __name__, logger = logging.warning)
 def summary_figures(self):
     logger.info("Creating figures")
@@ -116,7 +138,6 @@ def summary_figures(self):
     )
     ax3.set_ylabel("Radiation [$W\\,m^{-2}$]")
 
-    # added these three lines
     lns = lns1 + lns2 + lns3
     labs = [l.get_label() for l in lns]
     ax3.legend(lns, labs, ncol=3, loc="best")
@@ -142,14 +163,10 @@ def summary_figures(self):
     df_SZ, df_ERA5 , events= shade(df_in = self.df, col = 'v_a')
     y6 = df_SZ.v_a
     y6_ERA5 = df_ERA5.v_a
-    # y6_ERA52 = df_ERA52.v_a
     ax6.plot(x, y6, linestyle="-", color="#264653", linewidth=1, label="Schwarzsee")
     ax6.plot(x, y6_ERA5, linestyle="-", color="#284D58")
-    # ax6.plot(x, y6_ERA52, linestyle="-", color="#284D58")
     for ev in events:  # Creates DeprecationWarning
         ax6.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
-    # for ev in events2:
-    #     ax6.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
     ax6.set_ylabel("Wind speed [$m\\,s^{-1}$]")
 
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -176,7 +193,7 @@ def summary_figures(self):
             "SA",
             "iceV",
             "Discharge",
-            "fountain_in",
+            "fountain_runoff",
         ]
     ]
 
@@ -225,18 +242,25 @@ def summary_figures(self):
     dfds = dfds.set_index("When")
     y3 = dfds2["SA"]
     y4 = dfds2["iceV"]
-    # y0 = dfds["Discharge"] * self.TIME_STEP / (60 * 1000)
-    y0 = dfds["fountain_in"] /1000
+
+    dfds["Discharge"] *= self.TIME_STEP / (60 * 1000)
+    dfds["fountain_runoff"] /= 1000
+    y01 = dfds["Discharge"]
+    y02 = dfds["fountain_runoff"]
 
     dfd[["$q_{melt}$", "$q_{T}$"]] *=-1
-    z = dfd[["$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$", "$q_{melt}$", "$q_{T}$"]]
+    z = dfd[["$q_{melt}$", "$q_{T}$", "$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
 
     ax0 = fig.add_subplot(5, 1, 1)
-    ax0 = y0.plot.bar(
-        y="fountain_in", linewidth=0.5, edgecolor="black", color="#0C70DE", ax=ax0
+    ax0 = y01.plot.bar(
+        linewidth=0.5, edgecolor="black", color="#0C70DE", alpha=0.4, label="Available", ax=ax0
+    )
+    ax0 = y02.plot.bar(
+        y="fountain_runoff", linewidth=0.5, edgecolor="black", color="#0C70DE",label="Runoff",  ax=ax0
     )
     ax0.xaxis.set_label_text("")
-    ax0.set_ylabel("Discharge Available ($m^3$)")
+    ax0.set_ylabel("Discharge ($m^3$)")
+    plt.legend(loc="upper center", ncol=2)
     ax0.grid(axis="y", color="#0C70DE", alpha=0.3, linewidth=0.5, which="major")
     at = AnchoredText("(a)", prop=dict(size=10), frameon=True, loc="upper left")
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
@@ -245,7 +269,14 @@ def summary_figures(self):
     ax0.add_artist(at)
 
     ax1 = fig.add_subplot(5, 1, 2)
-    ax1 = z.plot.bar(stacked=True, edgecolor="black", linewidth=0.5, ax=ax1)
+    ax1 = z.plot.bar(
+                stacked=True, 
+                edgecolor="black", 
+                linewidth=0.5, 
+                color=["xkcd:azure", "xkcd:aqua", "xkcd:orangered", "xkcd:orange", "xkcd:green", "xkcd:yellowgreen","xkcd:purple", "xkcd:tan" ],
+                # alpha=[0.1,0.2,0.1,0.4,0.5,0.5,0.5,0.5],
+                ax=ax1
+                )
     ax1.xaxis.set_label_text("")
     ax1.grid(color="black", alpha=0.3, linewidth=0.5, which="major")
     plt.ylabel("Energy Flux [$W\\,m^{-2}$]")
@@ -351,8 +382,6 @@ def summary_figures(self):
     # plt.clf()
 
     fig, ax = plt.subplots()
-    CB91_Blue = "#2CBDFE"
-    CB91_Green = "#47DBCD"
     x = self.df.When
     y1 = self.df.iceV
     y2 = self.df.DroneV

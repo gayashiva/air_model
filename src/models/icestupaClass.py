@@ -64,13 +64,11 @@ class Icestupa:
     crit_temp = 0  # FOUNTAIN runtime temperature
 
     """Simulation constants"""
-    location = "Guttannen 2021"
     trigger = "Manual"
 
+    def __init__(self, location = "Guttannen 2021"):
 
-    def __init__(self, location = "Guttannen 2021", trigger = "Manual"):
-
-        SITE, FOUNTAIN, FOLDER = config(location, trigger)
+        SITE, FOUNTAIN, FOLDER = config(location)
         initial_data = [SITE, FOUNTAIN, FOLDER]
 
         # Initialise all variables of dictionary
@@ -295,7 +293,6 @@ class Icestupa:
         )
 
         self.efficiency = 1 - (
-            # (self.df["fountain_in"].sum()) 
             (self.df["unfrozen_water"].iloc[-1]) 
             / (self.df["Discharge"].sum() * self.TIME_STEP / 60)
         )
@@ -351,7 +348,7 @@ class Icestupa:
             "dpt",
             "cdt",
             "thickness",
-            "fountain_in",
+            "fountain_runoff",
             "wind_loss",
             "Qt",
             "Qmelt",
@@ -389,18 +386,13 @@ class Icestupa:
             if self.df.Discharge[i] > 0 and STATE == 0:
                 STATE = 1
 
-                # Special Initialisaton for specific sites
-                if self.name == "schwarzsee19":
-                    self.df.loc[i - 1, "r_ice"] = self.r_spray
+                # Initialisaton for sites
+                if hasattr(self, "h_i"):
+                    self.df.loc[i - 1, "h_ice"] = self.h_i
+                else:
                     self.df.loc[i - 1, "h_ice"] = self.DX
 
-                if self.name in ["guttannen21", "guttannen20", "gangles21"]:
-                    if hasattr(self, "h_i"):
-                        self.df.loc[i - 1, "h_ice"] = self.h_i
-                        self.df.loc[i - 1, "r_ice"] = self.r_spray
-                    else:
-                        self.df.loc[i - 1, "h_ice"] = self.DX
-                        self.df.loc[i - 1, "r_ice"] = self.r_spray
+                self.df.loc[i - 1, "r_ice"] = self.r_spray
 
                 self.df.loc[i - 1, "s_cone"] = (
                     self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
@@ -457,17 +449,17 @@ class Icestupa:
                     )
 
                 # Fountain water output
-                self.df.loc[i,"fountain_in"]= (
+                self.df.loc[i,"fountain_runoff"]= (
                     self.df.Discharge.loc[i] * self.TIME_STEP / 60
                 )
 
                 # TODO add to paper
                 # Water loss due to wind
                 if self.df.v_a.loc[i] < self.v_a_limit:
-                    self.df.loc[i,"wind_loss"]*= self.df.loc[i,"fountain_in"] * self.df.v_a.loc[i]/self.v_a_limit
-                    self.df.loc[i,"fountain_in"]-= self.df.loc[i,"wind_loss"]
+                    self.df.loc[i,"wind_loss"]*= self.df.loc[i,"fountain_runoff"] * self.df.v_a.loc[i]/self.v_a_limit
+                    self.df.loc[i,"fountain_runoff"]-= self.df.loc[i,"wind_loss"]
                 else:
-                    self.df.loc[i,"fountain_in"]= 0
+                    self.df.loc[i,"fountain_runoff"]= 0
 
                 # Energy Flux
                 self.get_energy(row)
@@ -533,7 +525,7 @@ class Icestupa:
                 freezing_energy = (self.df.loc[i, "Qsurf"] - self.df.loc[i, "Ql"])
 
                 self.df.loc[i,"freezing_discharge_fraction"] = -(
-                    self.df.loc[i, "fountain_in"]* self.L_F
+                    self.df.loc[i, "fountain_runoff"]* self.L_F
                     # / (self.df.loc[i,"Qsurf"] * self.TIME_STEP * self.df.loc[i, "SA"])
                     / (freezing_energy * self.TIME_STEP * self.df.loc[i, "SA"])
                 )
@@ -545,11 +537,11 @@ class Icestupa:
                 else:
                     if self.df.loc[i,"freezing_discharge_fraction"] > 1: # Enough water available
                         self.df.loc[i,"freezing_discharge_fraction"] = 1
-                        self.df.loc[i,"fountain_in"] += (
+                        self.df.loc[i,"fountain_runoff"] += (
                             self.df.loc[i,"freezing_discharge_fraction"] *freezing_energy* self.TIME_STEP * self.df.loc[i, "SA"]
                         ) / (self.L_F)
                     if self.df.loc[i,"freezing_discharge_fraction"] < 1 : # Not Enough water available
-                        self.df.loc[i,"fountain_in"] = 0
+                        self.df.loc[i,"fountain_runoff"] = 0
                         # logger.warning("Discharge froze completely with freezing_discharge_fraction %.2f" %self.df[i,"freezing_discharge_fraction"])
 
                 self.df.loc[i, "Qmelt"] += self.df.loc[i,"freezing_discharge_fraction"] * freezing_energy
@@ -620,6 +612,8 @@ class Icestupa:
                         / (self.L_F)
                     )
 
+
+                """ Unit tests """
                 if math.fabs(self.df.delta_T_s[i]) > 50:
                     logger.error(
                         "%s,Surface Temperature %s,Mass %s"
@@ -630,7 +624,6 @@ class Icestupa:
                         )
                     )
 
-                """ Unit tests """
                 if np.isnan(self.df.loc[i, "delta_T_s"]):
                     logger.error(
                         f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
@@ -643,10 +636,10 @@ class Icestupa:
                     )
                     sys.exit("Energy nan")
 
-                if self.df.loc[i,'fountain_in'] - self.df.loc[i, 'Discharge'] * self.TIME_STEP / 60 > 2:
+                if self.df.loc[i,'fountain_runoff'] - self.df.loc[i, 'Discharge'] * self.TIME_STEP / 60 > 2:
 
                     logger.error(
-                        f"Discharge exceeded When {self.df.When[i]}, Fountain in {self.df.fountain_in[i]}, Discharge in {self.df.Discharge[i]* self.TIME_STEP / 60}"
+                        f"Discharge exceeded When {self.df.When[i]}, Fountain in {self.df.fountain_runoff[i]}, Discharge in {self.df.Discharge[i]* self.TIME_STEP / 60}"
                     )
 
                 if math.fabs(self.df.loc[i, "Qsurf"]) > 800:
@@ -706,7 +699,7 @@ class Icestupa:
                 )
                 self.df.loc[i + 1, "unfrozen_water"] = (
                     self.df.loc[i, "unfrozen_water"] 
-                    + self.df.loc[i,"fountain_in"] 
+                    + self.df.loc[i,"fountain_runoff"] 
                 )
                 self.df.loc[i + 1, "iceV"] = (
                     self.df.loc[i + 1, "ice"] / self.RHO_I
@@ -718,7 +711,7 @@ class Icestupa:
                     + self.df.loc[i, "ppt"]
                     + self.df.loc[i, "dpt"]
                     + self.df.loc[i, "cdt"]
-                    + self.df.loc[i,"fountain_in"]
+                    + self.df.loc[i,"fountain_runoff"]
                 )
                 self.df.loc[i + 1, "thickness"] = (
                     self.df.loc[i, "solid"]
