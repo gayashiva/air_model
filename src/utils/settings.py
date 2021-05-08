@@ -75,6 +75,11 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             discharge=10,  # FOUNTAIN on discharge
             trigger=trigger,
         )
+        data_h = [
+            {"When": SITE["start_date"], "h_f": 2.5},
+            {"When": datetime(2020, 1, 24, 12), "h_f": 3.5},
+            {"When": datetime(2020, 2, 5, 19), "h_f": 2.5},
+        ]
 
     if location == "Schwarzsee 2019":
         SITE = dict(
@@ -91,10 +96,14 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
         FOUNTAIN = dict(
             fountain_off_date=datetime(2019, 3, 10, 18),
             dia_f=0.005,  # FOUNTAIN aperture diameter
-            h_f=1.35,  # FOUNTAIN steps h_f
+            # h_f=1.35,  # FOUNTAIN steps h_f
             discharge=3.58,  # FOUNTAIN on discharge
             trigger=trigger,
         )
+
+        data_h = [
+            {"When": SITE["start_date"], "h_f": 1.35},
+        ]
 
     if location == "Gangles 2021":
         SITE = dict(
@@ -117,6 +126,10 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             trigger=trigger,
         )
 
+        data_h = [
+            {"When": SITE["start_date"], "h_f": 5},
+        ]
+
     # Define directory structure
     FOLDER = dict(
         raw="data/" + SITE["name"] + "/raw/",
@@ -126,6 +139,4 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
     )
     df_h = pd.DataFrame(data_h)
 
-
-    # return SITE, FOUNTAIN, FOLDER, data_h
     return SITE, FOUNTAIN, FOLDER, df_h

@@ -272,7 +272,6 @@ if __name__ == "__main__":
     else:
         if "Validation" in display:
             df_c = pd.read_hdf(icestupa.input + "model_input_" + icestupa.trigger + ".h5", "df_c")
-            df_cam = pd.read_hdf(icestupa.input + "model_input_" + icestupa.trigger + ".h5", "df_cam")
             df_time = pd.DataFrame({'When': pd.date_range(start=icestupa.df.When[0], end=icestupa.df.When[icestupa.df.shape[0]-1] + timedelta(seconds= icestupa.TIME_STEP) , freq=str(int(icestupa.TIME_STEP/60))+'T', closed='right')})
             df_time["dia"]= np.NaN
             df_time["DroneV"] = np.NaN

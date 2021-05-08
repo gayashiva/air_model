@@ -62,14 +62,29 @@ def overlapped_bar(df, show=False, width=0.9, alpha=.5,
 def summary_figures(self):
     logger.info("Creating figures")
     df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
-    df_time = pd.DataFrame({'When': pd.date_range(start=self.df.When[0], end=self.df.When[self.df.shape[0]-1] + timedelta(seconds= self.TIME_STEP) , freq=str(int(self.TIME_STEP/60))+'T', closed='right')})
+    df_time = pd.DataFrame({'When': pd.date_range(start=self.df.When[0]- timedelta(seconds= self.TIME_STEP), end=self.df.When[self.df.shape[0]-1], freq=str(int(self.TIME_STEP/60))+'T', closed='right')})
+    # print(df_time.head())
+    # print(self.df.head())
+    # print(df_time.tail())
+    # print(self.df.tail())
     df_time["dia"]= np.NaN
     df_time["DroneV"] = np.NaN
     df_c = df_c.set_index("When")
     df_time = df_time.set_index("When")
     df_c = df_time.combine_first(df_c)
-    logger.info(df_c[df_c.DroneV.notnull()])
     df_c = df_c.reset_index()
+    # print(df_c.head())
+    mask = df_c.When <= self.df.When[self.df.shape[0]-1]
+    mask &= df_c.When >= self.df.When[0]
+    df_c = df_c.loc[mask]
+    df_c = df_c.reset_index(drop=True)
+    # df_c = df_c.loc[:self.df.shape[0]]
+    # print(df_c.shape[0], self.df.shape[0])
+    # print(df_c.When[0], self.df.When[0])
+    # print(df_c.When[df_c.shape[0]-1], self.df.When[self.df.shape[0]-1])
+    print(df_c.tail(), self.df.When.tail())
+    print(df_c.head(), self.df.When.head())
+    logger.info(df_c[df_c.DroneV.notnull()])
 
     if self.name in ["guttannen21", "guttannen20"]:
         df_cam = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_cam")
@@ -77,8 +92,8 @@ def summary_figures(self):
         df_time["cam_temp"]= np.NaN
         df_time = df_time.set_index("When")
         df_cam = df_time.combine_first(df_cam)
-        logger.warning(df_cam[df_cam.cam_temp.notnull()])
         df_cam = df_cam.reset_index()
+        df_cam = df_cam.loc[:self.df.shape[0]]
 
     np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
     output = self.output
@@ -404,7 +419,6 @@ def summary_figures(self):
     x = self.df.When
     y1 = self.df.iceV
     y2 = df_c.DroneV
-    print(y1,y2)
     ax.set_ylabel("Ice Volume[$m^3$]")
     ax.plot(
         x,

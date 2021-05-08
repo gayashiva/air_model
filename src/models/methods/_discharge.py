@@ -111,7 +111,6 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             df_f = df_f.loc[mask]
             df_f = df_f.reset_index(drop=True)
             df_f = df_f.set_index("When")
-            logger.warning(df_f.head())
 
             self.df = self.df.set_index("When")
             self.df.loc[df_f.index, "Discharge"] = self.discharge * df_f["fountain"]
