@@ -23,16 +23,16 @@ from src.models.methods.droplet import get_droplet_projectile
 
 class Tune_Icestupa(Icestupa):
     def __init__(self, location, trigger="Manual"):
-        SITE, FOUNTAIN, FOLDER = config(location, trigger)
-        initial_data = [SITE, FOUNTAIN, FOLDER]
+        super().__init__(location)
+        # SITE, FOUNTAIN, FOLDER, df_h = config(location, trigger)
+        # initial_data = [SITE, FOUNTAIN, FOLDER]
 
-        # Initialise all variables of dictionary
-        for dictionary in initial_data:
-            for key in dictionary:
-                setattr(self, key, dictionary[key])
-                logger.info(f"%s -> %s" % (key, str(dictionary[key])))
+        # for dictionary in initial_data:
+        #     for key in dictionary:
+        #         setattr(self, key, dictionary[key])
+        #         logger.info(f"%s -> %s" % (key, str(dictionary[key])))
 
-        self.TIME_STEP = 15 * 60
+        # self.TIME_STEP = 15 * 60
         
         result = []
        
@@ -40,43 +40,10 @@ class Tune_Icestupa(Icestupa):
     def run(self, experiment):
 
         print(experiment)
-
-        self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
-
-        if self.name in ["gangles21"]:
-            df_c = get_calibration(site=self.name, input=self.raw)
-            df_c.loc[0, "DroneV"] = 2/3 * math.pi * 4 ** 3 # Volume of dome
-            self.r_spray = df_c.loc[1, "dia"] / 2
-            self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
-
-        if self.name in ["guttannen21", "guttannen20"]:
-            df_c, df_cam = get_calibration(site=self.name, input=self.raw)
-            self.r_spray = df_c.loc[0, "dia"] / 2
-            self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
-
-        if hasattr(self, "r_spray"):  # Provide discharge
-            self.discharge = get_droplet_projectile(
-                dia=self.dia_f, h=self.df.loc[1,"h_f"], x=self.r_spray
-            )
-        else:  # Provide spray radius
-            self.r_spray = get_droplet_projectile(
-                dia=self.dia_f, h=self.df.loc[1,"h_f"], d=self.discharge
-            )
-
         for key in experiment:
             setattr(self, key, experiment[key])
-            # logger.warning(f"%s -> %s" % (key, str(experiment[key])))
-            if key == 'TIME_STEP':
-                self.df= self.df.set_index('When')
-                # dfx = self.df.missing_type.resample(str(int(self.TIME_STEP/60))+'T').first()
-                # dfx = self.df["missing_type", "h_f"].resample(str(int(self.TIME_STEP/60))+'T').first()
-                self.df= self.df.resample(str(int(self.TIME_STEP/60))+'T').mean()
-                # self.df["missing_type"] = dfx["missing_type"]
-                # self.df["h_f"] = dfx["h_f"]
-                # self.df.h_f= self.df.h_f.ffill()
-                self.df= self.df.reset_index()
-                # print(self.df[["When", "h_f", "p_a"]].head())
 
+        self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
 
         self.melt_freeze()
 
@@ -126,7 +93,7 @@ if __name__ == "__main__":
 
     # locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
     locations = ["Guttannen 2021"]
-    param_grid = {'DX': np.arange(0.003, 0.004, 0.0010).tolist(), 'TIME_STEP': np.arange(30 * 60, 35*60, 15*60).tolist()}
+    param_grid = {'DX': np.arange(0.00475, 0.005, 0.0010).tolist(), 'TIME_STEP': np.arange(15 * 60, 25*60, 15*60).tolist()}
 
     experiments = []
     for params in ParameterGrid(param_grid):
@@ -134,7 +101,7 @@ if __name__ == "__main__":
 
     for location in locations:
 
-        SITE, FOUNTAIN, FOLDER = config(location, "Manual")
+        SITE, FOUNTAIN, FOLDER, df_h = config(location)
 
         model = Tune_Icestupa(location)
 

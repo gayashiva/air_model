@@ -2,6 +2,7 @@
 """
 
 # External modules
+import pandas as pd
 from datetime import datetime
 import logging
 import os
@@ -31,7 +32,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
             altitude_aws=1054,
             # DX = 10e-03,  # Initial Ice layer thickness
-            # TIME_STEP = 30*60,  # Initial Ice layer thickness
+            # TIME_STEP = 15*60,  # Initial Ice layer thickness
         )
 
         FOUNTAIN = dict(
@@ -41,6 +42,13 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             discharge=12.33,  # FOUNTAIN on discharge
             trigger=trigger,
         )
+
+        data_h = [
+            {"When": SITE["start_date"], "h_f": 2.5},
+            {"When": datetime(2020, 12, 30, 16), "h_f": 3.5},
+            {"When": datetime(2021, 1, 11, 16), "h_f": 4.5},
+            {"When": datetime(2021, 1, 7, 16), "h_f": 5.5},
+        ]
 
     if location == "Guttannen 2020":
 
@@ -98,6 +106,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             longitude=77.606949,
             latitude=34.216638,
             h_aws=3,
+            dome_rad=4,
         )
 
         FOUNTAIN = dict(
@@ -110,14 +119,13 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
     # Define directory structure
     FOLDER = dict(
-        # raw=os.path.join(dirname, "data/" + SITE["name"] + "/raw/"),
-        # input=os.path.join(dirname, "data/" + SITE["name"] + "/interim/"),
-        # output=os.path.join(dirname, "data/" + SITE["name"] + "/processed/"),
-        # sim=os.path.join(dirname, "data/" + SITE["name"] + "/processed/simulations"),
         raw="data/" + SITE["name"] + "/raw/",
         input="data/" + SITE["name"] + "/interim/",
         output="data/" + SITE["name"] + "/processed/",
         sim="data/" + SITE["name"] + "/processed/simulations",
     )
+    df_h = pd.DataFrame(data_h)
 
-    return SITE, FOUNTAIN, FOLDER
+
+    # return SITE, FOUNTAIN, FOLDER, data_h
+    return SITE, FOUNTAIN, FOLDER, df_h
