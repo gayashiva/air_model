@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
 from matplotlib.ticker import AutoMinorLocator
 from matplotlib.backends.backend_pdf import PdfPages
+from datetime import datetime, timedelta
 import pandas as pd
 import logging
 from codetiming import Timer
@@ -60,6 +61,24 @@ def overlapped_bar(df, show=False, width=0.9, alpha=.5,
 @Timer(text="%s executed in {:.2f} seconds" % __name__, logger = logging.warning)
 def summary_figures(self):
     logger.info("Creating figures")
+    df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
+    df_time = pd.DataFrame({'When': pd.date_range(start=self.df.When[0], end=self.df.When[self.df.shape[0]-1] + timedelta(seconds= self.TIME_STEP) , freq=str(int(self.TIME_STEP/60))+'T', closed='right')})
+    df_time["dia"]= np.NaN
+    df_time["DroneV"] = np.NaN
+    df_c = df_c.set_index("When")
+    df_time = df_time.set_index("When")
+    df_c = df_time.combine_first(df_c)
+    logger.info(df_c[df_c.DroneV.notnull()])
+    df_c = df_c.reset_index()
+
+    if self.name in ["guttannen21", "guttannen20"]:
+        df_cam = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_cam")
+        df_time = pd.DataFrame({'When': pd.date_range(start=self.df.When[0], end=self.df.When[self.df.shape[0]-1] + timedelta(seconds= self.TIME_STEP), freq=str(int(self.TIME_STEP/60))+'T', closed='right')})
+        df_time["cam_temp"]= np.NaN
+        df_time = df_time.set_index("When")
+        df_cam = df_time.combine_first(df_cam)
+        logger.warning(df_cam[df_cam.cam_temp.notnull()])
+        df_cam = df_cam.reset_index()
 
     np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
     output = self.output
@@ -384,7 +403,8 @@ def summary_figures(self):
     fig, ax = plt.subplots()
     x = self.df.When
     y1 = self.df.iceV
-    y2 = self.df.DroneV
+    y2 = df_c.DroneV
+    print(y1,y2)
     ax.set_ylabel("Ice Volume[$m^3$]")
     ax.plot(
         x,
@@ -416,7 +436,7 @@ def summary_figures(self):
         x = self.df.When
         y1 = self.df.T_s
         # y1 = self.df.T_bulk
-        y2 = self.df.cam_temp
+        y2 = df_cam.cam_temp
         ax.plot(
             x,
             y1,

@@ -5,7 +5,7 @@
 import streamlit as st
 import pandas as pd
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import numpy as np
 import re
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     # location = "Gangles 2021"
     trigger = "Manual"
 
-    SITE, FOUNTAIN, FOLDER = config(location, trigger=trigger)
+    SITE, FOUNTAIN, FOLDER, *args = config(location, trigger=trigger)
 
     icestupa = Icestupa(location)
 
@@ -271,6 +271,26 @@ if __name__ == "__main__":
         st.error("Please select at least one visualization.")
     else:
         if "Validation" in display:
+            df_c = pd.read_hdf(icestupa.input + "model_input_" + icestupa.trigger + ".h5", "df_c")
+            df_cam = pd.read_hdf(icestupa.input + "model_input_" + icestupa.trigger + ".h5", "df_cam")
+            df_time = pd.DataFrame({'When': pd.date_range(start=icestupa.df.When[0], end=icestupa.df.When[icestupa.df.shape[0]-1] + timedelta(seconds= icestupa.TIME_STEP) , freq=str(int(icestupa.TIME_STEP/60))+'T', closed='right')})
+            df_time["dia"]= np.NaN
+            df_time["DroneV"] = np.NaN
+            df_c = df_c.set_index("When")
+            df_time = df_time.set_index("When")
+            df_c = df_time.combine_first(df_c)
+            logger.info(df_c[df_c.DroneV.notnull()])
+            df_c = df_c.reset_index()
+
+            if icestupa.name in ["guttannen21", "guttannen20"]:
+                df_cam = pd.read_hdf(icestupa.input + "model_input_" + icestupa.trigger + ".h5", "df_cam")
+                df_time = pd.DataFrame({'When': pd.date_range(start=icestupa.df.When[0], end=icestupa.df.When[icestupa.df.shape[0]-1] + timedelta(seconds= icestupa.TIME_STEP), freq=str(int(icestupa.TIME_STEP/60))+'T', closed='right')})
+                df_time["cam_temp"]= np.NaN
+                df_time = df_time.set_index("When")
+                df_cam = df_time.combine_first(df_cam)
+                logger.warning(df_cam[df_cam.cam_temp.notnull()])
+                df_cam = df_cam.reset_index()
+
             st.write("## Validation")
             path = (
                 output_folder
@@ -281,10 +301,10 @@ if __name__ == "__main__":
             st.image(path)
             st.write(
                 """
-            Correlation of modelled with measured surface temperature was **%.2f** and RMSE was **%.2f** $m^3$ 
+            Correlation of modelled with measured ice volume was **%.2f** and RMSE was **%.2f** $m^3$ 
             """
-                % (icestupa.df['DroneV'].corr(icestupa.df['iceV']),
-                (((icestupa.df.DroneV - icestupa.df.iceV) ** 2).mean() ** .5))
+                % (df_c['DroneV'].corr(icestupa.df['iceV']),
+                (((df_c.DroneV - icestupa.df.iceV) ** 2).mean() ** .5))
             )
 
             if SITE["name"] in ["guttannen21", "guttannen20"]:
@@ -299,8 +319,8 @@ if __name__ == "__main__":
                     """
                 Correlation of modelled with measured surface temperature was **%.2f** and RMSE was **%.2f** C
                 """
-                    % (icestupa.df['cam_temp'].corr(icestupa.df['T_s']),
-                     (((icestupa.df.cam_temp - icestupa.df.T_s) ** 2).mean() ** .5))
+                    % (df_cam['cam_temp'].corr(icestupa.df['T_s']),
+                     (((df_cam.cam_temp - icestupa.df.T_s) ** 2).mean() ** .5))
                 )
 
         if "Timelapse" in display:

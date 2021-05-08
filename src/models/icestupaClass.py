@@ -6,7 +6,7 @@ import pickle
 pickle.HIGHEST_PROTOCOL = 4 # For python version 2.7
 import pandas as pd
 import sys, os, math
-from datetime import datetime
+from datetime import datetime, timedelta
 import numpy as np
 from functools import lru_cache
 import logging
@@ -53,10 +53,10 @@ class Icestupa:
     v_a_limit = 8  # All fountain water lost at this wind speed
 
     """Model constants"""
-    # DX = 4.75e-03  # Initial Ice layer thickness
-    DX = 10e-03  # Initial Ice layer thickness
+    DX = 4.75e-03  # Initial Ice layer thickness
+    # DX = 10e-03  # Initial Ice layer thickness
     # DX = 25e-03  # Initial Ice layer thickness
-    TIME_STEP = 30*60 # Model time step
+    TIME_STEP = 15*60 # Model time step
 
     """Fountain constants"""
     theta_f = 45  # FOUNTAIN angle
@@ -68,7 +68,7 @@ class Icestupa:
 
     def __init__(self, location = "Guttannen 2021"):
 
-        SITE, FOUNTAIN, FOLDER = config(location)
+        SITE, FOUNTAIN, FOLDER, df_h = config(location)
         initial_data = [SITE, FOUNTAIN, FOLDER]
 
         # Initialise all variables of dictionary
@@ -83,18 +83,17 @@ class Icestupa:
         mask = self.df["When"] >= self.start_date
         mask &= self.df["When"] <= self.end_date
         self.df = self.df.loc[mask]
-        self.df = self.df.reset_index(drop=True)
 
-        if self.TIME_STEP != (int(pd.infer_freq(self.df["When"])[:-1]) * 60):
-            self.df= self.df.set_index('When')
-            dfx = self.df.missing_type.resample(str(int(self.TIME_STEP/60))+'T').first()
-            self.df= self.df.resample(str(int(self.TIME_STEP/60))+'T').mean()
-            self.df["missing_type"] = dfx
-            self.df= self.df.reset_index()
-            logger.warning(f"Time steps -> %s minutes" % (str(self.TIME_STEP / 60)))
+        """Fountain height"""
+        df_h = df_h.set_index("When")
+        self.df = self.df.set_index("When")
+        self.df["h_f"] = df_h
+        self.df.loc[:,"h_f"] = self.df.loc[:,"h_f"].ffill()
+        self.df = self.df.reset_index()
 
         logger.debug(self.df.head())
         logger.debug(self.df.tail())
+
 
     # Imported methods
     from src.models.methods._albedo import get_albedo
@@ -108,28 +107,57 @@ class Icestupa:
     def derive_parameters(
         self,
     ):  # Derives additional parameters required for simulation
+
         if self.name in ["gangles21"]:
             df_c = get_calibration(site=self.name, input=self.raw)
             df_c.loc[:, "DroneV"] -= df_c.loc[0, "DroneV"]
-            df_c.loc[0, "DroneV"] = 2/3 * math.pi * 4 ** 3 # Volume of dome
+            df_c.loc[0, "DroneV"] = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
             self.r_spray = df_c.loc[1, "dia"] / 2
             self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
-            self.df = pd.merge(self.df, df_c, on="When", how="left")
+            df_c.to_hdf(
+                self.input + "model_input_" + self.trigger + ".h5",
+                key="df_c",
+                mode="w",
+            )
+            df_c.to_csv(self.input + "measured_vol.csv")
+            # self.df = pd.merge(self.df, df_c, on="When", how="left")
 
         if self.name in ["guttannen21", "guttannen20"]:
             df_c, df_cam = get_calibration(site=self.name, input=self.raw)
             self.r_spray = df_c.loc[0, "dia"] / 2
             self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
-            self.df = pd.merge(self.df, df_c, on="When", how="left")
-            self.df = pd.merge(self.df, df_cam, on="When", how="left")
+            df_c.to_hdf(
+                self.input + "model_input_" + self.trigger + ".h5",
+                key="df_c",
+                mode="w",
+            )
+            df_c.to_csv(self.input + "measured_vol.csv")
+            df_cam.to_hdf(
+                self.input + "model_input_" + self.trigger + ".h5",
+                key="df_cam",
+                mode="a",
+            )
+            df_cam.to_csv(self.input + "measured_temp.csv")
 
         if self.name in ["schwarzsee19"]:
             df_c = get_calibration(site=self.name, input=self.raw)
-            self.df = pd.merge(self.df, df_c, on="When", how="left")
+            df_c.to_hdf(
+                self.input + "model_input_" + self.trigger + ".h5",
+                key="df_c",
+                mode="w",
+            )
+            df_c.to_csv(self.input + "measured_vol.csv")
 
-        logger.info(df_c.head())
-        self.df["h_f"] = 0
-        self.df.loc[0,"h_f"] = self.h_f
+        if hasattr(self, "r_spray"):  # Provide discharge
+            self.discharge = get_droplet_projectile(
+                dia=self.dia_f, h=self.df.loc[1,"h_f"], x=self.r_spray
+            )
+        elif hasattr(self, "discharge"):  # Provide spray radius
+            self.r_spray = get_droplet_projectile(
+                dia=self.dia_f, h=self.df.loc[1,"h_f"], d=self.discharge
+            )
+        else:
+            logger.error("No spray radius or discharge provided")
 
         unknown = ["a", "vp_a", "LW_in", "cld"]  # Possible unknown variables
         for i in range(len(unknown)):
@@ -145,12 +173,6 @@ class Icestupa:
             desc="Creating AIR input...",
         ):
             i = row.Index
-
-            """Fountain height"""
-            if not np.isnan(self.df.loc[i, "h_s"]):
-                self.df.loc[i,"h_f"] = self.df.loc[i-1,"h_f"] + self.df.loc[i,"h_s"]
-            else:
-                self.df.loc[i,"h_f"] = self.df.loc[i-1,"h_f"]
 
             """ Vapour Pressure"""
             if "vp_a" in unknown:
@@ -181,15 +203,6 @@ class Icestupa:
                     * self.STEFAN_BOLTZMAN
                     * math.pow(row.T_a + 273.15, 4)
                 )
-
-        if hasattr(self, "r_spray"):  # Provide discharge
-            self.discharge = get_droplet_projectile(
-                dia=self.dia_f, h=self.df.loc[1,"h_f"], x=self.r_spray
-            )
-        elif hasattr(self, "discharge"):  # Provide spray radius
-            self.r_spray = get_droplet_projectile(
-                dia=self.dia_f, h=self.df.loc[1,"h_f"], d=self.discharge
-            )
 
         self.get_discharge()
         f_on = self.df.When[
@@ -227,15 +240,32 @@ class Icestupa:
                 s, f = self.get_albedo(i, s, f, site=self.name)
 
         self.df = self.df.round(3)
-        self.df = self.df.drop(columns=['h_s'])
         self.df = self.df[
             self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
         ]  # Remove junk columns
 
+        # C = self.df.columns
+        # D = ['DroneV', 'cam_temp', 'dia']
+        # if self.df[[x for x in C if not x in D or D.remove(x)]].isnull().values.any():
+        #     logger.error("Null values present")
+        #     logger.error(
+        #         self.df[[x for x in C if not x in D or D.remove(x)]]
+        #         .isnull()
+        #         .sum()
+        #     )
+
+        if self.df.isnull().values.any():
+            logger.error("\n Null values present\n")
+            logger.error(
+                self.df.columns
+                .isnull()
+                .sum()
+            )
+
         self.df.to_hdf(
             self.input + "model_input_" + self.trigger + ".h5",
             key="df",
-            mode="w",
+            mode="a",
         )
         self.df.to_csv(self.input + "model_input_" + self.trigger + ".csv")
 
@@ -267,26 +297,46 @@ class Icestupa:
         self.df.to_hdf(
             self.output + "model_output_" + self.trigger + ".h5",
             key="df",
-            mode="w",
+            mode="a",
         )
 
     def read_input(self):  # Use processed input dataset
         self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
-        self.TIME_STEP = 30*60
-        self.df= self.df.set_index('When')
-        df = self.df.missing_type.resample(str(int(self.TIME_STEP/60))+'T').first()
-        self.df= self.df.resample(str(int(self.TIME_STEP/60))+'T').mean()
-        self.df["missing_type"] = df
-        self.df= self.df.reset_index()
+        old_time_step = int(pd.infer_freq(self.df["When"])[:-1]) * 60
 
-        logger.info(self.df[["When", "missing_type"]].head())
+        if self.TIME_STEP != old_time_step:
+            self.df= self.df.set_index('When')
+            dfx = self.df.missing_type.resample(str(int(self.TIME_STEP/60))+'T').first()
+            dfh = self.df.h_f.resample(str(int(self.TIME_STEP/60))+'T').first()
+            self.df= self.df.resample(str(int(self.TIME_STEP/60))+'T').mean()
+            self.df["missing_type"] = dfx
+            self.df["h_f"] = dfh
+            self.df= self.df.reset_index()
+            logger.warning(f"Time steps changed from %s -> %s minutes" % (old_time_step/60, str(self.TIME_STEP / 60)))
+
+        if self.name in ["gangles21"]:
+            self.r_spray = df_c.loc[1, "dia"] / 2
+            self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
+
+        if self.name in ["guttannen21", "guttannen20"]:
+            self.r_spray = df_c.loc[0, "dia"] / 2
+            self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
+
+        if hasattr(self, "r_spray"):  # Provide discharge
+            self.discharge = get_droplet_projectile(
+                dia=self.dia_f, h=self.df.loc[1,"h_f"], x=self.r_spray
+            )
+        elif hasattr(self, "discharge"):  # Provide spray radius
+            self.r_spray = get_droplet_projectile(
+                dia=self.dia_f, h=self.df.loc[1,"h_f"], d=self.discharge
+            )
+        else:
+            logger.error("No spray radius or discharge provided")
 
         if self.df.isnull().values.any():
             logger.warning("\n Null values present\n")
 
-    def read_output(
-        self
-    ):  # Reads output and Displays outputs useful for manuscript
+    def read_output( self ):  # Reads output
 
         self.df = pd.read_hdf(
             self.output + "model_output_" + self.trigger + ".h5", "df"
