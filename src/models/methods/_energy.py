@@ -105,6 +105,7 @@ def get_energy(self, row, mode="normal"):
                 / self.TIME_STEP
             )
 
+
         # TODO add to paper
         self.df.loc[i, "Qg"] = (
             self.K_I

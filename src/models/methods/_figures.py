@@ -79,7 +79,7 @@ def summary_figures(self):
 
     if self.name in ["guttannen21", "guttannen20"]:
         df_cam = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_cam")
-        df_time = pd.DataFrame({'When': pd.date_range(start=self.df.When[0], end=self.df.When[self.df.shape[0]-1] + timedelta(seconds= self.TIME_STEP), freq=str(int(self.TIME_STEP/60))+'T', closed='right')})
+        df_time = pd.DataFrame({'When': pd.date_range(start=self.df.When[0]- timedelta(seconds= self.TIME_STEP), end=self.df.When[self.df.shape[0]-1], freq=str(int(self.TIME_STEP/60))+'T', closed='right')})
         df_time["cam_temp"]= np.NaN
         df_time = df_time.set_index("When")
         df_cam = df_time.combine_first(df_cam)

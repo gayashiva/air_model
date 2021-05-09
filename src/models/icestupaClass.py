@@ -429,8 +429,10 @@ class Icestupa:
                 self.df.loc[i - 1, "meltwater"] += self.df.loc[i - 1, "ice"]
                 self.df.loc[i - 1, "ice"] = 0
                 logger.info("Model ends at %s" % (self.df.When[i]))
+                logger.warning(self.df.head())
                 self.df = self.df[self.start : i - 1]
                 self.df = self.df.reset_index(drop=True)
+                logger.warning(self.df.head())
                 break
 
             if self.df.Discharge[i] > 0 and STATE == 0:
@@ -636,15 +638,17 @@ class Icestupa:
 
 
                 """ Unit tests """
-                if math.fabs(self.df.delta_T_s[i]) > 50:
-                    logger.error(
-                        "%s,Surface Temperature %s,Mass %s"
-                        % (
-                            self.df.loc[i, "When"],
-                            self.df.loc[i, "T_s"],
-                            self.df.loc[i, "ice"],
+                if self.df.loc[i, "delta_T_s"] > 1 * self.TIME_STEP/60:
+                    logger.error("Too much fountain energy %s causes temperature change of %0.1f on %s" %(self.df.loc[i, "Qf"],self.df.loc[i, "delta_T_s"],self.df.loc[i, "When"]))
+                    if math.fabs(self.df.delta_T_s[i]) > 50:
+                        logger.error(
+                            "%s,Surface Temperature %s,Mass %s"
+                            % (
+                                self.df.loc[i, "When"],
+                                self.df.loc[i, "T_s"],
+                                self.df.loc[i, "ice"],
+                            )
                         )
-                    )
 
                 if np.isnan(self.df.loc[i, "delta_T_s"]):
                     logger.error(
