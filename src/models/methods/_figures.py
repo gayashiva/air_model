@@ -63,31 +63,47 @@ def summary_figures(self):
     logger.info("Creating figures")
     df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
     df_c = df_c[["When", "DroneV"]]
-    df_time = pd.DataFrame({'When': pd.date_range(start=self.df.When[0]- timedelta(seconds= self.TIME_STEP), end=self.df.When[self.df.shape[0]-1], freq=str(int(self.TIME_STEP/60))+'T', closed='right')})
-    df_time["dia"]= np.NaN
-    df_time["DroneV"] = np.NaN
-    print(df_c.head())
+    tol = pd.Timedelta('15T')
     df_c = df_c.set_index("When")
-    df_time = df_time.set_index("When")
-    df_c = df_time.combine_first(df_c)
-    df_c = df_c.reset_index()
-    mask = df_c.When <= self.df.When[self.df.shape[0]-1]
-    mask &= df_c.When >= self.df.When[0]
-    df_c = df_c.loc[mask]
-    df_c = df_c.reset_index(drop=True)
-    logger.info(df_c[df_c.DroneV.notnull()])
+    self.df= self.df.set_index("When")
+    df_c = pd.merge_asof(left=self.df,right=df_c,right_index=True,left_index=True,direction='nearest',tolerance=tol)
+    df_c = df_c[["DroneV", "iceV"]]
+    self.df= self.df.reset_index()
+
+    # df_time = pd.DataFrame({'When': pd.date_range(start=self.df.When[0]- timedelta(seconds= self.TIME_STEP), end=self.df.When[self.df.shape[0]-1], freq=str(int(self.TIME_STEP/60))+'T', closed='right')})
+    # df_time["dia"]= np.NaN
+    # df_time["DroneV"] = np.NaN
+    # logger.warning(df_c[df_c.DroneV.notnull()])
+    # df_c = df_c.set_index("When")
+    # df_time = df_time.set_index("When")
+    # df_c = df_time.combine_first(df_c)
+    # print(df_c[df_c.index.duplicated()])
+    # df_c = df_c.reset_index()
+    # mask = df_c.When <= self.df.When[self.df.shape[0]-1]
+    # mask &= df_c.When >= self.df.When[0]
+    # df_c = df_c.loc[mask]
+    # df_c = df_c.reset_index(drop=True)
+    # logger.warning(df_c[df_c.DroneV.notnull()])
+    # print(df_c.shape[0], self.df.shape[0])
+    # print(df_time.shape[0], self.df.shape[0])
 
     if self.name in ["guttannen21", "guttannen20"]:
         df_cam = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_cam")
-        df_time = pd.DataFrame({'When': pd.date_range(start=self.df.When[0]- timedelta(seconds= self.TIME_STEP), end=self.df.When[self.df.shape[0]-1], freq=str(int(self.TIME_STEP/60))+'T', closed='right')})
-        df_time["cam_temp"]= np.NaN
-        df_time = df_time.set_index("When")
-        df_cam = df_time.combine_first(df_cam)
-        df_cam = df_cam.reset_index()
-        mask = df_cam.When <= self.df.When[self.df.shape[0]-1]
-        mask &= df_cam.When >= self.df.When[0]
-        df_cam = df_cam.loc[mask]
-        df_cam = df_cam.reset_index(drop=True)
+        tol = pd.Timedelta('15T')
+        self.df= self.df.set_index("When")
+        df_cam = pd.merge_asof(left=self.df,right=df_cam,right_index=True,left_index=True,direction='nearest',tolerance=tol)
+        df_cam = df_cam[["cam_temp", "T_s", "T_bulk"]]
+        self.df= self.df.reset_index()
+
+        # df_time = pd.DataFrame({'When': pd.date_range(start=self.df.When[0]- timedelta(seconds= self.TIME_STEP), end=self.df.When[self.df.shape[0]-1], freq=str(int(self.TIME_STEP/60))+'T', closed='right')})
+        # df_time["cam_temp"]= np.NaN
+        # df_time = df_time.set_index("When")
+        # df_cam = df_time.combine_first(df_cam)
+        # df_cam = df_cam.reset_index()
+        # mask = df_cam.When <= self.df.When[self.df.shape[0]-1]
+        # mask &= df_cam.When >= self.df.When[0]
+        # df_cam = df_cam.loc[mask]
+        # df_cam = df_cam.reset_index(drop=True)
 
     np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
     output = self.output

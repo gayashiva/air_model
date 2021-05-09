@@ -32,8 +32,8 @@ if __name__ == "__main__":
     )
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2021",
-        # location="Gangles 2021",
+        # location="Guttannen 2020",
+        location="Gangles 2021",
         trigger="Manual",
     )
 
@@ -64,7 +64,16 @@ if __name__ == "__main__":
 
     print(df.head())
     by_duration = df.groupby("Duration")
-    df = by_duration.get_group(155.38)
+    if icestupa.name == "guttannen21":
+        survived = 155.38
+    if icestupa.name == "guttannen20":
+        survived = 93.33
+    if icestupa.name == "schwarzsee19":
+        survived = 45.12
+    if icestupa.name == "gangles21":
+        survived = 54.31
+
+    df = by_duration.get_group(survived)
     df = df.reset_index(drop=True)
 
     x = df["DX"]
@@ -79,13 +88,15 @@ if __name__ == "__main__":
             l1 = ax.scatter(x[i],y[i], facecolors="blue")
         if x2[i] == 30:
             l2 = ax.scatter(x[i],y[i], facecolors="red")
-        if x2[i] == 60:
-            l3 = ax.scatter(x[i],y[i], facecolors="purple")
+        # if x2[i] == 60:
+        #     l3 = ax.scatter(x[i],y[i], facecolors="purple")
     ax.set_ylabel("RMSE")
     ax.set_xlabel("Ice Layer Thickness ($mm$)")
     ax.legend(
-        (l1, l2, l3),
-        ("15","30", "60"),
+        # (l1, l2, l3),
+        (l1, l2),
+        ("15","30"),
+        # ("15","30", "60"),
         scatterpoints=1,
         loc="lower right",
         ncol=1,

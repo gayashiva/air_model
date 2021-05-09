@@ -55,4 +55,4 @@ if __name__ == "__main__":
         # icestupa.melt_freeze()
         # icestupa.summary()
         icestupa.read_output()
-        # icestupa.summary_figures()
+        icestupa.summary_figures()

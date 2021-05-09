@@ -53,10 +53,10 @@ class Icestupa:
     v_a_limit = 8  # All fountain water lost at this wind speed
 
     """Model constants"""
-    DX = 4.75e-03  # Initial Ice layer thickness
+    # DX = 4.75e-03  # Initial Ice layer thickness
     # DX = 10e-03  # Initial Ice layer thickness
-    # DX = 25e-03  # Initial Ice layer thickness
-    TIME_STEP = 15*60 # Model time step
+    DX = 25e-03  # Initial Ice layer thickness
+    TIME_STEP = 45*60 # Model time step
 
     """Fountain constants"""
     theta_f = 45  # FOUNTAIN angle
@@ -340,22 +340,17 @@ class Icestupa:
     def read_output( self ):  # Reads output
 
         self.df = pd.read_hdf(self.output + "model_output_" + self.trigger + ".h5", "df")
+        old_time_step = int(pd.infer_freq(self.df["When"])[:-1]) * 60
+        if self.TIME_STEP != old_time_step:
+            self.df= self.df.set_index('When')
+            dfx = self.df.missing_type.resample(str(int(self.TIME_STEP/60))+'T').first()
+            dfh = self.df.h_f.resample(str(int(self.TIME_STEP/60))+'T').first()
+            self.df= self.df.resample(str(int(self.TIME_STEP/60))+'T').mean()
+            self.df["missing_type"] = dfx
+            self.df["h_f"] = dfh
+            self.df= self.df.reset_index()
+            logger.warning(f"Time steps changed from %s -> %s minutes" % (old_time_step/60, str(self.TIME_STEP / 60)))
 
-        self.efficiency = 1 - (
-            (self.df["unfrozen_water"].iloc[-1]) 
-            / (self.df["Discharge"].sum() * self.TIME_STEP / 60)
-        )
-        self.efficiency *= 100
-
-        Duration = self.df.index[-1] * self.TIME_STEP / (60 * 60 * 24)
-
-        print("\nIce Volume Max", float(round(self.df["iceV"].max(), 2)))
-        print("Fountain efficiency", round(self.efficiency, 3))
-        print("Ice Mass Remaining", round(self.df["ice"].iloc[-1], 2))
-        print("Meltwater", round(self.df["meltwater"].iloc[-1], 2))
-        print("Input", round(self.df["input"].iloc[-1], 2))
-        print("Ppt", round(self.df["ppt"].sum(), 2))
-        print("Duration", round(Duration, 2))
         
     def manim_output(self):
         # Output for manim
