@@ -42,6 +42,7 @@ class Tune_Icestupa(Icestupa):
     def run(self, experiment):
 
         print(experiment)
+        experiment["TIME_STEP"] = 2**experiment["TIME_STEP"] * 15 * 60
         for key in experiment:
             setattr(self, key, experiment[key])
 
@@ -98,7 +99,7 @@ if __name__ == "__main__":
     locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
     # locations = ["Guttannen 2021"]
     # locations = ["Schwarzsee 2019"]
-    param_grid = {'DX': np.arange(0.005, 0.055, 0.0005).tolist(), 'TIME_STEP': np.arange(15 * 60, 65*60, 15*60).tolist()}
+    param_grid = {'DX': np.arange(0.005, 0.006, 0.0005).tolist(), 'TIME_STEP': np.arange(3, 4, 1).tolist()}
 
     experiments = []
     for params in ParameterGrid(param_grid):
