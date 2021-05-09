@@ -59,7 +59,7 @@ class Tune_Icestupa(Icestupa):
 
         while (df[df.DroneV.notnull()].shape[0]) == 0:
             tol += pd.Timedelta('15T')
-            logger.error("Timedelta increase as shape %s" %(df[df.DroneV.notnull()].shape[0]))
+            print("Timedelta increase as shape %s" %(df[df.DroneV.notnull()].shape[0]))
             df = pd.merge_asof(left=self.df,right=df_c,right_index=True,left_index=True,direction='nearest',tolerance=tol)
 
         rmse_V = (((df.DroneV - df.iceV) ** 2).mean() ** .5)
@@ -100,10 +100,10 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    # locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
-    locations = ["Guttannen 2021"]
+    locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
+    # locations = ["Guttannen 2021"]
     # locations = ["Schwarzsee 2019"]
-    param_grid = {'DX': np.arange(0.025, 0.026, 0.001).tolist(), 'TIME_STEP': np.arange(15*60, 65*60, 15*60).tolist()}
+    param_grid = {'DX': np.arange(0.003, 0.080, 0.001).tolist(), 'TIME_STEP': np.arange(15*60, 65*60, 15*60).tolist()}
 
     experiments = []
     for params in ParameterGrid(param_grid):
