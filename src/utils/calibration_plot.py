@@ -32,8 +32,8 @@ if __name__ == "__main__":
     )
     answers = dict(
         # location="Schwarzsee 2019",
-        # location="Guttannen 2020",
-        location="Gangles 2021",
+        location="Guttannen 2021",
+        # location="Gangles 2021",
         trigger="Manual",
     )
 
@@ -62,16 +62,26 @@ if __name__ == "__main__":
     # data_store.close()
     # print(dfd.head())
 
+    df = df.round(1)
     print(df.head())
     by_duration = df.groupby("Duration")
+    by_DX= df.groupby("DX")
     if icestupa.name == "guttannen21":
-        survived = 155.38
+        dfx = by_DX.get_group(10)
+        survived = dfx.loc[dfx['TIME_STEP'] == 30, 'Duration'].values[0]
+        print(survived)
     if icestupa.name == "guttannen20":
-        survived = 93.33
+        dfx = by_DX.get_group(10)
+        survived = dfx.loc[dfx['TIME_STEP'] == 30, 'Duration'].values[0]
+        print(survived)
     if icestupa.name == "schwarzsee19":
-        survived = 45.12
+        dfx = by_DX.get_group(10)
+        survived = dfx.loc[dfx['TIME_STEP'] == 30, 'Duration'].values[0]
+        print(survived)
     if icestupa.name == "gangles21":
-        survived = 54.31
+        dfx = by_DX.get_group(10)
+        survived = dfx.loc[dfx['TIME_STEP'] == 30, 'Duration'].values[0]
+        print(survived)
 
     df = by_duration.get_group(survived)
     df = df.reset_index(drop=True)
@@ -88,15 +98,16 @@ if __name__ == "__main__":
             l1 = ax.scatter(x[i],y[i], facecolors="blue")
         if x2[i] == 30:
             l2 = ax.scatter(x[i],y[i], facecolors="red")
-        # if x2[i] == 60:
-        #     l3 = ax.scatter(x[i],y[i], facecolors="purple")
+        if x2[i] == 45:
+            l3 = ax.scatter(x[i],y[i], facecolors="black")
+        if x2[i] == 60:
+            l4 = ax.scatter(x[i],y[i], facecolors="purple")
+
     ax.set_ylabel("RMSE")
     ax.set_xlabel("Ice Layer Thickness ($mm$)")
     ax.legend(
-        # (l1, l2, l3),
-        (l1, l2),
-        ("15","30"),
-        # ("15","30", "60"),
+        (l1, l2, l3, l4),
+        ("15","30", "45", "60"),
         scatterpoints=1,
         loc="lower right",
         ncol=1,
