@@ -48,19 +48,18 @@ class Tune_Icestupa(Icestupa):
         self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
         self.read_input()
         self.melt_freeze()
+        Max_IceV = self.df["iceV"].max()
+        Duration = self.df.index[-1] * self.TIME_STEP / (60 * 60 * 24)
 
         df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
         df_c = df_c.set_index("When")
         self.df= self.df.set_index("When")
         df = pd.merge(df_c, self.df, left_index=True, right_index=True, how='inner')
-        print(df.head(10))
-        # df_c = df_c.reset_index()
-        # self.df= self.df.reset_index()
+        print(df[["DroneV", "iceV"]].head(10))
 
         rmse_V = (((df_c.DroneV - self.df.iceV) ** 2).mean() ** .5)
         corr_V = df_c['DroneV'].corr(self.df['iceV'])
-        Max_IceV = self.df["iceV"].max()
-        Duration = self.df.index[-1] * self.TIME_STEP / (60 * 60 * 24)
+        
 
         if self.name in ["guttannen21", "guttannen20"]:
             df_cam = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_cam")
@@ -96,9 +95,9 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    # locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
+    locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
     # locations = ["Guttannen 2021"]
-    locations = ["Schwarzsee 2019"]
+    # locations = ["Schwarzsee 2019"]
     param_grid = {'DX': np.arange(0.005, 0.055, 0.0005).tolist(), 'TIME_STEP': np.arange(15 * 60, 65*60, 15*60).tolist()}
 
     experiments = []
