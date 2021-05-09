@@ -91,6 +91,14 @@ def summary_figures(self):
 
     np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
     output = self.output
+    blue = "#0a4a97"
+    red = "#e23028"
+    purple = "#9673b9"
+    green = "#28a745"
+    orange = "#ffc107"
+    pink = "#ce507a"
+    skyblue = "#9bc4f0"
+
     CB91_Blue = "#2CBDFE"
     CB91_Green = "#47DBCD"
     CB91_Pink = "#F3A0F2"
@@ -107,8 +115,8 @@ def summary_figures(self):
             "Qf": "$q_{F}$",
             "Qg": "$q_{G}$",
             "Qsurf": "$q_{surf}$",
-            "Qmelt": "$q_{melt}$",
-            "Qt": "$q_{T}$",
+            "Qmelt": "$-q_{melt}$",
+            "Qt": "$-q_{T}$",
         },
         axis=1,
     )
@@ -149,15 +157,16 @@ def summary_figures(self):
 
 
     y3 = df_SZ.SW_direct
-    lns2 = ax3.plot(x, y3, linestyle="-", label="Shortwave Direct", color=CB91_Amber)
+    lns2 = ax3.plot(x, y3, linestyle="-", label="Shortwave Direct", color=red)
     lns1 = ax3.plot(
         x,
         self.df.SW_diffuse,
         linestyle="-",
         label="Shortwave Diffuse",
-        color=CB91_Blue,
+        color=orange,
+        alpha=0.6,
     )
-    lns3 = ax3.plot(x, self.df.LW_in, linestyle="-", label="Longwave", color=CB91_Green)
+    lns3 = ax3.plot(x, self.df.LW_in, linestyle="-", label="Longwave", color=green, alpha=0.6)
     ax3.axvspan(
         self.df.When.head(1).values,
         self.df.When.tail(1).values,
@@ -222,6 +231,7 @@ def summary_figures(self):
             "iceV",
             "Discharge",
             "fountain_runoff",
+            "wind_loss",
         ]
     ]
 
@@ -273,22 +283,34 @@ def summary_figures(self):
 
     dfds["Discharge"] *= self.TIME_STEP / (60 * 1000)
     dfds["fountain_runoff"] /= 1000
+    dfds["wind_loss"] /= 1000
+    dfds["Frozen"] = dfds["Discharge"] - dfds["fountain_runoff"]
+    dfds["Runoff loss"] = dfds["fountain_runoff"] + dfds["wind_loss"]
+    dfds["Wind loss"] = dfds["wind_loss"]
     y01 = dfds["Discharge"]
     y02 = dfds["fountain_runoff"]
 
-    dfd[["$q_{melt}$", "$q_{T}$"]] *=-1
-    z = dfd[["$q_{melt}$", "$q_{T}$", "$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
+    dfd[["$-q_{melt}$", "$-q_{T}$"]] *=-1
+    z = dfd[["$-q_{melt}$", "$-q_{T}$", "$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
+    y0 = dfds[["Frozen", "Wind loss", "Runoff loss"]]
 
     ax0 = fig.add_subplot(5, 1, 1)
-    ax0 = y01.plot.bar(
-        linewidth=0.5, edgecolor="black", color="#0C70DE", alpha=0.4, label="Available", ax=ax0
-    )
-    ax0 = y02.plot.bar(
-        y="fountain_runoff", linewidth=0.5, edgecolor="black", color="#0C70DE",label="Runoff",  ax=ax0
-    )
+    ax0 = y0.plot.bar(
+                stacked=True, 
+                edgecolor="black", 
+                linewidth=0.5, 
+                color=[skyblue, "xkcd:azure", "#0C70DE"],
+                ax=ax0
+                )
+    # ax0 = y01.plot.bar(
+    #     linewidth=0.5, edgecolor="black", color="#0C70DE", alpha=0.4, label="Available", ax=ax0
+    # )
+    # ax0 = y02.plot.bar(
+    #     y="fountain_runoff", linewidth=0.5, edgecolor="black", color="#0C70DE",label="Runoff",  ax=ax0
+    # )
     ax0.xaxis.set_label_text("")
-    ax0.set_ylabel("Discharge ($m^3$)")
-    plt.legend(loc="upper center", ncol=2)
+    ax0.set_ylabel("Total Discharge ($m^3$)")
+    plt.legend(loc="upper center", ncol=3)
     ax0.grid(axis="y", color="#0C70DE", alpha=0.3, linewidth=0.5, which="major")
     at = AnchoredText("(a)", prop=dict(size=10), frameon=True, loc="upper left")
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
@@ -301,7 +323,8 @@ def summary_figures(self):
                 stacked=True, 
                 edgecolor="black", 
                 linewidth=0.5, 
-                color=["xkcd:azure", "xkcd:aqua", "xkcd:orangered", "xkcd:orange", "xkcd:green", "xkcd:yellowgreen","xkcd:purple", "xkcd:tan" ],
+                # color=["xkcd:azure", "xkcd:aqua", "xkcd:orangered", "xkcd:orange", "xkcd:green", "xkcd:yellowgreen","xkcd:purple", "xkcd:tan" ],
+                color=[purple, pink, red, orange, green, "xkcd:yellowgreen", "xkcd:azure", blue ],
                 # alpha=[0.1,0.2,0.1,0.4,0.5,0.5,0.5,0.5],
                 ax=ax1
                 )
@@ -322,7 +345,8 @@ def summary_figures(self):
         stacked=True,
         edgecolor="black",
         linewidth=0.5,
-        color=["#D9E9FA", CB91_Blue, "#EA9010", "#006C67", "#0C70DE"],
+        # color=["#D9E9FA", "xkcd:azure", orange, green, "#0C70DE"],
+        color=[skyblue, "xkcd:azure", orange, green, "#0C70DE"],
         ax=ax2,
     )
     plt.ylabel("Thickness ($m$ w. e.)")
@@ -352,7 +376,7 @@ def summary_figures(self):
 
     ax4 = fig.add_subplot(5, 1, 5)
     ax4 = y4.plot.bar(
-        x="When", y="iceV", linewidth=0.5, edgecolor="black", color="#D9E9FA", ax=ax4
+        x="When", y="iceV", linewidth=0.5, edgecolor="black", color=skyblue, ax=ax4
     )
     ax4.xaxis.set_label_text("")
     ax4.set_ylabel("Ice Volume($m^3$)")
@@ -483,8 +507,8 @@ def summary_figures(self):
             "$q_{F}$": "Qf",
             "$q_{G}$": "Qg",
             "$q_{surf}$": "Qsurf",
-            "$q_{melt}$": "Qmelt",
-            "$q_{T}$": "Qt",
+            "$-q_{melt}$": "Qmelt",
+            "$-q_{T}$": "Qt",
         },
         axis=1,
     )
