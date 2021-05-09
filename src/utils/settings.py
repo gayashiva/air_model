@@ -38,9 +38,9 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
         FOUNTAIN = dict(
             fountain_off_date=datetime(2021, 2, 21),
             dia_f=0.007,  # FOUNTAIN aperture diameter
-            h_f=2.5,  # FOUNTAIN steps h_f
             discharge=12.33,  # FOUNTAIN on discharge
-            trigger=trigger,
+            # trigger=trigger,
+            # h_f=2.5,  # FOUNTAIN steps h_f
         )
 
         data_h = [
@@ -71,9 +71,9 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             fountain_off_date=datetime(2020, 2, 27),
             # fountain_off_date=datetime(2020, 3, 17, 18),
             dia_f=0.005,  # FOUNTAIN aperture diameter
-            h_f=2.5,  # FOUNTAIN steps h_f
-            discharge=10,  # FOUNTAIN on discharge
-            trigger=trigger,
+            # discharge=10,  # FOUNTAIN on discharge
+            # trigger=trigger,
+            # h_f=2.5,  # FOUNTAIN steps h_f
         )
         data_h = [
             {"When": SITE["start_date"], "h_f": 2.5},
@@ -96,9 +96,9 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
         FOUNTAIN = dict(
             fountain_off_date=datetime(2019, 3, 10, 18),
             dia_f=0.005,  # FOUNTAIN aperture diameter
-            # h_f=1.35,  # FOUNTAIN steps h_f
             discharge=3.58,  # FOUNTAIN on discharge
-            trigger=trigger,
+            # trigger=trigger,
+            # h_f=1.35,  # FOUNTAIN steps h_f
         )
 
         data_h = [
@@ -122,8 +122,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             fountain_off_date=datetime(2021, 3, 10, 18),
             dia_f=0.01,  # FOUNTAIN aperture diameter
             h_f=5,  # FOUNTAIN steps h_f
-            discharge=120,  # FOUNTAIN on discharge
-            trigger=trigger,
+            # discharge=120,  # FOUNTAIN on discharge
+            # trigger=trigger,
         )
 
         data_h = [

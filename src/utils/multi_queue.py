@@ -30,12 +30,13 @@ def calculate(process_name, tasks, results):
 
             # Derive all the input parameters
             # icestupa.derive_parameters()
+            icestupa.read_input()
 
             # Generate results
-            # icestupa.melt_freeze()
+            icestupa.melt_freeze()
 
             # Summarise and save model results
-            # icestupa.summary()
+            icestupa.summary()
 
             # Read Output
             icestupa.read_output()

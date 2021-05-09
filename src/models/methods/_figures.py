@@ -63,13 +63,11 @@ def summary_figures(self):
     logger.info("Creating figures")
     df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
     df_c = df_c[["When", "DroneV"]]
-    print(df_c.shape[0])
     tol = pd.Timedelta('15T')
     df_c = df_c.set_index("When")
     self.df= self.df.set_index("When")
     df_c = pd.merge_asof(left=self.df,right=df_c,right_index=True,left_index=True,direction='nearest',tolerance=tol)
     df_c = df_c[["DroneV", "iceV"]]
-    print(df_c.loc[df_c.DroneV.notnull(),["DroneV", "iceV"]].shape[0])
     self.df= self.df.reset_index()
 
     if self.name in ["guttannen21", "guttannen20"]:

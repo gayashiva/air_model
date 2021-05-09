@@ -272,23 +272,28 @@ if __name__ == "__main__":
     else:
         if "Validation" in display:
             df_c = pd.read_hdf(icestupa.input + "model_input_" + icestupa.trigger + ".h5", "df_c")
-            df_time = pd.DataFrame({'When': pd.date_range(start=icestupa.df.When[0], end=icestupa.df.When[icestupa.df.shape[0]-1] + timedelta(seconds= icestupa.TIME_STEP) , freq=str(int(icestupa.TIME_STEP/60))+'T', closed='right')})
-            df_time["dia"]= np.NaN
-            df_time["DroneV"] = np.NaN
             df_c = df_c.set_index("When")
-            df_time = df_time.set_index("When")
-            df_c = df_time.combine_first(df_c)
-            logger.info(df_c[df_c.DroneV.notnull()])
-            df_c = df_c.reset_index()
+            icestupa.df= icestupa.df.set_index("When")
+            tol = pd.Timedelta('1T')
+            df = pd.merge_asof(left=icestupa.df,right=df_c,right_index=True,left_index=True,direction='nearest',tolerance=tol)
+
+            while (df[df.DroneV.notnull()].shape[0]) == 0:
+                tol += pd.Timedelta('15T')
+                logger.error("Timedelta increase as shape %s" %(df[df.DroneV.notnull()].shape[0]))
+                df = pd.merge_asof(left=icestupa.df,right=df_c,right_index=True,left_index=True,direction='nearest',tolerance=tol)
+
+            rmse_V = (((df.DroneV - df.iceV) ** 2).mean() ** .5)
+            corr_V = df['DroneV'].corr(df['iceV'])
+            
 
             if icestupa.name in ["guttannen21", "guttannen20"]:
                 df_cam = pd.read_hdf(icestupa.input + "model_input_" + icestupa.trigger + ".h5", "df_cam")
-                df_time = pd.DataFrame({'When': pd.date_range(start=icestupa.df.When[0], end=icestupa.df.When[icestupa.df.shape[0]-1] + timedelta(seconds= icestupa.TIME_STEP), freq=str(int(icestupa.TIME_STEP/60))+'T', closed='right')})
-                df_time["cam_temp"]= np.NaN
-                df_time = df_time.set_index("When")
-                df_cam = df_time.combine_first(df_cam)
-                logger.warning(df_cam[df_cam.cam_temp.notnull()])
-                df_cam = df_cam.reset_index()
+                df = pd.merge_asof(left=icestupa.df,right=df_cam,right_index=True,left_index=True,direction='nearest',tolerance=tol)
+                rmse_T = (((df.cam_temp - df.T_s) ** 2).mean() ** .5)
+                corr_T = df['cam_temp'].corr(df['T_s'])
+            else:
+                rmse_T = 0
+                corr_T = 0
 
             st.write("## Validation")
             path = (
@@ -302,8 +307,7 @@ if __name__ == "__main__":
                 """
             Correlation of modelled with measured ice volume was **%.2f** and RMSE was **%.2f** $m^3$ 
             """
-                % (df_c['DroneV'].corr(icestupa.df['iceV']),
-                (((df_c.DroneV - icestupa.df.iceV) ** 2).mean() ** .5))
+                % (corr_V, rmse_V)
             )
 
             if SITE["name"] in ["guttannen21", "guttannen20"]:
@@ -318,8 +322,7 @@ if __name__ == "__main__":
                     """
                 Correlation of modelled with measured surface temperature was **%.2f** and RMSE was **%.2f** C
                 """
-                    % (df_cam['cam_temp'].corr(icestupa.df['T_s']),
-                     (((df_cam.cam_temp - icestupa.df.T_s) ** 2).mean() ** .5))
+                    % (corr_T, rmse_T)
                 )
 
         if "Timelapse" in display:
