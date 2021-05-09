@@ -25,8 +25,8 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        # location="Guttannen 2021",
-        location="Gangles 2021",
+        location="Guttannen 2021",
+        # location="Gangles 2021",
         run="no",
     )
 
@@ -55,4 +55,4 @@ if __name__ == "__main__":
         # icestupa.melt_freeze()
         # icestupa.summary()
         icestupa.read_output()
-        icestupa.summary_figures()
+        # icestupa.summary_figures()

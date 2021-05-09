@@ -302,6 +302,7 @@ class Icestupa:
 
     def read_input(self):  # Use processed input dataset
         self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
+        df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
         old_time_step = int(pd.infer_freq(self.df["When"])[:-1]) * 60
 
         if self.TIME_STEP != old_time_step:
@@ -338,9 +339,7 @@ class Icestupa:
 
     def read_output( self ):  # Reads output
 
-        self.df = pd.read_hdf(
-            self.output + "model_output_" + self.trigger + ".h5", "df"
-        )
+        self.df = pd.read_hdf(self.output + "model_output_" + self.trigger + ".h5", "df")
 
         self.efficiency = 1 - (
             (self.df["unfrozen_water"].iloc[-1]) 
@@ -639,7 +638,7 @@ class Icestupa:
 
                 """ Unit tests """
                 if self.df.loc[i, "delta_T_s"] > 1 * self.TIME_STEP/60:
-                    logger.error("Too much fountain energy %s causes temperature change of %0.1f on %s" %(self.df.loc[i, "Qf"],self.df.loc[i, "delta_T_s"],self.df.loc[i, "When"]))
+                    logger.warning("Too much fountain energy %s causes temperature change of %0.1f on %s" %(self.df.loc[i, "Qf"],self.df.loc[i, "delta_T_s"],self.df.loc[i, "When"]))
                     if math.fabs(self.df.delta_T_s[i]) > 50:
                         logger.error(
                             "%s,Surface Temperature %s,Mass %s"

@@ -8,6 +8,7 @@ import numpy as np
 import multiprocessing
 from multiprocessing import Pool
 from sklearn.model_selection import ParameterGrid
+from codetiming import Timer
 
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -37,6 +38,7 @@ class Tune_Icestupa(Icestupa):
         result = []
        
 
+    @Timer(text="Simulation executed in {:.2f} seconds")
     def run(self, experiment):
 
         print(experiment)
@@ -44,17 +46,27 @@ class Tune_Icestupa(Icestupa):
             setattr(self, key, experiment[key])
 
         self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
-
+        self.read_input()
         self.melt_freeze()
 
-        rmse_V = (((self.df.DroneV - self.df.iceV) ** 2).mean() ** .5)
-        corr_V = self.df['DroneV'].corr(self.df['iceV'])
+        df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
+        df_c = df_c.set_index("When")
+        self.df= self.df.set_index("When")
+        df = pd.merge(df_c, self.df, left_index=True, right_index=True, how='inner')
+        print(df.head(10))
+        # df_c = df_c.reset_index()
+        # self.df= self.df.reset_index()
+
+        rmse_V = (((df_c.DroneV - self.df.iceV) ** 2).mean() ** .5)
+        corr_V = df_c['DroneV'].corr(self.df['iceV'])
         Max_IceV = self.df["iceV"].max()
         Duration = self.df.index[-1] * self.TIME_STEP / (60 * 60 * 24)
 
         if self.name in ["guttannen21", "guttannen20"]:
-            rmse_T = (((self.df.cam_temp - self.df.T_s) ** 2).mean() ** .5)
-            corr_T = self.df['cam_temp'].corr(self.df['T_s'])
+            df_cam = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_cam")
+            # df_cam = df_c.reset_index()
+            rmse_T = (((df_cam.cam_temp - self.df.T_s) ** 2).mean() ** .5)
+            corr_T = df_cam['cam_temp'].corr(self.df['T_s'])
         else:
             rmse_T = 0
             corr_T = 0
@@ -84,16 +96,10 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    answers = dict(
-        # location="Schwarzsee 2019",
-        location="Guttannen 2021",
-        # location="Gangles 2021",
-        trigger="Manual",
-    )
-
     # locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
-    locations = ["Guttannen 2021"]
-    param_grid = {'DX': np.arange(0.00475, 0.005, 0.0010).tolist(), 'TIME_STEP': np.arange(15 * 60, 25*60, 15*60).tolist()}
+    # locations = ["Guttannen 2021"]
+    locations = ["Schwarzsee 2019"]
+    param_grid = {'DX': np.arange(0.005, 0.055, 0.0005).tolist(), 'TIME_STEP': np.arange(15 * 60, 65*60, 15*60).tolist()}
 
     experiments = []
     for params in ParameterGrid(param_grid):
