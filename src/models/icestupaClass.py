@@ -51,12 +51,13 @@ class Icestupa:
     Z_I = 0.0017  # Ice Momentum and Scalar roughness length
     T_RAIN = 1  # Temperature condition for liquid precipitation
     v_a_limit = 8  # All fountain water lost at this wind speed
+    # delta_T_limit = 0.1 # Max rate of change of temperature due to fountain water
 
     """Model constants"""
     # DX = 4.75e-03  # Initial Ice layer thickness
-    # DX = 10e-03  # Initial Ice layer thickness
-    DX = 25e-03  # Initial Ice layer thickness
-    TIME_STEP = 45*60 # Model time step
+    DX = 10e-03  # Initial Ice layer thickness
+    # DX = 25e-03  # Initial Ice layer thickness
+    TIME_STEP = 30*60 # Model time step
 
     """Fountain constants"""
     theta_f = 45  # FOUNTAIN angle

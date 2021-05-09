@@ -95,9 +95,20 @@ def get_energy(self, row, mode="normal"):
                 / (self.TIME_STEP * self.df.loc[i, "SA"])
             )
 
+            # if self.df.loc[i, "T_s"] < -self.delta_T_limit * self.TIME_STEP/60 : 
+            # # Temperature change cannot by more than 1 C per minute
+            #     self.df.loc[i, "Qf"] += (
+            #         # (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
+            #         (- self.delta_T_limit * self.TIME_STEP/60)
+            #         * self.RHO_I
+            #         * self.DX
+            #         * self.C_I
+            #         / self.TIME_STEP
+            #     )
+            #     logger.warning("Prevented temperature change from %s on %s" % (self.df.loc[i, "T_s"],self.df.loc[i, "When"]))
+
             # TODO add to paper
             self.df.loc[i, "Qf"] += (
-                # (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
                 (self.df.loc[i, "T_s"])
                 * self.RHO_I
                 * self.DX

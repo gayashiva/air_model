@@ -27,18 +27,16 @@ if __name__ == "__main__":
         # location="Schwarzsee 2019",
         location="Guttannen 2021",
         # location="Gangles 2021",
-        run="no",
+        run="yes",
     )
-
-    # Get settings for given location and trigger
-    # SITE, FOUNTAIN, FOLDER, HEIGHTS = config(answers["location"])
 
     # Initialise icestupa object
     icestupa = Icestupa(answers["location"])
 
     if answers["run"] == "yes":
         # Derive all the input parameters
-        icestupa.derive_parameters()
+        # icestupa.derive_parameters()
+        icestupa.read_input()
 
         # Generate results
         icestupa.melt_freeze()
