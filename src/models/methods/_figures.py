@@ -62,6 +62,7 @@ def overlapped_bar(df, show=False, width=0.9, alpha=.5,
 def summary_figures(self):
     logger.info("Creating figures")
     df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
+    df_c = df_c[["When", "DroneV"]]
     df_time = pd.DataFrame({'When': pd.date_range(start=self.df.When[0]- timedelta(seconds= self.TIME_STEP), end=self.df.When[self.df.shape[0]-1], freq=str(int(self.TIME_STEP/60))+'T', closed='right')})
     df_time["dia"]= np.NaN
     df_time["DroneV"] = np.NaN
@@ -83,7 +84,10 @@ def summary_figures(self):
         df_time = df_time.set_index("When")
         df_cam = df_time.combine_first(df_cam)
         df_cam = df_cam.reset_index()
-        df_cam = df_cam.loc[:self.df.shape[0]]
+        mask = df_cam.When <= self.df.When[self.df.shape[0]-1]
+        mask &= df_cam.When >= self.df.When[0]
+        df_cam = df_cam.loc[mask]
+        df_cam = df_cam.reset_index(drop=True)
 
     np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
     output = self.output
