@@ -42,6 +42,7 @@ class Tune_Icestupa(Icestupa):
     def run(self, experiment):
 
         print(experiment)
+        experiment["TIME_STEP"] = 2**experiment["TIME_STEP"] * 15 * 60
         for key in experiment:
             setattr(self, key, experiment[key])
 
@@ -55,17 +56,17 @@ class Tune_Icestupa(Icestupa):
         df_c = df_c.set_index("When")
         self.df= self.df.set_index("When")
         df = pd.merge(df_c, self.df, left_index=True, right_index=True, how='inner')
-        print(df[["DroneV", "iceV"]].head(10))
 
-        rmse_V = (((df_c.DroneV - self.df.iceV) ** 2).mean() ** .5)
-        corr_V = df_c['DroneV'].corr(self.df['iceV'])
+        rmse_V = (((df.DroneV - df.iceV) ** 2).mean() ** .5)
+        corr_V = df['DroneV'].corr(df['iceV'])
         
 
         if self.name in ["guttannen21", "guttannen20"]:
             df_cam = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_cam")
+            df = pd.merge(df_cam, self.df, left_index=True, right_index=True, how='inner')
             # df_cam = df_c.reset_index()
-            rmse_T = (((df_cam.cam_temp - self.df.T_s) ** 2).mean() ** .5)
-            corr_T = df_cam['cam_temp'].corr(self.df['T_s'])
+            rmse_T = (((df.cam_temp - df.T_s) ** 2).mean() ** .5)
+            corr_T = df['cam_temp'].corr(df['T_s'])
         else:
             rmse_T = 0
             corr_T = 0
@@ -95,10 +96,10 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
-    # locations = ["Guttannen 2021"]
+    # locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
+    locations = ["Guttannen 2021"]
     # locations = ["Schwarzsee 2019"]
-    param_grid = {'DX': np.arange(0.005, 0.055, 0.0005).tolist(), 'TIME_STEP': np.arange(15 * 60, 65*60, 15*60).tolist()}
+    param_grid = {'DX': np.arange(0.005, 0.080, 0.001).tolist(), 'TIME_STEP': np.arange(0, 4, 1).tolist()}
 
     experiments = []
     for params in ParameterGrid(param_grid):
