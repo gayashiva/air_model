@@ -38,7 +38,7 @@ if __name__ == "__main__":
     )
 
     # Get settings for given location and trigger
-    SITE, FOUNTAIN, FOLDER = config(answers["location"])
+    SITE, FOUNTAIN, FOLDER, *args = config(answers["location"])
 
     # Initialise icestupa object
     icestupa = Icestupa(answers["location"])
@@ -62,6 +62,11 @@ if __name__ == "__main__":
     # data_store.close()
     # print(dfd.head())
 
+    print(df.head())
+    by_duration = df.groupby("Duration")
+    df = by_duration.get_group(155.38)
+    df = df.reset_index(drop=True)
+
     x = df["DX"]
     x2 = df["TIME_STEP"]
     y = df["rmse_V"]
@@ -74,11 +79,13 @@ if __name__ == "__main__":
             l1 = ax.scatter(x[i],y[i], facecolors="blue")
         if x2[i] == 30:
             l2 = ax.scatter(x[i],y[i], facecolors="red")
+        if x2[i] == 60:
+            l3 = ax.scatter(x[i],y[i], facecolors="purple")
     ax.set_ylabel("RMSE")
     ax.set_xlabel("Ice Layer Thickness ($mm$)")
     ax.legend(
-        (l1, l2),
-        ("15","30"),
+        (l1, l2, l3),
+        ("15","30", "60"),
         scatterpoints=1,
         loc="lower right",
         ncol=1,
