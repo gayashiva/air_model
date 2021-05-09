@@ -506,7 +506,7 @@ class Icestupa:
                 # TODO add to paper
                 # Water loss due to wind
                 if self.df.v_a.loc[i] < self.v_a_limit:
-                    self.df.loc[i,"wind_loss"]*= self.df.loc[i,"fountain_runoff"] * self.df.v_a.loc[i]/self.v_a_limit
+                    self.df.loc[i,"wind_loss"]= self.df.loc[i,"fountain_runoff"] * self.df.v_a.loc[i]/self.v_a_limit
                     self.df.loc[i,"fountain_runoff"]-= self.df.loc[i,"wind_loss"]
                 else:
                     self.df.loc[i,"fountain_runoff"]= 0
@@ -517,59 +517,31 @@ class Icestupa:
                 # Latent Heat
                 if self.df.loc[i, "Ql"] < 0:
                     # Sublimation
-                    if self.df.loc[i, "RH"] < 60:
-                        L = self.L_S
-                        self.df.loc[i, "gas"] -= (
-                            self.df.loc[i, "Ql"]
-                            * self.TIME_STEP
-                            * self.df.loc[i, "SA"]
-                            / L
-                        )
+                    L = self.L_S
+                    self.df.loc[i, "gas"] -= (
+                        self.df.loc[i, "Ql"]
+                        * self.TIME_STEP
+                        * self.df.loc[i, "SA"]
+                        / L
+                    )
 
-                        # Removing gas quantity generated from ice
-                        self.df.loc[i, "solid"] += (
-                            self.df.loc[i, "Ql"]
-                            * self.TIME_STEP
-                            * self.df.loc[i, "SA"]
-                            / L
-                        )
-                    # Evaporation
-                    else:
-                        L = self.L_E
-                        self.df.loc[i, "gas"] -= (
-                            self.df.loc[i, "Ql"]
-                            * self.TIME_STEP
-                            * self.df.loc[i, "SA"]
-                            / L
-                        )
-
-                        # Removing gas quantity generated from meltwater
-                        self.df.loc[i, "melted"] -= (
-                            self.df.loc[i, "Ql"]
-                            * self.TIME_STEP
-                            * self.df.loc[i, "SA"]
-                            / L
-                        )
+                    # Removing gas quantity generated from ice
+                    self.df.loc[i, "solid"] += (
+                        self.df.loc[i, "Ql"]
+                        * self.TIME_STEP
+                        * self.df.loc[i, "SA"]
+                        / L
+                    )
 
                 else:
                     # Deposition
-                    if self.df.loc[i, "RH"] < 60:
-                        L = self.L_S
-                        self.df.loc[i, "dpt"] += (
-                            self.df.loc[i, "Ql"]
-                            * self.TIME_STEP
-                            * self.df.loc[i, "SA"]
-                            / self.L_S
-                        )
-                    # Condensation
-                    else:
-                        L = self.L_E
-                        self.df.loc[i, "cdt"] += (
-                            self.df.loc[i, "Ql"]
-                            * self.TIME_STEP
-                            * self.df.loc[i, "SA"]
-                            / self.L_S
-                        )
+                    L = self.L_S
+                    self.df.loc[i, "dpt"] += (
+                        self.df.loc[i, "Ql"]
+                        * self.TIME_STEP
+                        * self.df.loc[i, "SA"]
+                        / self.L_S
+                    )
 
                 self.df.loc[i, "Qt"] += self.df.loc[i, "Ql"]
                 freezing_energy = (self.df.loc[i, "Qsurf"] - self.df.loc[i, "Ql"])

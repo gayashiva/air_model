@@ -115,9 +115,7 @@ def get_energy(self, row, mode="normal"):
         )
 
         # Bulk Temperature
-        self.df.loc[i + 1, "T_bulk"] = self.df.loc[i, "T_bulk"] - self.df.loc[
-            i, "Qg"
-        ] * self.TIME_STEP * self.df.loc[i, "SA"] / (self.df.loc[i, "ice"] * self.C_I)
+        self.df.loc[i + 1, "T_bulk"] = self.df.loc[i, "T_bulk"] - self.df.loc[i, "Qg"] * self.TIME_STEP * self.df.loc[i, "SA"] / (self.df.loc[i, "ice"] * self.C_I)
 
     # Total Energy W/m2
     self.df.loc[i, "Qsurf"] = (
