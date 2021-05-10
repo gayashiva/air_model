@@ -60,6 +60,7 @@ class Icestupa:
     TIME_STEP = 30*60 # Model time step
 
     """Fountain constants"""
+    dia_f =0.005  # FOUNTAIN aperture diameter
     theta_f = 45  # FOUNTAIN angle
     T_w = 5  # FOUNTAIN Water temperature
     crit_temp = 0  # FOUNTAIN runtime temperature
@@ -69,8 +70,8 @@ class Icestupa:
 
     def __init__(self, location = "Guttannen 2021"):
 
-        SITE, FOUNTAIN, FOLDER, df_h = config(location)
-        initial_data = [SITE, FOUNTAIN, FOLDER]
+        SITE, FOLDER, df_h = config(location)
+        initial_data = [SITE, FOLDER]
 
         # Initialise all variables of dictionary
         for dictionary in initial_data:
@@ -139,6 +140,11 @@ class Icestupa:
             df_c.to_csv(self.input + "measured_vol.csv")
             df_cam.to_csv(self.input + "measured_temp.csv")
 
+            self.discharge = get_droplet_projectile(
+                dia=self.dia_f, h=self.df.loc[1,"h_f"], x=self.r_spray
+            )
+            logger.warning("Mean spray estimated %0.1f"%self.discharge)
+
         if self.name in ["schwarzsee19"]:
             df_c = get_calibration(site=self.name, input=self.raw)
             df_c.to_hdf(
@@ -148,18 +154,10 @@ class Icestupa:
             )
             df_c.to_csv(self.input + "measured_vol.csv")
 
-        if hasattr(self, "r_spray"):  # Provide discharge
-            self.discharge = get_droplet_projectile(
-                dia=self.dia_f, h=self.df.loc[1,"h_f"], x=self.r_spray
-            )
-            logger.warning("Mean spray estimated %0.1f"%self.discharge)
-        elif hasattr(self, "discharge"):  # Provide spray radius
             self.r_spray = get_droplet_projectile(
                 dia=self.dia_f, h=self.df.loc[1,"h_f"], d=self.discharge
             )
             logger.warning("Spray radius estimated %0.1f"%self.r_spray)
-        else:
-            logger.error("No spray radius or discharge provided")
 
         unknown = ["a", "vp_a", "LW_in", "cld"]  # Possible unknown variables
         for i in range(len(unknown)):
@@ -246,16 +244,6 @@ class Icestupa:
             self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
         ]  # Remove junk columns
 
-        # C = self.df.columns
-        # D = ['DroneV', 'cam_temp', 'dia']
-        # if self.df[[x for x in C if not x in D or D.remove(x)]].isnull().values.any():
-        #     logger.error("Null values present")
-        #     logger.error(
-        #         self.df[[x for x in C if not x in D or D.remove(x)]]
-        #         .isnull()
-        #         .sum()
-        #     )
-
         if self.df.isnull().values.any():
             logger.error("\n Null values present\n")
             logger.error(
@@ -326,17 +314,14 @@ class Icestupa:
         if self.name in ["guttannen21", "guttannen20"]:
             self.r_spray = df_c.loc[0, "dia"] / 2
             self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
-
-        if hasattr(self, "r_spray"):  # Provide discharge
             self.discharge = get_droplet_projectile(
                 dia=self.dia_f, h=self.df.loc[1,"h_f"], x=self.r_spray
             )
-        elif hasattr(self, "discharge"):  # Provide spray radius
+
+        if self.name in ["schwarzsee19"]:
             self.r_spray = get_droplet_projectile(
                 dia=self.dia_f, h=self.df.loc[1,"h_f"], d=self.discharge
             )
-        else:
-            logger.error("No spray radius or discharge provided")
 
         if self.df.isnull().values.any():
             logger.warning("\n Null values present\n")

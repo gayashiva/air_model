@@ -73,7 +73,7 @@ if __name__ == "__main__":
     # location = "Gangles 2021"
     trigger = "Manual"
 
-    SITE, FOUNTAIN, FOLDER, *args = config(location, trigger=trigger)
+    SITE, FOLDER, *args = config(location, trigger=trigger)
 
     icestupa = Icestupa(location)
 

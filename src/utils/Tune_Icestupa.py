@@ -92,8 +92,8 @@ class Tune_Icestupa(Icestupa):
         if vals:
             rmse_V = (((df.DroneV - df.iceV) ** 2).mean() ** .5)
             corr_V = df['DroneV'].corr(df['iceV'])
-            predicted_vols = df.iceV.values.tolist()
-            measured_vols = df.DroneV.values.tolist()
+            predicted_vols = df.loc[df.DroneV.notnull(), "iceV"].values.tolist()
+            measured_vols = df.loc[df.DroneV.notnull(), "DroneV"].values.tolist()
         
 
         if self.name in ["guttannen21", "guttannen20"]:
@@ -156,19 +156,19 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     coloredlogs.install(
         fmt="%(funcName)s %(levelname)s %(message)s",
-        level=logging.ERROR,
+        level=logging.WARNING,
         logger=logger,
     )
 
     # locations = ["Schwarzsee 2019", "Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
     locations = ["Guttannen 2021"]
-    locations = ["Schwarzsee 2019"]
+    # locations = ["Schwarzsee 2019"]
 
     # param_grid = {'DX': np.arange(0.003, 0.080, 0.001).tolist(), 'TIME_STEP': np.arange(15*60, 65*60, 15*60).tolist()}
     param_grid = {
         'DX': np.arange(0.010, 0.011, 0.001).tolist(), 
-        'TIME_STEP': np.arange(30*60, 45*60, 15*60).tolist(),
-        'dia_f': np.arange(0.003, 0.010 , 0.001).tolist(),
+        'TIME_STEP': np.arange(30*60, 35*60, 15*60).tolist(),
+        'dia_f': np.arange(0.003, 0.004 , 0.001).tolist(),
         # 'IE': np.arange(0.9, 0.99 , 0.01).tolist(),
         # 'A_I': np.arange(0.3, 0.4 , 0.01).tolist(),
         # 'A_S': np.arange(0.8, 0.9 , 0.01).tolist(),
@@ -184,7 +184,7 @@ if __name__ == "__main__":
 
     for location in locations:
 
-        SITE, FOUNTAIN, FOLDER, df_h = config(location)
+        SITE, FOLDER, df_h = config(location)
 
         model = Tune_Icestupa(location)
 

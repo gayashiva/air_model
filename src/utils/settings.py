@@ -30,14 +30,12 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             latitude=46.649999,
             longitude=8.283333,
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
-            altitude_aws=1054,
+            # altitude_aws=1054,
             # DX = 10e-03,  # Initial Ice layer thickness
             # TIME_STEP = 15*60,  # Initial Ice layer thickness
-        )
 
-        FOUNTAIN = dict(
             fountain_off_date=datetime(2021, 2, 21),
-            dia_f=0.007,  # FOUNTAIN aperture diameter
+            # dia_f=0.007,  # FOUNTAIN aperture diameter
             # discharge=12.33,  # FOUNTAIN on discharge
             # trigger=trigger,
             # h_f=2.5,  # FOUNTAIN steps h_f
@@ -60,18 +58,16 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             latitude=46.649999,
             longitude=8.283333,
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
-            altitude_aws=1054,
+            # altitude_aws=1054,
             # DX = 10e-03,  # Initial Ice layer thickness
-        )
 
-        FOUNTAIN = dict(
             fountain_off_date=datetime(2020, 2, 27),
-            dia_f=0.005,  # FOUNTAIN aperture diameter
-            meas_circum=28,  # Icestupa circumference
+            # dia_f=0.005,  # FOUNTAIN aperture diameter
             # discharge=10,  # FOUNTAIN on discharge
             # trigger=trigger,
             # h_f=2.5,  # FOUNTAIN steps h_f
         )
+
         data_h = [
             {"When": SITE["start_date"], "h_f": 2.5},
             {"When": datetime(2020, 1, 24, 12), "h_f": 3.5},
@@ -88,12 +84,10 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             latitude=46.693723,
             h_aws=3,
             # DX = 4e-03,  # Initial Ice layer thickness
-        )
 
-        FOUNTAIN = dict(
             fountain_off_date=datetime(2019, 3, 10, 18),
-            dia_f=0.005,  # FOUNTAIN aperture diameter
             discharge=3.58,  # FOUNTAIN on mean discharge from field
+            # dia_f=0.005,  # FOUNTAIN aperture diameter
             # trigger=trigger,
             # h_f=1.35,  # FOUNTAIN steps h_f
         )
@@ -113,13 +107,11 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             latitude=34.216638,
             h_aws=3,
             dome_rad=4,
-        )
 
-        FOUNTAIN = dict(
             fountain_off_date=datetime(2021, 3, 10, 18),
-            dia_f=0.01,  # FOUNTAIN aperture diameter
             h_f=5,  # FOUNTAIN steps h_f
-            # discharge=120,  # FOUNTAIN on discharge
+            discharge=120,  # FOUNTAIN on discharge
+            # dia_f=0.01,  # FOUNTAIN aperture diameter
             # trigger=trigger,
         )
 
@@ -136,4 +128,4 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
     )
     df_h = pd.DataFrame(data_h)
 
-    return SITE, FOUNTAIN, FOLDER, df_h
+    return SITE, FOLDER, df_h
