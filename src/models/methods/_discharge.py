@@ -180,7 +180,6 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                 self.df.loc[df_f.index, "Discharge_fill"] = df_f["fountain"] * df_field.Discharge.max()
                 self.df.loc[
                     self.df[self.df.Discharge_fill == 0].index, "Discharge_fill"
-                # ] = df_field.Discharge.min()  # Fountain was always on
                 ] = 5  # Fountain was always on
                 self.df['Discharge'] = self.df.apply(
                     lambda row: row['Discharge_fill'] if np.isnan(row['Discharge']) else row['Discharge'],
@@ -196,7 +195,6 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                 ] = 0  # Wood leak
                 self.df.loc[
                     self.df[self.df.Discharge== 0].index & self.df[self.df.index >= datetime(2020,12,26)].index, "Discharge"
-                # ] = 3.5  # Fountain was always on
                 ] = 5  # Fountain was always on
 
             logger.debug(self.df.Discharge.head())

@@ -38,7 +38,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
         FOUNTAIN = dict(
             fountain_off_date=datetime(2021, 2, 21),
             dia_f=0.007,  # FOUNTAIN aperture diameter
-            discharge=12.33,  # FOUNTAIN on discharge
+            # discharge=12.33,  # FOUNTAIN on discharge
             # trigger=trigger,
             # h_f=2.5,  # FOUNTAIN steps h_f
         )
@@ -54,11 +54,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
         SITE = dict(
             name="guttannen20",
-            # start_date=datetime(2019, 12, 28),
             start_date=datetime(2020, 1, 3,16),
             end_date=datetime(2020, 4, 6),
-            # end_date=datetime(2020, 1, 20),
-            # end_date=datetime(2020, 2, 10),
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
@@ -69,8 +66,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
         FOUNTAIN = dict(
             fountain_off_date=datetime(2020, 2, 27),
-            # fountain_off_date=datetime(2020, 3, 17, 18),
             dia_f=0.005,  # FOUNTAIN aperture diameter
+            meas_circum=28,  # Icestupa circumference
             # discharge=10,  # FOUNTAIN on discharge
             # trigger=trigger,
             # h_f=2.5,  # FOUNTAIN steps h_f
@@ -96,7 +93,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
         FOUNTAIN = dict(
             fountain_off_date=datetime(2019, 3, 10, 18),
             dia_f=0.005,  # FOUNTAIN aperture diameter
-            discharge=3.58,  # FOUNTAIN on discharge
+            discharge=3.58,  # FOUNTAIN on mean discharge from field
             # trigger=trigger,
             # h_f=1.35,  # FOUNTAIN steps h_f
         )

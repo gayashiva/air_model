@@ -121,7 +121,6 @@ class Icestupa:
                 mode="w",
             )
             df_c.to_csv(self.input + "measured_vol.csv")
-            # self.df = pd.merge(self.df, df_c, on="When", how="left")
 
         if self.name in ["guttannen21", "guttannen20"]:
             df_c, df_cam = get_calibration(site=self.name, input=self.raw)
@@ -132,12 +131,12 @@ class Icestupa:
                 key="df_c",
                 mode="w",
             )
-            df_c.to_csv(self.input + "measured_vol.csv")
             df_cam.to_hdf(
                 self.input + "model_input_" + self.trigger + ".h5",
                 key="df_cam",
                 mode="a",
             )
+            df_c.to_csv(self.input + "measured_vol.csv")
             df_cam.to_csv(self.input + "measured_temp.csv")
 
         if self.name in ["schwarzsee19"]:
@@ -153,10 +152,12 @@ class Icestupa:
             self.discharge = get_droplet_projectile(
                 dia=self.dia_f, h=self.df.loc[1,"h_f"], x=self.r_spray
             )
+            logger.warning("Mean spray estimated %0.1f"%self.discharge)
         elif hasattr(self, "discharge"):  # Provide spray radius
             self.r_spray = get_droplet_projectile(
                 dia=self.dia_f, h=self.df.loc[1,"h_f"], d=self.discharge
             )
+            logger.warning("Spray radius estimated %0.1f"%self.r_spray)
         else:
             logger.error("No spray radius or discharge provided")
 
@@ -275,16 +276,18 @@ class Icestupa:
         self.df = self.df[
             self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
         ]  # Drops garbage columns
-        Efficiency = (
-            (self.df["meltwater"].iloc[-1] + self.df["ice"].iloc[-1])
-            / self.df["input"].iloc[-1]
-            * 100
+        f_efficiency = 100 - (
+            (
+                self.df["unfrozen_water"].iloc[-1]
+                / (self.df["Discharge"].sum() * self.TIME_STEP / 60)
+                * 100
+            )
         )
 
         Duration = self.df.index[-1] * self.TIME_STEP / (60 * 60 * 24)
 
         print("\nIce Volume Max", float(round(self.df["iceV"].max(), 2)))
-        print("Fountain efficiency", round(Efficiency, 3))
+        print("Fountain efficiency", round(f_efficiency, 1))
         print("Ice Mass Remaining", round(self.df["ice"].iloc[-1], 2))
         print("Meltwater", round(self.df["meltwater"].iloc[-1], 2))
         print("Ppt", round(self.df["ppt"].sum(), 2))

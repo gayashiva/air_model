@@ -25,8 +25,8 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2021",
-        # location="Gangles 2021",
+        # location="Guttannen 2020",
+        location="Gangles 2021",
         run="yes",
     )
 
@@ -35,8 +35,8 @@ if __name__ == "__main__":
 
     if answers["run"] == "yes":
         # Derive all the input parameters
-        # icestupa.derive_parameters()
-        icestupa.read_input()
+        icestupa.derive_parameters()
+        # icestupa.read_input()
 
         # Generate results
         icestupa.melt_freeze()

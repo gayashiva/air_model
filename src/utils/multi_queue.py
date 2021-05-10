@@ -29,8 +29,8 @@ def calculate(process_name, tasks, results):
             icestupa = Icestupa(location)
 
             # Derive all the input parameters
-            # icestupa.derive_parameters()
-            icestupa.read_input()
+            icestupa.derive_parameters()
+            # icestupa.read_input()
 
             # Generate results
             icestupa.melt_freeze()
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     coloredlogs.install(
         fmt="%(funcName)s %(levelname)s %(message)s",
-        level=logging.ERROR,
+        level=logging.WARNING,
         logger=logger,
     )
 
