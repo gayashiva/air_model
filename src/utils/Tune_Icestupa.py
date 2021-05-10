@@ -22,28 +22,9 @@ from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
 
-def uniform(parameter, interval):
-    if parameter == 0:
-        raise ValueError("Creating a percentage distribution around 0 does not work")
-
-    return cp.Uniform(
-        parameter - abs(interval / 2.0 * parameter),
-        parameter + abs(interval / 2.0 * parameter),
-    )
-
 class Tune_Icestupa(Icestupa):
     def __init__(self, location, trigger="Manual"):
         super().__init__(location)
-        # SITE, FOUNTAIN, FOLDER, df_h = config(location, trigger)
-        # initial_data = [SITE, FOUNTAIN, FOLDER]
-
-        # for dictionary in initial_data:
-        #     for key in dictionary:
-        #         setattr(self, key, dictionary[key])
-        #         logger.info(f"%s -> %s" % (key, str(dictionary[key])))
-
-        # self.TIME_STEP = 15 * 60
-        
         result = []
        
 
@@ -93,7 +74,7 @@ class Tune_Icestupa(Icestupa):
             rmse_V = (((df.DroneV - df.iceV) ** 2).mean() ** .5)
             corr_V = df['DroneV'].corr(df['iceV'])
             predicted_vols = df.loc[df.DroneV.notnull(), "iceV"].values.tolist()
-            measured_vols = df.loc[df.DroneV.notnull(), "DroneV"].values.tolist()
+            # measured_vols = df.loc[df.DroneV.notnull(), "DroneV"].values.tolist()
         
 
         if self.name in ["guttannen21", "guttannen20"]:
@@ -112,7 +93,7 @@ class Tune_Icestupa(Icestupa):
                 Duration,
                 vals,
                 predicted_vols,
-                measured_vols,
+                # measured_vols,
             ],
             index = 
             [
@@ -124,7 +105,7 @@ class Tune_Icestupa(Icestupa):
                 "duration",
                 "points",
                 "predicted_vols",
-                "measured_vols",
+                # "measured_vols",
             ],
         )
         experiment['DX'] *= 1000
