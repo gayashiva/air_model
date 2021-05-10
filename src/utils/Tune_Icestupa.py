@@ -127,8 +127,8 @@ class Tune_Icestupa(Icestupa):
                 "measured_vols",
             ],
         )
-        # experiment['DX'] *= 1000
-        # experiment['TIME_STEP'] /= 60
+        experiment['DX'] *= 1000
+        experiment['TIME_STEP'] /= 60
 
         params = pd.Series(
             experiment,
@@ -137,11 +137,11 @@ class Tune_Icestupa(Icestupa):
                 'DX', 
                 'TIME_STEP',
                 'dia_f',
-                # 'IE',
-                # 'A_I',
-                # 'A_S',
-                # 'T_RAIN',
-                # 'T_DECAY',
+                'IE',
+                'A_I',
+                'A_S',
+                'T_RAIN',
+                'T_DECAY',
                 # 'v_a_limit',
                 # 'Z_I',
             ],
@@ -164,16 +164,16 @@ if __name__ == "__main__":
     locations = ["Guttannen 2021"]
     # locations = ["Schwarzsee 2019"]
 
-    # param_grid = {'DX': np.arange(0.003, 0.080, 0.001).tolist(), 'TIME_STEP': np.arange(15*60, 65*60, 15*60).tolist()}
+    # param_grid = {'DX': np.arange(0.003, 0.004, 0.001).tolist(), 'TIME_STEP': np.arange(30*60, 35*60, 15*60).tolist()}
     param_grid = {
-        'DX': np.arange(0.010, 0.011, 0.001).tolist(), 
-        'TIME_STEP': np.arange(30*60, 35*60, 15*60).tolist(),
-        'dia_f': np.arange(0.003, 0.004 , 0.001).tolist(),
-        # 'IE': np.arange(0.9, 0.99 , 0.01).tolist(),
-        # 'A_I': np.arange(0.3, 0.4 , 0.01).tolist(),
-        # 'A_S': np.arange(0.8, 0.9 , 0.01).tolist(),
-        # 'T_RAIN': np.arange(0, 2 , 0.5).tolist(),
-        # 'T_DECAY': np.arange(1, 22 , 1).tolist(),
+        'DX': np.arange(0.005, 0.015, 0.001).tolist(), 
+        'TIME_STEP': np.arange(15*60, 65*60, 15*60).tolist(),
+        'dia_f': np.arange(0.003, 0.010 , 0.001).tolist(),
+        'IE': np.arange(0.9, 0.99 , 0.01).tolist(),
+        'A_I': np.arange(0.3, 0.4 , 0.01).tolist(),
+        'A_S': np.arange(0.8, 0.9 , 0.01).tolist(),
+        'T_RAIN': np.arange(0, 2 , 1).tolist(),
+        'T_DECAY': np.arange(1, 22 , 1).tolist(),
         # 'v_a_limit': np.arange(4, 10, 1).tolist(),
         # 'Z_I': np.arange(0.0010, 0.0020, 0.0001).tolist(),
     }
