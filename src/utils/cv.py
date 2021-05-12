@@ -18,6 +18,7 @@ import numpy as np
 from codetiming import Timer
 from datetime import datetime
 import inspect
+import json
 
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -140,12 +141,12 @@ if __name__ == "__main__":
     # Set the parameters by cross-validation
     tuned_params = [{
         # 'location': locations,
-        'DX': np.arange(0.009, 0.011, 0.0005).tolist(), 
+        'DX': np.arange(0.010, 0.011, 0.001).tolist(), 
         'TIME_STEP': np.arange(30*60, 35*60, 30*60).tolist(),
-        'IE': np.arange(0.9, 0.999 , 0.02).tolist(),
-        'A_I': np.arange(0.3, 0.4 , 0.02).tolist(),
-        'A_S': np.arange(0.8, 0.9 , 0.02).tolist(),
-        'T_RAIN': np.arange(0, 2 , 0.5).tolist(),
+        # 'IE': np.arange(0.9, 0.999 , 0.02).tolist(),
+        # 'A_I': np.arange(0.3, 0.4 , 0.02).tolist(),
+        # 'A_S': np.arange(0.8, 0.9 , 0.02).tolist(),
+        'T_RAIN': np.arange(0, 2 , 1).tolist(),
         # 'T_DECAY': np.arange(1, 22 , 1).tolist(),
         # 'v_a_limit': np.arange(4, 10, 1).tolist(),
         # 'dia_f': np.arange(0.003, 0.010 , 0.001).tolist(),
@@ -170,6 +171,8 @@ if __name__ == "__main__":
     print("Best parameters set found on development set:")
     print()
     print(clf.best_params_)
+    with open(FOLDER['sim'] + file_path + '.json', 'w') as fp:
+        json.dump(clf.best_params_, fp, sort_keys=True, indent=4)
     print()
     print("Grid scores on development set:")
     print()
@@ -178,14 +181,5 @@ if __name__ == "__main__":
     for mean, std, params in zip(means, stds, clf.cv_results_['params']):
         print("%0.3f (+/-%0.03f) for %r"
               % (mean, std * 2, params))
-    # print()
-    # print("Detailed classification report:")
-    # print()
-    # print("The model is trained on the full development set.")
-    # print("The scores are computed on the full evaluation set.")
-    # print()
-    # y_true, y_pred = y_test, clf.predict(X_test)
-    # print(classification_report(y_true, y_pred))
-    # print()
 
-    save_obj(FOLDER['output'], file_path, clf.cv_results_)
+    save_obj(FOLDER['sim'], file_path, clf.cv_results_)
