@@ -141,15 +141,16 @@ if __name__ == "__main__":
     # Set the parameters by cross-validation
     tuned_params = [{
         # 'location': locations,
-        # 'DX': np.arange(0.010, 0.011, 0.001).tolist(), 
         # 'TIME_STEP': np.arange(30*60, 35*60, 30*60).tolist(),
-        # 'IE': np.arange(0.9, 0.999 , 0.02).tolist(),
-        # 'A_I': np.arange(0.3, 0.4 , 0.02).tolist(),
-        # 'A_S': np.arange(0.8, 0.9 , 0.02).tolist(),
-        # 'T_RAIN': np.arange(0, 2 , 1).tolist(),
+        # 'dia_f': np.arange(0.003, 0.011 , 0.001).tolist(),
+        # 'Z_I': np.arange(0.0010, 0.0020, 0.0001).tolist(),
         # 'T_DECAY': np.arange(1, 22 , 1).tolist(),
-        # 'v_a_limit': np.arange(9, 12, 1).tolist(),
-        'Z_I': np.arange(0.0010, 0.0020, 0.0001).tolist(),
+        'DX': np.arange(0.008, 0.012, 0.001).tolist(), 
+        'IE': np.arange(0.9, 0.999 , 0.01).tolist(),
+        'A_I': np.arange(0.3, 0.4 , 0.1).tolist(),
+        'A_S': np.arange(0.8, 0.9 , 0.1).tolist(),
+        'T_RAIN': np.arange(0, 2 , 0.1).tolist(),
+        'v_a_limit': np.arange(7, 12, 1).tolist(),
     }]
     
     file_path = 'cv-'
