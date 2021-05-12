@@ -8,6 +8,7 @@ import coloredlogs
 import numpy as np
 from codetiming import Timer
 from datetime import datetime
+import json
 
 from sklearn.metrics import classification_report
 
@@ -34,25 +35,38 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    locations = ["Guttannen 2021"]
-    for location in locations:
-        SITE, FOLDER, df_h = config(location)
-        df_c = pd.read_hdf(FOLDER["input"] + "model_input_Manual.h5", "df_c")
-        df_c = df_c.iloc[1:]
-        clf= load_obj(FOLDER['output'], "cv_try")
+    # Set the parameters by cross-validation
+    tuned_params = [{
+        # 'location': locations,
+        # 'DX': np.arange(0.010, 0.011, 0.001).tolist(), 
+        # 'TIME_STEP': np.arange(30*60, 35*60, 30*60).tolist(),
+        # 'IE': np.arange(0.9, 0.999 , 0.02).tolist(),
+        # 'A_I': np.arange(0.3, 0.4 , 0.02).tolist(),
+        # 'A_S': np.arange(0.8, 0.9 , 0.02).tolist(),
+        # 'T_RAIN': np.arange(0, 2 , 1).tolist(),
+        # 'T_DECAY': np.arange(1, 22 , 1).tolist(),
+        # 'v_a_limit': np.arange(8, 12, 1).tolist(),
+        'dia_f': np.arange(0.003, 0.011 , 0.001).tolist(),
+        # 'Z_I': np.arange(0.0010, 0.0020, 0.0001).tolist(),
+    }]
+    
+    file_path = 'cv-'
+    file_path += '-'.join('{}'.format(key) for key, value in tuned_params[0].items())
 
-        print()
-        means = clf['mean_test_score']
-        stds = clf['std_test_score']
-        for mean, std, params in zip(means, stds, clf['params']):
-            print("%0.3f (+/-%0.03f) for %r"
-                  % (mean, std * 2, params))
-        print()
-        print("Detailed classification report:")
-        print()
-        print("The model is trained on the full development set.")
-        print("The scores are computed on the full evaluation set.")
-        print()
-        y_true, y_pred = y_test, clf.predict(X_test)
-        print(classification_report(y_true, y_pred))
-        print()
+    location = "Guttannen 2021"
+    SITE, FOLDER, df_h = config(location)
+
+    with open(FOLDER['sim'] + file_path + '.json', 'r') as fp:
+        best_parameters = json.load(fp)
+
+    print("Best parameters set:")
+    for param_name in sorted(tuned_params[0].keys()):
+        print("\t%s: %r" % (param_name, best_parameters[param_name]))
+    data = load_obj(FOLDER['sim'], file_path)
+    print("Grid scores on development set:")
+    print()
+    means = data['mean_test_score']
+    stds = data['std_test_score']
+    for mean, std, params in zip(means, stds, data['params']):
+        print("%0.3f (+/-%0.03f) for %r"
+              % (mean, std * 2, params))

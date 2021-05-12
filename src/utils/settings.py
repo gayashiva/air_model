@@ -124,7 +124,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
         raw="data/" + SITE["name"] + "/raw/",
         input="data/" + SITE["name"] + "/interim/",
         output="data/" + SITE["name"] + "/processed/",
-        sim="data/" + SITE["name"] + "/processed/simulations",
+        sim="data/" + SITE["name"] + "/processed/simulations/",
     )
     df_h = pd.DataFrame(data_h)
 

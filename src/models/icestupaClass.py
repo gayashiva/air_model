@@ -143,7 +143,7 @@ class Icestupa:
             self.discharge = get_droplet_projectile(
                 dia=self.dia_f, h=self.df.loc[1,"h_f"], x=self.r_spray
             )
-            logger.warning("Mean spray estimated %0.1f"%self.discharge)
+            logger.info("Mean spray estimated %0.1f"%self.discharge)
 
         if self.name in ["schwarzsee19"]:
             df_c = get_calibration(site=self.name, input=self.raw)
@@ -157,7 +157,7 @@ class Icestupa:
             self.r_spray = get_droplet_projectile(
                 dia=self.dia_f, h=self.df.loc[1,"h_f"], d=self.discharge
             )
-            logger.warning("Spray radius estimated %0.1f"%self.r_spray)
+            logger.info("Spray radius estimated %0.1f"%self.r_spray)
 
         unknown = ["a", "vp_a", "LW_in", "cld"]  # Possible unknown variables
         for i in range(len(unknown)):
@@ -412,10 +412,8 @@ class Icestupa:
                 self.df.loc[i - 1, "meltwater"] += self.df.loc[i - 1, "ice"]
                 self.df.loc[i - 1, "ice"] = 0
                 logger.info("Model ends at %s" % (self.df.When[i]))
-                logger.warning(self.df.head())
                 self.df = self.df[self.start : i - 1]
                 self.df = self.df.reset_index(drop=True)
-                logger.warning(self.df.head())
                 break
 
             if self.df.Discharge[i] > 0 and STATE == 0:
@@ -446,7 +444,7 @@ class Icestupa:
                     * self.RHO_I
                 )
                 self.df.loc[i, "input"] = self.df.loc[i, "ice"]
-                logger.warning(
+                logger.info(
                     "Initialise: radius %.1f, height %.1f, iceV %.1f\n"
                     % (
                         self.df.loc[i - 1, "r_ice"],
@@ -460,7 +458,7 @@ class Icestupa:
             if STATE == 1:
                 # Change in fountain height
                 if self.df.loc[i, "h_f"] != self.df.loc[i-1, "h_f"]:
-                    logger.warning(
+                    logger.info(
                         "Height increased to %s on %s" % (self.df.loc[i, "h_f"], self.df.When[i])
                     )
                     self.r_spray = get_droplet_projectile(

@@ -63,7 +63,13 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    st.sidebar.write("### Select Icestupa")
+    st.sidebar.markdown(
+        """
+    # Ice Reservoir
+
+    """
+    )
+
     location = st.sidebar.radio(
         "built at",
         ("Guttannen 2021", "Gangles 2021", "Guttannen 2020", "Schwarzsee 2019"),
@@ -71,9 +77,9 @@ if __name__ == "__main__":
     )
 
     # location = "Gangles 2021"
-    trigger = "Manual"
+    # trigger = "Manual"
 
-    SITE, FOLDER, *args = config(location, trigger=trigger)
+    SITE, FOLDER, *args = config(location) #, trigger=trigger)
 
     icestupa = Icestupa(location)
 
@@ -87,6 +93,7 @@ if __name__ == "__main__":
         derived_cols,
         derived_vars,
     ) = vars(df_in)
+
     df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
     df_in = df_in.set_index("When")
     df = df_in
@@ -100,38 +107,11 @@ if __name__ == "__main__":
     with row1_2:
         st.markdown(
             """
-        # **_%s_** Ice Reservoir
+        # **_%s_** Icestupa
 
         """
             % location.split()[0]
         )
-        if trigger == "None":
-            st.write(
-                """
-            Fountain was always kept on until **%s**
-            """
-                % (icestupa.fountain_off_date.date())
-            )
-        if trigger == "Manual":
-            st.write(
-                """
-            Fountain was controlled **%s** until **%s**
-            """
-                % (trigger + "ly", (icestupa.fountain_off_date.date()))
-            )
-        if trigger == "Temperature":
-            st.write(
-                """
-            Fountain was switched on/off after sunset when temperature was below **%s**
-            """
-                % icestupa.crit_temp
-            )
-        if trigger == "Weather":
-            st.write(
-                """
-            Fountain discharge was set based on magnitude of surface energy balance.
-            """
-            )
         visualize = [
             "Timelapse",
             "Validation",
