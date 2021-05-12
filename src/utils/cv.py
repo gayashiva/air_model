@@ -40,7 +40,7 @@ def load_obj(path, name ):
         return pickle.load(f)
 
 class CV_Icestupa(BaseEstimator,Icestupa):
-    def __init__(self, location = "Guttannen 2021", DX = 0.010, TIME_STEP = 30*60, A_I = 0.35, A_S = 0.85, IE = 0.95, T_RAIN = 1 ):
+    def __init__(self, location = "Guttannen 2021", DX = 0.010, TIME_STEP = 30*60, A_I = 0.35, A_S = 0.85, IE = 0.95, T_RAIN = 1, v_a_limit=8, dia_f = 0.005, Z_I=0.0017 ):
         super(Icestupa, self).__init__()
 
         print("Initializing classifier:\n")
@@ -141,16 +141,15 @@ if __name__ == "__main__":
     # Set the parameters by cross-validation
     tuned_params = [{
         # 'location': locations,
-        'DX': np.arange(0.010, 0.011, 0.001).tolist(), 
-        'TIME_STEP': np.arange(30*60, 35*60, 30*60).tolist(),
+        # 'DX': np.arange(0.010, 0.011, 0.001).tolist(), 
+        # 'TIME_STEP': np.arange(30*60, 35*60, 30*60).tolist(),
         # 'IE': np.arange(0.9, 0.999 , 0.02).tolist(),
         # 'A_I': np.arange(0.3, 0.4 , 0.02).tolist(),
         # 'A_S': np.arange(0.8, 0.9 , 0.02).tolist(),
-        'T_RAIN': np.arange(0, 2 , 1).tolist(),
+        # 'T_RAIN': np.arange(0, 2 , 1).tolist(),
         # 'T_DECAY': np.arange(1, 22 , 1).tolist(),
-        # 'v_a_limit': np.arange(4, 10, 1).tolist(),
-        # 'dia_f': np.arange(0.003, 0.010 , 0.001).tolist(),
-        # 'Z_I': np.arange(0.0010, 0.0020, 0.0001).tolist(),
+        # 'v_a_limit': np.arange(9, 12, 1).tolist(),
+        'Z_I': np.arange(0.0010, 0.0020, 0.0001).tolist(),
     }]
     
     file_path = 'cv-'
@@ -163,16 +162,19 @@ if __name__ == "__main__":
     #     CV_Icestupa(), tuned_params, n_jobs=12 , cv=3, scoring='neg_root_mean_squared_error'
     # )
     clf = HalvingGridSearchCV(
-        CV_Icestupa(), tuned_params, n_jobs=12, cv=3, scoring='neg_root_mean_squared_error'
+        CV_Icestupa(), tuned_params, n_jobs=2, cv=3, scoring='neg_root_mean_squared_error'
     )
     clf.fit(X,y)
     # clf.fit(X_train,y_train)
 
-    print("Best parameters set found on development set:")
-    print()
-    print(clf.best_params_)
     with open(FOLDER['sim'] + file_path + '.json', 'w') as fp:
         json.dump(clf.best_params_, fp, sort_keys=True, indent=4)
+    best_parameters = clf.best_params_
+
+    print("Best parameters set found on development set:")
+    print()
+    for param_name in sorted(tuned_params[0].keys()):
+        print("\t%s: %r" % (param_name, best_parameters[param_name]))
     print()
     print("Grid scores on development set:")
     print()
@@ -181,5 +183,6 @@ if __name__ == "__main__":
     for mean, std, params in zip(means, stds, clf.cv_results_['params']):
         print("%0.3f (+/-%0.03f) for %r"
               % (mean, std * 2, params))
+
 
     save_obj(FOLDER['sim'], file_path, clf.cv_results_)
