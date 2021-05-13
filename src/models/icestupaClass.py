@@ -85,10 +85,12 @@ class Icestupa:
         mask = self.df["When"] >= self.start_date
         mask &= self.df["When"] <= self.end_date
         self.df = self.df.loc[mask]
+        self.df = self.df.reset_index(drop=True)
 
         """Fountain height"""
         df_h = df_h.set_index("When")
         self.df = self.df.set_index("When")
+        logger.warning(df_h.head())
         self.df["h_f"] = df_h
         self.df.loc[:,"h_f"] = self.df.loc[:,"h_f"].ffill()
         self.df = self.df.reset_index()
@@ -155,9 +157,17 @@ class Icestupa:
             df_c.to_csv(self.input + "measured_vol.csv")
 
             self.r_spray = get_droplet_projectile(
-                dia=self.dia_f, h=self.df.loc[1,"h_f"], d=self.discharge
+                dia=self.dia_f, h=self.df.loc[0,"h_f"], d=self.discharge
             )
             logger.info("Spray radius estimated %0.1f"%self.r_spray)
+
+        # if self.name in ["diavolezza21"]:
+            # self.discharge = self.df.Discharge.replace(0, np.nan).mean()
+            # logger.warning("Mean discharge estimated %0.1f"%self.discharge)
+            # self.r_spray = get_droplet_projectile(
+            #     dia=self.dia_f, h=self.df.loc[0,"h_f"], d=self.discharge
+            # )
+            # logger.warning("Spray radius estimated %0.1f"%self.r_spray)
 
         unknown = ["a", "vp_a", "LW_in", "cld"]  # Possible unknown variables
         for i in range(len(unknown)):
@@ -205,16 +215,16 @@ class Icestupa:
                 )
 
         self.get_discharge()
-        f_on = self.df.When[
-            self.df.Discharge != 0
-        ].tolist()  # List of all timesteps when fountain on
-        self.start_date = f_on[0]
-        logger.info("Model starts at %s" % (self.start_date))
-        logger.info("Fountain ends %s\n" % f_on[-1])
-
-        mask = self.df["When"] >= self.start_date
-        self.df = self.df.loc[mask]
-        self.df = self.df.reset_index(drop=True)
+#         f_on = self.df.When[
+#             self.df.Discharge != 0
+#         ].tolist()  # List of all timesteps when fountain on
+#         self.start_date = f_on[0]
+#         logger.info("Model starts at %s" % (self.start_date))
+#         logger.info("Fountain ends %s\n" % f_on[-1])
+# 
+#         mask = self.df["When"] >= self.start_date
+#         self.df = self.df.loc[mask]
+#         self.df = self.df.reset_index(drop=True)
 
         solar_df = get_solar(
             latitude=self.latitude,
@@ -232,10 +242,10 @@ class Icestupa:
             """Albedo Decay parameters initialized"""
             self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
             s = 0
+            f = 1
             if self.name in ["schwarzsee19", "guttannen20"]:
                 f = 0  # Start with snow event
-            else:
-                f = 1
+
             for i, row in self.df.iterrows():
                 s, f = self.get_albedo(i, s, f, site=self.name)
 
@@ -258,6 +268,8 @@ class Icestupa:
             mode="a",
         )
         self.df.to_csv(self.input + "model_input_" + self.trigger + ".csv")
+        logger.debug(self.df.head())
+        logger.debug(self.df.tail())
 
     def summary(self):  # Summarizes results and saves output
 
@@ -726,3 +738,4 @@ class Icestupa:
                     - self.df.loc[i, "melted"]
                     + self.df.loc[i, "ppt"]
                 ) / (self.df.loc[i, "SA"] * self.RHO_I)
+

@@ -24,21 +24,22 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
         SITE = dict(
             name="diavolezza21",
-            start_date=datetime(2020, 11, 22),
-            end_date=datetime(2021, 4, 26, 23),
+            # start_date=datetime(2021, 1, 26,9),
+            start_date=datetime(2021, 1, 19,16),
+            # start_date=datetime(2021, 1, 19),
+            end_date=datetime(2021, 3, 1),
             utc_offset=1,
             latitude=46.44109,
             longitude=9.98425,
             h_aws=2.3, 
 
-            fountain_off_date=datetime(2021, 2, 21),
+            fountain_off_date=datetime(2021, 3, 1),
+            r_spray = 7,
+            h_i = 2,
         )
 
         data_h = [
-            {"When": SITE["start_date"], "h_f": 2.5},
-            {"When": datetime(2020, 12, 30, 16), "h_f": 3.5},
-            {"When": datetime(2021, 1, 11, 16), "h_f": 4.5},
-            {"When": datetime(2021, 1, 7, 16), "h_f": 5.5},
+            {"When": SITE["start_date"], "h_f": 5},
         ]
 
 

@@ -25,7 +25,7 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 sys.path.append(dirname)
 from src.utils.settings import config
 
-def field(location="schwarzsee"):
+def field(location="schwarzsee19"):
     if location == "guttannen20":
         df_in = pd.read_csv(
             raw_folder + SITE["name"] + "_field.txt",
@@ -312,6 +312,8 @@ def era5(df, location="schwarzsee19"):
         df_in2 = df_in2.set_index("When")
         df_in3 = pd.concat([df_in2, df_in3])
         df_in3 = df_in3.reset_index()
+        SITE, FOLDER, df_h = config(location = "Diavolezza 2021")
+
     if location in ["guttannen21"]:
         df_in3 = pd.read_csv(
             "/home/suryab/work/ERA5/outputs/" + location[:-2] + "_2021.csv",
@@ -329,6 +331,18 @@ def era5(df, location="schwarzsee19"):
         df_in2 = df_in2.set_index("When")
         df_in3 = pd.concat([df_in2, df_in3])
         df_in3 = df_in3.reset_index()
+        SITE, FOLDER, df_h = config(location = "Diavolezza 2021")
+
+    if location in ["diavolezza21"]:
+        df_in3 = pd.read_csv(
+            "/home/suryab/work/ERA5/outputs/" + location[:-2] + "_2021.csv",
+            sep=",",
+            header=0,
+            parse_dates=["When"],
+        )
+        df_in3 = df_in3.set_index("When")
+        df_in3 = df_in3.reset_index()
+        SITE, FOLDER, df_h = config(location = "Diavolezza 2021")
 
     mask = (df_in3["When"] >= SITE["start_date"]) & (df_in3["When"] <= SITE["end_date"])
     df_in3 = df_in3.loc[mask]
@@ -402,7 +416,7 @@ def era5(df, location="schwarzsee19"):
     df_in3 = df_in3.loc[mask]
     df_in3 = df_in3.reset_index()
 
-    df_in3.to_csv(input_folder + SITE["name"] + "_input_ERA5.csv")
+    df_in3.to_csv(FOLDER["input"] + SITE["name"] + "_input_ERA5.csv")
 
     df_ERA5 = interpolated[
         [
@@ -418,8 +432,8 @@ def era5(df, location="schwarzsee19"):
         ]
     ]
 
-    logger.info(df_ERA5.head())
-    logger.info(df_ERA5.tail())
+    # logger.info(df_ERA5.head())
+    # logger.info(df_ERA5.tail())
     return df_ERA5, df_in3
 
 
@@ -586,10 +600,8 @@ if __name__ == "__main__":
 
     df_ERA5, df_in3 = era5(df, SITE["name"])
 
-    df_ERA5 = df_ERA5.set_index("When")
     df = df.set_index("When")
 
-    df_ERA5 = df_ERA5.reset_index()
     mask = (df_ERA5["When"] >= SITE["start_date"]) & (
         df_ERA5["When"] <= SITE["end_date"]
     )

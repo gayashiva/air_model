@@ -61,7 +61,12 @@ def overlapped_bar(df, show=False, width=0.9, alpha=.5,
 @Timer(text="%s executed in {:.2f} seconds" % __name__, logger = logging.warning)
 def summary_figures(self):
     logger.info("Creating figures")
-    df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
+    if self.name == "diavolezza21":
+        input="data/guttannen21/interim/"
+        df_c = pd.read_hdf(input + "model_input_" + self.trigger + ".h5", "df_c")
+    else:
+        df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
+
     df_c = df_c[["When", "DroneV"]]
     tol = pd.Timedelta('15T')
     df_c = df_c.set_index("When")
@@ -77,6 +82,7 @@ def summary_figures(self):
         df_cam = pd.merge_asof(left=self.df,right=df_cam,right_index=True,left_index=True,direction='nearest',tolerance=tol)
         df_cam = df_cam[["cam_temp", "T_s", "T_bulk"]]
         self.df= self.df.reset_index()
+
 
     np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
     output = self.output

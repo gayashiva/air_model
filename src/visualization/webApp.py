@@ -72,12 +72,13 @@ if __name__ == "__main__":
 
     location = st.sidebar.radio(
         "built at",
-        ("Guttannen 2021", "Gangles 2021", "Guttannen 2020", "Schwarzsee 2019"),
+        ("Diavolezza 2021", "Guttannen 2021","Gangles 2021", "Guttannen 2020", "Schwarzsee 2019"),
+        # ("Guttannen 2021", "Gangles 2021", "Guttannen 2020", "Schwarzsee 2019"),
         # ("Guttannen 2021", "Guttannen 2020", "Schwarzsee 2019"),
     )
 
     # location = "Gangles 2021"
-    # trigger = "Manual"
+    trigger = "Manual"
 
     SITE, FOLDER, *args = config(location) #, trigger=trigger)
 
@@ -126,7 +127,10 @@ if __name__ == "__main__":
             default=["Validation"],
             # default=["Validation", "Timelapse"],
         )
+        intro_markdown = Path("src/visualization/intro.md").read_text()
+        st.markdown(intro_markdown, unsafe_allow_html=True)
 
+    st.markdown("---")
     st.sidebar.write("### Map")
     lat = SITE["latitude"]
     lon = SITE["longitude"]
@@ -154,15 +158,12 @@ if __name__ == "__main__":
     """
     )
 
-    intro_markdown = Path("src/visualization/intro.md").read_text()
-    st.markdown(intro_markdown, unsafe_allow_html=True)
     st.sidebar.write(
         """
         ### Partners
         """
     )
     row2_1, row2_2, row2_3 = st.sidebar.beta_columns((1, 1, 1))
-    st.markdown("---")
     row3_1, row3_2 = st.beta_columns((1, 1))
     with row2_1:
         st.image(
@@ -250,7 +251,13 @@ if __name__ == "__main__":
         st.error("Please select at least one visualization.")
     else:
         if "Validation" in display:
-            df_c = pd.read_hdf(icestupa.input + "model_input_" + icestupa.trigger + ".h5", "df_c")
+            if icestupa.name == "diavolezza21":
+                input="data/guttannen21/interim/"
+                df_c = pd.read_hdf(input + "model_input_" + icestupa.trigger + ".h5", "df_c")
+            else:
+                df_c = pd.read_hdf(icestupa.input + "model_input_" + icestupa.trigger + ".h5", "df_c")
+
+            # df_c = pd.read_hdf(icestupa.input + "model_input_" + icestupa.trigger + ".h5", "df_c")
             df_c = df_c.set_index("When")
             icestupa.df= icestupa.df.set_index("When")
             tol = pd.Timedelta('1T')
