@@ -5,7 +5,7 @@
 <p align="center">
 <h1 align="center">Artificial Ice Reservoirs</h1>
 </p>
-<p align="center"> A physical model that estimates the meltwater quantity and survival duration of artificial ice reservoirs (aka Icestupas). Model results and associated data available:</p>
+<p align="center"> A physical model that estimates the meltwater quantity and survival duration of artificial ice reservoirs (aka Icestupas). </p>
 
 ---
 
