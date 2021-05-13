@@ -92,3 +92,4 @@ src/logs/
 .tasks
 *.pdf
 *.html
+.python-version
