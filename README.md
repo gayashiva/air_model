@@ -4,16 +4,13 @@
 </p>
 <p align="center">
 <h1 align="center">Artificial Ice Reservoirs</h1>
-<a href="https://share.streamlit.io/gayashiva/air_model/src/visualization/webApp.py" target="_blank">
- <img alt="All Chocolatey releases" src="https://static.streamlit.io/badges/streamlit_badge_black_white.svg" />
-</a>
 </p>
-A physical model that estimates the meltwater quantity and survival duration of artificial ice reservoirs (aka Icestupas). Model results and associated data available:
+<p align="center"> A physical model that estimates the meltwater quantity and survival duration of artificial ice reservoirs (aka Icestupas). Model results and associated data available:</p>
 
 ---
 
 <h3 align="center">
-  🎉 <a href="https://share.streamlit.io/gayashiva/air_model/src/visualization/webApp.py">Run app</a> 🎉
+   <a href="https://share.streamlit.io/gayashiva/air_model/src/visualization/webApp.py">Run model</a> 
 </h3>
 
 ---
