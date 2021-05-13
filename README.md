@@ -1,9 +1,19 @@
-<a href="url"><img src="https://github.com/Gayashiva/air_model/blob/dev/src/visualization/logos/AIR_logo_circle.png" align="left" height="148" width="148" ></a>
+<p align="center">
+<a href="url"><img align="center" alt="screen recorder" src="https://github.com/Gayashiva/air_model/blob/dev/src/visualization/logos/AIR_logo_circle.png" align="left" height="148" width="148" ></a>
+</a>
+</p>
+<p align="center">
+<h1 align="center">Artificial Ice Reservoirs</h1>
+</p>
+<p align="center"> A physical model that estimates the meltwater quantity and survival duration of artificial ice reservoirs (aka Icestupas). </p>
 
-# Artificial Ice Reservoirs
+---
 
-A physical model that estimates the meltwater quantity and survival duration of artificial ice reservoirs (aka Icestupas). Model results and associated data available:
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/gayashiva/air_model/src/visualization/webApp.py)
+<h3 align="center">
+   <a href="https://share.streamlit.io/gayashiva/air_model/src/visualization/webApp.py">Run model</a> 
+</h3>
+
+---
 
 ## Project Organization
 
