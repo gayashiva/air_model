@@ -113,9 +113,11 @@ class Icestupa:
     ):  # Derives additional parameters required for simulation
 
         if self.name in ["gangles21"]:
+            self.r_spray = self.meas_circum/(2*math.pi)
+            logger.warning("Measured spray radius estimated %0.1f"%self.r_spray)
             df_c = get_calibration(site=self.name, input=self.raw)
-            df_c.loc[:, "DroneV"] -= df_c.loc[0, "DroneV"]
-            self.r_spray = df_c.loc[1, "dia"] / 2
+            # df_c.loc[:, "DroneV"] -= df_c.loc[0, "DroneV"]
+            # self.r_spray = df_c.loc[1, "dia"] / 2
             dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
             self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
             logger.warning("Initial height estimated from dome volume to be %0.1f"%self.h_i)
@@ -127,9 +129,13 @@ class Icestupa:
             df_c.to_csv(self.input + "measured_vol.csv")
 
         if self.name in ["guttannen21", "guttannen20"]:
+            self.r_spray = self.meas_circum/(2*math.pi)
             df_c, df_cam = get_calibration(site=self.name, input=self.raw)
-            self.r_spray = df_c.loc[0, "dia"] / 2
+            r_drone = df_c.loc[0, "dia"] / 2
+            logger.warning("Measured spray radius %0.1f"%self.r_spray)
+            logger.warning("Drone spray radius %0.1f"%r_drone)
             self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
+            logger.warning("Initial height estimated %0.1f"%self.h_i)
             df_c.to_hdf(
                 self.input + "model_input_" + self.trigger + ".h5",
                 key="df_c",
@@ -143,10 +149,27 @@ class Icestupa:
             df_c.to_csv(self.input + "measured_vol.csv")
             df_cam.to_csv(self.input + "measured_temp.csv")
 
+            # print(get_droplet_projectile(dia=0.00835, h=2.5, d=17.6))
+            # print(get_droplet_projectile(dia=0.00835, h=3.5, d=17.6))
+            # print(get_droplet_projectile(dia=0.00533, h=5.5, d=8.5))
+            # print(get_droplet_projectile(dia=0.00765, h=5.5, d=17.6))
+            # print(get_droplet_projectile(dia=0.00765, h=5.5, x=self.r_spray))
             self.discharge = get_droplet_projectile(
                 dia=self.dia_f, h=self.df.loc[1,"h_f"], x=self.r_spray
+                # dia=self.dia_f, h=self.df.loc[1,"h_f"], x=r_drone
             )
-            logger.info("Mean spray estimated %0.1f"%self.discharge)
+            if self.name in ["guttannen21"]:
+                # self.dia_f = 0.00765
+                self.dia_f = 0.00785
+                self.discharge = 17.6
+                print(get_droplet_projectile(dia=self.dia_f, h=self.df.loc[1,"h_f"], d=self.discharge))
+            if self.name in ["guttannen20"]:
+                self.dia_f = 0.00735
+                self.discharge = 17.6
+                print(get_droplet_projectile(dia=self.dia_f, h=self.df.loc[1,"h_f"], d=self.discharge))
+                # self.dia_f = 0.005
+            logger.warning("Fountain diameter %0.1f"%(self.dia_f*1000))
+            logger.warning("Max spray estimated %0.1f"%self.discharge)
 
         if self.name in ["schwarzsee19"]:
             df_c = get_calibration(site=self.name, input=self.raw)

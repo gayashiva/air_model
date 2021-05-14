@@ -35,7 +35,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
             fountain_off_date=datetime(2021, 3, 1),
             r_spray = 7,
-            dome_rad=4,
+            dome_rad=1,
         )
 
         data_h = [
@@ -53,6 +53,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             latitude=46.649999,
             longitude=8.283333,
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
+            meas_circum=45,
             # altitude_aws=1054,
             # DX = 10e-03,  # Initial Ice layer thickness
             # TIME_STEP = 15*60,  # Initial Ice layer thickness
@@ -81,6 +82,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             latitude=46.649999,
             longitude=8.283333,
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
+            meas_circum=28,
             # altitude_aws=1054,
             # DX = 10e-03,  # Initial Ice layer thickness
 
@@ -129,7 +131,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             longitude=77.606949,
             latitude=34.216638,
             h_aws=3,
-            dome_rad=4,
+            dome_rad=2,
+            meas_circum=82.3,
 
             fountain_off_date=datetime(2021, 3, 10, 18),
             h_f=5,  # FOUNTAIN steps h_f
