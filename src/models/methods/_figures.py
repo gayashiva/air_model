@@ -61,6 +61,10 @@ def overlapped_bar(df, show=False, width=0.9, alpha=.5,
 @Timer(text="%s executed in {:.2f} seconds" % __name__, logger = logging.warning)
 def summary_figures(self):
     logger.info("Creating figures")
+
+    dome_vol = self.df[self.df.iceV !=0].reset_index().iceV[0]
+    logger.info(dome_vol)
+
     if self.name == "diavolezza21":
         input="data/guttannen21/interim/"
         df_c = pd.read_hdf(input + "model_input_" + self.trigger + ".h5", "df_c")
@@ -444,8 +448,8 @@ def summary_figures(self):
         linewidth=1,
         color=CB91_Blue,
     )
+    ax.fill_between(x, y1=dome_vol, y2=0, color=grey, label = "Dome Volume")
     ax.scatter(x, y2, color=CB91_Green, label="Measured Volume")
-    ax.fill_between(x, y1=self.df.iceV[1], y2=0, color=grey, label = "Dome Volume")
 
     ax.set_ylim(bottom=0)
     plt.legend()

@@ -116,9 +116,10 @@ class Icestupa:
             self.r_spray = self.meas_circum/(2*math.pi)
             logger.warning("Measured spray radius estimated %0.1f"%self.r_spray)
             df_c = get_calibration(site=self.name, input=self.raw)
-            # df_c.loc[:, "DroneV"] -= df_c.loc[0, "DroneV"]
+            df_c.loc[:, "DroneV"] -= df_c.loc[0, "DroneV"]
             # self.r_spray = df_c.loc[1, "dia"] / 2
             dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
+            df_c.loc[0, "DroneV"] = dome_vol
             self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
             logger.warning("Initial height estimated from dome volume to be %0.1f"%self.h_i)
             df_c.to_hdf(
@@ -129,13 +130,16 @@ class Icestupa:
             df_c.to_csv(self.input + "measured_vol.csv")
 
         if self.name in ["guttannen21", "guttannen20"]:
-            self.r_spray = self.meas_circum/(2*math.pi)
             df_c, df_cam = get_calibration(site=self.name, input=self.raw)
-            r_drone = df_c.loc[0, "dia"] / 2
-            logger.warning("Measured spray radius %0.1f"%self.r_spray)
-            logger.warning("Drone spray radius %0.1f"%r_drone)
+
+            if hasattr(self, "meas_circum"):
+                self.r_spray= self.meas_circum/(2*math.pi)
+                logger.warning("Measured spray radius from field %0.1f"%self.r_spray)
+            else:
+                self.r_spray= df_c.loc[0, "dia"] / 2
+                logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
+
             self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
-            logger.warning("Initial height estimated %0.1f"%self.h_i)
             df_c.to_hdf(
                 self.input + "model_input_" + self.trigger + ".h5",
                 key="df_c",
@@ -149,29 +153,25 @@ class Icestupa:
             df_c.to_csv(self.input + "measured_vol.csv")
             df_cam.to_csv(self.input + "measured_temp.csv")
 
-            # print(get_droplet_projectile(dia=0.00835, h=2.5, d=17.6))
-            # print(get_droplet_projectile(dia=0.00835, h=3.5, d=17.6))
-            # print(get_droplet_projectile(dia=0.00533, h=5.5, d=8.5))
-            # print(get_droplet_projectile(dia=0.00765, h=5.5, d=17.6))
-            # print(get_droplet_projectile(dia=0.00765, h=5.5, x=self.r_spray))
-            self.discharge = get_droplet_projectile(
-                dia=self.dia_f, h=self.df.loc[1,"h_f"], x=self.r_spray
-                # dia=self.dia_f, h=self.df.loc[1,"h_f"], x=r_drone
-            )
             if self.name in ["guttannen21"]:
-                # self.dia_f = 0.00765
                 self.dia_f = 0.00785
-                self.discharge = 17.6
-                print(get_droplet_projectile(dia=self.dia_f, h=self.df.loc[1,"h_f"], d=self.discharge))
+                self.discharge = get_droplet_projectile(
+                    dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
+                    # dia=self.dia_f, h=5.5, x=self.r_spray
+                )
             if self.name in ["guttannen20"]:
-                self.dia_f = 0.00735
-                self.discharge = 17.6
-                print(get_droplet_projectile(dia=self.dia_f, h=self.df.loc[1,"h_f"], d=self.discharge))
-                # self.dia_f = 0.005
-            logger.warning("Fountain diameter %0.1f"%(self.dia_f*1000))
-            logger.warning("Max spray estimated %0.1f"%self.discharge)
+                self.dia_f = 0.0056
+                self.discharge = get_droplet_projectile(
+                    dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
+                )
+
+            logger.warning("Initial height estimated %0.1f"%self.h_i)
+            logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
+            logger.warning("Measured Spray radius %0.1f"%self.r_spray)
+            logger.warning("Estimated mean spray %0.1f"%self.discharge)
 
         if self.name in ["schwarzsee19"]:
+            self.dia_f = 0.0056
             df_c = get_calibration(site=self.name, input=self.raw)
             df_c.to_hdf(
                 self.input + "model_input_" + self.trigger + ".h5",
@@ -183,7 +183,10 @@ class Icestupa:
             self.r_spray = get_droplet_projectile(
                 dia=self.dia_f, h=self.df.loc[0,"h_f"], d=self.discharge
             )
-            logger.info("Spray radius estimated %0.1f"%self.r_spray)
+            logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
+            logger.warning("Measured mean spray %0.1f"%self.discharge)
+            logger.warning("Estimated Spray radius %0.1f"%self.r_spray)
+            
 
         if self.name in ["diavolezza21"]:
             dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
@@ -496,11 +499,17 @@ class Icestupa:
             if STATE == 1:
                 # Change in fountain height
                 if self.df.loc[i, "h_f"] != self.df.loc[i-1, "h_f"]:
-                    logger.info(
+                    logger.warning(
                         "Height increased to %s on %s" % (self.df.loc[i, "h_f"], self.df.When[i])
+                    )
+                    logger.warning(
+                        "Old spray radius %s on %s" % (self.r_spray, self.df.When[i])
                     )
                     self.r_spray = get_droplet_projectile(
                         dia=self.dia_f, h=self.df.loc[i, "h_f"], d=self.discharge
+                    )
+                    logger.warning(
+                        "New spray radius %s on %s" % (self.r_spray, self.df.When[i])
                     )
                     self.df.loc[i - 1, "r_ice"] = self.r_spray
                     self.df.loc[i - 1, "h_ice"] = (

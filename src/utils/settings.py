@@ -53,7 +53,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             latitude=46.649999,
             longitude=8.283333,
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
-            meas_circum=45,
+            # meas_circum=45, # on Feb 11
             # altitude_aws=1054,
             # DX = 10e-03,  # Initial Ice layer thickness
             # TIME_STEP = 15*60,  # Initial Ice layer thickness
@@ -68,8 +68,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
         data_h = [
             {"When": SITE["start_date"], "h_f": 2.5},
             {"When": datetime(2020, 12, 30, 16), "h_f": 3.5},
-            {"When": datetime(2021, 1, 11, 16), "h_f": 4.5},
             {"When": datetime(2021, 1, 7, 16), "h_f": 5.5},
+            {"When": datetime(2021, 1, 11, 16), "h_f": 4.5},
         ]
 
     if location == "Guttannen 2020":
@@ -82,7 +82,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             latitude=46.649999,
             longitude=8.283333,
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
-            meas_circum=28,
+            # meas_circum=28, # on 24 Jan
             # altitude_aws=1054,
             # DX = 10e-03,  # Initial Ice layer thickness
 
@@ -112,6 +112,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
             fountain_off_date=datetime(2019, 3, 10, 18),
             discharge=3.58,  # FOUNTAIN on mean discharge from field
+            # discharge=4.15,  # FOUNTAIN on mean discharge from field
             # dia_f=0.005,  # FOUNTAIN aperture diameter
             # trigger=trigger,
             # h_f=1.35,  # FOUNTAIN steps h_f

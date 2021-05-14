@@ -25,10 +25,10 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2021",
+        # location="Guttannen 2020",
         # location="Gangles 2021",
-        # location="Diavolezza 2021",
-        run="yes",
+        location="Diavolezza 2021",
+        run="no",
     )
 
     # Initialise icestupa object
