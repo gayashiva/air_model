@@ -144,32 +144,35 @@ if __name__ == "__main__":
 
     df_ERA5, df_in3 = era5(df, SITE["name"])
 
-
-    mask = (df_ERA5["When"] >= SITE["start_date"]) & (
-        df_ERA5["When"] <= SITE["end_date"]
-    )
-
-#     # Fit ERA5 to field data
-#     if SITE["name"] in ["guttannen21", "guttannen20"]:
-#         fit_list = ["T_a", "RH", "v_a", "Prec"]
-# 
-#     if SITE["name"] in ["schwarzsee19"]:
-#         fit_list = ["T_a", "RH", "v_a", "p_a"]
-# 
-#     if SITE["name"] in ["diavolezza21"]:
-#         fit_list = ["T_a", "RH", "v_a"]
-# 
-#     for column in fit_list:
-#         Y = df[column].values.reshape(-1, 1)
-#         X = df_ERA5[mask][column].values.reshape(-1, 1)
-#         slope, intercept = linreg(X, Y)
-#         df_ERA5[column] = slope * df_ERA5[column] + intercept
-#         if column in ["v_a"]:
-#             # Correct negative wind
-#             df_ERA5.v_a.loc[df_ERA5.v_a<0] = 0
-
     df_ERA5 = df_ERA5.set_index("When")
     df = df.set_index("When")
+
+    # mask1 = (df_ERA5.index >= SITE["start_date"]) & (df_ERA5.index <= SITE["end_date"])
+
+    # Fit ERA5 to field data
+    if SITE["name"] in ["guttannen21", "guttannen20"]:
+        fit_list = ["T_a", "RH", "v_a", "Prec"]
+
+    if SITE["name"] in ["schwarzsee19"]:
+        fit_list = ["T_a", "RH", "v_a", "p_a"]
+
+    if SITE["name"] in ["diavolezza21"]:
+        fit_list = ["T_a", "RH", "v_a"]
+
+    mask = df[fit_list].notna().any(axis=1).index
+
+    # logger.warning(df_ERA5.loc[mask][fit_list])
+    # logger.warning(df.loc[mask][fit_list])
+
+    for column in fit_list:
+        Y = df.loc[mask][column].values.reshape(-1, 1)
+        X = df_ERA5.loc[mask][column].values.reshape(-1, 1)
+        slope, intercept = linreg(X, Y)
+        df_ERA5[column] = slope * df_ERA5[column] + intercept
+        if column in ["v_a"]:
+            # Correct negative wind
+            df_ERA5.v_a.loc[df_ERA5.v_a<0] = 0
+
 
     # Fill from ERA5
     logger.warning("Temperature NaN percent: %0.2f" %(df["T_a"].isna().sum()/df.shape[0]*100))
@@ -279,7 +282,7 @@ if __name__ == "__main__":
     skyblue = "#9bc4f0"
     blue = "#0a4a97"
     x = df_out.When
-    y = df_out.Discharge
+    y = df_out.SW_direct
     ax1.plot(
         x,
         y,

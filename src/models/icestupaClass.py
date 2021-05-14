@@ -90,7 +90,7 @@ class Icestupa:
         """Fountain height"""
         df_h = df_h.set_index("When")
         self.df = self.df.set_index("When")
-        logger.warning(df_h.head())
+        logger.info(df_h.head())
         self.df["h_f"] = df_h
         self.df.loc[:,"h_f"] = self.df.loc[:,"h_f"].ffill()
         self.df = self.df.reset_index()
@@ -115,9 +115,10 @@ class Icestupa:
         if self.name in ["gangles21"]:
             df_c = get_calibration(site=self.name, input=self.raw)
             df_c.loc[:, "DroneV"] -= df_c.loc[0, "DroneV"]
-            df_c.loc[0, "DroneV"] = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
             self.r_spray = df_c.loc[1, "dia"] / 2
-            self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
+            dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
+            self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
+            logger.warning("Initial height estimated from dome volume to be %0.1f"%self.h_i)
             df_c.to_hdf(
                 self.input + "model_input_" + self.trigger + ".h5",
                 key="df_c",
@@ -161,13 +162,15 @@ class Icestupa:
             )
             logger.info("Spray radius estimated %0.1f"%self.r_spray)
 
-        # if self.name in ["diavolezza21"]:
+        if self.name in ["diavolezza21"]:
+            dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
+            self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
+            logger.warning("Initial height estimated from dome volume to be %0.1f"%self.h_i)
             # self.discharge = self.df.Discharge.replace(0, np.nan).mean()
             # logger.warning("Mean discharge estimated %0.1f"%self.discharge)
             # self.r_spray = get_droplet_projectile(
             #     dia=self.dia_f, h=self.df.loc[0,"h_f"], d=self.discharge
             # )
-            # logger.warning("Spray radius estimated %0.1f"%self.r_spray)
 
         unknown = ["a", "vp_a", "LW_in", "cld"]  # Possible unknown variables
         for i in range(len(unknown)):
@@ -416,7 +419,7 @@ class Icestupa:
         t.set_description("Simulating %s Icestupa" % self.name)
         for row in t:
             i = row.Index
-            ice_melted = self.df.loc[i, "ice"] < 1 or self.df.loc[i, "T_bulk"] < -50 or self.df.loc[i, "T_s"] < -100
+            ice_melted = self.df.loc[i, "ice"] < 1 or self.df.loc[i, "T_bulk"] < -50 or self.df.loc[i, "T_s"] < -100 #or i==self.df.shape[0] - 1
 
             if (
                 ice_melted and STATE == 1

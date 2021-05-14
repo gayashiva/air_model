@@ -68,6 +68,8 @@ def summary_figures(self):
         df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
 
     df_c = df_c[["When", "DroneV"]]
+    if self.name in ["guttannen21", "guttannen20"]:
+        df_c = df_c[1:]
     tol = pd.Timedelta('15T')
     df_c = df_c.set_index("When")
     self.df= self.df.set_index("When")
@@ -93,6 +95,7 @@ def summary_figures(self):
     orange = "#ffc107"
     pink = "#ce507a"
     skyblue = "#9bc4f0"
+    grey = '#ced4da'
 
     CB91_Blue = "#2CBDFE"
     CB91_Green = "#47DBCD"
@@ -100,7 +103,7 @@ def summary_figures(self):
     CB91_Purple = "#9D2EC5"
     CB91_Violet = "#661D98"
     CB91_Amber = "#F5B14C"
-    # grey = '#ced4da'
+
     self.df = self.df.rename(
         {
             "SW": "$q_{SW}$",
@@ -151,7 +154,7 @@ def summary_figures(self):
     ax2.set_ylabel("Temperature [$\\degree C$]")
 
 
-    y3 = df_SZ.SW_direct
+    y3 = self.df.SW_direct
     lns2 = ax3.plot(x, y3, linestyle="-", label="Shortwave Direct", color=red)
     lns1 = ax3.plot(
         x,
@@ -442,6 +445,8 @@ def summary_figures(self):
         color=CB91_Blue,
     )
     ax.scatter(x, y2, color=CB91_Green, label="Measured Volume")
+    ax.fill_between(x, y1=self.df.iceV[1], y2=0, color=grey, label = "Dome Volume")
+
     ax.set_ylim(bottom=0)
     plt.legend()
     ax.xaxis.set_major_locator(mdates.WeekdayLocator())

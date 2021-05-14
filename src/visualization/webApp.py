@@ -263,10 +263,13 @@ if __name__ == "__main__":
             tol = pd.Timedelta('1T')
             df = pd.merge_asof(left=icestupa.df,right=df_c,right_index=True,left_index=True,direction='nearest',tolerance=tol)
 
-            while (df[df.DroneV.notnull()].shape[0]) == 0:
+            ctr = 0
+            while (df[df.DroneV.notnull()].shape[0]) == 0 and ctr !=4:
                 tol += pd.Timedelta('15T')
                 logger.error("Timedelta increase as shape %s" %(df[df.DroneV.notnull()].shape[0]))
                 df = pd.merge_asof(left=icestupa.df,right=df_c,right_index=True,left_index=True,direction='nearest',tolerance=tol)
+                ctr+=1
+
 
             rmse_V = (((df.DroneV - df.iceV) ** 2).mean() ** .5)
             corr_V = df['DroneV'].corr(df['iceV'])

@@ -35,7 +35,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
             fountain_off_date=datetime(2021, 3, 1),
             r_spray = 7,
-            h_i = 2,
+            dome_rad=4,
         )
 
         data_h = [
