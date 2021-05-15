@@ -154,13 +154,12 @@ class Icestupa:
             df_cam.to_csv(self.input + "measured_temp.csv")
 
             if self.name in ["guttannen21"]:
-                self.dia_f = 0.00785
+                # self.dia_f = 0.00785
                 self.discharge = get_droplet_projectile(
                     dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
                     # dia=self.dia_f, h=5.5, x=self.r_spray
                 )
             if self.name in ["guttannen20"]:
-                self.dia_f = 0.0056
                 self.discharge = get_droplet_projectile(
                     dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
                 )
@@ -171,7 +170,6 @@ class Icestupa:
             logger.warning("Estimated mean spray %0.1f"%self.discharge)
 
         if self.name in ["schwarzsee19"]:
-            self.dia_f = 0.0056
             df_c = get_calibration(site=self.name, input=self.raw)
             df_c.to_hdf(
                 self.input + "model_input_" + self.trigger + ".h5",
@@ -499,6 +497,17 @@ class Icestupa:
             if STATE == 1:
                 # Change in fountain height
                 if self.df.loc[i, "h_f"] != self.df.loc[i-1, "h_f"]:
+
+                    # Area = math.pi * math.pow(self.dia_f, 2) / 4
+                    # logger.warning(
+                    #     "Old mean discharge %s on %s" % (self.discharge, self.df.When[i])
+                    # )
+                    # self.discharge = math.sqrt((self.discharge/ (60 * 1000))**2-2*self.G*Area**2 * (self.df.loc[i, "h_f"] - self.df.loc[i-1, "h_f"]))*60*1000
+                    # logger.warning(
+                    #     "New mean discharge %s on %s" % (self.discharge, self.df.When[i])
+                    # )
+
+                    # Maintains velocity of spray
                     logger.warning(
                         "Height increased to %s on %s" % (self.df.loc[i, "h_f"], self.df.When[i])
                     )

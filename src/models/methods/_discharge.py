@@ -128,7 +128,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                     mask = df_field.Discharge != np.NaN
                     mask &= df_field.Discharge != 0
                     df_field = df_field.loc[mask]
-                    logger.info("Discharge min %s, max %s" %(5,df_field.Discharge.max()))
+                    logger.info("Discharge min %s, max %s" %(self.min_discharge,df_field.Discharge.max()))
                     logger.info("Field discharge ends at %s" %df_field.index[-1])
                     self.df.loc[df_field.index, "Discharge"] = df_field["Discharge"]
 
@@ -137,7 +137,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                     self.df.loc[df_f.index, "Discharge_fill"] = df_f["fountain"] * df_field.Discharge.max()
                     self.df.loc[
                         self.df[self.df.Discharge_fill == 0].index, "Discharge_fill"
-                    ] = 5  # Fountain was always on
+                    ] = self.min_discharge  # Fountain was always on
                     self.df['Discharge'] = self.df.apply(
                         lambda row: row['Discharge_fill'] if np.isnan(row['Discharge']) else row['Discharge'],
                         axis=1
@@ -159,7 +159,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                     ] = 0  # Wood leak
                     self.df.loc[
                         self.df[self.df.Discharge== 0].index & self.df[self.df.index >= datetime(2020,12,26)].index, "Discharge"
-                    ] = 5  # Fountain was always on
+                    ] = self.min_discharge  # Fountain was always on
 
                 logger.debug(self.df.Discharge.head())
                 self.df = self.df.reset_index()

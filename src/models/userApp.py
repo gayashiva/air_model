@@ -28,7 +28,7 @@ if __name__ == "__main__":
         # location="Guttannen 2020",
         # location="Gangles 2021",
         location="Diavolezza 2021",
-        run="no",
+        run="yes",
     )
 
     # Initialise icestupa object

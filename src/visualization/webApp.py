@@ -213,18 +213,16 @@ if __name__ == "__main__":
             """
         | Fountain | Estimation |
         | --- | --- |
+        | Aperture diameter | %.1f $mm$|
         | Mean discharge | %.1f $l/min$|
         | Water frozen| %.1f percent |
         | Water sprayed| %.0f $m^3$ |
-        | Used for | %.0f hours |
         """
             % (
+                icestupa.dia_f * 1000,
                 f_mean,
                 f_efficiency,
                 icestupa.df.Discharge.sum() * icestupa.TIME_STEP / (60 * 1000),
-                icestupa.df.Discharge.astype(bool).sum(axis=0)
-                * icestupa.TIME_STEP
-                / 3600,
             )
         )
 

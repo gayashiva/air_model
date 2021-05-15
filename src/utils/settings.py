@@ -36,6 +36,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             fountain_off_date=datetime(2021, 3, 1),
             r_spray = 7,
             dome_rad=1,
+            dia_f=0.008,  # FOUNTAIN aperture diameter
         )
 
         data_h = [
@@ -59,7 +60,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             # TIME_STEP = 15*60,  # Initial Ice layer thickness
 
             fountain_off_date=datetime(2021, 2, 21),
-            # dia_f=0.007,  # FOUNTAIN aperture diameter
+            dia_f=0.00785,  # FOUNTAIN aperture diameter
+            min_discharge=5,  # FOUNTAIN min discharge
             # discharge=12.33,  # FOUNTAIN on discharge
             # trigger=trigger,
             # h_f=2.5,  # FOUNTAIN steps h_f
@@ -87,7 +89,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             # DX = 10e-03,  # Initial Ice layer thickness
 
             fountain_off_date=datetime(2020, 2, 27),
-            # dia_f=0.005,  # FOUNTAIN aperture diameter
+            dia_f=0.0056,  # FOUNTAIN aperture diameter
+            min_discharge=5,  # FOUNTAIN min discharge
             # discharge=10,  # FOUNTAIN on discharge
             # trigger=trigger,
             # h_f=2.5,  # FOUNTAIN steps h_f
@@ -112,8 +115,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
             fountain_off_date=datetime(2019, 3, 10, 18),
             discharge=3.58,  # FOUNTAIN on mean discharge from field
+            dia_f=0.0056,  # FOUNTAIN aperture diameter
             # discharge=4.15,  # FOUNTAIN on mean discharge from field
-            # dia_f=0.005,  # FOUNTAIN aperture diameter
             # trigger=trigger,
             # h_f=1.35,  # FOUNTAIN steps h_f
         )
@@ -138,7 +141,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             fountain_off_date=datetime(2021, 3, 10, 18),
             h_f=5,  # FOUNTAIN steps h_f
             discharge=120,  # FOUNTAIN on discharge
-            # dia_f=0.01,  # FOUNTAIN aperture diameter
+            dia_f=0.010,  # FOUNTAIN aperture diameter
             # trigger=trigger,
         )
 
