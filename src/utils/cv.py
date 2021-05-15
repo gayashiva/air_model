@@ -164,7 +164,7 @@ if __name__ == "__main__":
     #     CV_Icestupa(), tuned_params, n_jobs=12 , cv=3, scoring='neg_root_mean_squared_error'
     # )
     clf = HalvingGridSearchCV(
-        CV_Icestupa(), tuned_params, n_jobs=2, cv=3, scoring='neg_root_mean_squared_error'
+        CV_Icestupa(), tuned_params, n_jobs=12, cv=3, scoring='neg_root_mean_squared_error'
     )
     clf.fit(X,y)
     # clf.fit(X_train,y_train)
