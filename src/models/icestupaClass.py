@@ -333,7 +333,13 @@ class Icestupa:
 
     def read_input(self):  # Use processed input dataset
         self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
-        df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
+
+        if self.name == "diavolezza21":
+            input="data/guttannen21/interim/"
+            df_c = pd.read_hdf(input + "model_input_" + self.trigger + ".h5", "df_c")
+        else:
+            df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
+
         old_time_step = int(pd.infer_freq(self.df["When"])[:-1]) * 60
 
         if self.TIME_STEP != old_time_step:
@@ -347,20 +353,35 @@ class Icestupa:
             logger.warning(f"Time steps changed from %s -> %s minutes" % (old_time_step/60, str(self.TIME_STEP / 60)))
 
         if self.name in ["gangles21"]:
-            self.r_spray = df_c.loc[1, "dia"] / 2
-            self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
+            self.r_spray = self.meas_circum/(2*math.pi)
+            dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
+            self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
 
         if self.name in ["guttannen21", "guttannen20"]:
-            self.r_spray = df_c.loc[0, "dia"] / 2
+            if hasattr(self, "meas_circum"):
+                self.r_spray= self.meas_circum/(2*math.pi)
+            else:
+                self.r_spray= df_c.loc[0, "dia"] / 2
+
             self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
-            self.discharge = get_droplet_projectile(
-                dia=self.dia_f, h=self.df.loc[1,"h_f"], x=self.r_spray
-            )
+
+            if self.name in ["guttannen21"]:
+                self.discharge = get_droplet_projectile(
+                    dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
+                )
+            if self.name in ["guttannen20"]:
+                self.discharge = get_droplet_projectile(
+                    dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
+                )
 
         if self.name in ["schwarzsee19"]:
             self.r_spray = get_droplet_projectile(
-                dia=self.dia_f, h=self.df.loc[1,"h_f"], d=self.discharge
+                dia=self.dia_f, h=self.df.loc[0,"h_f"], d=self.discharge
             )
+            
+        if self.name in ["diavolezza21"]:
+            dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
+            self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
 
         if self.df.isnull().values.any():
             logger.warning("\n Null values present\n")

@@ -84,6 +84,7 @@ if __name__ == "__main__":
 
     icestupa = Icestupa(location)
 
+    icestupa.read_input()
     icestupa.read_output()
     df_in = icestupa.df
     (
@@ -213,16 +214,18 @@ if __name__ == "__main__":
             """
         | Fountain | Estimation |
         | --- | --- |
-        | Aperture diameter | %.1f $mm$|
+        | Nozzle diameter | %.1f $mm$|
         | Mean discharge | %.1f $l/min$|
+        | Spray Radius | %.1f $m$|
         | Water frozen| %.1f percent |
-        | Water sprayed| %.0f $m^3$ |
+        | Water sprayed| %.0f $kg$ |
         """
             % (
                 icestupa.dia_f * 1000,
                 f_mean,
+                icestupa.r_spray,
                 f_efficiency,
-                icestupa.df.Discharge.sum() * icestupa.TIME_STEP / (60 * 1000),
+                icestupa.df.Discharge.sum() * icestupa.TIME_STEP / (60 * 1000) * 1000,
             )
         )
 
@@ -231,12 +234,14 @@ if __name__ == "__main__":
             """
         | Icestupa| Estimation |
         | --- | --- |
+        | Surface layer thickness | %.1f $mm$|
         | Max Ice Volume | %.1f $m^{3}$|
         | Meltwater released | %.0f $kg$ |
         | Ice remaining | %.0f $kg$ |
         | Vapour loss | %.0f $kg$ |
         """
             % (
+                icestupa.DX * 1000,
                 icestupa.df["iceV"].max(),
                 icestupa.df["meltwater"].iloc[-1],
                 icestupa.df["ice"].iloc[-1],
