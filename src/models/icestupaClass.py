@@ -90,7 +90,7 @@ class Icestupa:
         """Fountain height"""
         df_h = df_h.set_index("When")
         self.df = self.df.set_index("When")
-        logger.info(df_h.head())
+        logger.debug(df_h.head())
         self.df["h_f"] = df_h
         self.df.loc[:,"h_f"] = self.df.loc[:,"h_f"].ffill()
         self.df = self.df.reset_index()

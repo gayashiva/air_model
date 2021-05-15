@@ -40,7 +40,7 @@ def load_obj(path, name ):
         return pickle.load(f)
 
 class CV_Icestupa(BaseEstimator,Icestupa):
-    def __init__(self, location = "Guttannen 2021", DX = 0.010, TIME_STEP = 30*60, A_I = 0.35, A_S = 0.85, IE = 0.95, T_RAIN = 1, v_a_limit=8, dia_f = 0.005, Z_I=0.0017 ):
+    def __init__(self, location = "Guttannen 2021", DX = 0.010, TIME_STEP = 30*60, A_I = 0.35, A_S = 0.85, IE = 0.95, T_RAIN = 1, T_DECAY= 10,v_a_limit=8, dia_f = 0.005, Z_I=0.0017,min_discharge=5 ):
         super(Icestupa, self).__init__()
 
         print("Initializing classifier:\n")
@@ -142,15 +142,16 @@ if __name__ == "__main__":
     tuned_params = [{
         # 'location': locations,
         # 'TIME_STEP': np.arange(30*60, 35*60, 30*60).tolist(),
-        # 'dia_f': np.arange(0.003, 0.011 , 0.001).tolist(),
-        # 'Z_I': np.arange(0.0010, 0.0020, 0.0001).tolist(),
-        # 'T_DECAY': np.arange(1, 22 , 1).tolist(),
-        'DX': np.arange(0.008, 0.012, 0.001).tolist(), 
-        'IE': np.arange(0.9, 0.999 , 0.01).tolist(),
-        'A_I': np.arange(0.3, 0.4 , 0.1).tolist(),
-        'A_S': np.arange(0.8, 0.9 , 0.1).tolist(),
+        'DX': np.arange(0.008, 0.012, 0.0005).tolist(), 
+        'dia_f': np.arange(0.0075, 0.0086 , 0.0001).tolist(),
+        'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
+        'A_I': np.arange(0.3325, 0.3676 , 0.005).tolist(),
+        'A_S': np.arange(0.8075, 0.8925 , 0.005).tolist(),
         'T_RAIN': np.arange(0, 2 , 0.1).tolist(),
+        'Z_I': np.arange(0.001615, 0.001785, 0.00005).tolist(),
+        'T_DECAY': np.arange(1, 23 , 2).tolist(),
         'v_a_limit': np.arange(7, 12, 1).tolist(),
+        'min_discharge': np.arange(3, 7, 1).tolist(),
     }]
     
     file_path = 'cv-'
