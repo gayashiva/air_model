@@ -27,14 +27,14 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             # start_date=datetime(2021, 1, 26,9),
             start_date=datetime(2021, 1, 19,16),
             # start_date=datetime(2021, 1, 19),
-            end_date=datetime(2021, 3, 1),
+            end_date=datetime(2021, 4, 1),
             utc_offset=1,
             latitude=46.44109,
             longitude=9.98425,
             h_aws=2.3, 
 
             fountain_off_date=datetime(2021, 3, 1),
-            r_spray = 7,
+            # r_spray = 7,
             dome_rad=1,
             dia_f=0.008,  # FOUNTAIN aperture diameter
         )

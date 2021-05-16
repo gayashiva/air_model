@@ -65,11 +65,11 @@ def summary_figures(self):
     dome_vol = self.df[self.df.iceV !=0].reset_index().iceV[0]
     logger.info(dome_vol)
 
-    if self.name == "diavolezza21":
-        input="data/guttannen21/interim/"
-        df_c = pd.read_hdf(input + "model_input_" + self.trigger + ".h5", "df_c")
-    else:
-        df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
+    # if self.name == "diavolezza21":
+    #     input="data/guttannen21/interim/"
+    #     df_c = pd.read_hdf(input + "model_input_" + self.trigger + ".h5", "df_c")
+    # else:
+    df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
 
     df_c = df_c[["When", "DroneV"]]
     if self.name in ["guttannen21", "guttannen20"]:

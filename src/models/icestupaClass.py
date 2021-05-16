@@ -56,6 +56,7 @@ class Icestupa:
     """Model constants"""
     # DX = 4.75e-03  # Initial Ice layer thickness
     DX = 10e-03  # Initial Ice layer thickness
+    # DX = 9e-03  # Initial Ice layer thickness
     # DX = 25e-03  # Initial Ice layer thickness
     TIME_STEP = 30*60 # Model time step
 
@@ -187,6 +188,16 @@ class Icestupa:
             
 
         if self.name in ["diavolezza21"]:
+            df_c = get_calibration(site=self.name, input=self.raw)
+            # self.r_spray= df_c.loc[0, "dia"] / 2
+            self.r_spray= df_c.loc[1, "dia"] / 2
+            logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
+            df_c.to_hdf(
+                self.input + "model_input_" + self.trigger + ".h5",
+                key="df_c",
+                mode="w",
+            )
+            df_c.to_csv(self.input + "measured_vol.csv")
             dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
             self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
             logger.warning("Initial height estimated from dome volume to be %0.1f"%self.h_i)
@@ -334,11 +345,12 @@ class Icestupa:
     def read_input(self):  # Use processed input dataset
         self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
 
-        if self.name == "diavolezza21":
-            input="data/guttannen21/interim/"
-            df_c = pd.read_hdf(input + "model_input_" + self.trigger + ".h5", "df_c")
-        else:
-            df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
+        # if self.name == "diavolezza21":
+        #     input="data/guttannen21/interim/"
+        #     df_c = pd.read_hdf(input + "model_input_" + self.trigger + ".h5", "df_c")
+        # else:
+
+        df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
 
         old_time_step = int(pd.infer_freq(self.df["When"])[:-1]) * 60
 
@@ -380,6 +392,7 @@ class Icestupa:
             )
             
         if self.name in ["diavolezza21"]:
+            self.r_spray= df_c.loc[0, "dia"] / 2
             dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
             self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
 
@@ -464,11 +477,12 @@ class Icestupa:
         t.set_description("Simulating %s Icestupa" % self.name)
         for row in t:
             i = row.Index
-            ice_melted = self.df.loc[i, "ice"] < 1 or self.df.loc[i, "T_bulk"] < -50 or self.df.loc[i, "T_s"] < -100 #or i==self.df.shape[0] - 1
+            ice_melted = self.df.loc[i, "ice"] < 1 or self.df.loc[i, "T_bulk"] < -50 or self.df.loc[i, "T_s"] < -200 #or i==self.df.shape[0] - 1
 
             if (
                 ice_melted and STATE == 1
             ):  # Break loop when ice melted and simulation done
+                logger.error("Ice %0.1f, T_s %0.1f" %(self.df.loc[i, "ice"], self.df.loc[i, "T_s"]))
                 self.df.loc[i - 1, "meltwater"] += self.df.loc[i - 1, "ice"]
                 self.df.loc[i - 1, "ice"] = 0
                 logger.info("Model ends at %s" % (self.df.When[i]))

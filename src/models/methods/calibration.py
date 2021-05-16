@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 # @cache_it(limit=1000, expire=None)
 def get_calibration(site, input):
     # Add Validation data_h to input
-    if site in ["guttannen21", "guttannen20", "gangles21"]:
+    if site in ["guttannen21", "guttannen20", "gangles21", "diavolezza21"]:
         df_c = pd.read_csv(
             input + site + "_drone.csv",
             sep=",",
@@ -59,7 +59,7 @@ def get_calibration(site, input):
 
             return df_c, df_cam
 
-        if site in ["gangles21"]:
+        if site in ["gangles21", "diavolezza21"]:
             # df_c["h_s"] = 0
             df_c["h_s"] = np.NaN
             df_c = df_c.reset_index()
