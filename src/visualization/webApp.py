@@ -172,9 +172,16 @@ if __name__ == "__main__":
             caption="UniFR",
             use_column_width=True,
         )
+        st.markdown(" ")
         st.image(
             "src/visualization/logos/GA.png",
             caption="GlaciersAlive",
+            use_column_width=True,
+        )
+        st.markdown(" ")
+        st.image(
+            "src/visualization/logos/ng-logo.png",
+            # caption="GlaciersAlive",
             use_column_width=True,
         )
     with row2_2:
@@ -183,9 +190,19 @@ if __name__ == "__main__":
             caption="HIAL",
             use_column_width=True,
         )
+        st.markdown(" ")
+        st.markdown(" ")
+        st.markdown(" ")
         st.image(
             "src/visualization/logos/logo-schwarzsee.png",
             caption="Schwarzsee Tourism",
+            use_column_width=True,
+        )
+        st.markdown(" ")
+        st.markdown(" ")
+        st.image(
+            "src/visualization/logos/dfrobot.png",
+            # caption="GlaciersAlive",
             use_column_width=True,
         )
     with row2_3:
@@ -194,9 +211,12 @@ if __name__ == "__main__":
             caption="Guttannen Moves",
             use_column_width=True,
         )
+        st.markdown(" ")
+        st.markdown(" ")
+        st.markdown(" ")
         st.image(
             "src/visualization/logos/Logo-Swiss-Polar-Institute.png",
-            caption="Swiss Polar Institute",
+            # caption="Swiss Polar Institute",
             use_column_width=True,
         )
 
