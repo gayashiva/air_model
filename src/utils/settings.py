@@ -35,7 +35,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
             fountain_off_date=datetime(2021, 3, 1),
             # r_spray = 7,
-            dome_rad=1,
+            dome_rad=2,
             dia_f=0.008,  # FOUNTAIN aperture diameter
         )
 
@@ -147,6 +147,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
         data_h = [
             {"When": SITE["start_date"], "h_f": 5},
+            # {"When": datetime(2021, 1, 22, 16), "h_f": 9},
         ]
 
     # Define directory structure

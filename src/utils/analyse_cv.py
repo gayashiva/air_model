@@ -39,13 +39,13 @@ if __name__ == "__main__":
     tuned_params = [{
         # 'location': locations,
         'DX': np.arange(0.010, 0.011, 0.001).tolist(), 
-        'TIME_STEP': np.arange(30*60, 35*60, 30*60).tolist(),
+        # 'TIME_STEP': np.arange(30*60, 35*60, 30*60).tolist(),
         'IE': np.arange(0.9, 0.999 , 0.02).tolist(),
         'A_I': np.arange(0.3, 0.4 , 0.02).tolist(),
         'A_S': np.arange(0.8, 0.9 , 0.02).tolist(),
         'T_RAIN': np.arange(0, 2 , 1).tolist(),
         # 'T_DECAY': np.arange(1, 22 , 1).tolist(),
-        # 'v_a_limit': np.arange(8, 12, 1).tolist(),
+        'v_a_limit': np.arange(8, 12, 1).tolist(),
         # 'dia_f': np.arange(0.003, 0.011 , 0.001).tolist(),
         # 'Z_I': np.arange(0.0010, 0.0020, 0.0001).tolist(),
     }]
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     location = "Guttannen 2021"
     SITE, FOLDER, df_h = config(location)
 
-    data = load_obj(FOLDER['output'], file_path)
+    data = load_obj(FOLDER['sim'], file_path)
     # with open(FOLDER['sim'] + file_path + '.json', 'r') as fp:
     #     best_parameters = json.load(fp)
     # best_parameters = data._best_params_
@@ -68,10 +68,12 @@ if __name__ == "__main__":
     print()
     means = data['mean_test_score']
     stds = data['std_test_score']
+    means = means[~np.isnan(means)] #Remove nans
+    means = means[np.argsort(means)] #Sort array
     for mean, std, params in zip(means, stds, data['params']):
-        # print("%0.3f (+/-%0.03f) for %r"
-        #       % (mean, std * 2, params))
-        if mean == data['mean_test_score'].max():
+        print("%0.3f (+/-%0.03f) for %r"
+              % (mean, std * 2, params))
+        if mean == means.max():
             print("%0.3f (+/-%0.03f) for %r"
                   % (mean, std * 2, params))
             for param_name in sorted(params.keys()):

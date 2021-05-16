@@ -42,6 +42,7 @@ def get_calibration(site, input):
                 mask = (df_cam["When"] >= datetime(2020,1,2)) & (df_cam["When"] <= datetime(2020,2,16))#No ice
                 df_cam = df_cam.loc[mask]
                 df_cam = df_cam.reset_index(drop=True)
+
             # Correct thermal cam temp.
             if site == "guttannen21":
                 mask = (df_cam["When"] >= datetime(2020,12,5)) & (df_cam["When"] <= datetime(2021,3,25))#No ice
@@ -60,8 +61,6 @@ def get_calibration(site, input):
             return df_c, df_cam
 
         if site in ["gangles21", "diavolezza21"]:
-            # df_c["h_s"] = 0
-            df_c["h_s"] = np.NaN
             df_c = df_c.reset_index()
             return df_c
 
@@ -71,6 +70,4 @@ def get_calibration(site, input):
             {"When": datetime(2019, 3, 10, 18), "DroneV": 0.1295},
         ]
         df_c = pd.DataFrame(dataV)
-        # df_c["h_s"] = np.NaN
-        logger.info(df_c.head(10))
         return df_c
