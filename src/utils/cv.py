@@ -51,21 +51,17 @@ class CV_Icestupa(BaseEstimator,Icestupa):
         for arg, val in values.items():
             setattr(self, arg, val)
             # print("{} = {}".format(arg,val)
-           
-    @Timer(text="Simulation executed in {:.2f} seconds")
-    def fit(self, X,y):
-        # self.location = x[0]
+        
         SITE, FOLDER, df_h = config(location = self.location)
         initial_data = [SITE, FOLDER]
-
-        # Initialise all variables of dictionary
+         # Initialise all variables of dictionary
         for dictionary in initial_data:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
-
-        self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
-
         self.read_input()
+           
+    @Timer(text="Simulation executed in {:.2f} seconds")
+    def fit(self, X,y):
 
         """Albedo Decay parameters initialized"""
         self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
@@ -87,7 +83,7 @@ class CV_Icestupa(BaseEstimator,Icestupa):
             if (self.df[self.df.When == x[1]].shape[0]) and (self.location == x[0]): 
                 y_pred.append(self.df.loc[self.df.When == x[1], "iceV"].values[0])
             else:
-                y_pred.append(np.NaN)
+                y_pred.append(np.nan)
                 # y_pred.append(0)
 
         return y_pred
@@ -151,7 +147,7 @@ if __name__ == "__main__":
         'Z_I': np.arange(0.001615, 0.001785, 0.00005).tolist(),
         'T_DECAY': np.arange(1, 23 , 2).tolist(),
         'v_a_limit': np.arange(7, 12, 1).tolist(),
-        'min_discharge': np.arange(3, 7, 1).tolist(),
+        # 'min_discharge': np.arange(3, 7, 1).tolist(),
     }]
     
     file_path = 'cv-'
@@ -164,7 +160,7 @@ if __name__ == "__main__":
     #     CV_Icestupa(), tuned_params, n_jobs=12 , cv=3, scoring='neg_root_mean_squared_error'
     # )
     clf = HalvingGridSearchCV(
-        CV_Icestupa(), tuned_params, n_jobs=12, cv=3, scoring='neg_root_mean_squared_error'
+        CV_Icestupa(), tuned_params, n_jobs=1, cv=3, scoring='neg_root_mean_squared_error'
     )
     clf.fit(X,y)
     # clf.fit(X_train,y_train)
