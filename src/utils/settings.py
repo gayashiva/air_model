@@ -24,19 +24,18 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
         SITE = dict(
             name="diavolezza21",
-            # start_date=datetime(2021, 1, 26,9),
             start_date=datetime(2021, 1, 19,16),
+            # start_date=datetime(2021, 1, 26,9),
             # start_date=datetime(2021, 1, 19),
             end_date=datetime(2021, 4, 1),
+            fountain_off_date=datetime(2021, 3, 1),
             utc_offset=1,
             latitude=46.44109,
             longitude=9.98425,
             h_aws=2.3, 
 
-            fountain_off_date=datetime(2021, 3, 1),
-            # r_spray = 7,
-            dome_rad=2,
             dia_f=0.008,  # FOUNTAIN aperture diameter
+            dome_rad=2,
         )
 
         data_h = [
@@ -50,21 +49,16 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             name="guttannen21",
             start_date=datetime(2020, 11, 22),
             end_date=datetime(2021, 4, 26, 23),
+            fountain_off_date=datetime(2021, 2, 21),
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
-            # meas_circum=45, # on Feb 11
             # altitude_aws=1054,
-            # DX = 10e-03,  # Initial Ice layer thickness
-            # TIME_STEP = 15*60,  # Initial Ice layer thickness
 
-            fountain_off_date=datetime(2021, 2, 21),
             dia_f=0.00785,  # FOUNTAIN aperture diameter
             min_discharge=5,  # FOUNTAIN min discharge
-            # discharge=12.33,  # FOUNTAIN on discharge
-            # trigger=trigger,
-            # h_f=2.5,  # FOUNTAIN steps h_f
+            # meas_circum=45, # on Feb 11
         )
 
         data_h = [
@@ -84,16 +78,12 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             latitude=46.649999,
             longitude=8.283333,
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
-            # meas_circum=28, # on 24 Jan
             # altitude_aws=1054,
-            # DX = 10e-03,  # Initial Ice layer thickness
 
             fountain_off_date=datetime(2020, 2, 27),
             dia_f=0.0056,  # FOUNTAIN aperture diameter
             min_discharge=5,  # FOUNTAIN min discharge
-            # discharge=10,  # FOUNTAIN on discharge
-            # trigger=trigger,
-            # h_f=2.5,  # FOUNTAIN steps h_f
+            # meas_circum=28, # on 24 Jan
         )
 
         data_h = [
@@ -111,14 +101,10 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             longitude=7.297543,
             latitude=46.693723,
             h_aws=3,
-            # DX = 4e-03,  # Initial Ice layer thickness
 
             fountain_off_date=datetime(2019, 3, 10, 18),
             discharge=3.58,  # FOUNTAIN on mean discharge from field
             dia_f=0.0056,  # FOUNTAIN aperture diameter
-            # discharge=4.15,  # FOUNTAIN on mean discharge from field
-            # trigger=trigger,
-            # h_f=1.35,  # FOUNTAIN steps h_f
         )
 
         data_h = [
@@ -136,13 +122,11 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             latitude=34.216638,
             h_aws=3,
             dome_rad=2,
-            meas_circum=82.3,
 
             fountain_off_date=datetime(2021, 3, 10, 18),
-            h_f=5,  # FOUNTAIN steps h_f
+            meas_circum=82.3,
             discharge=120,  # FOUNTAIN on discharge
             dia_f=0.010,  # FOUNTAIN aperture diameter
-            # trigger=trigger,
         )
 
         data_h = [
