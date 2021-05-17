@@ -39,7 +39,7 @@ def calculate(process_name, tasks, results):
             icestupa.summary()
 
             # Read Output
-            icestupa.read_output()
+            # icestupa.read_output()
 
             # Create figures for web interface
             icestupa.summary_figures()

@@ -55,10 +55,11 @@ class Icestupa:
 
     """Model constants"""
     # DX = 4.75e-03  # Initial Ice layer thickness
-    DX = 10e-03  # Initial Ice layer thickness
+    # DX = 10e-03  # Initial Ice layer thickness
+    DX = 20e-03  # Initial Ice layer thickness
     # DX = 9e-03  # Initial Ice layer thickness
     # DX = 25e-03  # Initial Ice layer thickness
-    TIME_STEP = 30*60 # Model time step
+    TIME_STEP = 60*60 # Model time step
 
     """Fountain constants"""
     dia_f =0.005  # FOUNTAIN aperture diameter
@@ -80,6 +81,7 @@ class Icestupa:
                 setattr(self, key, dictionary[key])
                 logger.info(f"%s -> %s" % (key, str(dictionary[key])))
 
+
         # Initialize input dataset
         input_file = self.input + self.name + "_input_model.csv"
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
@@ -87,6 +89,10 @@ class Icestupa:
         mask &= self.df["When"] <= self.end_date
         self.df = self.df.loc[mask]
         self.df = self.df.reset_index(drop=True)
+
+        self.df = self.df[
+            self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
+        ]  # Drops garbage columns
 
         """Fountain height"""
         df_h = df_h.set_index("When")
@@ -100,7 +106,9 @@ class Icestupa:
         logger.debug(self.df.tail())
 
 
+
     # Imported methods
+    from src.models.methods._freq import change_freq
     from src.models.methods._albedo import get_albedo
     from src.models.methods._height_steps import get_height_steps
     from src.models.methods._discharge import get_discharge
@@ -112,6 +120,8 @@ class Icestupa:
     def derive_parameters(
         self,
     ):  # Derives additional parameters required for simulation
+
+        self.change_freq()
 
         if self.name in ["gangles21"]:
             self.r_spray = self.meas_circum/(2*math.pi)
@@ -311,9 +321,11 @@ class Icestupa:
 
     def summary(self):  # Summarizes results and saves output
 
+        # TODO
         self.df = self.df[
             self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
         ]  # Drops garbage columns
+
         f_efficiency = 100 - (
             (
                 self.df["unfrozen_water"].iloc[-1]
@@ -343,26 +355,12 @@ class Icestupa:
         )
 
     def read_input(self):  # Use processed input dataset
+
         self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
 
-        # if self.name == "diavolezza21":
-        #     input="data/guttannen21/interim/"
-        #     df_c = pd.read_hdf(input + "model_input_" + self.trigger + ".h5", "df_c")
-        # else:
+        self.change_freq()
 
         df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
-
-        old_time_step = int(pd.infer_freq(self.df["When"])[:-1]) * 60
-
-        if self.TIME_STEP != old_time_step:
-            self.df= self.df.set_index('When')
-            dfx = self.df.missing_type.resample(str(int(self.TIME_STEP/60))+'T').first()
-            dfh = self.df.h_f.resample(str(int(self.TIME_STEP/60))+'T').first()
-            self.df= self.df.resample(str(int(self.TIME_STEP/60))+'T').mean()
-            self.df["missing_type"] = dfx
-            self.df["h_f"] = dfh
-            self.df= self.df.reset_index()
-            logger.warning(f"Time steps changed from %s -> %s minutes" % (old_time_step/60, str(self.TIME_STEP / 60)))
 
         if self.name in ["gangles21"]:
             self.r_spray = self.meas_circum/(2*math.pi)
@@ -402,18 +400,9 @@ class Icestupa:
     def read_output( self ):  # Reads output
 
         self.df = pd.read_hdf(self.output + "model_output_" + self.trigger + ".h5", "df")
-        old_time_step = int(pd.infer_freq(self.df["When"])[:-1]) * 60
-        if self.TIME_STEP != old_time_step:
-            self.df= self.df.set_index('When')
-            dfx = self.df.missing_type.resample(str(int(self.TIME_STEP/60))+'T').first()
-            dfh = self.df.h_f.resample(str(int(self.TIME_STEP/60))+'T').first()
-            self.df= self.df.resample(str(int(self.TIME_STEP/60))+'T').mean()
-            self.df["missing_type"] = dfx
-            self.df["h_f"] = dfh
-            self.df= self.df.reset_index()
-            logger.warning(f"Time steps changed from %s -> %s minutes" % (old_time_step/60, str(self.TIME_STEP / 60)))
 
-        
+        self.change_freq()
+
     def manim_output(self):
         # Output for manim
         filename2 = os.path.join(self.output, self.name + "_manim_" + self.trigger + ".csv")
