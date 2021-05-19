@@ -28,18 +28,19 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             # start_date=datetime(2021, 1, 26,9),
             # start_date=datetime(2021, 1, 19),
             end_date=datetime(2021, 4, 1),
-            fountain_off_date=datetime(2021, 3, 1),
+            fountain_off_date=datetime(2021, 4, 1),
             utc_offset=1,
             latitude=46.44109,
             longitude=9.98425,
             h_aws=2.3, 
 
-            dia_f=0.008,  # FOUNTAIN aperture diameter
+            # dia_f=0.008,  # FOUNTAIN aperture diameter
             dome_rad=2,
+            meas_circum=65.5, # on May 19
         )
 
         data_h = [
-            {"When": SITE["start_date"], "h_f": 5},
+            {"When": SITE["start_date"], "h_f": 5}, # doesnt use this?
         ]
 
 

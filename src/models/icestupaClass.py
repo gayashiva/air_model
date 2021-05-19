@@ -123,26 +123,27 @@ class Icestupa:
 
         self.change_freq()
 
-        if self.name in ["gangles21"]:
-            self.r_spray = self.meas_circum/(2*math.pi)
-            logger.warning("Measured spray radius estimated %0.1f"%self.r_spray)
-            df_c = get_calibration(site=self.name, input=self.raw)
-            df_c.loc[:, "DroneV"] -= df_c.loc[0, "DroneV"]
-            # self.r_spray = df_c.loc[1, "dia"] / 2
-            dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
-            df_c.loc[0, "DroneV"] = dome_vol
-            self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
-            logger.warning("Initial height estimated from dome volume to be %0.1f"%self.h_i)
-            df_c.to_hdf(
-                self.input + "model_input_" + self.trigger + ".h5",
-                key="df_c",
-                mode="w",
-            )
-            df_c.to_csv(self.input + "measured_vol.csv")
-
         if self.name in ["guttannen21", "guttannen20"]:
             df_c, df_cam = get_calibration(site=self.name, input=self.raw)
+        else:
+            df_c = get_calibration(site=self.name, input=self.raw)
 
+        if self.name in ["gangles21"]:
+            df_c.loc[:, "DroneV"] -= df_c.loc[0, "DroneV"]
+            # df_c.loc[0, "DroneV"] = dome_vol
+
+        df_c.to_hdf(
+            self.input + "model_input_" + self.trigger + ".h5",
+            key="df_c",
+            mode="w",
+        )
+        df_c.to_csv(self.input + "measured_vol.csv")
+
+        if self.name in ["schwarzsee19"]:
+            self.r_spray = get_droplet_projectile(
+                dia=self.dia_f, h=self.df.loc[0,"h_f"], d=self.discharge
+            )
+        else:
             if hasattr(self, "meas_circum"):
                 self.r_spray= self.meas_circum/(2*math.pi)
                 logger.warning("Measured spray radius from field %0.1f"%self.r_spray)
@@ -150,72 +151,28 @@ class Icestupa:
                 self.r_spray= df_c.loc[0, "dia"] / 2
                 logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
 
-            self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
-            df_c.to_hdf(
-                self.input + "model_input_" + self.trigger + ".h5",
-                key="df_c",
-                mode="w",
-            )
-            df_cam.to_hdf(
-                self.input + "model_input_" + self.trigger + ".h5",
-                key="df_cam",
-                mode="a",
-            )
-            df_c.to_csv(self.input + "measured_vol.csv")
-            df_cam.to_csv(self.input + "measured_temp.csv")
+            if hasattr(self, "dome_rad"):
+                dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
+                self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
+                logger.warning("Initial height estimated from dome %0.1f"%self.h_i)
+            else:
+                self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
+                logger.warning("Initial height estimated from drone %0.1f"%self.h_i)
 
-            if self.name in ["guttannen21"]:
-                # self.dia_f = 0.00785
-                self.discharge = get_droplet_projectile(
-                    dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
-                    # dia=self.dia_f, h=5.5, x=self.r_spray
+            if self.name in ["guttannen21", "guttannen20"]:
+                df_cam.to_hdf(
+                    self.input + "model_input_" + self.trigger + ".h5",
+                    key="df_cam",
+                    mode="a",
                 )
-            if self.name in ["guttannen20"]:
+                df_cam.to_csv(self.input + "measured_temp.csv")
+
                 self.discharge = get_droplet_projectile(
                     dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
                 )
+                logger.warning("Estimated mean spray %0.1f"%self.discharge)
+                logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
 
-            logger.warning("Initial height estimated %0.1f"%self.h_i)
-            logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
-            logger.warning("Measured Spray radius %0.1f"%self.r_spray)
-            logger.warning("Estimated mean spray %0.1f"%self.discharge)
-
-        if self.name in ["schwarzsee19"]:
-            df_c = get_calibration(site=self.name, input=self.raw)
-            df_c.to_hdf(
-                self.input + "model_input_" + self.trigger + ".h5",
-                key="df_c",
-                mode="w",
-            )
-            df_c.to_csv(self.input + "measured_vol.csv")
-
-            self.r_spray = get_droplet_projectile(
-                dia=self.dia_f, h=self.df.loc[0,"h_f"], d=self.discharge
-            )
-            logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
-            logger.warning("Measured mean spray %0.1f"%self.discharge)
-            logger.warning("Estimated Spray radius %0.1f"%self.r_spray)
-            
-
-        if self.name in ["diavolezza21"]:
-            df_c = get_calibration(site=self.name, input=self.raw)
-            # self.r_spray= df_c.loc[0, "dia"] / 2
-            self.r_spray= df_c.loc[1, "dia"] / 2
-            logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
-            df_c.to_hdf(
-                self.input + "model_input_" + self.trigger + ".h5",
-                key="df_c",
-                mode="w",
-            )
-            df_c.to_csv(self.input + "measured_vol.csv")
-            dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
-            self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
-            logger.warning("Initial height estimated from dome volume to be %0.1f"%self.h_i)
-            # self.discharge = self.df.Discharge.replace(0, np.nan).mean()
-            # logger.warning("Mean discharge estimated %0.1f"%self.discharge)
-            # self.r_spray = get_droplet_projectile(
-            #     dia=self.dia_f, h=self.df.loc[0,"h_f"], d=self.discharge
-            # )
 
         unknown = ["a", "vp_a", "LW_in", "cld"]  # Possible unknown variables
         for i in range(len(unknown)):

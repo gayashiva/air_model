@@ -23,15 +23,16 @@ from src.data.make_dataset import era5, linreg
 
 def field(location="schwarzsee19"):
     if location == "diavolezza21":
-        path = "/home/suryab/ownCloud/Sites/Diavolezza/Daten Steuerung Icestupa/"
+        path = "/home/suryab/ownCloud/Sites/Diavolezza/diavolezza_sdcard/"
         all_files = glob.glob(path + "*.txt")
 
         SITE, FOLDER, df_h = config(location = "Diavolezza 2021")
         li = []
         ctr = 0
 
+        # Get header colun list
         df = pd.read_csv(
-            all_files[0],
+            all_files[10],
             sep=";",
             skiprows=3,
             header=0,
@@ -93,8 +94,8 @@ def field(location="schwarzsee19"):
     df_in = df_in.set_index("When").sort_index().reset_index()
 
     # CSV output
-    # logger.info(df_in.head())
-    # logger.info(df_in.tail())
+    logger.info(df_in.head())
+    logger.info(df_in.tail())
     df_in.to_csv(FOLDER["raw"] + SITE["name"] + "_field.csv")
     return df_in
 
@@ -107,16 +108,20 @@ if __name__ == "__main__":
     )
 
     SITE, FOLDER, *args = config("Diavolezza 2021")
-    # raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
-    # input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
-
-    # df = field("diavolezza21")
-    df = pd.read_csv(
-            FOLDER["raw"]+ SITE["name"] + "_field.csv",
-            sep=",",
-            header=0,
-            parse_dates=["When"],
-        )
+    # sdcard = True
+    sdcard = False
+    
+    if sdcard:
+        # raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
+        # input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
+        df = field("diavolezza21")
+    else:
+        df = pd.read_csv(
+                FOLDER["raw"]+ SITE["name"] + "_field.csv",
+                sep=",",
+                header=0,
+                parse_dates=["When"],
+            )
 
     df= df.set_index("When").resample(pd.offsets.Minute(n=30)).mean().reset_index()
 
@@ -161,8 +166,8 @@ if __name__ == "__main__":
 
     mask = df[fit_list].notna().any(axis=1).index
 
-    # logger.warning(df_ERA5.loc[mask][fit_list])
-    # logger.warning(df.loc[mask][fit_list])
+    logger.warning(df_ERA5.loc[mask][fit_list])
+    logger.warning(df.loc[mask][fit_list])
 
     for column in fit_list:
         Y = df.loc[mask][column].values.reshape(-1, 1)
@@ -275,6 +280,7 @@ if __name__ == "__main__":
     if len(df_out[df_out.index.duplicated()]):
         logger.error("Duplicate indexes")
 
+    # df_out["Discharge"] += 1 #Discharge never zero
 
     logger.info(df_out.tail())
     df_out.to_csv(FOLDER["input"]+ SITE["name"] + "_input_model.csv")
@@ -282,7 +288,7 @@ if __name__ == "__main__":
     skyblue = "#9bc4f0"
     blue = "#0a4a97"
     x = df_out.When
-    y = df_out.SW_direct
+    y = df_out.T_a
     ax1.plot(
         x,
         y,

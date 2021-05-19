@@ -36,8 +36,8 @@ if __name__ == "__main__":
 
     if answers["run"] == "yes":
         # Derive all the input parameters
-        # icestupa.derive_parameters()
-        icestupa.read_input()
+        icestupa.derive_parameters()
+        # icestupa.read_input()
 
         # Generate results
         icestupa.melt_freeze()
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         icestupa.summary()
 
         # Create figures for web interface
-        # icestupa.summary_figures()
+        icestupa.summary_figures()
     else:
         # Use output parameters from cache
         # icestupa.derive_parameters()
