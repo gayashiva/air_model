@@ -127,7 +127,6 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
             fountain_off_date=datetime(2021, 3, 10, 18),
             meas_circum=82.3,
-            discharge=120,  # FOUNTAIN on discharge
             dia_f=0.010,  # FOUNTAIN aperture diameter
         )
 

@@ -743,27 +743,6 @@ if __name__ == "__main__":
                 if concat[column].isna().sum() > 0 and column not in ["missing_type"]:
                     logger.warning(" Null values interpolated in %s" %column)
                     concat.loc[:, column] = concat[column].interpolate()
-        # if concat.isnull().values.any():
-        #     logger.warning("Null values present")
-        #     print(
-        #         concat[
-        #             [
-        #                 "When",
-        #                 "T_a",
-        #                 "RH",
-        #                 "v_a",
-        #                 # "Discharge",
-        #                 "SW_direct",
-        #                 "SW_diffuse",
-        #                 "Prec",
-        #                 "p_a",
-        #                 # "missing",
-        #                 "missing_type",
-        #             ]
-        #         ]
-        #         .isnull()
-        #         .sum()
-        #     )
 
         concat.to_csv(input_folder + SITE["name"] + "_input_model.csv")
         concat.to_hdf(

@@ -54,11 +54,9 @@ class Icestupa:
     # delta_T_limit = 0.1 # Max rate of change of temperature due to fountain water
 
     """Model constants"""
-    # DX = 4.75e-03  # Initial Ice layer thickness
     # DX = 10e-03  # Initial Ice layer thickness
+    # TIME_STEP = 30*60 # Model time step
     DX = 20e-03  # Initial Ice layer thickness
-    # DX = 9e-03  # Initial Ice layer thickness
-    # DX = 25e-03  # Initial Ice layer thickness
     TIME_STEP = 60*60 # Model time step
 
     """Fountain constants"""
@@ -139,18 +137,35 @@ class Icestupa:
         )
         df_c.to_csv(self.input + "measured_vol.csv")
 
-        if self.name in ["schwarzsee19"]:
+        if self.name in ["guttannen21", "guttannen20"]:
+            df_cam.to_hdf(
+                self.input + "model_input_" + self.trigger + ".h5",
+                key="df_cam",
+                mode="a",
+            )
+            df_cam.to_csv(self.input + "measured_temp.csv")
+
+        if hasattr(self, "discharge"):
             self.r_spray = get_droplet_projectile(
                 dia=self.dia_f, h=self.df.loc[0,"h_f"], d=self.discharge
             )
         else:
+            # Get spray radius
             if hasattr(self, "meas_circum"):
                 self.r_spray= self.meas_circum/(2*math.pi)
                 logger.warning("Measured spray radius from field %0.1f"%self.r_spray)
+
+                # Get mean discharge from spray radius
+                self.discharge = get_droplet_projectile(
+                    dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
+                )
+                logger.warning("Estimated mean spray %0.1f"%self.discharge)
+                logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
             else:
                 self.r_spray= df_c.loc[0, "dia"] / 2
                 logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
 
+            # Get initial height
             if hasattr(self, "dome_rad"):
                 dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
                 self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
@@ -158,21 +173,6 @@ class Icestupa:
             else:
                 self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
                 logger.warning("Initial height estimated from drone %0.1f"%self.h_i)
-
-            if self.name in ["guttannen21", "guttannen20"]:
-                df_cam.to_hdf(
-                    self.input + "model_input_" + self.trigger + ".h5",
-                    key="df_cam",
-                    mode="a",
-                )
-                df_cam.to_csv(self.input + "measured_temp.csv")
-
-                self.discharge = get_droplet_projectile(
-                    dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
-                )
-                logger.warning("Estimated mean spray %0.1f"%self.discharge)
-                logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
-
 
         unknown = ["a", "vp_a", "LW_in", "cld"]  # Possible unknown variables
         for i in range(len(unknown)):
@@ -260,12 +260,11 @@ class Icestupa:
         ]  # Remove junk columns
 
         if self.df.isnull().values.any():
-            logger.error("\n Null values present\n")
-            logger.error(
-                self.df.columns
-                .isnull()
-                .sum()
-            )
+            print(self.df[self.df.columns].isna().sum())
+            for column in self.df.columns:
+                if self.df[column].isna().sum() > 0: 
+                    logger.warning(" Null values interpolated in %s" %column)
+                    self.df.loc[:, column] = self.df[column].interpolate()
 
         self.df.to_hdf(
             self.input + "model_input_" + self.trigger + ".h5",
@@ -299,8 +298,6 @@ class Icestupa:
         print("Meltwater", round(self.df["meltwater"].iloc[-1], 2))
         print("Ppt", round(self.df["ppt"].sum(), 2))
         print("Duration", round(Duration, 2))
-        # print("Correlation with thermal temp", round(self.df['cam_temp'].corr(self.df['T_s']), 2))
-        # print("Correlation with drone volume", round(self.df['DroneV'].corr(self.df['iceV']), 2))
 
         # Full Output
         filename4 = self.output + "model_output_" + self.trigger + ".csv"
@@ -319,32 +316,33 @@ class Icestupa:
 
         df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
 
-        if self.name in ["schwarzsee19"]:
+        if hasattr(self, "discharge"):
             self.r_spray = get_droplet_projectile(
                 dia=self.dia_f, h=self.df.loc[0,"h_f"], d=self.discharge
             )
         else:
+            # Get spray radius
             if hasattr(self, "meas_circum"):
                 self.r_spray= self.meas_circum/(2*math.pi)
                 logger.warning("Measured spray radius from field %0.1f"%self.r_spray)
+
+                # Get mean discharge from spray radius
+                self.discharge = get_droplet_projectile(
+                    dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
+                )
+                logger.warning("Estimated mean spray %0.1f"%self.discharge)
+                logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
             else:
                 self.r_spray= df_c.loc[0, "dia"] / 2
                 logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
 
+            # Get initial height
             if hasattr(self, "dome_rad"):
                 dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
                 self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
                 logger.warning("Initial height estimated from dome %0.1f"%self.h_i)
             else:
                 self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
-                logger.warning("Initial height estimated from drone %0.1f"%self.h_i)
-
-            if self.name in ["guttannen21", "guttannen20"]:
-                self.discharge = get_droplet_projectile(
-                    dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
-                )
-                logger.warning("Estimated mean spray %0.1f"%self.discharge)
-                logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
 
         if self.df.isnull().values.any():
             logger.warning("\n Null values present\n")
