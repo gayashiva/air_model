@@ -274,11 +274,7 @@ if __name__ == "__main__":
         st.error("Please select at least one visualization.")
     else:
         if "Validation" in display:
-            if icestupa.name == "diavolezza21":
-                input="data/guttannen21/interim/"
-                df_c = pd.read_hdf(input + "model_input_" + icestupa.trigger + ".h5", "df_c")
-            else:
-                df_c = pd.read_hdf(icestupa.input + "model_input_" + icestupa.trigger + ".h5", "df_c")
+            df_c = pd.read_hdf(icestupa.input + "model_input_" + icestupa.trigger + ".h5", "df_c")
 
             # df_c = pd.read_hdf(icestupa.input + "model_input_" + icestupa.trigger + ".h5", "df_c")
             df_c = df_c.set_index("When")

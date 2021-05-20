@@ -267,10 +267,16 @@ if __name__ == "__main__":
     if df_out.isna().values.any():
         print(df_out[cols].isna().sum())
         for column in cols:
-            if df_out[column].isna().sum() > 0 and column in [ "Discharge"]:
+            if df_out[column].isna().sum() > 0 and column in ["Discharge"]:
                 discharge = df_out.Discharge.replace(0, np.nan).mean()
-                logger.warning(" Null values interpolated in %s set to 0" %discharge)
+
                 df_out.loc[df_out[column].isna(), column] = discharge
+
+                # df_out = df_out.set_index("When")
+                # df_out["Discharge"] = df_out.between_time('9:00', '18:00').Discharge.replace(np.nan, discharge)
+                # df_out["Discharge"] = df_out.Discharge.replace(np.nan, 0)
+                # df_out = df_out.reset_index()
+                logger.warning(" Null values extrapolated in %s " %discharge)
 
             if df_out[column].isna().sum() > 0 and column not in ["missing_type", "Discharge"]:
                 logger.warning(" Null values interpolated in %s" %column)
@@ -288,7 +294,7 @@ if __name__ == "__main__":
     skyblue = "#9bc4f0"
     blue = "#0a4a97"
     x = df_out.When
-    y = df_out.T_a
+    y = df_out.Discharge
     ax1.plot(
         x,
         y,

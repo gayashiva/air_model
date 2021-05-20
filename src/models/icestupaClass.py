@@ -319,37 +319,32 @@ class Icestupa:
 
         df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
 
-        if self.name in ["gangles21"]:
-            self.r_spray = self.meas_circum/(2*math.pi)
-            dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
-            self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
-
-        if self.name in ["guttannen21", "guttannen20"]:
-            if hasattr(self, "meas_circum"):
-                self.r_spray= self.meas_circum/(2*math.pi)
-            else:
-                self.r_spray= df_c.loc[0, "dia"] / 2
-
-            self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
-
-            if self.name in ["guttannen21"]:
-                self.discharge = get_droplet_projectile(
-                    dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
-                )
-            if self.name in ["guttannen20"]:
-                self.discharge = get_droplet_projectile(
-                    dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
-                )
-
         if self.name in ["schwarzsee19"]:
             self.r_spray = get_droplet_projectile(
                 dia=self.dia_f, h=self.df.loc[0,"h_f"], d=self.discharge
             )
-            
-        if self.name in ["diavolezza21"]:
-            self.r_spray= df_c.loc[0, "dia"] / 2
-            dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
-            self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
+        else:
+            if hasattr(self, "meas_circum"):
+                self.r_spray= self.meas_circum/(2*math.pi)
+                logger.warning("Measured spray radius from field %0.1f"%self.r_spray)
+            else:
+                self.r_spray= df_c.loc[0, "dia"] / 2
+                logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
+
+            if hasattr(self, "dome_rad"):
+                dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
+                self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
+                logger.warning("Initial height estimated from dome %0.1f"%self.h_i)
+            else:
+                self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
+                logger.warning("Initial height estimated from drone %0.1f"%self.h_i)
+
+            if self.name in ["guttannen21", "guttannen20"]:
+                self.discharge = get_droplet_projectile(
+                    dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
+                )
+                logger.warning("Estimated mean spray %0.1f"%self.discharge)
+                logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
 
         if self.df.isnull().values.any():
             logger.warning("\n Null values present\n")
@@ -656,6 +651,12 @@ class Icestupa:
 
 
                 """ Unit tests """
+                if self.df.loc[i, "T_s"] < -100:
+                    self.df.loc[i, "T_s"] = -100
+                    logger.error(
+                        f"Surface temp rest to 100 When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+                    )
+
                 if self.df.loc[i, "delta_T_s"] > 1 * self.TIME_STEP/60:
                     logger.warning("Too much fountain energy %s causes temperature change of %0.1f on %s" %(self.df.loc[i, "Qf"],self.df.loc[i, "delta_T_s"],self.df.loc[i, "When"]))
                     if math.fabs(self.df.delta_T_s[i]) > 50:

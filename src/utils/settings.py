@@ -27,8 +27,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             start_date=datetime(2021, 1, 19,16),
             # start_date=datetime(2021, 1, 26,9),
             # start_date=datetime(2021, 1, 19),
-            end_date=datetime(2021, 4, 1),
-            fountain_off_date=datetime(2021, 4, 1),
+            end_date=datetime(2021, 4, 15),
+            fountain_off_date=datetime(2021, 4, 15),
             utc_offset=1,
             latitude=46.44109,
             longitude=9.98425,
@@ -37,6 +37,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             # dia_f=0.008,  # FOUNTAIN aperture diameter
             dome_rad=2,
             meas_circum=65.5, # on May 19
+            # DX = 14e-03  # Initial Ice layer thickness
         )
 
         data_h = [
