@@ -155,15 +155,16 @@ class Icestupa:
                 self.r_spray= self.meas_circum/(2*math.pi)
                 logger.warning("Measured spray radius from field %0.1f"%self.r_spray)
 
-                # Get mean discharge from spray radius
-                self.discharge = get_droplet_projectile(
-                    dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
-                )
-                logger.warning("Estimated mean spray %0.1f"%self.discharge)
-                logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
             else:
                 self.r_spray= df_c.loc[0, "dia"] / 2
                 logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
+
+            # Get mean discharge from spray radius
+            self.discharge = get_droplet_projectile(
+                dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
+            )
+            logger.warning("Estimated mean spray %0.1f"%self.discharge)
+            logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
 
             # Get initial height
             if hasattr(self, "dome_rad"):
@@ -220,16 +221,6 @@ class Icestupa:
                 )
 
         self.get_discharge()
-#         f_on = self.df.When[
-#             self.df.Discharge != 0
-#         ].tolist()  # List of all timesteps when fountain on
-#         self.start_date = f_on[0]
-#         logger.info("Model starts at %s" % (self.start_date))
-#         logger.info("Fountain ends %s\n" % f_on[-1])
-# 
-#         mask = self.df["When"] >= self.start_date
-#         self.df = self.df.loc[mask]
-#         self.df = self.df.reset_index(drop=True)
 
         solar_df = get_solar(
             latitude=self.latitude,
@@ -316,6 +307,7 @@ class Icestupa:
 
         df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
 
+        # Get spray radius
         if hasattr(self, "discharge"):
             self.r_spray = get_droplet_projectile(
                 dia=self.dia_f, h=self.df.loc[0,"h_f"], d=self.discharge
@@ -325,16 +317,16 @@ class Icestupa:
             if hasattr(self, "meas_circum"):
                 self.r_spray= self.meas_circum/(2*math.pi)
                 logger.warning("Measured spray radius from field %0.1f"%self.r_spray)
-
-                # Get mean discharge from spray radius
-                self.discharge = get_droplet_projectile(
-                    dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
-                )
-                logger.warning("Estimated mean spray %0.1f"%self.discharge)
-                logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
             else:
                 self.r_spray= df_c.loc[0, "dia"] / 2
                 logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
+
+            # Get mean discharge from spray radius
+            self.discharge = get_droplet_projectile(
+                dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
+            )
+            logger.warning("Estimated mean spray %0.1f"%self.discharge)
+            logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
 
             # Get initial height
             if hasattr(self, "dome_rad"):
