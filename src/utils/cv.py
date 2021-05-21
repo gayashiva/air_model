@@ -135,20 +135,20 @@ if __name__ == "__main__":
     # print("Training with 2021 and testing on 2020")
 
     # Set the parameters by cross-validation
-    tuned_params = [{
-        # 'location': locations,
-        # 'TIME_STEP': np.arange(30*60, 35*60, 30*60).tolist(),
-        'DX': np.arange(0.008, 0.012, 0.0005).tolist(), 
-        'dia_f': np.arange(0.0075, 0.0086 , 0.0001).tolist(),
-        'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
-        'A_I': np.arange(0.3325, 0.3676 , 0.005).tolist(),
-        'A_S': np.arange(0.8075, 0.8925 , 0.005).tolist(),
-        'T_RAIN': np.arange(0, 2 , 0.1).tolist(),
-        'Z_I': np.arange(0.001615, 0.001785, 0.00005).tolist(),
-        'T_DECAY': np.arange(1, 23 , 2).tolist(),
-        'v_a_limit': np.arange(7, 12, 1).tolist(),
-        # 'min_discharge': np.arange(3, 7, 1).tolist(),
-    }]
+        tuned_params = [{
+            # 'location': locations,
+            # 'TIME_STEP': np.arange(30*60, 35*60, 30*60).tolist(),
+            'DX': np.arange(0.018, 0.022, 0.0005).tolist(), 
+            'dia_f': np.arange(0.0075, 0.0086 , 0.0001).tolist(),
+            'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
+            'A_I': np.arange(0.3325, 0.3676 , 0.005).tolist(),
+            'A_S': np.arange(0.8075, 0.8925 , 0.005).tolist(),
+            'T_RAIN': np.arange(0, 2 , 0.5).tolist(),
+            'Z_I': np.arange(0.001615, 0.001785, 0.00005).tolist(),
+            'T_DECAY': np.arange(1, 23 , 2).tolist(),
+            # 'v_a_limit': np.arange(7, 12, 1).tolist(),
+            # 'min_discharge': np.arange(3, 7, 1).tolist(),
+        }]
     
     file_path = 'cv-'
     file_path += '-'.join('{}'.format(key) for key, value in tuned_params[0].items())
@@ -156,11 +156,8 @@ if __name__ == "__main__":
 
     print()
 
-    # clf = GridSearchCV(
-    #     CV_Icestupa(), tuned_params, n_jobs=12 , cv=3, scoring='neg_root_mean_squared_error'
-    # )
     clf = HalvingGridSearchCV(
-        CV_Icestupa(), tuned_params, n_jobs=1, cv=3, scoring='neg_root_mean_squared_error'
+        CV_Icestupa(), tuned_params, n_jobs=12, cv=1, scoring='neg_root_mean_squared_error'
     )
     clf.fit(X,y)
     # clf.fit(X_train,y_train)
@@ -181,6 +178,5 @@ if __name__ == "__main__":
     for mean, std, params in zip(means, stds, clf.cv_results_['params']):
         print("%0.3f (+/-%0.03f) for %r"
               % (mean, std * 2, params))
-
 
     save_obj(FOLDER['sim'], file_path, clf.cv_results_)

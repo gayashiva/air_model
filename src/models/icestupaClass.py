@@ -168,11 +168,12 @@ class Icestupa:
 
             # Get initial height
             if hasattr(self, "dome_rad"):
-                dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
-                self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
+                self.dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
+                self.h_i = 3 * self.dome_vol/ (math.pi * self.r_spray ** 2)
                 logger.warning("Initial height estimated from dome %0.1f"%self.h_i)
             else:
                 self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
+                self.dome_vol = df_c.loc[0, "DroneV"]
                 logger.warning("Initial height estimated from drone %0.1f"%self.h_i)
 
         unknown = ["a", "vp_a", "LW_in", "cld"]  # Possible unknown variables
@@ -330,11 +331,13 @@ class Icestupa:
 
             # Get initial height
             if hasattr(self, "dome_rad"):
-                dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
-                self.h_i = 3 * dome_vol/ (math.pi * self.r_spray ** 2)
+                self.dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
+                self.h_i = 3 * self.dome_vol/ (math.pi * self.r_spray ** 2)
                 logger.warning("Initial height estimated from dome %0.1f"%self.h_i)
             else:
                 self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
+                self.dome_vol = df_c.loc[0, "DroneV"]
+                logger.warning("Initial height estimated from drone %0.1f"%self.h_i)
 
         if self.df.isnull().values.any():
             logger.warning("\n Null values present\n")
@@ -408,7 +411,9 @@ class Icestupa:
         t.set_description("Simulating %s Icestupa" % self.name)
         for row in t:
             i = row.Index
+
             ice_melted = self.df.loc[i, "ice"] < 1 or self.df.loc[i, "T_bulk"] < -50 or self.df.loc[i, "T_s"] < -200 #or i==self.df.shape[0] - 1
+            
 
             if (
                 ice_melted and STATE == 1
@@ -712,6 +717,16 @@ class Icestupa:
                             self.df.loc[i, "freezing_discharge_fraction"],
                         )
                     )
+
+                if self.df.loc[i, "iceV"] <= self.dome_vol and self.df.loc[i, "When"] < self.fountain_off_date and self.df.loc[i, "solid"] < 0:
+                    self.df.loc[i, "iceV"] = self.dome_vol
+                    self.df.loc[i + 1, "T_s"] = 0 
+                    self.df.loc[i + 1, "thickness"] = 0 
+                    col_list = ["meltwater", "ice", "vapour", "unfrozen_water", "iceV", "input"]
+                    logger.error("Skipping %s"%self.df.loc[i, "When"])
+                    for column in col_list:
+                        self.df.loc[i+1, column] = self.df.loc[i, column]
+                    continue
 
                 """ Quantities of all phases """
                 self.df.loc[i + 1, "T_s"] = (

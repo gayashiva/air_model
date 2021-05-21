@@ -312,7 +312,6 @@ def era5(df, location="schwarzsee19"):
         df_in2 = df_in2.set_index("When")
         df_in3 = pd.concat([df_in2, df_in3])
         df_in3 = df_in3.reset_index()
-        SITE, FOLDER, df_h = config(location = "Diavolezza 2021")
 
     if location in ["guttannen21"]:
         df_in3 = pd.read_csv(
@@ -331,7 +330,6 @@ def era5(df, location="schwarzsee19"):
         df_in2 = df_in2.set_index("When")
         df_in3 = pd.concat([df_in2, df_in3])
         df_in3 = df_in3.reset_index()
-        SITE, FOLDER, df_h = config(location = "Diavolezza 2021")
 
     if location in ["diavolezza21"]:
         df_in3 = pd.read_csv(
@@ -342,7 +340,8 @@ def era5(df, location="schwarzsee19"):
         )
         df_in3 = df_in3.set_index("When")
         df_in3 = df_in3.reset_index()
-        SITE, FOLDER, df_h = config(location = "Diavolezza 2021")
+
+    SITE, FOLDER, df_h = config(location)
 
     mask = (df_in3["When"] >= SITE["start_date"]) & (df_in3["When"] <= SITE["end_date"])
     df_in3 = df_in3.loc[mask]
@@ -506,12 +505,14 @@ def meteoswiss_parameter(parameter):
 
 def meteoswiss(location="schwarzsee19"):
 
+    SITE, FOLDER, df_h = config(location)
     if location == "schwarzsee19":
         location = "plaffeien19"
+
     location = location[:-2]
 
     df = pd.read_csv(
-        os.path.join(raw_folder, location + "_meteoswiss.txt"),
+        os.path.join(FOLDER["raw"], location + "_meteoswiss.txt"),
         # sep="\s+",
         sep=";",
         skiprows=2,
@@ -520,7 +521,7 @@ def meteoswiss(location="schwarzsee19"):
         if meteoswiss_parameter(col):
             df[col] = pd.to_numeric(df[col], errors="coerce")
             df = df.rename(columns={col: meteoswiss_parameter(col)["name"]})
-            logger.info("%s from meteoswiss" % meteoswiss_parameter(col)["name"])
+            # logger.info("%s from meteoswiss" % meteoswiss_parameter(col)["name"])
         else:
             df = df.drop(columns=col)
     df["When"] = pd.to_datetime(df["When"], format="%Y%m%d%H%M")
@@ -535,7 +536,6 @@ def meteoswiss(location="schwarzsee19"):
     )
     mask = (df["When"] >= SITE["start_date"]) & (df["When"] <= SITE["end_date"])
     df = df.loc[mask]
-    logger.warning(df.columns)
     return df
 
 def correct_zeros(col, threshold=3):
@@ -590,10 +590,6 @@ if __name__ == "__main__":
         for col in ["Prec"]:
             logger.info("%s from meteoswiss" % col)
             df[col] = df_swiss[col]
-        # if SITE["name"] in ["guttannen20"]:
-        #     for col in ["Prec","v_a"]:
-        #         logger.info("%s from meteoswiss" % col)
-        #         df[col] = df_swiss[col]
         df_swiss = df_swiss.reset_index()
         df= df.reset_index()
 

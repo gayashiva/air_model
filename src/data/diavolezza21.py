@@ -18,7 +18,7 @@ import glob
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 from src.utils.settings import config
-from src.data.make_dataset import era5, linreg
+from src.data.make_dataset import era5, linreg, meteoswiss, meteoswiss_parameter
 
 
 def field(location="schwarzsee19"):
@@ -112,8 +112,6 @@ if __name__ == "__main__":
     sdcard = False
     
     if sdcard:
-        # raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
-        # input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
         df = field("diavolezza21")
     else:
         df = pd.read_csv(
@@ -123,17 +121,28 @@ if __name__ == "__main__":
                 parse_dates=["When"],
             )
 
-    df= df.set_index("When").resample(pd.offsets.Minute(n=30)).mean().reset_index()
+    df= df.set_index("When").resample(pd.offsets.Minute(n=15)).mean().reset_index()
 
-#     days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="30T")
-#     days = pd.DataFrame({"When": days})
-# 
-#     df = pd.merge(
-#         df_in[ df_in.columns
-#         ],
-#         days,
-#         on="When",
-#     )
+    # fig, ax1 = plt.subplots()
+    # skyblue = "#9bc4f0"
+    # blue = "#0a4a97"
+    # x = df.When
+    # y = df.v_a
+    # ax1.plot(
+    #     x,
+    #     y,
+    #     linestyle="-",
+    #     color=blue,
+    # )
+    # ax1.set_ylabel("Discharge [$l\\, min^{-1}$]")
+    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    # fig.autofmt_xdate()
+    # plt.savefig(FOLDER["input"]+ SITE["name"] + "test1.png")
+
+    df_swiss = meteoswiss(SITE["name"])
+
 
     mask = (df["When"] >= SITE["start_date"]) & (
         df["When"] <= SITE["end_date"]
@@ -152,32 +161,46 @@ if __name__ == "__main__":
     df_ERA5 = df_ERA5.set_index("When")
     df = df.set_index("When")
 
-    # mask1 = (df_ERA5.index >= SITE["start_date"]) & (df_ERA5.index <= SITE["end_date"])
+    df_swiss = df_swiss.set_index("When")
 
-    # Fit ERA5 to field data
-    if SITE["name"] in ["guttannen21", "guttannen20"]:
-        fit_list = ["T_a", "RH", "v_a", "Prec"]
+    for col in [ "Prec", "p_a"]:
+        logger.warning("%s from meteoswiss" % col)
+        df[col] = df_swiss[col]
 
-    if SITE["name"] in ["schwarzsee19"]:
-        fit_list = ["T_a", "RH", "v_a", "p_a"]
 
-    if SITE["name"] in ["diavolezza21"]:
-        fit_list = ["T_a", "RH", "v_a"]
-
-    mask = df[fit_list].notna().any(axis=1).index
-
-    logger.warning(df_ERA5.loc[mask][fit_list])
-    logger.warning(df.loc[mask][fit_list])
-
-    for column in fit_list:
-        Y = df.loc[mask][column].values.reshape(-1, 1)
-        X = df_ERA5.loc[mask][column].values.reshape(-1, 1)
-        slope, intercept = linreg(X, Y)
-        df_ERA5[column] = slope * df_ERA5[column] + intercept
-        if column in ["v_a"]:
-            # Correct negative wind
-            df_ERA5.v_a.loc[df_ERA5.v_a<0] = 0
-
+#     # Fit ERA5 to field data
+#     if SITE["name"] in ["guttannen21", "guttannen20"]:
+#         fit_list = ["T_a", "RH", "v_a", "Prec"]
+# 
+#     if SITE["name"] in ["schwarzsee19"]:
+#         fit_list = ["T_a", "RH", "v_a", "p_a"]
+# 
+#     if SITE["name"] in ["diavolezza21"]:
+#         fit_list = ["T_a", "RH", "v_a"]
+# 
+#     mask = df[fit_list].notna().any(axis=1).index
+# 
+#     logger.warning(df_ERA5.loc[mask][fit_list])
+#     logger.warning(df.loc[mask][fit_list])
+# 
+#     for column in fit_list:
+#         Y = df.loc[mask][column].values.reshape(-1, 1)
+#         X = df_ERA5.loc[mask][column].values.reshape(-1, 1)
+#         slope, intercept = linreg(X, Y)
+#         df_ERA5[column] = slope * df_ERA5[column] + intercept
+#         if column in ["v_a"]:
+#             # Correct negative wind
+#             df_ERA5.v_a.loc[df_ERA5.v_a<0] = 0
+# 
+#     for column in fit_list:
+#         Y = df.loc[mask][column].values.reshape(-1, 1)
+#         X = df_swiss.loc[mask][column].values.reshape(-1, 1)
+#         slope, intercept = linreg(X, Y)
+#         df_swiss[column] = slope * df_swiss[column] + intercept
+#         if column in ["v_a"]:
+#             # Correct negative wind
+#             df_swiss.v_a.loc[df_swiss.v_a<0] = 0
+# 
 
     # Fill from ERA5
     logger.warning("Temperature NaN percent: %0.2f" %(df["T_a"].isna().sum()/df.shape[0]*100))
@@ -190,11 +213,11 @@ if __name__ == "__main__":
             mask = df[col].isna()
             percent_nan = df[col].isna().sum()/df.shape[0] * 100
             logger.info(" %s has %s percent NaN values" %(col, percent_nan))
-            if percent_nan > 1 or col in ["Prec"]:
+            if percent_nan > 1:
                 logger.warning(" Null values filled with ERA5 in %s" %col)
                 df.loc[df[col].isna(), "missing_type"] = df.loc[df[col].isna(), "missing_type"] + col
                 df.loc[df[col].isna(), col] = df_ERA5[col]
-            else:
+            elif percent_nan > 0:
                 logger.warning(" Null values interpolated in %s" %col)
                 df.loc[:, col] = df[col].interpolate()
         except KeyError:
@@ -294,7 +317,7 @@ if __name__ == "__main__":
     skyblue = "#9bc4f0"
     blue = "#0a4a97"
     x = df_out.When
-    y = df_out.Discharge
+    y = df_out.T_a
     ax1.plot(
         x,
         y,
