@@ -60,10 +60,10 @@ class Icestupa:
     TIME_STEP = 60*60 # Model time step
 
     """Fountain constants"""
-    dia_f =0.005  # FOUNTAIN aperture diameter
-    theta_f = 45  # FOUNTAIN angle
+    # dia_f =0.005  # FOUNTAIN aperture diameter
+    # theta_f = 45  # FOUNTAIN angle
+    # crit_temp = 0  # FOUNTAIN runtime temperature
     T_w = 5  # FOUNTAIN Water temperature
-    crit_temp = 0  # FOUNTAIN runtime temperature
 
     """Simulation constants"""
     trigger = "Manual"
@@ -151,12 +151,12 @@ class Icestupa:
             self.r_spray= df_c.loc[:, "dia"].mean() / 2
         logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
 
-        # Get mean discharge from spray radius
-        self.discharge = get_droplet_projectile(
-            dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
-        )
-        logger.warning("Estimated mean spray %0.1f"%self.discharge)
-        logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
+        # # Get mean discharge from spray radius
+        # self.discharge = get_droplet_projectile(
+        #     dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
+        # )
+        # logger.warning("Estimated mean spray %0.1f"%self.discharge)
+        # logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
 
         # Get initial height
         if hasattr(self, "dome_rad"):
@@ -306,12 +306,12 @@ class Icestupa:
             self.r_spray= df_c.loc[:, "dia"].mean() / 2
         logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
 
-        # Get mean discharge from spray radius
-        self.discharge = get_droplet_projectile(
-            dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
-        )
-        logger.warning("Estimated mean spray %0.1f"%self.discharge)
-        logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
+        # # Get mean discharge from spray radius
+        # self.discharge = get_droplet_projectile(
+        #     dia=self.dia_f, h=self.df.loc[0,"h_f"], x=self.r_spray
+        # )
+        # logger.warning("Estimated mean spray %0.1f"%self.discharge)
+        # logger.warning("Measured fountain diameter %0.1f"%(self.dia_f*1000))
 
         # Get initial height
         if hasattr(self, "dome_rad"):

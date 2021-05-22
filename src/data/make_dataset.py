@@ -26,6 +26,7 @@ sys.path.append(dirname)
 from src.utils.settings import config
 
 def field(location="schwarzsee19"):
+    SITE, FOLDER, df_h = config(location)
     if location == "guttannen20":
         df_in = pd.read_csv(
             raw_folder + SITE["name"] + "_field.txt",
@@ -279,9 +280,6 @@ def field(location="schwarzsee19"):
         df.Discharge = df.Fountain * df.Discharge
         df.to_csv(input_folder + SITE["name"] + "_input_field.csv")
     df = df.set_index("When").resample("15T").mean().reset_index()
-    # else:
-    #     input_file = input_folder + SITE["name"] + "_input_field.csv"
-    #     df = pd.read_csv(input_file, sep=",", header=0, parse_dates=['When'])
     return df
 
 
@@ -451,7 +449,6 @@ def linreg(X, Y):
     return slope, intercept
 
 def meteoswiss_parameter(parameter):
-    # d = {"time":{"name":"When", "units":"()"}}
     d = {
         "time": {
             "name": "When",

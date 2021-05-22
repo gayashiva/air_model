@@ -45,12 +45,13 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
         ]
 
 
-    if location == "Guttannen 2021":
+    if location == "Guttannen 2021" or location == "guttannen21":
 
         SITE = dict(
             name="guttannen21",
             start_date=datetime(2020, 11, 22),
-            end_date=datetime(2021, 4, 26, 23),
+            # end_date=datetime(2021, 4, 26, 23),
+            end_date=datetime(2021, 5, 18),
             fountain_off_date=datetime(2021, 2, 21),
             utc_offset=1,
             latitude=46.649999,
@@ -58,7 +59,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
             # altitude_aws=1054,
 
-            dia_f=0.00785,  # FOUNTAIN aperture diameter
+            # dia_f=0.00785,  # FOUNTAIN aperture diameter
+            discharge=20,  # FOUNTAIN min discharge
             min_discharge=5,  # FOUNTAIN min discharge
             # meas_circum=45, # on Feb 11
         )
@@ -70,7 +72,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             {"When": datetime(2021, 1, 11, 16), "h_f": 4.5},
         ]
 
-    if location == "Guttannen 2020":
+    if location == "Guttannen 2020"or location == "guttannen20":
 
         SITE = dict(
             name="guttannen20",
@@ -94,7 +96,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             {"When": datetime(2020, 2, 5, 19), "h_f": 2.5},
         ]
 
-    if location == "Schwarzsee 2019":
+    if location == "Schwarzsee 2019" or location == "schwarzsee19":
         SITE = dict(
             name="schwarzsee19",
             start_date=datetime(2019, 1, 30, 17),
@@ -113,7 +115,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             {"When": SITE["start_date"], "h_f": 1.35},
         ]
 
-    if location == "Gangles 2021":
+    if location == "Gangles 2021" or location == "gangles21":
+
         SITE = dict(
             name="gangles21",
             # start_date=datetime(2020, 12, 14),
