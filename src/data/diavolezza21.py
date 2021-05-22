@@ -21,6 +21,66 @@ from src.utils.settings import config
 from src.data.make_dataset import era5, linreg, meteoswiss, meteoswiss_parameter
 
 
+def aws(location="diavolezza21"):
+    SITE, FOLDER, df_h = config(location = "Diavolezza 2021")
+    # Get header colun list
+    df = pd.read_csv(
+        FOLDER["raw"] + location + "_aws.csv",
+        sep="\t",
+        header=0,
+        parse_dates=['date_time']
+    )
+    df.rename(
+        columns={
+            "date_time": "When",
+            " WndScMae": "v_a",
+            " Tair_act_AVG": "T_a",
+            " Rhum_act_AVG": "RH",
+            "SWdown_cor": "SW_out",
+            "SWup_cor": "SW_in",
+            "LWdown_cor": "LW_out",
+            "LWup_cor": "LW_in",
+            " HS_act": "HS",
+            " Baro_act_AVG": "p_a",
+        },
+        inplace=True,
+    )
+    df = df[["When", "v_a", "T_a", "RH", "SW_out", "SW_in", "LW_out", "LW_in", "HS", "p_a"]]
+    df["HS"] /= 100
+    df["a"] = df["SW_out"]/df["SW_in"]
+    df= df.set_index("When").resample(pd.offsets.Minute(n=15)).mean().reset_index()
+    df.loc[df.a > 1, "a"] = 1
+    logger.warning(df.head())
+    logger.warning(df.tail())
+
+    fig, ax1 = plt.subplots()
+    skyblue = "#9bc4f0"
+    blue = "#0a4a97"
+    x = df.When
+    y = df.T_a
+    ax1.plot(
+        x,
+        y,
+        linestyle="-",
+        color=blue,
+    )
+    ax1.set_ylabel("Temperature[$l\\, min^{-1}$]")
+    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    fig.autofmt_xdate()
+    plt.savefig(FOLDER["input"]+ SITE["name"] + "test1.png")
+
+    mask = (df["When"] >= SITE["start_date"]) & (
+        df["When"] <= SITE["end_date"]
+    )
+    df= df.loc[mask]
+    df= df.reset_index(drop=True)
+    # df = df.set_index("When")
+    # logger.error(pd.date_range(start = df.index[0], end = df.index[-1], freq='15T').difference(df.index))
+    # df = df.reset_index()
+    return df
+
 def field(location="schwarzsee19"):
     if location == "diavolezza21":
         path = "/home/suryab/ownCloud/Sites/Diavolezza/diavolezza_sdcard/"
@@ -89,15 +149,21 @@ def field(location="schwarzsee19"):
                 print(the_type)
                 pass
 
+    df = pd.concat(li, axis=0, ignore_index=True)
+    df = df.set_index("When").sort_index().reset_index()
+    df= df.set_index("When").resample(pd.offsets.Minute(n=15)).mean().reset_index()
+
+    mask = (df["When"] >= SITE["start_date"]) & (
+        df["When"] <= SITE["end_date"]
+    )
+    df= df.loc[mask]
+    df= df.reset_index(drop=True)
+
     print("Number of hours missing : %s" %ctr)
-    df_in = pd.concat(li, axis=0, ignore_index=True)
-    df_in = df_in.set_index("When").sort_index().reset_index()
 
     # CSV output
-    logger.info(df_in.head())
-    logger.info(df_in.tail())
-    df_in.to_csv(FOLDER["raw"] + SITE["name"] + "_field.csv")
-    return df_in
+    df.to_csv(FOLDER["raw"] + SITE["name"] + "_field.csv")
+    return df
 
 if __name__ == "__main__":
     logger = logging.getLogger(__name__)
@@ -107,100 +173,64 @@ if __name__ == "__main__":
         logger=logger,
     )
 
+
     SITE, FOLDER, *args = config("Diavolezza 2021")
+    df = aws()
+
     # sdcard = True
     sdcard = False
     
     if sdcard:
-        df = field("diavolezza21")
+        df_field = field("diavolezza21")
     else:
-        df = pd.read_csv(
+        df_field = pd.read_csv(
                 FOLDER["raw"]+ SITE["name"] + "_field.csv",
                 sep=",",
                 header=0,
                 parse_dates=["When"],
             )
 
-    df= df.set_index("When").resample(pd.offsets.Minute(n=15)).mean().reset_index()
-
-    # fig, ax1 = plt.subplots()
-    # skyblue = "#9bc4f0"
-    # blue = "#0a4a97"
-    # x = df.When
-    # y = df.v_a
-    # ax1.plot(
-    #     x,
-    #     y,
-    #     linestyle="-",
-    #     color=blue,
-    # )
-    # ax1.set_ylabel("Discharge [$l\\, min^{-1}$]")
-    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    # fig.autofmt_xdate()
-    # plt.savefig(FOLDER["input"]+ SITE["name"] + "test1.png")
 
     df_swiss = meteoswiss(SITE["name"])
-
-
-    mask = (df["When"] >= SITE["start_date"]) & (
-        df["When"] <= SITE["end_date"]
-    )
-    df= df.loc[mask]
-    df= df.reset_index(drop=True)
-
-    logger.info(df.head())
-    logger.info(df.tail())
-    logger.warning(df.loc[~df["Discharge"].isna(), "When"].head())
-
-    df.loc[df.T_a < -30, "T_a"] = np.NaN
-
     df_ERA5, df_in3 = era5(df, SITE["name"])
 
     df_ERA5 = df_ERA5.set_index("When")
     df = df.set_index("When")
-
     df_swiss = df_swiss.set_index("When")
+    df_field= df_field.set_index("When")
 
-    for col in [ "Prec", "p_a"]:
+    for col in ["Prec"]:
         logger.warning("%s from meteoswiss" % col)
         df[col] = df_swiss[col]
 
+    for col in ["Discharge"]:
+        logger.warning("%s from field" % col)
+        df[col] = df_field[col]
 
-#     # Fit ERA5 to field data
-#     if SITE["name"] in ["guttannen21", "guttannen20"]:
-#         fit_list = ["T_a", "RH", "v_a", "Prec"]
-# 
-#     if SITE["name"] in ["schwarzsee19"]:
-#         fit_list = ["T_a", "RH", "v_a", "p_a"]
-# 
-#     if SITE["name"] in ["diavolezza21"]:
-#         fit_list = ["T_a", "RH", "v_a"]
-# 
-#     mask = df[fit_list].notna().any(axis=1).index
-# 
-#     logger.warning(df_ERA5.loc[mask][fit_list])
-#     logger.warning(df.loc[mask][fit_list])
-# 
-#     for column in fit_list:
-#         Y = df.loc[mask][column].values.reshape(-1, 1)
-#         X = df_ERA5.loc[mask][column].values.reshape(-1, 1)
-#         slope, intercept = linreg(X, Y)
-#         df_ERA5[column] = slope * df_ERA5[column] + intercept
-#         if column in ["v_a"]:
-#             # Correct negative wind
-#             df_ERA5.v_a.loc[df_ERA5.v_a<0] = 0
-# 
-#     for column in fit_list:
-#         Y = df.loc[mask][column].values.reshape(-1, 1)
-#         X = df_swiss.loc[mask][column].values.reshape(-1, 1)
-#         slope, intercept = linreg(X, Y)
-#         df_swiss[column] = slope * df_swiss[column] + intercept
-#         if column in ["v_a"]:
-#             # Correct negative wind
-#             df_swiss.v_a.loc[df_swiss.v_a<0] = 0
-# 
+
+    # Fit ERA5 to field data
+    if SITE["name"] in ["guttannen21", "guttannen20"]:
+        fit_list = ["T_a", "RH", "v_a", "Prec"]
+
+    if SITE["name"] in ["schwarzsee19"]:
+        fit_list = ["T_a", "RH", "v_a", "p_a"]
+
+    if SITE["name"] in ["diavolezza21"]:
+        fit_list = ["T_a", "RH", "v_a", "p_a"]
+
+    mask = df[fit_list].notna().any(axis=1).index
+
+    # logger.warning(df_ERA5.loc[mask][fit_list])
+    logger.warning(df.loc[mask][fit_list])
+
+    for column in fit_list:
+        Y = df.loc[mask][column].values.reshape(-1, 1)
+        X = df_ERA5.loc[mask][column].values.reshape(-1, 1)
+        slope, intercept = linreg(X, Y)
+        df_ERA5[column] = slope * df_ERA5[column] + intercept
+        if column in ["v_a"]:
+            # Correct negative wind
+            df_ERA5.v_a.loc[df_ERA5.v_a<0] = 0
 
     # Fill from ERA5
     logger.warning("Temperature NaN percent: %0.2f" %(df["T_a"].isna().sum()/df.shape[0]*100))
@@ -226,7 +256,6 @@ if __name__ == "__main__":
             df["missing_type"] = df["missing_type"] + col
     logger.info(df.missing_type.describe())
     logger.info(df.missing_type.unique())
-
 
     # if SITE["name"] in ["schwarzsee19"]:
     #     for col in ["T_a", "RH", "v_a", "p_a"]:
@@ -254,6 +283,7 @@ if __name__ == "__main__":
             "p_a",
             "missing_type",
             "LW_in",
+            # "a",
         ]
 
     if SITE["name"] in ["schwarzsee19"]:
@@ -290,6 +320,10 @@ if __name__ == "__main__":
     if df_out.isna().values.any():
         print(df_out[cols].isna().sum())
         for column in cols:
+            if df_out[column].isna().sum() > 0 and column in ["a"]:
+                albedo = df_out.a.replace(0, np.nan).mean()
+                df_out.loc[df_out[column].isna(), column] = albedo
+                logger.warning("Albedo Null values extrapolated in %s " %albedo)
             if df_out[column].isna().sum() > 0 and column in ["Discharge"]:
                 discharge = df_out.Discharge.replace(0, np.nan).mean()
 
@@ -299,7 +333,7 @@ if __name__ == "__main__":
                 # df_out["Discharge"] = df_out.between_time('9:00', '18:00').Discharge.replace(np.nan, discharge)
                 # df_out["Discharge"] = df_out.Discharge.replace(np.nan, 0)
                 # df_out = df_out.reset_index()
-                logger.warning(" Null values extrapolated in %s " %discharge)
+                logger.warning(" Discharge Null values extrapolated in %s " %discharge)
 
             if df_out[column].isna().sum() > 0 and column not in ["missing_type", "Discharge"]:
                 logger.warning(" Null values interpolated in %s" %column)
