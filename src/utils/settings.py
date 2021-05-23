@@ -126,7 +126,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             longitude=77.606949,
             latitude=34.216638,
             h_aws=3,
-            dome_rad=2,
+            # dome_rad=2,
 
             fountain_off_date=datetime(2021, 3, 10, 18),
             discharge=60,  # FOUNTAIN on mean discharge from field
