@@ -244,7 +244,7 @@ class Icestupa:
         ]  # Remove junk columns
 
         if self.df.isnull().values.any():
-            print(self.df[self.df.columns].isna().sum())
+            # print(self.df[self.df.columns].isna().sum())
             for column in self.df.columns:
                 if self.df[column].isna().sum() > 0: 
                     logger.warning(" Null values interpolated in %s" %column)

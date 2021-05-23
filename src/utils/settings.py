@@ -34,9 +34,9 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             longitude=9.98425,
             h_aws=2.3, 
 
-            # dia_f=0.008,  # FOUNTAIN aperture diameter
             dome_rad=2,
-            meas_circum=65.5, # on May 19
+            # dia_f=0.008,  # FOUNTAIN aperture diameter
+            # meas_circum=65.5, # on May 19
             # DX = 14e-03  # Initial Ice layer thickness
         )
 
@@ -59,9 +59,9 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
             # altitude_aws=1054,
 
-            # dia_f=0.00785,  # FOUNTAIN aperture diameter
-            discharge=20,  # FOUNTAIN min discharge
+            discharge=10,  # FOUNTAIN mean discharge
             min_discharge=5,  # FOUNTAIN min discharge
+            # dia_f=0.00785,  # FOUNTAIN aperture diameter
             # meas_circum=45, # on Feb 11
         )
 
@@ -85,8 +85,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             # altitude_aws=1054,
 
             fountain_off_date=datetime(2020, 2, 27),
-            dia_f=0.0056,  # FOUNTAIN aperture diameter
             min_discharge=5,  # FOUNTAIN min discharge
+            # dia_f=0.0056,  # FOUNTAIN aperture diameter
             # meas_circum=28, # on 24 Jan
         )
 
@@ -129,8 +129,9 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             dome_rad=2,
 
             fountain_off_date=datetime(2021, 3, 10, 18),
-            meas_circum=82.3,
-            dia_f=0.010,  # FOUNTAIN aperture diameter
+            discharge=120,  # FOUNTAIN on mean discharge from field
+            # meas_circum=82.3,
+            # dia_f=0.010,  # FOUNTAIN aperture diameter
         )
 
         data_h = [

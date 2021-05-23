@@ -104,11 +104,6 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
 
                     self.df = self.df.set_index("When")
 
-                    # logger.error(df_f.tail())
-                    # df_f.loc[df_f.index % 2 == 0, "fountain"] = 0
-                    # df_f.loc[df_f.index % 2 != 0, "fountain"] = 1
-                    # logger.error(df_f.tail())
-
                     # Use field discharge
                     df_field = pd.read_csv(
                         os.path.join("data/" + self.name + "/interim/")
@@ -128,7 +123,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                     mask = df_field.Discharge != np.NaN
                     mask &= df_field.Discharge != 0
                     df_field = df_field.loc[mask]
-                    logger.info("Discharge min %s, max %s" %(self.min_discharge,df_field.Discharge.max()))
+                    logger.warning("Discharge min %s, max %s" %(self.min_discharge,df_field.Discharge.mean()))
                     logger.info("Field discharge ends at %s" %df_field.index[-1])
                     self.df.loc[df_field.index, "Discharge"] = df_field["Discharge"]
 
