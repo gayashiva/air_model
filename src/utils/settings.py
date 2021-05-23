@@ -72,7 +72,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             {"When": datetime(2021, 1, 11, 16), "h_f": 4.5},
         ]
 
-    if location == "Guttannen 2020"or location == "guttannen20":
+    if location == "Guttannen 2020" or location == "guttannen20":
 
         SITE = dict(
             name="guttannen20",
