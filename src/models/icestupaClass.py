@@ -148,8 +148,12 @@ class Icestupa:
             self.dome_vol=0
             logger.warning("Measured spray radius from fountain parameters %0.1f"%self.r_spray)
         else:
-            self.r_spray= df_c.loc[df_c.When < self.fountain_off_date, "dia"].mean() / 2
-            logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
+            if hasattr(self, "perimeter"):
+                self.r_spray = self.perimeter/(math.pi *2)
+                logger.warning("Measured spray radius from perimeter %0.1f"%self.r_spray)
+            else:
+                self.r_spray= df_c.loc[df_c.When < self.fountain_off_date, "dia"].mean() / 2
+                logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
             # Get initial height
             if hasattr(self, "dome_rad"):
                 self.dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
@@ -159,6 +163,7 @@ class Icestupa:
                 self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
                 self.dome_vol = df_c.loc[0, "DroneV"]
                 logger.warning("Initial height estimated from drone %0.1f"%self.h_i)
+
 
         unknown = ["a", "vp_a", "LW_in", "cld"]  # Possible unknown variables
         for i in range(len(unknown)):
@@ -297,9 +302,14 @@ class Icestupa:
                 dia=self.dia_f, h=self.df.loc[0,"h_f"], d=self.discharge
             )
             self.dome_vol=0
+            logger.warning("Measured spray radius from fountain parameters %0.1f"%self.r_spray)
         else:
-            self.r_spray= df_c.loc[df_c.When < self.fountain_off_date, "dia"].mean() / 2
-            logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
+            if hasattr(self, "perimeter"):
+                self.r_spray = self.perimeter/(math.pi *2)
+                logger.warning("Measured spray radius from perimeter %0.1f"%self.r_spray)
+            else:
+                self.r_spray= df_c.loc[df_c.When < self.fountain_off_date, "dia"].mean() / 2
+                logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
             # Get initial height
             if hasattr(self, "dome_rad"):
                 self.dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
