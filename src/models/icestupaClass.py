@@ -19,6 +19,8 @@ sys.path.append(dirname)
 from src.models.methods.solar import get_solar
 from src.utils.settings import config
 from src.utils import setup_logger
+from src.models.methods.calibration import get_calibration
+from src.models.methods.droplet import get_droplet_projectile
 
 # Module logger
 logger = logging.getLogger(__name__)
@@ -52,6 +54,7 @@ class Icestupa:
     """Fountain constants"""
     # theta_f = 45  # FOUNTAIN angle
     T_W = 5  # FOUNTAIN Water temperature
+    # r_spray = 0  # FOUNTAIN spray radius
 
     """Simulation constants"""
     trigger = "Manual"
@@ -99,8 +102,6 @@ class Icestupa:
         logger.debug(self.df.head())
         logger.debug(self.df.tail())
 
-
-
     # Imported methods
     from src.models.methods._freq import change_freq
     from src.models.methods._self_attributes import self_attributes
@@ -112,9 +113,7 @@ class Icestupa:
     from src.models.methods._figures import summary_figures
 
     @Timer(text="Preprocessed data in {:.2f} seconds" , logger = logging.warning)
-    def derive_parameters(
-        self,
-    ):  # Derives additional parameters required for simulation
+    def derive_parameters(self):  # Derives additional parameters required for simulation
 
         self.change_freq()
         self.self_attributes(save=True)
@@ -268,12 +267,9 @@ class Icestupa:
 
         self.change_freq()
 
-        self.self_attributes()
 
     @Timer(text="Simulation executed in {:.2f} seconds", logger = logging.warning)
     def melt_freeze(self):
-
-        self.self_attributes()
 
         # Initialise required columns
         col = [
