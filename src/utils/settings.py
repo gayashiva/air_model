@@ -60,7 +60,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             # altitude_aws=1054,
 
             discharge=10,  # FOUNTAIN mean discharge
-            min_discharge=5,  # FOUNTAIN min discharge
+            # min_discharge=5,  # FOUNTAIN min discharge
+            min_discharge=0,  # FOUNTAIN min discharge
             perimeter=45, # on Feb 11
             # dia_f=0.00785,  # FOUNTAIN aperture diameter
         )
@@ -85,7 +86,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             # altitude_aws=1054,
 
             fountain_off_date=datetime(2020, 2, 27),
-            min_discharge=5,  # FOUNTAIN min discharge
+            # min_discharge=5,  # FOUNTAIN min discharge
+            min_discharge=0,  # FOUNTAIN min discharge
             perimeter=28, # on 24 Jan
             # dia_f=0.0056,  # FOUNTAIN aperture diameter
         )

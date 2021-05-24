@@ -63,7 +63,6 @@ def summary_figures(self):
     logger.info("Creating figures")
 
     dome_vol = self.df[self.df.iceV !=0].reset_index().iceV[0]
-    logger.info(dome_vol)
 
     # if self.name == "diavolezza21":
     #     input="data/guttannen21/interim/"
@@ -285,16 +284,17 @@ def summary_figures(self):
 
     dfds["Discharge"] *= self.TIME_STEP / (60 * 1000)
     dfds["fountain_runoff"] /= 1000
-    dfds["wind_loss"] /= 1000
+    # dfds["wind_loss"] /= 1000
     dfds["Frozen"] = dfds["Discharge"] - dfds["fountain_runoff"]
-    dfds["Runoff loss"] = dfds["fountain_runoff"] + dfds["wind_loss"]
-    dfds["Wind loss"] = dfds["wind_loss"]
+    dfds["Runoff loss"] = dfds["fountain_runoff"] #+ dfds["wind_loss"]
+    # dfds["Wind loss"] = dfds["wind_loss"]
     y01 = dfds["Discharge"]
     y02 = dfds["fountain_runoff"]
 
     dfd[["$-q_{melt}$", "$-q_{T}$"]] *=-1
     z = dfd[["$-q_{melt}$", "$-q_{T}$", "$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
-    y0 = dfds[["Frozen", "Wind loss", "Runoff loss"]]
+    # y0 = dfds[["Frozen", "Wind loss", "Runoff loss"]]
+    y0 = dfds[["Frozen", "Runoff loss"]]
 
     ax0 = fig.add_subplot(5, 1, 1)
     ax0 = y0.plot.bar(

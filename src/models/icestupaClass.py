@@ -50,8 +50,14 @@ class Icestupa:
     T_DECAY = 10  # Albedo decay rate decay_t_d
     Z_I = 0.0017  # Ice Momentum and Scalar roughness length
     T_RAIN = 1  # Temperature condition for liquid precipitation
-    v_a_limit = 8  # All fountain water lost at this wind speed
-    # delta_T_limit = 0.1 # Max rate of change of temperature due to fountain water
+
+    """Fountain constants"""
+    # theta_f = 45  # FOUNTAIN angle
+    T_w = 5  # FOUNTAIN Water temperature
+
+    """Simulation constants"""
+    trigger = "Manual"
+    # crit_temp = 0  # FOUNTAIN runtime temperature
 
     """Model constants"""
     # DX = 10e-03  # Initial Ice layer thickness
@@ -59,14 +65,6 @@ class Icestupa:
     DX = 20e-03  # Initial Ice layer thickness
     TIME_STEP = 60*60 # Model time step
 
-    """Fountain constants"""
-    # dia_f =0.005  # FOUNTAIN aperture diameter
-    # theta_f = 45  # FOUNTAIN angle
-    # crit_temp = 0  # FOUNTAIN runtime temperature
-    T_w = 5  # FOUNTAIN Water temperature
-
-    """Simulation constants"""
-    trigger = "Manual"
 
     def __init__(self, location = "Guttannen 2021"):
 
@@ -495,14 +493,6 @@ class Icestupa:
                 self.df.loc[i,"fountain_runoff"]= (
                     self.df.Discharge.loc[i] * self.TIME_STEP / 60
                 )
-
-                # TODO add to paper
-                # Water loss due to wind
-                if self.df.v_a.loc[i] < self.v_a_limit:
-                    self.df.loc[i,"wind_loss"]= self.df.loc[i,"fountain_runoff"] * self.df.v_a.loc[i]/self.v_a_limit
-                    self.df.loc[i,"fountain_runoff"]-= self.df.loc[i,"wind_loss"]
-                else:
-                    self.df.loc[i,"fountain_runoff"]= 0
 
                 # Energy Flux
                 self.get_energy(row)
