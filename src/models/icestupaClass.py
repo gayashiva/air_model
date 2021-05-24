@@ -243,13 +243,13 @@ class Icestupa:
             mode="a",
         )
 
-        # Output for manim
-        filename2 = os.path.join(self.output, self.name + "_manim_" + self.trigger + ".csv")
-        df = self.df.copy()
-        cols = ["When", "h_ice", "h_s", "r_ice", "ice", "T_a", "Discharge"]
-        df = df[cols]
-        df.set_index('When').to_csv(filename2, sep=",")
-        logger.info("Manim output produced")
+        # # Output for manim
+        # filename2 = os.path.join(self.output, self.name + "_manim_" + self.trigger + ".csv")
+        # df = self.df.copy()
+        # cols = ["When", "h_ice", "h_s", "r_ice", "ice", "T_a", "Discharge"]
+        # df = df[cols]
+        # df.set_index('When').to_csv(filename2, sep=",")
+        # logger.info("Manim output produced")
 
     def read_input(self):  # Use processed input dataset
 
@@ -324,20 +324,6 @@ class Icestupa:
         for row in t:
             i = row.Index
 
-            ice_melted = self.df.loc[i, "ice"] < 1 #or self.df.loc[i, "T_bulk"] < -50 or self.df.loc[i, "T_s"] < -200 #or i==self.df.shape[0] - 1
-            
-
-            if (
-                ice_melted and STATE == 1
-            ):  # Break loop when ice melted and simulation done
-                logger.error("Ice %0.1f, T_s %0.1f" %(self.df.loc[i, "ice"], self.df.loc[i, "T_s"]))
-                self.df.loc[i - 1, "meltwater"] += self.df.loc[i - 1, "ice"]
-                self.df.loc[i - 1, "ice"] = 0
-                logger.info("Model ends at %s" % (self.df.When[i]))
-                self.df = self.df[self.start : i - 1]
-                self.df = self.df.reset_index(drop=True)
-                break
-
             if self.df.Discharge[i] > 0 and STATE == 0:
                 STATE = 1
 
@@ -359,10 +345,7 @@ class Icestupa:
                     * self.df.loc[i - 1, "h_ice"]
                 )
                 self.df.loc[i, "ice"] = (
-                    math.pi
-                    / 3
-                    * self.df.loc[i - 1, "r_ice"] ** 2
-                    * self.df.loc[i - 1, "h_ice"]
+                    self.df.loc[i, "iceV"]
                     * self.RHO_I
                 )
                 self.df.loc[i, "input"] = self.df.loc[i, "ice"]
@@ -378,36 +361,28 @@ class Icestupa:
                 self.start = i - 1
 
             if STATE == 1:
-#                 # Change in fountain height
-#                 if self.df.loc[i, "h_f"] != self.df.loc[i-1, "h_f"]:
-# 
-#                     # Area = math.pi * math.pow(self.dia_f, 2) / 4
-#                     # logger.warning(
-#                     #     "Old mean discharge %s on %s" % (self.discharge, self.df.When[i])
-#                     # )
-#                     # self.discharge = math.sqrt((self.discharge/ (60 * 1000))**2-2*self.G*Area**2 * (self.df.loc[i, "h_f"] - self.df.loc[i-1, "h_f"]))*60*1000
-#                     # logger.warning(
-#                     #     "New mean discharge %s on %s" % (self.discharge, self.df.When[i])
-#                     # )
-# 
-#                     # Maintains velocity of spray
-#                     logger.warning(
-#                         "Height increased to %s on %s" % (self.df.loc[i, "h_f"], self.df.When[i])
-#                     )
-#                     logger.warning(
-#                         "Old spray radius %s on %s" % (self.r_spray, self.df.When[i])
-#                     )
-#                     self.r_spray = get_droplet_projectile(
-#                         dia=self.dia_f, h=self.df.loc[i, "h_f"], d=self.discharge
-#                     )
-#                     logger.warning(
-#                         "New spray radius %s on %s" % (self.r_spray, self.df.When[i])
-#                     )
-#                     self.df.loc[i - 1, "r_ice"] = self.r_spray
-#                     self.df.loc[i - 1, "h_ice"] = (
-#                         3 * self.df.loc[i, "iceV"] / (math.pi * self.r_spray ** 2)
-#                     )
-# 
+                ice_melted = round(self.df.loc[i, "iceV"],2) < self.dome_vol - 1 #or self.df.loc[i, "T_bulk"] < -50 or self.df.loc[i, "T_s"] < -200 #or i==self.df.shape[0] - 1
+
+                if ice_melted:   # Break loop when ice melted and simulation done
+                    print(self.df.When[i], self.df.iceV[i], self.dome_vol, ice_melted)
+                    if self.df.loc[i-1, "When"] < self.fountain_off_date and self.df.loc[i-1, "solid"] <= 0:
+                        self.df.loc[i-1, "iceV"] = self.dome_vol
+                        self.df.loc[i, "T_s"] = 0 
+                        self.df.loc[i, "thickness"] = 0 
+                        col_list = ["meltwater", "ice", "vapour", "unfrozen_water", "iceV", "input"]
+                        logger.error("Skipping %s"%self.df.loc[i, "When"])
+                        for column in col_list:
+                            self.df.loc[i, column] = self.df.loc[i-1, column]
+                        continue
+
+                    logger.error("Ice %0.1f, T_s %0.1f" %(self.df.loc[i, "ice"], self.df.loc[i, "T_s"]))
+                    self.df.loc[i - 1, "meltwater"] += self.df.loc[i - 1, "ice"]
+                    self.df.loc[i - 1, "ice"] = 0
+                    logger.info("Model ends at %s" % (self.df.When[i]))
+                    self.df = self.df[self.start : i - 1]
+                    self.df = self.df.reset_index(drop=True)
+                    break
+
                 self.get_area(i)
 
                 # Precipitation to ice quantity
@@ -622,15 +597,6 @@ class Icestupa:
                         )
                     )
 
-                if self.df.loc[i, "iceV"] <= self.dome_vol and self.df.loc[i, "When"] < self.fountain_off_date and self.df.loc[i, "solid"] < 0:
-                    self.df.loc[i, "iceV"] = self.dome_vol
-                    self.df.loc[i + 1, "T_s"] = 0 
-                    self.df.loc[i + 1, "thickness"] = 0 
-                    col_list = ["meltwater", "ice", "vapour", "unfrozen_water", "iceV", "input"]
-                    logger.error("Skipping %s"%self.df.loc[i, "When"])
-                    for column in col_list:
-                        self.df.loc[i+1, column] = self.df.loc[i, column]
-                    continue
 
                 """ Quantities of all phases """
                 self.df.loc[i + 1, "T_s"] = (

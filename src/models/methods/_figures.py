@@ -232,7 +232,6 @@ def summary_figures(self):
             "iceV",
             "Discharge",
             "fountain_runoff",
-            "wind_loss",
         ]
     ]
 
