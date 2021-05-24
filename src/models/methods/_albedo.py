@@ -21,7 +21,7 @@ def get_albedo(
         s = 0
     if f == 0:  # last snowed
         self.df.loc[i, "a"] = self.A_I + (self.A_S - self.A_I) * math.exp(
-            -s / self.T_DECAY
+            -s / self.A_DECAY
         )
         s = s + 1
     else:  # last sprayed

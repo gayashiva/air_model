@@ -45,13 +45,13 @@ class Icestupa:
     IE = 0.95  # Ice Emissivity IE
     A_I = 0.35  # Albedo of Ice A_I
     A_S = 0.85  # Albedo of Fresh Snow A_S
-    T_DECAY = 10  # Albedo decay rate decay_t_d
-    Z_I = 0.0017  # Ice Momentum and Scalar roughness length
+    A_DECAY = 10  # Albedo decay rate decay_t_d
+    Z = 0.0017  # Ice Momentum and Scalar roughness length
     T_RAIN = 1  # Temperature condition for liquid precipitation
 
     """Fountain constants"""
     # theta_f = 45  # FOUNTAIN angle
-    T_w = 5  # FOUNTAIN Water temperature
+    T_W = 5  # FOUNTAIN Water temperature
 
     """Simulation constants"""
     trigger = "Manual"
@@ -180,7 +180,7 @@ class Icestupa:
 
         if "a" in unknown:
             """Albedo Decay parameters initialized"""
-            self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
+            self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.TIME_STEP
             s = 0
             f = 1
             if self.name in ["schwarzsee19", "guttannen20"]:
@@ -364,7 +364,7 @@ class Icestupa:
                 ice_melted = round(self.df.loc[i, "iceV"],2) < self.dome_vol - 1 #or self.df.loc[i, "T_bulk"] < -50 or self.df.loc[i, "T_s"] < -200 #or i==self.df.shape[0] - 1
 
                 if ice_melted:   # Break loop when ice melted and simulation done
-                    print(self.df.When[i], self.df.iceV[i], self.dome_vol, ice_melted)
+                    (self.df.When[i], self.df.iceV[i], self.dome_vol, ice_melted)
                     if self.df.loc[i-1, "When"] < self.fountain_off_date and self.df.loc[i-1, "solid"] <= 0:
                         self.df.loc[i-1, "iceV"] = self.dome_vol
                         self.df.loc[i, "T_s"] = 0 

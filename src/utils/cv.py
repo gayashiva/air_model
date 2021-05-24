@@ -43,7 +43,7 @@ def bounds(var, res, change = 5):
     return np.arange(var * (100-change)/100, var * (100+change)/100 + res, res).tolist()
 
 class CV_Icestupa(BaseEstimator,Icestupa):
-    def __init__(self, location = "Guttannen 2021", DX = 0.020, TIME_STEP = 60*60, A_I = 0.35, A_S = 0.85, IE = 0.95, T_RAIN = 1, T_DECAY= 10,v_a_limit=8, Z_I=0.0017):
+    def __init__(self, location = "Guttannen 2021", DX = 0.020, TIME_STEP = 60*60, A_I = 0.35, A_S = 0.85, IE = 0.95, T_RAIN = 1, A_DECAY= 10, Z=0.0017):
         super(Icestupa, self).__init__()
 
         print("Initializing classifier:\n")
@@ -66,15 +66,16 @@ class CV_Icestupa(BaseEstimator,Icestupa):
     @Timer(text="Simulation executed in {:.2f} seconds")
     def fit(self, X,y):
 
-        """Albedo Decay parameters initialized"""
-        self.T_DECAY = self.T_DECAY * 24 * 60 * 60 / self.TIME_STEP
-        s = 0
-        if self.name in ["schwarzsee19", "guttannen20"]:
-            f = 0  # Start with snow event
-        else:
-            f = 1
-        for i, row in self.df.iterrows():
-            s, f = self.get_albedo(i, s, f, site=self.name)
+        if self.A_DECAY !=10 or self.A_I != 0.35 or self.A_S != 0.85 or self.T_RAIN != 1: 
+            """Albedo Decay parameters initialized"""
+            self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.TIME_STEP
+            s = 0
+            if self.name in ["schwarzsee19", "guttannen20"]:
+                f = 0  # Start with snow event
+            else:
+                f = 1
+            for i, row in self.df.iterrows():
+                s, f = self.get_albedo(i, s, f, site=self.name)
  
         self.melt_freeze()
 
@@ -130,11 +131,9 @@ if __name__ == "__main__":
         'A_I': bounds(var=icestupa.A_I, res = 0.005),
         'A_S': bounds(var=icestupa.A_S, res = 0.005),
         'T_RAIN': np.arange(0, 2 , 0.5).tolist(),
-        # 'v_a_limit': np.arange(7, 12, 1).tolist(),
-        # 'T_DECAY': np.arange(1, 23 , 2).tolist(),
-        # 'Z_I': np.arange(0.001615, 0.001785, 0.00005).tolist(),
-        # 'dia_f': np.arange(0.0075, 0.0086 , 0.0001).tolist(),
-        # 'min_discharge': np.arange(3, 7, 1).tolist(),
+        'T_W': np.arange(0, 5, 1).tolist(),
+        'A_DECAY': np.arange(1, 23 , 2).tolist(),
+        'Z': bounds(var=icestupa.Z, res = 0.005),
     }]
     
     file_path = 'cv-'

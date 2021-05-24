@@ -42,7 +42,7 @@ def get_energy(self, row, mode="normal"):
             * math.pow(self.VAN_KARMAN, 2)
             * self.df.loc[i, "v_a"]
             * (row.vp_a - self.df.loc[i, "vp_ice"])
-            / ((np.log(self.h_aws / self.Z_I)) ** 2)
+            / ((np.log(self.h_aws / self.Z)) ** 2)
         )
         if np.isnan(self.df.loc[i, "Ql"]):
             logger.error(f"When {self.df.When[i]},p_a {self.df.p_a[i]}")
@@ -57,7 +57,7 @@ def get_energy(self, row, mode="normal"):
         * math.pow(self.VAN_KARMAN, 2)
         * self.df.loc[i, "v_a"]
         * (self.df.loc[i, "T_a"] - self.df.loc[i, "T_s"])
-        / ((np.log(self.h_aws / self.Z_I)) ** 2)
+        / ((np.log(self.h_aws / self.Z)) ** 2)
     )
 
     # Short Wave Radiation SW
@@ -91,7 +91,7 @@ def get_energy(self, row, mode="normal"):
                 (self.df.loc[i - 1, "solid"])
                 # self.liquid
                 * self.C_W
-                * self.T_w
+                * self.T_W
                 / (self.TIME_STEP * self.df.loc[i, "SA"])
             )
 
