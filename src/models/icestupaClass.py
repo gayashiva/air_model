@@ -52,7 +52,6 @@ class Icestupa:
     """Fountain constants"""
     # theta_f = 45  # FOUNTAIN angle
     T_W = 5  # FOUNTAIN Water temperature
-    perimeter = 45
 
     """Simulation constants"""
     trigger = "Manual"
@@ -268,6 +267,8 @@ class Icestupa:
         self.df = pd.read_hdf(self.output + "model_output_" + self.trigger + ".h5", "df")
 
         self.change_freq()
+
+        self.self_attributes()
 
     @Timer(text="Simulation executed in {:.2f} seconds", logger = logging.warning)
     def melt_freeze(self):

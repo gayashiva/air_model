@@ -28,7 +28,7 @@ def self_attributes(self, save=False):
             self.r_spray = self.perimeter/(math.pi *2)
             logger.warning("Measured spray radius from perimeter %0.1f"%self.r_spray)
         else:
-            self.r_spray= df_c.loc[df_c.When < self.fountain_off_date, "dia"].mean() / 2
+            self.r_spray= df_c.loc[df_c.When < self.fountain_off_date, "rad"].mean()
             logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
         # Get initial height
         if hasattr(self, "dome_rad"):
