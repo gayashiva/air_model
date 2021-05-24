@@ -530,7 +530,7 @@ class Icestupa:
                     )
 
                 if self.df.loc[i, "delta_T_s"] > 1 * self.TIME_STEP/60:
-                    logger.warning("Too much fountain energy %s causes temperature change of %0.1f on %s" %(self.df.loc[i, "Qf"],self.df.loc[i, "delta_T_s"],self.df.loc[i, "When"]))
+                    logger.info("Too much fountain energy %s causes temperature change of %0.1f on %s" %(self.df.loc[i, "Qf"],self.df.loc[i, "delta_T_s"],self.df.loc[i, "When"]))
                     if math.fabs(self.df.delta_T_s[i]) > 50:
                         logger.error(
                             "%s,Surface Temperature %s,Mass %s"
@@ -560,7 +560,7 @@ class Icestupa:
                     )
 
                 if math.fabs(self.df.loc[i, "Qsurf"]) > 800:
-                    logger.warning(
+                    logger.info(
                         "Energy above 800 %s,Fountain water %s,Sensible %s, SW %s, LW %s, Qg %s"
                         % (
                             self.df.loc[i, "When"],
@@ -573,7 +573,7 @@ class Icestupa:
                     )
 
                 if math.fabs(self.df.loc[i, "delta_T_s"]) > 20:
-                    logger.warning(
+                    logger.info(
                         "Temperature change above 20C %s,Surface temp %i,Bulk temp %i"
                         % (
                             self.df.loc[i, "When"],
