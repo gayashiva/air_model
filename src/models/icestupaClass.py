@@ -522,78 +522,78 @@ class Icestupa:
                     )
 
 
-                """ Unit tests """
-                if self.df.loc[i, "T_s"] < -100:
-                    self.df.loc[i, "T_s"] = -100
-                    logger.error(
-                        f"Surface temp rest to 100 When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
-                    )
-
-                if self.df.loc[i, "delta_T_s"] > 1 * self.TIME_STEP/60:
-                    logger.info("Too much fountain energy %s causes temperature change of %0.1f on %s" %(self.df.loc[i, "Qf"],self.df.loc[i, "delta_T_s"],self.df.loc[i, "When"]))
-                    if math.fabs(self.df.delta_T_s[i]) > 50:
-                        logger.error(
-                            "%s,Surface Temperature %s,Mass %s"
-                            % (
-                                self.df.loc[i, "When"],
-                                self.df.loc[i, "T_s"],
-                                self.df.loc[i, "ice"],
-                            )
-                        )
-
-                if np.isnan(self.df.loc[i, "delta_T_s"]):
-                    logger.error(
-                        f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
-                    )
-                    sys.exit("Ice Temperature nan")
-
-                if np.isnan(self.df.loc[i, "Qsurf"]):
-                    logger.error(
-                        f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}"
-                    )
-                    sys.exit("Energy nan")
-
-                if self.df.loc[i,'fountain_runoff'] - self.df.loc[i, 'Discharge'] * self.TIME_STEP / 60 > 2:
-
-                    logger.error(
-                        f"Discharge exceeded When {self.df.When[i]}, Fountain in {self.df.fountain_runoff[i]}, Discharge in {self.df.Discharge[i]* self.TIME_STEP / 60}"
-                    )
-
-                if math.fabs(self.df.loc[i, "Qsurf"]) > 800:
-                    logger.info(
-                        "Energy above 800 %s,Fountain water %s,Sensible %s, SW %s, LW %s, Qg %s"
-                        % (
-                            self.df.loc[i, "When"],
-                            self.df.loc[i, "Qf"],
-                            self.df.loc[i, "Qs"],
-                            self.df.loc[i, "SW"],
-                            self.df.loc[i, "LW"],
-                            self.df.loc[i, "Qg"],
-                        )
-                    )
-
-                if math.fabs(self.df.loc[i, "delta_T_s"]) > 20:
-                    logger.info(
-                        "Temperature change above 20C %s,Surface temp %i,Bulk temp %i"
-                        % (
-                            self.df.loc[i, "When"],
-                            self.df.loc[i, "T_s"],
-                            self.df.loc[i, "T_bulk"],
-                        )
-                    )
-
-                if math.fabs(self.df.loc[i,"freezing_discharge_fraction"]) > 1.01: 
-                    logger.error(
-                        "%s,temp flux %.1f,melt flux %.1f,total %.1f, Ql %.1f,freezing_discharge_fraction %.2f"
-                        % (
-                            self.df.loc[i, "When"],
-                            self.df.loc[i, "Qt"],
-                            self.df.loc[i, "Qmelt"],
-                            self.df.loc[i, "Qsurf"], 
-                            self.df.loc[i, "Ql"], 
-                            self.df.loc[i, "freezing_discharge_fraction"],
-                        )
-                    )
+#                 """ Unit tests """
+#                 if self.df.loc[i, "T_s"] < -100:
+#                     self.df.loc[i, "T_s"] = -100
+#                     logger.error(
+#                         f"Surface temp rest to 100 When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+#                     )
+# 
+#                 if self.df.loc[i, "delta_T_s"] > 1 * self.TIME_STEP/60:
+#                     logger.warning("Too much fountain energy %s causes temperature change of %0.1f on %s" %(self.df.loc[i, "Qf"],self.df.loc[i, "delta_T_s"],self.df.loc[i, "When"]))
+#                     if math.fabs(self.df.delta_T_s[i]) > 50:
+#                         logger.error(
+#                             "%s,Surface Temperature %s,Mass %s"
+#                             % (
+#                                 self.df.loc[i, "When"],
+#                                 self.df.loc[i, "T_s"],
+#                                 self.df.loc[i, "ice"],
+#                             )
+#                         )
+# 
+#                 if np.isnan(self.df.loc[i, "delta_T_s"]):
+#                     logger.error(
+#                         f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+#                     )
+#                     sys.exit("Ice Temperature nan")
+# 
+#                 if np.isnan(self.df.loc[i, "Qsurf"]):
+#                     logger.error(
+#                         f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}"
+#                     )
+#                     sys.exit("Energy nan")
+# 
+#                 if self.df.loc[i,'fountain_runoff'] - self.df.loc[i, 'Discharge'] * self.TIME_STEP / 60 > 2:
+# 
+#                     logger.error(
+#                         f"Discharge exceeded When {self.df.When[i]}, Fountain in {self.df.fountain_runoff[i]}, Discharge in {self.df.Discharge[i]* self.TIME_STEP / 60}"
+#                     )
+# 
+#                 if math.fabs(self.df.loc[i, "Qsurf"]) > 800:
+#                     logger.warning(
+#                         "Energy above 800 %s,Fountain water %s,Sensible %s, SW %s, LW %s, Qg %s"
+#                         % (
+#                             self.df.loc[i, "When"],
+#                             self.df.loc[i, "Qf"],
+#                             self.df.loc[i, "Qs"],
+#                             self.df.loc[i, "SW"],
+#                             self.df.loc[i, "LW"],
+#                             self.df.loc[i, "Qg"],
+#                         )
+#                     )
+# 
+#                 if math.fabs(self.df.loc[i, "delta_T_s"]) > 20:
+#                     logger.warning(
+#                         "Temperature change above 20C %s,Surface temp %i,Bulk temp %i"
+#                         % (
+#                             self.df.loc[i, "When"],
+#                             self.df.loc[i, "T_s"],
+#                             self.df.loc[i, "T_bulk"],
+#                         )
+#                     )
+# 
+#                 if math.fabs(self.df.loc[i,"freezing_discharge_fraction"]) > 1.01: 
+#                     logger.error(
+#                         "%s,temp flux %.1f,melt flux %.1f,total %.1f, Ql %.1f,freezing_discharge_fraction %.2f"
+#                         % (
+#                             self.df.loc[i, "When"],
+#                             self.df.loc[i, "Qt"],
+#                             self.df.loc[i, "Qmelt"],
+#                             self.df.loc[i, "Qsurf"], 
+#                             self.df.loc[i, "Ql"], 
+#                             self.df.loc[i, "freezing_discharge_fraction"],
+#                         )
+#                     )
 
 
                 """ Quantities of all phases """
