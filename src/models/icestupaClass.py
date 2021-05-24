@@ -16,9 +16,7 @@ from codetiming import Timer
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
-from src.models.methods.calibration import get_calibration
 from src.models.methods.solar import get_solar
-from src.models.methods.droplet import get_droplet_projectile
 from src.utils.settings import config
 from src.utils import setup_logger
 
@@ -105,6 +103,7 @@ class Icestupa:
 
     # Imported methods
     from src.models.methods._freq import change_freq
+    from src.models.methods._self_attributes import self_attributes
     from src.models.methods._albedo import get_albedo
     from src.models.methods._height_steps import get_height_steps
     from src.models.methods._discharge import get_discharge
@@ -118,50 +117,7 @@ class Icestupa:
     ):  # Derives additional parameters required for simulation
 
         self.change_freq()
-
-        if self.name in ["guttannen21", "guttannen20"]:
-            df_c, df_cam = get_calibration(site=self.name, input=self.raw)
-        else:
-            df_c = get_calibration(site=self.name, input=self.raw)
-
-        df_c.to_hdf(
-            self.input + "model_input_" + self.trigger + ".h5",
-            key="df_c",
-            mode="w",
-        )
-        # df_c.to_csv(self.input + "measured_vol.csv")
-
-        if self.name in ["guttannen21", "guttannen20"]:
-            df_cam.to_hdf(
-                self.input + "model_input_" + self.trigger + ".h5",
-                key="df_cam",
-                mode="a",
-            )
-            df_cam.to_csv(self.input + "measured_temp.csv")
-
-        if self.name == "schwarzsee19":
-            self.r_spray = get_droplet_projectile(
-                dia=self.dia_f, h=self.df.loc[0,"h_f"], d=self.discharge
-            )
-            self.dome_vol=0
-            logger.warning("Measured spray radius from fountain parameters %0.1f"%self.r_spray)
-        else:
-            if hasattr(self, "perimeter"):
-                self.r_spray = self.perimeter/(math.pi *2)
-                logger.warning("Measured spray radius from perimeter %0.1f"%self.r_spray)
-            else:
-                self.r_spray= df_c.loc[df_c.When < self.fountain_off_date, "dia"].mean() / 2
-                logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
-            # Get initial height
-            if hasattr(self, "dome_rad"):
-                self.dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
-                self.h_i = 3 * self.dome_vol/ (math.pi * self.r_spray ** 2)
-                logger.warning("Initial height estimated from dome %0.1f"%self.h_i)
-            else:
-                self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
-                self.dome_vol = df_c.loc[0, "DroneV"]
-                logger.warning("Initial height estimated from drone %0.1f"%self.h_i)
-
+        self.self_attributes(save=True)
 
         unknown = ["a", "vp_a", "LW_in", "cld"]  # Possible unknown variables
         for i in range(len(unknown)):
@@ -287,6 +243,14 @@ class Icestupa:
             mode="a",
         )
 
+        # Output for manim
+        filename2 = os.path.join(self.output, self.name + "_manim_" + self.trigger + ".csv")
+        df = self.df.copy()
+        cols = ["When", "h_ice", "h_s", "r_ice", "ice", "T_a", "Discharge"]
+        df = df[cols]
+        df.set_index('When').to_csv(filename2, sep=",")
+        logger.info("Manim output produced")
+
     def read_input(self):  # Use processed input dataset
 
         self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
@@ -295,30 +259,7 @@ class Icestupa:
 
         df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
 
-        if self.name == "schwarzsee19":
-            self.r_spray = get_droplet_projectile(
-                dia=self.dia_f, h=self.df.loc[0,"h_f"], d=self.discharge
-            )
-            self.dome_vol=0
-            logger.warning("Measured spray radius from fountain parameters %0.1f"%self.r_spray)
-        else:
-            if hasattr(self, "perimeter"):
-                self.r_spray = self.perimeter/(math.pi *2)
-                logger.warning("Measured spray radius from perimeter %0.1f"%self.r_spray)
-            else:
-                self.r_spray= df_c.loc[df_c.When < self.fountain_off_date, "dia"].mean() / 2
-                logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
-            # Get initial height
-            if hasattr(self, "dome_rad"):
-                self.dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
-                self.h_i = 3 * self.dome_vol/ (math.pi * self.r_spray ** 2)
-                logger.warning("Initial height estimated from dome %0.1f"%self.h_i)
-            else:
-                self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
-                self.dome_vol = df_c.loc[0, "DroneV"]
-                logger.warning("Initial height estimated from drone %0.1f"%self.h_i)
-
-
+        self.self_attributes()
 
         if self.df.isnull().values.any():
             logger.warning("\n Null values present\n")
@@ -328,15 +269,6 @@ class Icestupa:
         self.df = pd.read_hdf(self.output + "model_output_" + self.trigger + ".h5", "df")
 
         self.change_freq()
-
-    def manim_output(self):
-        # Output for manim
-        filename2 = os.path.join(self.output, self.name + "_manim_" + self.trigger + ".csv")
-        df = self.df.copy()
-        cols = ["When", "h_ice", "h_s", "r_ice", "ice", "T_a", "Discharge"]
-        df = df[cols]
-        df.set_index('When').to_csv(filename2, sep=",")
-        logger.info("Manim output produced")
 
     @Timer(text="Simulation executed in {:.2f} seconds", logger = logging.warning)
     def melt_freeze(self):
@@ -370,7 +302,6 @@ class Icestupa:
             "cdt",
             "thickness",
             "fountain_runoff",
-            "wind_loss",
             "Qt",
             "Qmelt",
             "freezing_discharge_fraction",
@@ -393,7 +324,7 @@ class Icestupa:
         for row in t:
             i = row.Index
 
-            ice_melted = self.df.loc[i, "ice"] < 1 or self.df.loc[i, "T_bulk"] < -50 or self.df.loc[i, "T_s"] < -200 #or i==self.df.shape[0] - 1
+            ice_melted = self.df.loc[i, "ice"] < 1 #or self.df.loc[i, "T_bulk"] < -50 or self.df.loc[i, "T_s"] < -200 #or i==self.df.shape[0] - 1
             
 
             if (
