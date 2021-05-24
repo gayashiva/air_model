@@ -43,7 +43,7 @@ def bounds(var, res, change = 5):
     return np.arange(var * (100-change)/100, var * (100+change)/100 + res, res).tolist()
 
 class CV_Icestupa(BaseEstimator,Icestupa):
-    def __init__(self, location = "Guttannen 2021", DX = 0.020, TIME_STEP = 60*60, A_I = 0.35, A_S = 0.85, IE = 0.95, T_RAIN = 1, A_DECAY= 10, Z=0.0017):
+    def __init__(self, DX = 0.020, TIME_STEP = 60*60, A_I = 0.35, A_S = 0.85, IE = 0.95, T_RAIN = 1, A_DECAY= 10, Z=0.0017, perimeter = 45):
         super(Icestupa, self).__init__()
 
         print("Initializing classifier:\n")
@@ -53,18 +53,20 @@ class CV_Icestupa(BaseEstimator,Icestupa):
 
         for arg, val in values.items():
             setattr(self, arg, val)
-            # print("{} = {}".format(arg,val)
-        
-        SITE, FOLDER, df_h = config(location = self.location)
+            #print("{} = {}".format(arg,val))
+
+        SITE, FOLDER, df_h = config(location = "guttannen21")
         initial_data = [SITE, FOLDER]
          # Initialise all variables of dictionary
         for dictionary in initial_data:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
+        
         self.read_input()
            
     @Timer(text="Simulation executed in {:.2f} seconds")
     def fit(self, X,y):
+        print("{} = {}".format("perimeter",self.perimeter))
 
         if self.A_DECAY !=10 or self.A_I != 0.35 or self.A_S != 0.85 or self.T_RAIN != 1: 
             """Albedo Decay parameters initialized"""
@@ -84,7 +86,7 @@ class CV_Icestupa(BaseEstimator,Icestupa):
     def predict(self, X, y=None):
         y_pred = []
         for x in X:
-            if (self.df[self.df.When == x[1]].shape[0]) and (self.location == x[0]): 
+            if (self.df[self.df.When == x[1]].shape[0]): 
                 y_pred.append(self.df.loc[self.df.When == x[1], "iceV"].values[0])
             else:
                 y_pred.append(np.nan)
@@ -125,15 +127,15 @@ if __name__ == "__main__":
     # Set the parameters by cross-validation
 
     tuned_params = [{
-        'perimeter': bounds(var=icestupa.perimeter, change=10, res = 0.5),
-        'DX': np.arange(0.018, 0.022, 0.0005).tolist(), 
-        'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
-        'A_I': bounds(var=icestupa.A_I, res = 0.005),
-        'A_S': bounds(var=icestupa.A_S, res = 0.005),
-        'T_RAIN': np.arange(0, 2 , 0.5).tolist(),
-        'T_W': np.arange(0, 5, 1).tolist(),
-        'A_DECAY': np.arange(1, 23 , 2).tolist(),
-        'Z': bounds(var=icestupa.Z, res = 0.005),
+        'perimeter': bounds(var=icestupa.perimeter, change=20, res = 2),
+        #'DX': np.arange(0.018, 0.022, 0.0005).tolist(), 
+        #'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
+        #'A_I': bounds(var=icestupa.A_I, res = 0.005),
+        #'A_S': bounds(var=icestupa.A_S, res = 0.005),
+        #'T_RAIN': np.arange(0, 2 , 0.5).tolist(),
+        #'T_W': np.arange(0, 5, 1).tolist(),
+        #'A_DECAY': np.arange(1, 23 , 2).tolist(),
+        #'Z': bounds(var=icestupa.Z, res = 0.005),
     }]
     
     file_path = 'cv-'
