@@ -26,13 +26,16 @@ def aws(location="diavolezza21"):
     # Get header colun list
     df = pd.read_csv(
         FOLDER["raw"] + location + "_aws.csv",
-        sep="\t",
+        sep=";",
         header=0,
-        parse_dates=['date_time']
+        # parse_dates=['date_time']
     )
+    logger.error(df['date_time'].head())
+    logger.error(df['date_time'].tail())
+    df["When"] = pd.to_datetime(df["date_time"], format="%d.%m.%y %H:%M")
     df.rename(
         columns={
-            "date_time": "When",
+            # "date_time": "When",
             " WndScMae": "v_a",
             " Tair_act_AVG": "T_a",
             " Rhum_act_AVG": "RH",
@@ -48,7 +51,8 @@ def aws(location="diavolezza21"):
     df = df[["When", "v_a", "T_a", "RH", "SW_out", "SW_in", "LW_out", "LW_in", "HS", "p_a"]]
     df["HS"] /= 100
     df["a"] = df["SW_out"]/df["SW_in"]
-    df= df.set_index("When").resample(pd.offsets.Minute(n=15)).mean().reset_index()
+    df= df.set_index("When").sort_index()
+    df= df.resample(pd.offsets.Minute(n=15)).mean().reset_index()
     df.loc[df.a > 1, "a"] = 1
     logger.warning(df.head())
     logger.warning(df.tail())
@@ -76,9 +80,9 @@ def aws(location="diavolezza21"):
     )
     df= df.loc[mask]
     df= df.reset_index(drop=True)
-    # df = df.set_index("When")
-    # logger.error(pd.date_range(start = df.index[0], end = df.index[-1], freq='15T').difference(df.index))
-    # df = df.reset_index()
+    df = df.set_index("When")
+    logger.error(pd.date_range(start = df.index[0], end = df.index[-1], freq='15T').difference(df.index))
+    df = df.reset_index()
     return df
 
 def field(location="schwarzsee19"):

@@ -266,6 +266,7 @@ class Icestupa:
         self.df = pd.read_hdf(self.output + "model_output_" + self.trigger + ".h5", "df")
 
         self.change_freq()
+        self.self_attributes()
 
 
     @Timer(text="Simulation executed in {:.2f} seconds", logger = logging.warning)
@@ -433,34 +434,39 @@ class Icestupa:
                 self.df.loc[i, "Qt"] += self.df.loc[i, "Ql"]
                 freezing_energy = (self.df.loc[i, "Qsurf"] - self.df.loc[i, "Ql"])
 
-                self.df.loc[i,"freezing_discharge_fraction"] = -(
-                    self.df.loc[i, "fountain_runoff"]* self.L_F
-                    # / (self.df.loc[i,"Qsurf"] * self.TIME_STEP * self.df.loc[i, "SA"])
-                    / (freezing_energy * self.TIME_STEP * self.df.loc[i, "SA"])
-                )
-
-                if self.df.loc[i,"Qsurf"] > 0 and freezing_energy < 0:
-                    self.df.loc[i,"freezing_discharge_fraction"] = 1
-                elif freezing_energy > 0:
-                    self.df.loc[i,"freezing_discharge_fraction"] = 0
-                else:
-                    if self.df.loc[i,"freezing_discharge_fraction"] > 1: # Enough water available
-                        self.df.loc[i,"freezing_discharge_fraction"] = 1
-                        self.df.loc[i,"fountain_runoff"] += (
-                            self.df.loc[i,"freezing_discharge_fraction"] *freezing_energy* self.TIME_STEP * self.df.loc[i, "SA"]
-                        ) / (self.L_F)
-                    if self.df.loc[i,"freezing_discharge_fraction"] < 1 : # Not Enough water available
-                        self.df.loc[i,"fountain_runoff"] = 0
-                        # logger.warning("Discharge froze completely with freezing_discharge_fraction %.2f" %self.df[i,"freezing_discharge_fraction"])
-
-                self.df.loc[i, "Qmelt"] += self.df.loc[i,"freezing_discharge_fraction"] * freezing_energy
-                self.df.loc[i, "Qt"] += (1- self.df.loc[i,"freezing_discharge_fraction"]) * freezing_energy
-                # self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "Qmelt"] / self.df.loc[i, "Qsurf"]
-
-                if self.df.loc[i,"Qt"] * self.df.loc[i,"Qmelt"] < 0:
+                if freezing_energy == 0:
                     self.df.loc[i,"freezing_discharge_fraction"] = np.NaN
+                    self.df.loc[i, "Qmelt"] += self.df.loc[i,"freezing_discharge_fraction"] * freezing_energy
+                    self.df.loc[i, "Qt"] += self.df.loc[i, "Ql"]
                 else:
-                    self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "Qmelt"] / self.df.loc[i, "Qsurf"]
+                    self.df.loc[i,"freezing_discharge_fraction"] = -(
+                        self.df.loc[i, "fountain_runoff"]* self.L_F
+                        # / (self.df.loc[i,"Qsurf"] * self.TIME_STEP * self.df.loc[i, "SA"])
+                        / (freezing_energy * self.TIME_STEP * self.df.loc[i, "SA"])
+                    )
+
+                    if self.df.loc[i,"Qsurf"] > 0 and freezing_energy < 0:
+                        self.df.loc[i,"freezing_discharge_fraction"] = 1
+                    elif freezing_energy > 0:
+                        self.df.loc[i,"freezing_discharge_fraction"] = 0
+                    else:
+                        if self.df.loc[i,"freezing_discharge_fraction"] > 1: # Enough water available
+                            self.df.loc[i,"freezing_discharge_fraction"] = 1
+                            self.df.loc[i,"fountain_runoff"] += (
+                                self.df.loc[i,"freezing_discharge_fraction"] *freezing_energy* self.TIME_STEP * self.df.loc[i, "SA"]
+                            ) / (self.L_F)
+                        if self.df.loc[i,"freezing_discharge_fraction"] < 1 : # Not Enough water available
+                            self.df.loc[i,"fountain_runoff"] = 0
+                            # logger.warning("Discharge froze completely with freezing_discharge_fraction %.2f" %self.df[i,"freezing_discharge_fraction"])
+
+                    self.df.loc[i, "Qmelt"] += self.df.loc[i,"freezing_discharge_fraction"] * freezing_energy
+                    self.df.loc[i, "Qt"] += (1- self.df.loc[i,"freezing_discharge_fraction"]) * freezing_energy
+                    # self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "Qmelt"] / self.df.loc[i, "Qsurf"]
+
+                    if self.df.loc[i,"Qt"] * self.df.loc[i,"Qmelt"] < 0:
+                        self.df.loc[i,"freezing_discharge_fraction"] = np.NaN
+                    else:
+                        self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "Qmelt"] / self.df.loc[i, "Qsurf"]
 
                 self.df.loc[i, "delta_T_s"] = (
                     self.df.loc[i, "Qt"]
@@ -522,12 +528,13 @@ class Icestupa:
                     )
 
 
-#                 """ Unit tests """
-#                 if self.df.loc[i, "T_s"] < -100:
-#                     self.df.loc[i, "T_s"] = -100
-#                     logger.error(
-#                         f"Surface temp rest to 100 When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
-#                     )
+                if self.df.loc[i, "T_s"] < -100:
+                    self.df.loc[i, "T_s"] = -100
+                    logger.error(
+                        f"Surface temp rest to 100 When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+                    )
+
+                # """ Unit tests """
 # 
 #                 if self.df.loc[i, "delta_T_s"] > 1 * self.TIME_STEP/60:
 #                     logger.warning("Too much fountain energy %s causes temperature change of %0.1f on %s" %(self.df.loc[i, "Qf"],self.df.loc[i, "delta_T_s"],self.df.loc[i, "When"]))
