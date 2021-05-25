@@ -150,8 +150,8 @@ if __name__ == "__main__":
         'A_S': bounds(var=icestupa.A_S, res = 0.01),
         # 'T_RAIN': np.arange(0, 2 , 0.5).tolist(),
         # 'A_DECAY': np.arange(1, 23 , 2).tolist(),
+        # 'T_W': np.arange(1, 9, 1).tolist(),
         # 'Z': bounds(var=icestupa.Z, res = 0.005),
-        # 'T_W': np.arange(0, 5, 1).tolist(),
     }]
     ctr = 1
     for item in tuned_params[0]:

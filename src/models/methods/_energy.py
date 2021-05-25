@@ -12,9 +12,7 @@ import sys
 # Module logger
 logger = logging.getLogger(__name__)
 
-
-def get_energy(self, row):
-    i = row.Index
+def get_energy(self, i):
 
     self.df.loc[i, "vp_ice"] = (
         (
@@ -34,18 +32,15 @@ def get_energy(self, row):
         / self.P0
         * math.pow(self.VAN_KARMAN, 2)
         * self.df.loc[i, "v_a"]
-        * (row.vp_a - self.df.loc[i, "vp_ice"])
+        * (self.df.loc[i, "vp_a"] - self.df.loc[i, "vp_ice"])
         / ((np.log(self.h_aws / self.Z)) ** 2)
     )
-    if np.isnan(self.df.loc[i, "Ql"]):
-        logger.error(f"When {self.df.When[i]},v_a {self.df.v_a[i]}, vp_ice {self.df.vp_ice[i]}")
-        sys.exit("Ql nan")
 
     # Sensible Heat Qs
     self.df.loc[i, "Qs"] = (
         self.C_A
         * self.RHO_A
-        * row.p_a
+        * self.df.loc[i, "p_a"]
         / self.P0
         * math.pow(self.VAN_KARMAN, 2)
         * self.df.loc[i, "v_a"]
@@ -54,26 +49,15 @@ def get_energy(self, row):
     )
 
     # Short Wave Radiation SW
-    self.df.loc[i, "SW"] = (1 - row.a) * (
-        row.SW_direct * self.df.loc[i, "f_cone"] + row.SW_diffuse
+    self.df.loc[i, "SW"] = (1 - self.df.loc[i, "a"]) * (
+        self.df.loc[i, "SW_direct"] * self.df.loc[i, "f_cone"] + self.df.loc[i, "SW_diffuse"]
     )
 
     # Long Wave Radiation LW
-    try:
-        self.df.loc[i, "LW"] = row.LW_in - self.IE * self.STEFAN_BOLTZMAN * math.pow(
-            self.df.loc[i, "T_s"] + 273.15, 4
-        )
-    except OverflowError:
-        logger.error(
-            f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i]}"
-        )
-        sys.exit("LW nan")
+    self.df.loc[i, "LW"] = self.df.loc[i, "LW_in"] - self.IE * self.STEFAN_BOLTZMAN * math.pow(
+        self.df.loc[i, "T_s"] + 273.15, 4
+    )
 
-    # if np.isnan(self.df.loc[i, "LW"]):
-    #     logger.error(
-    #         f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i]}"
-    #     )
-    #     sys.exit("LW nan")
 
     if self.df.loc[i,'fountain_runoff']> 0:  # Can only find Qf if water discharge quantity known
         self.df.loc[i, "Qf"] = (
@@ -84,17 +68,6 @@ def get_energy(self, row):
             / (self.TIME_STEP * self.df.loc[i, "SA"])
         )
 
-        # if self.df.loc[i, "T_s"] < -self.delta_T_limit * self.TIME_STEP/60 : 
-        # # Temperature change cannot by more than 1 C per minute
-        #     self.df.loc[i, "Qf"] += (
-        #         # (self.df.loc[i, "T_s"] - self.df.loc[i, "T_bulk"])
-        #         (- self.delta_T_limit * self.TIME_STEP/60)
-        #         * self.RHO_I
-        #         * self.DX
-        #         * self.C_I
-        #         / self.TIME_STEP
-        #     )
-        #     logger.warning("Prevented temperature change from %s on %s" % (self.df.loc[i, "T_s"],self.df.loc[i, "When"]))
 
         # TODO add to paper
         self.df.loc[i, "Qf"] += (
@@ -127,3 +100,35 @@ def get_energy(self, row):
         + self.df.loc[i, "Qg"]
         + self.df.loc[i, "Ql"]
     )
+
+def test_get_energy(self, i):
+    self.get_energy(i)
+
+    if np.isnan(self.df.loc[i, "LW"]):
+        logger.error(
+            f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i]}"
+        )
+        sys.exit("LW nan")
+
+    if np.isnan(self.df.loc[i, "Ql"]):
+        logger.error(f"When {self.df.When[i]},v_a {self.df.v_a[i]}, vp_ice {self.df.vp_ice[i]}")
+        sys.exit("Ql nan")
+
+    if np.isnan(self.df.loc[i, "Qsurf"]):
+        logger.error(
+            f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}"
+        )
+        sys.exit("Energy nan")
+
+    if math.fabs(self.df.loc[i, "Qsurf"]) > 800:
+        logger.warning(
+            "Energy above 800 %s,Fountain water %s,Sensible %s, SW %s, LW %s, Qg %s"
+            % (
+                self.df.loc[i, "When"],
+                self.df.loc[i, "Qf"],
+                self.df.loc[i, "Qs"],
+                self.df.loc[i, "SW"],
+                self.df.loc[i, "LW"],
+                self.df.loc[i, "Qg"],
+            )
+        )

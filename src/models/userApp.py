@@ -20,14 +20,15 @@ if __name__ == "__main__":
     coloredlogs.install(
         fmt="%(funcName)s %(levelname)s %(message)s",
         level=logging.WARNING,
+        # level=logging.INFO,
         logger=logger,
     )
 
     answers = dict(
         # location="Schwarzsee 2019",
-        # location="Guttannen 2021",
+        location="Guttannen 2021",
         # location="Gangles 2021",
-        location="Diavolezza 2021",
+        # location="Diavolezza 2021",
         run="yes",
         # run="no",
     )
@@ -41,7 +42,8 @@ if __name__ == "__main__":
         # icestupa.read_input()
 
         # Generate results
-        icestupa.melt_freeze()
+        icestupa.melt_freeze(test=True)
+        # icestupa.melt_freeze()
 
         # Summarise and save model results
         icestupa.summary()
