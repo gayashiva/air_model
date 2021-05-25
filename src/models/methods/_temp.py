@@ -109,12 +109,12 @@ def get_temp(self, i):
         else:
             self.df.loc[i,"freezing_discharge_fraction"] = -self.df.loc[i, "Qmelt"] / self.df.loc[i, "Qsurf"]
 
-        #TODO Remove
-        if self.df.loc[i, "T_s"] < -100:
-            self.df.loc[i, "T_s"] = -100
-            logger.error(
-                f"Surface temp rest to 100 When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
-            )
+    #TODO Remove
+    if self.df.loc[i, "T_s"] < -100:
+        self.df.loc[i, "T_s"] = -100
+        logger.error(
+            f"Surface temp rest to 100 When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+        )
 
 def test_get_temp(self, i):
     self.get_temp(i)
