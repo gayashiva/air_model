@@ -26,7 +26,7 @@ from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
 
 # define worker function
-def calculate(process_name,location, tasks, results, results_list):
+def calculate(process_name,location, tasks, X, y, results, results_list):
     print('[%s] evaluation routine starts' % process_name)
 
     while True:
@@ -70,8 +70,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    # location = "guttannen21"
-    location = "schwarzsee19"
+    location = "guttannen21"
+    # location = "schwarzsee19"
 
     icestupa = Icestupa(location)
     SITE, FOLDER, df_h = config(location)
@@ -80,6 +80,7 @@ if __name__ == "__main__":
     icestupa.self_attributes()
 
     obs = list()
+
     # Loading measurements
     SITE, FOLDER, df_h = config(location)
     df_c = pd.read_hdf(FOLDER["input"] + "model_input_Manual.h5", "df_c")
@@ -89,7 +90,6 @@ if __name__ == "__main__":
 
     X = [[a[0], a[1]] for a in obs]
     y = [a[2] for a in obs]
-    print(X, y)
 
     # Set the parameters by cross-validation
     tuned_params = [{
@@ -97,8 +97,8 @@ if __name__ == "__main__":
         'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
         'A_I': bounds(var=icestupa.A_I, res = 0.01),
         'A_S': bounds(var=icestupa.A_S, res = 0.01),
-        'T_RAIN': np.arange(0, 2 , 0.5).tolist(),
-        # 'A_DECAY': np.arange(1, 23 , 2).tolist(),
+        'T_RAIN': np.arange(0, 2 , 1).tolist(),
+        'A_DECAY': np.arange(1, 23 , 5).tolist(),
         # 'r_spray': bounds(var=icestupa.r_spray, change=10, res = 0.5),
         # 'T_W': np.arange(1, 5, 1).tolist(),
         # 'Z': bounds(var=icestupa.Z, res = 0.005),
@@ -133,7 +133,7 @@ if __name__ == "__main__":
         process_name = 'P%i' % i
 
         # Create the process, and connect it to the worker function
-        new_process = multiprocessing.Process(target=calculate, args=(process_name,location, tasks,results, results_list))
+        new_process = multiprocessing.Process(target=calculate, args=(process_name,location, tasks, X, y, results, results_list))
 
         # Add new process to the list of processes
         processes.append(new_process)
