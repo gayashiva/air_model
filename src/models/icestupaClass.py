@@ -269,7 +269,6 @@ class Icestupa:
         self.change_freq()
         self.self_attributes()
 
-    # def test_melt_freeze(self):
 
     @Timer(text="Simulation executed in {:.2f} seconds", logger = logging.warning)
     def melt_freeze(self, test=False):
@@ -355,14 +354,16 @@ class Icestupa:
             self.df[self.start:-1].itertuples(),
             total=self.df.shape[0],
         )
+
         t.set_description("Simulating %s Icestupa" % self.name)
+
         for row in t:
             i = row.Index
 
             ice_melted = self.df.loc[i, "iceV"] < self.initial_vol - 1 
 
             if ice_melted and i != self.start:   # Break loop when ice melted and simulation done
-                (self.df.When[i], self.df.iceV[i], self.dome_vol, ice_melted)
+                logger.warning("Simulation ends %s %0.1f "%(self.df.When[i], self.df.iceV[i]))
                 if self.df.loc[i-1, "When"] < self.fountain_off_date and self.df.loc[i-1, "solid"] <= 0:
                     self.df.loc[i-1, "iceV"] = self.dome_vol
                     self.df.loc[i, "T_s"] = 0 

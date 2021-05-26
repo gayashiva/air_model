@@ -1,11 +1,12 @@
 from sklearn import datasets
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score, ParameterGrid
 from sklearn.experimental import enable_halving_search_cv # noqa
 from sklearn.model_selection import HalvingGridSearchCV
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
 from sklearn.svm import SVC
 from sklearn.base import BaseEstimator 
+from sklearn.model_selection import ShuffleSplit, KFold
 
 import pandas as pd
 import math
@@ -30,6 +31,23 @@ from src.models.methods.calibration import get_calibration
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
+
+def custom_cv_1folds(X):
+    n = len(X)
+    i = 1
+    # while i <= 2:
+    idx_train = np.arange(0, n-2, dtype=int)
+    idx_test = np.arange(n-3 , n-1 , dtype=int)
+    yield idx_train, idx_test
+        # i += 1
+
+def custom_cv_2folds(X):
+    n = len(X)
+    i = 1
+    while i <= 2:
+        idx = np.arange(n * (i - 1) / 2, n * i / 2, dtype=int)
+        yield idx, idx
+        i += 1
 
 def save_obj(path, name, obj ):
     with open(path + name + '.pkl', 'wb') as f:
@@ -61,7 +79,6 @@ class CV_Icestupa(BaseEstimator,Icestupa):
         for dictionary in initial_data:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
-
         
         self.read_input()
            
@@ -143,12 +160,12 @@ if __name__ == "__main__":
     # Set the parameters by cross-validation
 
     tuned_params = [{
-        'r_spray': bounds(var=icestupa.r_spray, change=10, res = 0.5),
-        'DX': np.arange(0.018, 0.022, 0.0005).tolist(), 
-        'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
-        'A_I': bounds(var=icestupa.A_I, res = 0.005),
+        # 'r_spray': bounds(var=icestupa.r_spray, change=10, res = 0.5),
+        # 'DX': np.arange(0.018, 0.022, 0.0005).tolist(), 
+        # 'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
+        # 'A_I': bounds(var=icestupa.A_I, res = 0.005),
         'A_S': bounds(var=icestupa.A_S, res = 0.01),
-        # 'T_RAIN': np.arange(0, 2 , 0.5).tolist(),
+        'T_RAIN': np.arange(0, 2 , 0.5).tolist(),
         # 'A_DECAY': np.arange(1, 23 , 2).tolist(),
         # 'T_W': np.arange(1, 9, 1).tolist(),
         # 'Z': bounds(var=icestupa.Z, res = 0.005),
@@ -165,12 +182,33 @@ if __name__ == "__main__":
 
 
     print()
+    # custom_cv = custom_cv_1folds(X)
+    # for train_index, test_index in kf.split(X):
+    #     print("TRAIN:", train_index, "TEST:", test_index)
 
-    clf = HalvingGridSearchCV(
-        CV_Icestupa(), tuned_params, n_jobs=12, cv=2, scoring='neg_root_mean_squared_error', error_score=-100
-    )
-    clf.fit(X,y)
+    # clf = HalvingGridSearchCV(
+        # CV_Icestupa(), tuned_params, n_jobs=12, cv=2, scoring='neg_root_mean_squared_error', error_score=-100, verbose=2
+        # CV_Icestupa(), tuned_params, n_jobs=12, cv=custom_cv, scoring='neg_root_mean_squared_error', error_score=-100, verbose=10
+        # CV_Icestupa(), tuned_params, n_jobs=12, cv=[train_index, test_index], scoring='neg_root_mean_squared_error', error_score=-100, verbose=10
+        # CV_Icestupa(), tuned_params, n_jobs=12, cv=kf, scoring='neg_root_mean_squared_error', error_score=-100, verbose=10
+    # )
+    print(tuned_params[0])
+    for dict in list(ParameterGrid(tuned_params)):
+        print(dict)
+        clf = CV_Icestupa()
+        clf.set_params(**dict)
+        print(clf.T_RAIN)
+        print(clf.A_S)
+
+    # for key in tuned_params[0]:
+    #     print(key)
+    #     for value in tuned_params[0][key]:
+    #         print(key,value)
+    #         CV_Icestupa.set_params(key=value)
+    # clf.fit(X,y)
     # clf.fit(X_train,y_train)
+    # scores = cross_val_score(clf, X, y, cv=2)
+    # print("%0.2f accuracy with a standard deviation of %0.2f" % (scores.mean(), scores.std()))
 
     with open(FOLDER['sim'] + file_path + '.json', 'w') as fp:
         json.dump(clf.best_params_, fp, sort_keys=True, indent=4)
