@@ -61,7 +61,7 @@ def bounds(var, res, change = 5):
     return np.arange(var * (100-change)/100, var * (100+change)/100 + res, res).tolist()
 
 class CV_Icestupa(BaseEstimator,Icestupa):
-    def __init__(self, DX = 0.020, TIME_STEP = 60*60, A_I = 0.35, A_S = 0.85, IE = 0.95, T_RAIN = 1, A_DECAY= 10, Z=0.0017, r_spray = 6.535):
+    def __init__(self, name = "guttannen21", DX = 0.020, TIME_STEP = 60*60, A_I = 0.35, A_S = 0.85, IE = 0.95, T_RAIN = 1, T_W = 1, A_DECAY= 10, Z=0.0017, r_spray = 6.535):
         super(Icestupa, self).__init__()
 
         print("Initializing classifier:\n")
@@ -73,7 +73,7 @@ class CV_Icestupa(BaseEstimator,Icestupa):
             setattr(self, arg, val)
             # print("{} = {}".format(arg,val))
 
-        SITE, FOLDER, df_h = config(location = "guttannen21")
+        SITE, FOLDER, df_h = config(location = self.name)
         initial_data = [SITE, FOLDER]
          # Initialise all variables of dictionary
         for dictionary in initial_data:
@@ -81,23 +81,32 @@ class CV_Icestupa(BaseEstimator,Icestupa):
                 setattr(self, key, dictionary[key])
         
         self.read_input()
+        self.self_attributes()
            
     @Timer(text="Simulation executed in {:.2f} seconds")
-    def fit(self, X,y):
+    def fit(self, X,y,groups=None):
 
-        if self.name in ["guttannen21", "guttannen20"]:
-            df_c, df_cam = get_calibration(site=self.name, input=self.raw)
-        else:
-            df_c = get_calibration(site=self.name, input=self.raw)
-        # Get initial height
-        if hasattr(self, "dome_rad"):
-            self.dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
-            self.h_i = 3 * self.dome_vol/ (math.pi * self.r_spray ** 2)
-            logger.warning("Initial height estimated from dome %0.1f"%self.h_i)
-        else:
-            self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
-            self.dome_vol = df_c.loc[0, "DroneV"]
-            logger.warning("Initial height estimated from drone %0.1f"%self.h_i)
+        print("Site: %s"%X[0][0])
+        # SITE, FOLDER, df_h = config(location = X[0][0])
+        # initial_data = [SITE, FOLDER]
+        #  # Initialise all variables of dictionary
+        # for dictionary in initial_data:
+        #     for key in dictionary:
+        #         setattr(self, key, dictionary[key])
+
+        # if self.name in ["guttannen21", "guttannen20"]:
+        #     df_c, df_cam = get_calibration(site=self.name, input=self.raw)
+        # else:
+        #     df_c = get_calibration(site=self.name, input=self.raw)
+        # # Get initial height
+        # if hasattr(self, "dome_rad"):
+        #     self.dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
+        #     self.h_i = 3 * self.dome_vol/ (math.pi * self.r_spray ** 2)
+        #     # logger.warning("Initial height estimated from dome %0.1f"%self.h_i)
+        # else:
+        #     self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
+        #     self.dome_vol = df_c.loc[0, "DroneV"]
+        #     # logger.warning("Initial height estimated from drone %0.1f"%self.h_i)
 
         if self.A_DECAY !=10 or self.A_I != 0.35 or self.A_S != 0.85 or self.T_RAIN != 1: 
             """Albedo Decay parameters initialized"""
@@ -114,14 +123,18 @@ class CV_Icestupa(BaseEstimator,Icestupa):
 
         return self
 
-    def predict(self, X, y=None):
+    def predict(self, X, y=None, groups=None):
         y_pred = []
+        ctr = 0
         for x in X:
             if (self.df[self.df.When == x[1]].shape[0]): 
                 y_pred.append(self.df.loc[self.df.When == x[1], "iceV"].values[0])
             else:
                 y_pred.append(np.nan)
+                # print(x,y[ctr])
+                # y_pred.append(y[ctr])
                 # y_pred.append(0)
+            ctr +=1
 
         return y_pred
 
@@ -161,21 +174,21 @@ if __name__ == "__main__":
 
     tuned_params = [{
         # 'r_spray': bounds(var=icestupa.r_spray, change=10, res = 0.5),
-        # 'DX': np.arange(0.018, 0.022, 0.0005).tolist(), 
-        # 'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
-        # 'A_I': bounds(var=icestupa.A_I, res = 0.005),
+        'DX': np.arange(0.018, 0.022, 0.001).tolist(), 
+        'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
+        'A_I': bounds(var=icestupa.A_I, res = 0.01),
         'A_S': bounds(var=icestupa.A_S, res = 0.01),
-        'T_RAIN': np.arange(0, 2 , 0.5).tolist(),
+        # 'T_RAIN': np.arange(0, 2 , 0.5).tolist(),
+        # 'T_W': np.arange(1, 5, 1).tolist(),
         # 'A_DECAY': np.arange(1, 23 , 2).tolist(),
-        # 'T_W': np.arange(1, 9, 1).tolist(),
         # 'Z': bounds(var=icestupa.Z, res = 0.005),
     }]
-    ctr = 1
-    for item in tuned_params[0]:
-        ctr *=len(tuned_params[0][item])
-    days = (ctr*70/(12*60*60*24))
-    print("Total hours expected : %0.01f" % int(days*24))
-    print("Total days expected : %0.01f" % days)
+    # ctr = 1
+    # for item in tuned_params[0]:
+        # ctr *=len(tuned_params[0][item])
+    # days = (ctr*70/(12*60*60*24))
+    # print("Total hours expected : %0.01f" % int(days*24))
+    # print("Total days expected : %0.01f" % days)
 
     file_path = 'cv-'
     file_path += '-'.join('{}'.format(key) for key, value in tuned_params[0].items())
@@ -192,13 +205,15 @@ if __name__ == "__main__":
         # CV_Icestupa(), tuned_params, n_jobs=12, cv=[train_index, test_index], scoring='neg_root_mean_squared_error', error_score=-100, verbose=10
         # CV_Icestupa(), tuned_params, n_jobs=12, cv=kf, scoring='neg_root_mean_squared_error', error_score=-100, verbose=10
     # )
-    print(tuned_params[0])
+    ctr = len(list(ParameterGrid(tuned_params))) 
+    days = (ctr*70/(12*60*60*24))
+    print("Total hours expected : %0.01f" % int(days*24))
+    print("Total days expected : %0.01f" % days)
     for dict in list(ParameterGrid(tuned_params)):
-        print(dict)
         clf = CV_Icestupa()
         clf.set_params(**dict)
-        print(clf.T_RAIN)
-        print(clf.A_S)
+        # print(clf.T_RAIN)
+        # print(clf.A_S)
 
     # for key in tuned_params[0]:
     #     print(key)
