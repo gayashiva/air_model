@@ -1,0 +1,175 @@
+
+from sklearn.model_selection import train_test_split, cross_val_score, ParameterGrid, GroupKFold
+from sklearn.metrics import mean_squared_error
+
+import multiprocessing
+from time import sleep
+import os, sys, time
+import pandas as pd
+import math
+import sys
+import os
+import pickle
+import logging
+import coloredlogs
+import numpy as np
+from codetiming import Timer
+from datetime import datetime
+import inspect
+import json
+
+sys.path.append(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+)
+from src.utils.cv import CV_Icestupa, save_obj, load_obj, bounds
+from src.utils.settings import config
+from src.models.icestupaClass import Icestupa
+
+# define worker function
+def calculate(process_name,location, tasks, results, results_list):
+    print('[%s] evaluation routine starts' % process_name)
+
+    while True:
+        new_value = tasks.get()
+        if new_value == "None":
+            print('[%s] evaluation routine quits' % process_name)
+
+            # Indicate finished
+            results.put(-1)
+            break
+        else:
+            # Initialise icestupa object
+            clf = CV_Icestupa(name = location)
+
+            # Set new parameter
+            clf.set_params(**new_value)
+
+            # Fit new parameter
+            clf.fit(X,y)
+            y_pred = clf.predict(X)
+            rmse = mean_squared_error(y_pred,y, squared=False)
+
+            # Compute result and mimic a long-running task
+            compute = rmse
+
+            # Output which process received the value
+            print('[%s] received value: %s' % (process_name, new_value))
+            print('[%s] calculated max ice volume: %.1f' % (process_name, compute))
+
+            # Add result to the queue
+            results.put(compute)
+            results_list.append([new_value, rmse])
+
+    return
+if __name__ == "__main__":
+    # Main logger
+    logger = logging.getLogger(__name__)
+    coloredlogs.install(
+        fmt="%(funcName)s %(levelname)s %(message)s",
+        level=logging.ERROR,
+        logger=logger,
+    )
+
+    # location = "guttannen21"
+    location = "schwarzsee19"
+
+    icestupa = Icestupa(location)
+    SITE, FOLDER, df_h = config(location)
+
+    icestupa.read_input()
+    icestupa.self_attributes()
+
+    obs = list()
+    # Loading measurements
+    SITE, FOLDER, df_h = config(location)
+    df_c = pd.read_hdf(FOLDER["input"] + "model_input_Manual.h5", "df_c")
+
+    df_c["Where"] = location
+    obs.extend(df_c.reset_index()[["Where", 'When', 'DroneV']].values.tolist())
+
+    X = [[a[0], a[1]] for a in obs]
+    y = [a[2] for a in obs]
+    print(X, y)
+
+    # Set the parameters by cross-validation
+    tuned_params = [{
+        'DX': np.arange(0.018, 0.022, 0.001).tolist(), 
+        'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
+        'A_I': bounds(var=icestupa.A_I, res = 0.01),
+        'A_S': bounds(var=icestupa.A_S, res = 0.01),
+        'T_RAIN': np.arange(0, 2 , 0.5).tolist(),
+        # 'A_DECAY': np.arange(1, 23 , 2).tolist(),
+        # 'r_spray': bounds(var=icestupa.r_spray, change=10, res = 0.5),
+        # 'T_W': np.arange(1, 5, 1).tolist(),
+        # 'Z': bounds(var=icestupa.Z, res = 0.005),
+    }]
+
+    file_path = 'cv-'
+    file_path += '-'.join('{}'.format(key) for key, value in tuned_params[0].items())
+
+    print()
+    ctr = len(list(ParameterGrid(tuned_params))) 
+    days = (ctr*70/(12*60*60*24))
+    print("Total hours expected : %0.01f" % int(days*24))
+    print("Total days expected : %0.01f" % days)
+
+    # Define IPC manager
+    manager = multiprocessing.Manager()
+
+    # Define a list (queue) for tasks and computation results
+    tasks = manager.Queue()
+    results = manager.Queue()
+    results_list = manager.list()
+
+    # Create process pool with four processes
+    num_processes = multiprocessing.cpu_count()
+    pool = multiprocessing.Pool(processes=num_processes)
+    processes = []
+
+    # Initiate the worker processes
+    for i in range(num_processes):
+
+        # Set process name
+        process_name = 'P%i' % i
+
+        # Create the process, and connect it to the worker function
+        new_process = multiprocessing.Process(target=calculate, args=(process_name,location, tasks,results, results_list))
+
+        # Add new process to the list of processes
+        processes.append(new_process)
+
+        # Start the process
+        new_process.start()
+
+    # Fill task queue
+    task_list = list(ParameterGrid(tuned_params))
+
+    for single_task in task_list:
+        tasks.put(single_task)
+
+    # Wait while the workers process
+    sleep(3)
+
+    # Quit the worker processes by sending them -1
+    for i in range(num_processes):
+        tasks.put("None")
+
+    # Read calculation results
+    num_finished_processes = 0
+
+    while True:
+        # Read result
+        new_result = results.get()
+        # results_list.append(results.get())
+
+        # Have a look at the results
+        if new_result == -1:
+            # Process has finished
+            num_finished_processes += 1
+
+            if num_finished_processes == num_processes:
+                df = pd.DataFrame.from_records(results_list, columns=["params", "rmse"])
+                print(df.head())
+                df.to_csv(FOLDER['sim'] + file_path)
+                # save_obj(FOLDER['sim'], file_path, results_list)
+                break
