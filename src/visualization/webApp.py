@@ -335,7 +335,7 @@ if __name__ == "__main__":
                 url = "https://youtu.be/GhljRBGpxMg"
                 st.video(url)
             elif location == "Guttannen 2021":
-                url = "https://youtu.be/ez_yDWzBBxA"
+                url = "https://www.youtube.com/watch?v=kXi4abO4YVM"
                 st.video(url)
             elif location == "Guttannen 2020":
                 url = "https://youtu.be/kcrvhU20OOE"
