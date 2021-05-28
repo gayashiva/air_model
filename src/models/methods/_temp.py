@@ -109,7 +109,7 @@ def get_temp(self, i):
         else:
             self.df.loc[i,"freezing_discharge_fraction"] = -self.df.loc[i, "Qmelt"] / self.df.loc[i, "Qsurf"]
 
-    #TODO Remove
+    # TODO Remove
     if self.df.loc[i, "T_s"] < -100:
         self.df.loc[i, "T_s"] = -100
         logger.error(

@@ -84,10 +84,6 @@ class Icestupa:
         self.df = self.df.loc[mask]
         self.df = self.df.reset_index(drop=True)
 
-        self.df = self.df[
-            self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
-        ]  # Drops garbage columns
-
         """Fountain height"""
         df_h = df_h.set_index("When")
         self.df = self.df.set_index("When")
@@ -189,9 +185,6 @@ class Icestupa:
                 s, f = self.get_albedo(i, s, f, site=self.name)
 
         self.df = self.df.round(3)
-        self.df = self.df[
-            self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
-        ]  # Remove junk columns
 
         if self.df.isnull().values.any():
             # print(self.df[self.df.columns].isna().sum())
@@ -210,11 +203,6 @@ class Icestupa:
         logger.debug(self.df.tail())
 
     def summary(self):  # Summarizes results and saves output
-
-        # TODO
-        self.df = self.df[
-            self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
-        ]  # Drops garbage columns
 
         f_efficiency = 100 - (
             (
@@ -236,7 +224,6 @@ class Icestupa:
         # Full Output
         filename4 = self.output + "model_output_" + self.trigger + ".csv"
         self.df.to_csv(filename4, sep=",")
-        # self.df.drop(columns='missing_type').to_hdf(
         self.df.to_hdf(
             self.output + "model_output_" + self.trigger + ".h5",
             key="df",

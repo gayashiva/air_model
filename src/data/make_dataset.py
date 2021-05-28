@@ -700,7 +700,8 @@ if __name__ == "__main__":
 
 
     logger.info(df_out.tail())
-    df_out.to_csv(input_folder + SITE["name"] + "_input_model.csv")
+    df_out.to_csv(input_folder + SITE["name"] + "_input_model.csv", index=False)
+
     fig = plt.figure()
     plt.plot(df_out.p_a)
     plt.ylabel('some numbers')
