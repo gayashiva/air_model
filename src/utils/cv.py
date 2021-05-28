@@ -130,7 +130,7 @@ class CV_Icestupa(BaseEstimator,Icestupa):
             if (self.df[self.df.When == x[1]].shape[0]): 
                 y_pred.append(self.df.loc[self.df.When == x[1], "iceV"].values[0])
             else:
-                y_pred.append(np.nan)
+                y_pred.append(100)
                 # print(x,y[ctr])
                 # y_pred.append(y[ctr])
                 # y_pred.append(0)
