@@ -123,7 +123,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                     mask = df_field.Discharge != np.NaN
                     mask &= df_field.Discharge != 0
                     df_field = df_field.loc[mask]
-                    logger.warning("Discharge min %s, max %s" %(self.min_discharge,df_field.Discharge.mean()))
+                    logger.warning("Discharge min %s, max %s" %(self.min_discharge,df_field.Discharge.max()))
                     logger.info("Field discharge ends at %s" %df_field.index[-1])
                     self.df.loc[df_field.index, "Discharge"] = df_field["Discharge"]
 

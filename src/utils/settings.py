@@ -132,7 +132,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
             fountain_off_date=datetime(2021, 3, 10, 18),
             discharge=60,  # FOUNTAIN on mean discharge from field
-            perimeter=82.3, # On 3 Mar
+            # perimeter=82.3, # On 3 Mar
             # dia_f=0.010,  # FOUNTAIN aperture diameter
         )
 

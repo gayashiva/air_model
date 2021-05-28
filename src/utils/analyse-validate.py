@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     # Set the parameters by cross-validation
     tuned_params = [{
-        'DX': np.arange(0.018, 0.022, 0.001).tolist(), 
+        'DX': np.arange(0.018, 0.024, 0.001).tolist(), 
         'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
         'A_I': bounds(var=icestupa.A_I, res = 0.01),
         'A_S': bounds(var=icestupa.A_S, res = 0.01),

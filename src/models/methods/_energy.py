@@ -120,9 +120,9 @@ def test_get_energy(self, i):
         )
         sys.exit("Energy nan")
 
-    if math.fabs(self.df.loc[i, "Qsurf"]) > 800:
+    if math.fabs(self.df.loc[i, "Qsurf"]) > 1000:
         logger.warning(
-            "Energy above 800 %s,Fountain water %s,Sensible %s, SW %s, LW %s, Qg %s"
+            "Energy above 1000 %s,Fountain water %s,Sensible %s, SW %s, LW %s, Qg %s"
             % (
                 self.df.loc[i, "When"],
                 self.df.loc[i, "Qf"],
