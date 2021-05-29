@@ -236,14 +236,12 @@ if __name__ == "__main__":
         | --- | --- |
         | Mean discharge | %.1f $l/min$|
         | Spray Radius | %.1f $m$|
-        | Water frozen| %.1f percent |
-        | Water sprayed| %.0f $kg$ |
+        | Water sprayed| %.0f $m^3$ |
         """
             % (
                 f_mean,
                 icestupa.r_spray,
-                f_efficiency,
-                icestupa.df.Discharge.sum() * icestupa.TIME_STEP / (60 * 1000) * 1000,
+                icestupa.df.Discharge.sum() * icestupa.TIME_STEP / (60 * 1000) ,
             )
         )
 
@@ -254,13 +252,11 @@ if __name__ == "__main__":
         | --- | --- |
         | Max Ice Volume | %.1f $m^{3}$|
         | Meltwater released | %.0f $kg$ |
-        | Ice remaining | %.0f $kg$ |
         | Vapour loss | %.0f $kg$ |
         """
             % (
                 icestupa.df["iceV"].max(),
                 icestupa.df["meltwater"].iloc[-1],
-                icestupa.df["ice"].iloc[-1],
                 icestupa.df["vapour"].iloc[-1],
             )
         )
@@ -335,7 +331,7 @@ if __name__ == "__main__":
                 url = "https://youtu.be/GhljRBGpxMg"
                 st.video(url)
             elif location == "Guttannen 2021":
-                url = "https://youtu.be/ez_yDWzBBxA"
+                url = "https://www.youtube.com/watch?v=kXi4abO4YVM"
                 st.video(url)
             elif location == "Guttannen 2020":
                 url = "https://youtu.be/kcrvhU20OOE"

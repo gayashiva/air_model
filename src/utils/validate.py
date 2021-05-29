@@ -109,8 +109,13 @@ if __name__ == "__main__":
 
     print()
     ctr = len(list(ParameterGrid(tuned_params))) 
+<<<<<<< HEAD
     runtime = 50
     days = (ctr*50/(12*60*60*24))
+=======
+    runtime = 45
+    days = (ctr*runtime/(12*60*60*24))
+>>>>>>> dev
     print("Total hours expected : %0.01f" % int(days*24))
     print("Total days expected : %0.01f" % days)
 

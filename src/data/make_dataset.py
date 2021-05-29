@@ -550,8 +550,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    SITE, FOUNTAIN, FOLDER = config("Guttannen 2021")
-    # SITE, FOUNTAIN, FOLDER = config("Schwarzsee 2019")
+    # SITE, FOUNTAIN, FOLDER = config("Guttannen 2020")
+    SITE, FOUNTAIN, FOLDER = config("Schwarzsee 2019")
 
     raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
@@ -700,9 +700,10 @@ if __name__ == "__main__":
 
 
     logger.info(df_out.tail())
-    df_out.to_csv(input_folder + SITE["name"] + "_input_model.csv")
+    df_out.to_csv(input_folder + SITE["name"] + "_input_model.csv", index=False)
+
     fig = plt.figure()
-    plt.plot(df_out.v_a)
+    plt.plot(df_out.p_a)
     plt.ylabel('some numbers')
     plt.savefig(input_folder + SITE["name"] + "test.png")
 
@@ -737,7 +738,7 @@ if __name__ == "__main__":
                     logger.warning(" Null values interpolated in %s" %column)
                     concat.loc[:, column] = concat[column].interpolate()
 
-        concat.to_csv(input_folder + SITE["name"] + "_input_model.csv")
+        concat.to_csv(input_folder + SITE["name"] + "_input_model.csv", index=False)
         concat.to_hdf(
             input_folder + SITE["name"] + "_input_model.h5",
             key="df",

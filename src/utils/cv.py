@@ -86,7 +86,6 @@ class CV_Icestupa(BaseEstimator,Icestupa):
     @Timer(text="Simulation executed in {:.2f} seconds")
     def fit(self, X,y,groups=None):
 
-        print("Site: %s"%X[0][0])
         # SITE, FOLDER, df_h = config(location = X[0][0])
         # initial_data = [SITE, FOLDER]
         #  # Initialise all variables of dictionary

@@ -189,9 +189,6 @@ class Icestupa:
                 s, f = self.get_albedo(i, s, f, site=self.name)
 
         self.df = self.df.round(3)
-        self.df = self.df[
-            self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
-        ]  # Remove junk columns
 
         if self.df.isnull().values.any():
             # print(self.df[self.df.columns].isna().sum())
@@ -210,11 +207,6 @@ class Icestupa:
         logger.debug(self.df.tail())
 
     def summary(self):  # Summarizes results and saves output
-
-        # TODO
-        self.df = self.df[
-            self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
-        ]  # Drops garbage columns
 
         f_efficiency = 100 - (
             (
@@ -236,7 +228,6 @@ class Icestupa:
         # Full Output
         filename4 = self.output + "model_output_" + self.trigger + ".csv"
         self.df.to_csv(filename4, sep=",")
-        # self.df.drop(columns='missing_type').to_hdf(
         self.df.to_hdf(
             self.output + "model_output_" + self.trigger + ".h5",
             key="df",
@@ -304,7 +295,6 @@ class Icestupa:
             "fountain_runoff",
             "Qt",
             "Qmelt",
-            "freezing_discharge_fraction",
         ]
 
         for column in col:
@@ -362,8 +352,9 @@ class Icestupa:
 
             ice_melted = self.df.loc[i, "iceV"] < self.initial_vol - 1 
 
-            if ice_melted and i != self.start:   # Break loop when ice melted and simulation done
-                logger.warning("Simulation ends %s %0.1f "%(self.df.When[i], self.df.iceV[i]))
+            if ice_melted and i != self.start:   
+                logger.error("Simulation ends %s %0.1f "%(self.df.When[i], self.df.iceV[i]))
+
                 if self.df.loc[i-1, "When"] < self.fountain_off_date and self.df.loc[i-1, "solid"] <= 0:
                     self.df.loc[i-1, "iceV"] = self.dome_vol
                     self.df.loc[i, "T_s"] = 0 
@@ -374,10 +365,9 @@ class Icestupa:
                         self.df.loc[i, column] = self.df.loc[i-1, column]
                     continue
 
-                logger.error("Ice %0.1f, T_s %0.1f" %(self.df.loc[i, "ice"], self.df.loc[i, "T_s"]))
                 self.df.loc[i - 1, "meltwater"] += self.df.loc[i - 1, "ice"]
                 self.df.loc[i - 1, "ice"] = 0
-                logger.info("Model ends at %s" % (self.df.When[i]))
+                logger.error("Model ends at %s" % (self.df.When[i]))
                 self.df = self.df[self.start : i - 1]
                 self.df = self.df.reset_index(drop=True)
                 break
@@ -459,13 +449,11 @@ class Icestupa:
                 + self.df.loc[i,"fountain_runoff"]
             )
             self.df.loc[i + 1, "thickness"] = (
-                self.df.loc[i, "solid"]
-                + self.df.loc[i, "dpt"]
-                - self.df.loc[i, "melted"]
-                + self.df.loc[i, "ppt"]
-            ) / (self.df.loc[i, "SA"] * self.RHO_I)
+                self.df.loc[i+1, "iceV"]
+                - self.df.loc[i, "iceV"]
+            ) / (self.df.loc[i, "SA"])
 
             if test:
                 logger.info(
-                    f" When {self.df.When[i]},iceV {self.df.iceV[i]}"
+                    f" When {self.df.When[i]},iceV {self.df.iceV[i+1]}, thickness  {self.df.thickness[i]}"
                 )
