@@ -350,7 +350,8 @@ if __name__ == "__main__":
     # df_out["Discharge"] += 1 #Discharge never zero
 
     logger.info(df_out.tail())
-    df_out.to_csv(FOLDER["input"]+ SITE["name"] + "_input_model.csv")
+    df_out.to_csv(FOLDER["input"]+ SITE["name"] + "_input_model.csv", index=False)
+
     fig, ax1 = plt.subplots()
     skyblue = "#9bc4f0"
     blue = "#0a4a97"

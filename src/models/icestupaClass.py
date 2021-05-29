@@ -84,6 +84,10 @@ class Icestupa:
         self.df = self.df.loc[mask]
         self.df = self.df.reset_index(drop=True)
 
+        self.df = self.df[
+            self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
+        ]  # Drops garbage columns
+
         """Fountain height"""
         df_h = df_h.set_index("When")
         self.df = self.df.set_index("When")
@@ -364,7 +368,7 @@ class Icestupa:
 
                 self.df.loc[i - 1, "meltwater"] += self.df.loc[i - 1, "ice"]
                 self.df.loc[i - 1, "ice"] = 0
-                logger.info("Model ends at %s" % (self.df.When[i]))
+                logger.error("Model ends at %s" % (self.df.When[i]))
                 self.df = self.df[self.start : i - 1]
                 self.df = self.df.reset_index(drop=True)
                 break
