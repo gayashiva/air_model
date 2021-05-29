@@ -295,7 +295,6 @@ class Icestupa:
             "fountain_runoff",
             "Qt",
             "Qmelt",
-            # "freezing_discharge_fraction",
         ]
 
         for column in col:
@@ -353,7 +352,7 @@ class Icestupa:
 
             ice_melted = self.df.loc[i, "iceV"] < self.initial_vol - 1 
 
-            if ice_melted and i != self.start:   # Break loop when ice melted and simulation done
+            if ice_melted and i != self.start:   
                 logger.error("Simulation ends %s %0.1f "%(self.df.When[i], self.df.iceV[i]))
 
                 if self.df.loc[i-1, "When"] < self.fountain_off_date and self.df.loc[i-1, "solid"] <= 0:
@@ -452,7 +451,6 @@ class Icestupa:
             self.df.loc[i + 1, "thickness"] = (
                 self.df.loc[i+1, "iceV"]
                 - self.df.loc[i, "iceV"]
-                # - self.df.loc[self.start, "ice"]
             ) / (self.df.loc[i, "SA"])
 
             if test:

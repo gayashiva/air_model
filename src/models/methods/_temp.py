@@ -40,26 +40,14 @@ def get_temp(self, i):
             / self.L_S
         )
 
-    # self.df.loc[i, "Qt"] += self.df.loc[i, "Ql"]
     freezing_energy = (self.df.loc[i, "Qsurf"] - self.df.loc[i, "Ql"])
 
+    # TODO Add to paper
     process = 0
 
     if self.df.loc[i, "fountain_runoff"] > 0 and freezing_energy < 0 and self.df.loc[i, "Qsurf"] < 0:
         process = 1
 
-    # if self.df.loc[i, "fountain_runoff"] == 0: 
-    #     process = 0
-    # elif self.df.loc[i, "fountain_runoff"] > 0 and freezing_energy < 0 and self.df.loc[i, "Qsurf"] >= 0:
-    #     process = 0
-    # elif self.df.loc[i, "fountain_runoff"] > 0 and freezing_energy >= 0:
-    #     process = 0
-    # elif self.df.loc[i, "fountain_runoff"] > 0 and freezing_energy < 0 and self.df.loc[i, "Qsurf"] < 0:
-    #     process = 1
-    # else:
-    #     logger.error("When %s fountain %0.1f freezing_energy %0.1f Q_surf %0.1f" %(self.df.loc[i, "When"],self.df.loc[i, "fountain_runoff"],freezing_energy,self.df.loc[i, "Qsurf"]))
-    #     sys.exit("What process")
-    
     if process == 0:
         self.df.loc[i, "Qt"] = self.df.loc[i, "Qsurf"]
     else:
@@ -75,7 +63,6 @@ def get_temp(self, i):
         / (self.RHO_I * self.DX * self.C_I)
     )
 
-    # TODO Add to paper
     """Ice temperature above zero"""
     if (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]) > 0:
         self.df.loc[i, "Qmelt"] += (
