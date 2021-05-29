@@ -295,7 +295,7 @@ class Icestupa:
             "fountain_runoff",
             "Qt",
             "Qmelt",
-            "freezing_discharge_fraction",
+            # "freezing_discharge_fraction",
         ]
 
         for column in col:

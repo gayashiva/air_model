@@ -43,17 +43,22 @@ def get_temp(self, i):
     # self.df.loc[i, "Qt"] += self.df.loc[i, "Ql"]
     freezing_energy = (self.df.loc[i, "Qsurf"] - self.df.loc[i, "Ql"])
 
-    if self.df.loc[i, "fountain_runoff"] == 0: 
-        process = 0
-    elif self.df.loc[i, "fountain_runoff"] > 0 and freezing_energy < 0 and self.df.loc[i, "Qsurf"] >= 0:
-        process = 0
-    elif self.df.loc[i, "fountain_runoff"] > 0 and freezing_energy >= 0:
-        process = 0
-    elif self.df.loc[i, "fountain_runoff"] > 0 and freezing_energy < 0 and self.df.loc[i, "Qsurf"] < 0:
+    process = 0
+
+    if self.df.loc[i, "fountain_runoff"] > 0 and freezing_energy < 0 and self.df.loc[i, "Qsurf"] < 0:
         process = 1
-    else:
-        logger.error("When %s fountain %0.1f freezing_energy %0.1f Q_surf %0.1f" %(self.df.loc[i, "When"],self.df.loc[i, "fountain_runoff"],freezing_energy,self.df.loc[i, "Qsurf"]))
-        sys.exit("What process")
+
+    # if self.df.loc[i, "fountain_runoff"] == 0: 
+    #     process = 0
+    # elif self.df.loc[i, "fountain_runoff"] > 0 and freezing_energy < 0 and self.df.loc[i, "Qsurf"] >= 0:
+    #     process = 0
+    # elif self.df.loc[i, "fountain_runoff"] > 0 and freezing_energy >= 0:
+    #     process = 0
+    # elif self.df.loc[i, "fountain_runoff"] > 0 and freezing_energy < 0 and self.df.loc[i, "Qsurf"] < 0:
+    #     process = 1
+    # else:
+    #     logger.error("When %s fountain %0.1f freezing_energy %0.1f Q_surf %0.1f" %(self.df.loc[i, "When"],self.df.loc[i, "fountain_runoff"],freezing_energy,self.df.loc[i, "Qsurf"]))
+    #     sys.exit("What process")
     
     if process == 0:
         self.df.loc[i, "Qt"] = self.df.loc[i, "Qsurf"]
@@ -91,75 +96,6 @@ def get_temp(self, i):
 
         self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
 
-
-    # self.df.loc[i, "Qt"] += self.df.loc[i, "Ql"]
-    # freezing_energy = (self.df.loc[i, "Qsurf"] - self.df.loc[i, "Ql"])
-
-#     if freezing_energy == 0:
-#         self.df.loc[i,"freezing_discharge_fraction"] = np.NaN
-#         self.df.loc[i, "Qmelt"] += self.df.loc[i,"freezing_discharge_fraction"] * freezing_energy
-#         self.df.loc[i, "Qt"] += self.df.loc[i, "Ql"]
-#     else:
-#         self.df.loc[i,"freezing_discharge_fraction"] = -(
-#             self.df.loc[i, "fountain_runoff"]* self.L_F
-#             / (freezing_energy * self.TIME_STEP * self.df.loc[i, "SA"])
-#         )
-# 
-#         if self.df.loc[i,"Qsurf"] > 0 and freezing_energy < 0:
-#             self.df.loc[i,"freezing_discharge_fraction"] = 1
-#         elif freezing_energy > 0:
-#             self.df.loc[i,"freezing_discharge_fraction"] = 0
-#         else:
-#             if self.df.loc[i,"freezing_discharge_fraction"] > 1: # Enough water available
-#                 self.df.loc[i,"freezing_discharge_fraction"] = 1
-#                 self.df.loc[i,"fountain_runoff"] += (
-#                     self.df.loc[i,"freezing_discharge_fraction"] *freezing_energy* self.TIME_STEP * self.df.loc[i, "SA"]
-#                 ) / (self.L_F)
-#             if self.df.loc[i,"freezing_discharge_fraction"] < 1 : # Not Enough water available
-#                 self.df.loc[i,"fountain_runoff"] = 0
-#                 # logger.error("Discharge froze completely with freezing_discharge_fraction %.2f" %self.df.loc[i,"freezing_discharge_fraction"])
-# 
-#         self.df.loc[i, "Qmelt"] += self.df.loc[i,"freezing_discharge_fraction"] * freezing_energy
-#         self.df.loc[i, "Qt"] += (1- self.df.loc[i,"freezing_discharge_fraction"]) * freezing_energy
-#         # self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "Qmelt"] / self.df.loc[i, "Qsurf"]
-# 
-#         if self.df.loc[i,"Qt"] * self.df.loc[i,"Qmelt"] < 0:
-#             self.df.loc[i,"freezing_discharge_fraction"] = np.NaN
-#         else:
-#             self.df.loc[i,"freezing_discharge_fraction"] = self.df.loc[i, "Qmelt"] / self.df.loc[i, "Qsurf"]
-# 
-#     self.df.loc[i, "delta_T_s"] = (
-#         self.df.loc[i, "Qt"]
-#         * self.TIME_STEP
-#         / (self.RHO_I * self.DX * self.C_I)
-#     )
-# 
-#     # TODO Add to paper
-#     """Ice temperature above zero"""
-#     if (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]) > 0:
-#         self.df.loc[i, "Qmelt"] += (
-#             (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"])
-#             * self.RHO_I
-#             * self.DX
-#             * self.C_I
-#             / self.TIME_STEP
-#         )
-# 
-#         self.df.loc[i, "Qt"] -= (
-#             (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"])
-#             * self.RHO_I
-#             * self.DX
-#             * self.C_I
-#             / self.TIME_STEP
-#         )
-# 
-#         self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
-# 
-#         if self.df.loc[i,"Qt"] * self.df.loc[i,"Qmelt"] < 0:
-#             self.df.loc[i,"freezing_discharge_fraction"] = np.NaN
-#         else:
-#             self.df.loc[i,"freezing_discharge_fraction"] = -self.df.loc[i, "Qmelt"] / self.df.loc[i, "Qsurf"]
-
     # TODO Remove
     if self.df.loc[i, "T_s"] < -100:
         self.df.loc[i, "T_s"] = -100
@@ -169,6 +105,7 @@ def get_temp(self, i):
 
 def test_get_temp(self, i):
     self.get_temp(i)
+
     if self.df.loc[i, "delta_T_s"] > 1 * self.TIME_STEP/60:
         logger.warning("Too much fountain energy %s causes temperature change of %0.1f on %s" %(self.df.loc[i, "Qf"],self.df.loc[i, "delta_T_s"],self.df.loc[i, "When"]))
         if math.fabs(self.df.delta_T_s[i]) > 50:
@@ -187,6 +124,12 @@ def test_get_temp(self, i):
         )
         sys.exit("Ice Temperature nan")
 
+    if self.df.loc[i,"fountain_runoff"] < 0 :
+        logger.error(
+            f"When {self.df.When[i]},fountain_runoff {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+        )
+        sys.exit("All discharge froze!")
+        
     if np.isnan(self.df.loc[i, "fountain_runoff"]):
         logger.error(
             f"When {self.df.When[i]},fountain_runoff {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
