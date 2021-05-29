@@ -54,7 +54,7 @@ def calculate(process_name,location, tasks, X, y, results, results_list):
 
             # Output which process received the value
             print('[%s] received value: %s' % (process_name, new_value))
-            print('[%s] calculated max ice volume: %.1f' % (process_name, compute))
+            print('[%s] calculated rmse: %.1f' % (process_name, compute))
 
             # Add result to the queue
             results.put(compute)
@@ -70,7 +70,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "guttannen21"
+    location = "guttannen20"
     # location = "schwarzsee19"
 
     icestupa = Icestupa(location)
@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
     # Set the parameters by cross-validation
     tuned_params = [{
-        'DX': np.arange(0.018, 0.022, 0.001).tolist(), 
+        'DX': np.arange(0.018, 0.024, 0.001).tolist(), 
         'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
         'A_I': bounds(var=icestupa.A_I, res = 0.01),
         'A_S': bounds(var=icestupa.A_S, res = 0.01),
@@ -109,7 +109,8 @@ if __name__ == "__main__":
 
     print()
     ctr = len(list(ParameterGrid(tuned_params))) 
-    days = (ctr*70/(12*60*60*24))
+    runtime = 50
+    days = (ctr*50/(12*60*60*24))
     print("Total hours expected : %0.01f" % int(days*24))
     print("Total days expected : %0.01f" % days)
 
