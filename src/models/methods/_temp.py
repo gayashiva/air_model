@@ -115,7 +115,8 @@ def test_get_temp(self, i):
         logger.error(
             f"When {self.df.When[i]},fountain_runoff {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
         )
-        sys.exit("All discharge froze!")
+        logger.error("All discharge froze!")
+        # sys.exit("All discharge froze!")
         
     if np.isnan(self.df.loc[i, "fountain_runoff"]):
         logger.error(
@@ -136,18 +137,5 @@ def test_get_temp(self, i):
                 self.df.loc[i, "When"],
                 self.df.loc[i, "T_s"],
                 self.df.loc[i, "T_bulk"],
-            )
-        )
-
-    if math.fabs(self.df.loc[i,"freezing_discharge_fraction"]) > 1.01: 
-        logger.error(
-            "%s,temp flux %.1f,melt flux %.1f,total %.1f, Ql %.1f,freezing_discharge_fraction %.2f"
-            % (
-                self.df.loc[i, "When"],
-                self.df.loc[i, "Qt"],
-                self.df.loc[i, "Qmelt"],
-                self.df.loc[i, "Qsurf"], 
-                self.df.loc[i, "Ql"], 
-                self.df.loc[i, "freezing_discharge_fraction"],
             )
         )

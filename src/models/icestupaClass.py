@@ -298,10 +298,7 @@ class Icestupa:
         ]
 
         for column in col:
-            if column not in ["freezing_discharge_fraction"]:
-                self.df[column] = 0
-            else:
-                self.df[column] = np.NaN 
+            self.df[column] = 0
 
         self.start = self.df.index[self.df.Discharge > 0][0]
 
