@@ -42,26 +42,25 @@ def get_temp(self, i):
 
     freezing_energy = (self.df.loc[i, "Qsurf"] - self.df.loc[i, "Ql"])
 
+
     # TODO Add to paper
-    process = 0
-
     if self.df.loc[i, "fountain_runoff"] > 0 and freezing_energy < 0 and self.df.loc[i, "Qsurf"] < 0:
-        process = 1
-
-    if process == 0:
-        self.df.loc[i, "Qt"] = self.df.loc[i, "Qsurf"]
+        self.frozen = 1
     else:
+        self.frozen = 0
+
+    if self.frozen:
         self.df.loc[i, "Qt"] = self.df.loc[i, "Ql"]
         self.df.loc[i, "Qmelt"] = freezing_energy
-        self.df.loc[i,"fountain_runoff"] += (
-            freezing_energy* self.TIME_STEP * self.df.loc[i, "SA"]
-        ) / (self.L_F)
+    else:
+        self.df.loc[i, "Qt"] = self.df.loc[i, "Qsurf"]
 
     self.df.loc[i, "delta_T_s"] = (
         self.df.loc[i, "Qt"]
         * self.TIME_STEP
         / (self.RHO_I * self.DX * self.C_I)
     )
+
 
     """Ice temperature above zero"""
     if (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]) > 0:
@@ -80,8 +79,17 @@ def get_temp(self, i):
             * self.C_I
             / self.TIME_STEP
         )
-
         self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
+
+    if self.df.loc[i, "Qmelt"] < 0:
+        if self.frozen:
+            self.df.loc[i,"fountain_runoff"] += (
+                self.df.loc[i, "Qmelt"]* self.TIME_STEP * self.df.loc[i, "SA"]
+            ) / (self.L_F)
+
+            self.df.loc[i,"fountain_froze"] -= (
+                self.df.loc[i, "Qmelt"]* self.TIME_STEP * self.df.loc[i, "SA"]
+            ) / (self.L_F)
 
     # TODO Remove
     if self.df.loc[i, "T_s"] < -100:
@@ -139,3 +147,8 @@ def test_get_temp(self, i):
                 self.df.loc[i, "T_bulk"],
             )
         )
+    if self.df.loc[i, "Qmelt"] > 0:
+        if self.frozen:
+            logger.error(
+                f"No freezing_energy left When {self.df.When[i]}, Qmelt {self.df.Qmelt[i]}, Qt {self.df.Qt[i]}, Ql {self.df.Ql[i]}"
+            )

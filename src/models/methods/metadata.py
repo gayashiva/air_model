@@ -26,10 +26,10 @@ def get_parameter_metadata(
             "kind": "Misc",
             "units": "()",
         },
-        "freezing_discharge_fraction": {
-            "name": "Fraction of Discharge freezing",
+        "fountain_froze": {
+            "name": "Frozen Discharge",
             "kind": "Output",
-            "units": "()",
+            "units": "($kg\\, s^{-1}$)",
         },
         "h_f": {
             "name": "Fountain Height",
@@ -102,7 +102,7 @@ def get_parameter_metadata(
             "units": "($l\\, min^{-1}$)",
         },
         "fountain_runoff": {
-            "name": "Discharge Available",
+            "name": "Discharge Runoff",
             "kind": "Output",
             "units": "($kg\\, s^{-1}$)",
         },

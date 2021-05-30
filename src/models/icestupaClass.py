@@ -293,6 +293,7 @@ class Icestupa:
             "cdt",
             "thickness",
             "fountain_runoff",
+            "fountain_froze",
             "Qt",
             "Qmelt",
         ]

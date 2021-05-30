@@ -232,6 +232,7 @@ def summary_figures(self):
             "iceV",
             "Discharge",
             "fountain_runoff",
+            "fountain_froze",
         ]
     ]
 
@@ -283,8 +284,9 @@ def summary_figures(self):
 
     dfds["Discharge"] *= self.TIME_STEP / (60 * 1000)
     dfds["fountain_runoff"] /= 1000
+    dfds["fountain_froze"] /= 1000
     # dfds["wind_loss"] /= 1000
-    dfds["Frozen"] = dfds["Discharge"] - dfds["fountain_runoff"]
+    dfds["Frozen"] = dfds["fountain_froze"] #dfds["Discharge"] - dfds["fountain_runoff"]
     dfds["Runoff loss"] = dfds["fountain_runoff"] #+ dfds["wind_loss"]
     # dfds["Wind loss"] = dfds["wind_loss"]
     y01 = dfds["Discharge"]
