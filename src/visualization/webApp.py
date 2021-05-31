@@ -399,7 +399,7 @@ if __name__ == "__main__":
             variable2 = st.multiselect(
                 "Choose",
                 options=(output_cols),
-                default=["Fraction of Discharge freezing"],
+                default=["Discharge Runoff"],
             )
             if not (variable2):
                 st.error("Please select at least one variable.")
