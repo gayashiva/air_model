@@ -24,8 +24,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
         SITE = dict(
             name="diavolezza21",
-            start_date=datetime(2021, 1, 19,16),
-            # start_date=datetime(2021, 1, 26,9),
+            # start_date=datetime(2021, 1, 19,16),
+            start_date=datetime(2021, 1, 26,9),
             # start_date=datetime(2021, 1, 19),
             end_date=datetime(2021, 3, 18),
             fountain_off_date=datetime(2021, 3, 18),
@@ -123,7 +123,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             name="gangles21",
             # start_date=datetime(2020, 12, 14),
             start_date=datetime(2021, 1, 18),
-            end_date=datetime(2021, 3, 14),
+            # end_date=datetime(2021, 3, 14),
+            end_date=datetime(2021, 5, 14),
             utc_offset=5.5,
             longitude=77.606949,
             latitude=34.216638,
