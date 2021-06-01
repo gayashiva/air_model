@@ -30,7 +30,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "guttannen21"
+    location = "guttannen20"
     icestupa = Icestupa(location)
     SITE, FOLDER, df_h = config(location)
 
@@ -54,6 +54,8 @@ if __name__ == "__main__":
     df = df.set_index('rmse').sort_index().reset_index()
     df['params'] = df['params'].apply(literal_eval)
 
-    for param_name in sorted(df.params[0].keys()):
-        print("\t%s: %r" % (param_name, df.params[0][param_name]))
+    for i in range(0,5):
+        print(df.rmse[i])
+        for param_name in sorted(df.params[0].keys()):
+            print("\t%s: %r" % (param_name, df.params[i][param_name]))
 

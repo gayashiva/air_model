@@ -170,7 +170,8 @@ if __name__ == "__main__":
 
             if num_finished_processes == num_processes:
                 df = pd.DataFrame.from_records(results_list, columns=["params", "rmse"])
+                df = df.set_index('rmse').sort_index().reset_index()
                 print(df.head())
-                df.to_csv(FOLDER['sim'] + file_path)
+                df.to_csv(FOLDER['sim'] + file_path, index=False)
                 # save_obj(FOLDER['sim'], file_path, results_list)
                 break

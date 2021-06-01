@@ -26,13 +26,15 @@ def aws(location="diavolezza21"):
     # Get header colun list
     df = pd.read_csv(
         FOLDER["raw"] + location + "_aws.csv",
-        sep=";",
+        # sep=";",
+        sep="\t",
         header=0,
         # parse_dates=['date_time']
     )
+    print(df.columns)
     logger.error(df['date_time'].head())
     logger.error(df['date_time'].tail())
-    df["When"] = pd.to_datetime(df["date_time"], format="%d.%m.%y %H:%M")
+    df["When"] = pd.to_datetime(df["date_time"], format="%d/%m/%y %H:%M")
     df.rename(
         columns={
             # "date_time": "When",
@@ -356,7 +358,7 @@ if __name__ == "__main__":
     skyblue = "#9bc4f0"
     blue = "#0a4a97"
     x = df_out.When
-    y = df_out.T_a
+    y = df_out.Discharge
     ax1.plot(
         x,
         y,

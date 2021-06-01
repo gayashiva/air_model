@@ -11,6 +11,8 @@ import sys
 logger = logging.getLogger(__name__)
 
 def get_temp(self, i):
+
+    # TODO Add to paper
     # Latent Heat
     if self.df.loc[i, "Ql"] < 0:
         # Sublimation
@@ -40,10 +42,8 @@ def get_temp(self, i):
             / self.L_S
         )
 
-    freezing_energy = (self.df.loc[i, "Qsurf"] - self.df.loc[i, "Ql"])
-
-
     # TODO Add to paper
+    freezing_energy = (self.df.loc[i, "Qsurf"] - self.df.loc[i, "Ql"])
     if self.df.loc[i, "fountain_runoff"] > 0 and freezing_energy < 0 and self.df.loc[i, "Qsurf"] < 0:
         self.frozen = 1
     else:
@@ -86,6 +86,15 @@ def get_temp(self, i):
             self.df.loc[i,"fountain_runoff"] += (
                 self.df.loc[i, "Qmelt"]* self.TIME_STEP * self.df.loc[i, "SA"]
             ) / (self.L_F)
+
+            if self.df.loc[i,"fountain_runoff"] < 0:
+                self.df.loc[i,"Qmelt"] -= (
+                    self.df.loc[i, "fountain_runoff"] * (self.L_F)/ (self.TIME_STEP * self.df.loc[i, "SA"])
+                ) 
+                self.df.loc[i,"Qt"] += (
+                    self.df.loc[i, "fountain_runoff"]* self.TIME_STEP * self.df.loc[i, "SA"]
+                ) / (self.L_F)
+                self.df.loc[i, "fountain_runoff"] = 0
 
             self.df.loc[i,"fountain_froze"] -= (
                 self.df.loc[i, "Qmelt"]* self.TIME_STEP * self.df.loc[i, "SA"]
