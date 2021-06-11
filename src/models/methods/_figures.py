@@ -256,6 +256,13 @@ def summary_figures(self):
                 dfds.loc[i, "ppt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
                 dfds.loc[i, "dpt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
                 dfds.loc[i, "cdt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
+            else:
+                dfds.loc[i, "solid"] = 0 
+                dfds.loc[i, "melted"] *= 0
+                dfds.loc[i, "gas"] *= 0
+                dfds.loc[i, "ppt"] *= 0
+                dfds.loc[i, "dpt"] *= 0
+                dfds.loc[i, "cdt"] *= 0
 
     dfds = dfds.set_index("When").resample("D").sum().reset_index()
     dfds["When"] = dfds["When"].dt.strftime("%b %d")
@@ -279,6 +286,7 @@ def summary_figures(self):
             "Melt",
         ]
     ]
+    # logger.error(y2.head())
 
     dfd = self.df.set_index("When").resample("D").mean().reset_index()
     dfd["When"] = dfd["When"].dt.strftime("%b %d")
@@ -363,7 +371,8 @@ def summary_figures(self):
     plt.ylabel("Thickness ($m$ w. e.)")
     plt.xticks(rotation=45)
     plt.legend(loc="upper center", ncol=6)
-    # ax2.set_ylim(-0.03, 0.03)
+    if self.name in ["guttannen21", "ravat20"]:
+        ax2.set_ylim(-0.1, 0.1)
     ax2.yaxis.set_minor_locator(AutoMinorLocator())
     ax2.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
     x_axis = ax2.axes.get_xaxis()
