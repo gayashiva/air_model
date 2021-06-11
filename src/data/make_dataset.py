@@ -283,7 +283,7 @@ def field(location="schwarzsee19"):
     return df
 
 
-def era5(df, location="schwarzsee19"):
+def era5(location="schwarzsee19"):
 
     if location in ["schwarzsee19"]:
         df_in3 = pd.read_csv(
@@ -332,6 +332,16 @@ def era5(df, location="schwarzsee19"):
     if location in ["diavolezza21"]:
         df_in3 = pd.read_csv(
             "/home/suryab/work/ERA5/outputs/" + location[:-2] + "_2021.csv",
+            sep=",",
+            header=0,
+            parse_dates=["When"],
+        )
+        df_in3 = df_in3.set_index("When")
+        df_in3 = df_in3.reset_index()
+
+    if location in ["ravat20"]:
+        df_in3 = pd.read_csv(
+            "/home/suryab/work/ERA5/outputs/" + location[:-2] + "_2020.csv",
             sep=",",
             header=0,
             parse_dates=["When"],
@@ -551,7 +561,8 @@ if __name__ == "__main__":
     )
 
     # SITE, FOUNTAIN, FOLDER = config("Guttannen 2020")
-    SITE, FOUNTAIN, FOLDER = config("Schwarzsee 2019")
+    # SITE, FOUNTAIN, FOLDER = config("Schwarzsee 2019")
+    SITE, FOUNTAIN, FOLDER = config("Ravat 2020")
 
     raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")

@@ -203,6 +203,8 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                         (self.df.Discharge.replace(0, np.nan).max()),
                     )
                 )
+            if self.name == "ravat20":
+                self.df["Discharge"] = self.discharge
     mask = self.df["When"] > self.fountain_off_date
     mask_index = self.df[mask].index
     self.df.loc[mask_index, "Discharge"] = 0

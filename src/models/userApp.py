@@ -28,7 +28,8 @@ if __name__ == "__main__":
         # location="Schwarzsee 2019",
         # location="Guttannen 2021",
         # location="Gangles 2021",
-        location="Diavolezza 2021",
+        # location="Diavolezza 2021",
+        location="Ravat 2020",
         run="yes",
         # run="no",
     )
@@ -53,8 +54,8 @@ if __name__ == "__main__":
     else:
         # Use output parameters from cache
         # icestupa.derive_parameters()
-        icestupa.read_input()
-        icestupa.melt_freeze()
+        # icestupa.read_input()
+        # icestupa.melt_freeze()
         # icestupa.summary()
-        # icestupa.read_output()
-        # icestupa.summary_figures()
+        icestupa.read_output()
+        icestupa.summary_figures()

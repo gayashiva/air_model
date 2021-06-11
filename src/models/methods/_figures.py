@@ -15,17 +15,25 @@ from codetiming import Timer
 logger = logging.getLogger(__name__)
 
 
-def shade(df_in, col):
-    mask = df_in.missing_type.str.contains(col, na=False)
-    df_ERA5 = df_in.copy()
-    df = df_in.copy()
-    df.loc[
-        mask , ["When", "T_a", "SW_direct", "SW_diffuse", "v_a", "p_a", "RH"]
-    ] = np.NaN
+def shade(location, df_in, col):
+    if location == "ravat20":
+        df_ERA5 = df_in.copy()
+        df = df_in.copy()
+        df.loc[
+        : , ["When", "T_a", "SW_direct", "SW_diffuse", "v_a", "p_a", "RH"]
+        ] = np.NaN
 
-    df_ERA5.loc[
-        ~mask , ["When", "T_a", "SW_direct", "SW_diffuse", "v_a", "p_a", "RH", "missing_type"]
-    ] = np.NaN
+    else:
+        mask = df_in.missing_type.str.contains(col, na=False)
+        df_ERA5 = df_in.copy()
+        df = df_in.copy()
+        df.loc[
+            mask , ["When", "T_a", "SW_direct", "SW_diffuse", "v_a", "p_a", "RH"]
+        ] = np.NaN
+
+        df_ERA5.loc[
+            ~mask , ["When", "T_a", "SW_direct", "SW_diffuse", "v_a", "p_a", "RH", "missing_type"]
+        ] = np.NaN
 
     events = np.split(df_ERA5.When, np.where(np.isnan(df_ERA5.When.values))[0])
     # removing NaN entries
@@ -145,7 +153,7 @@ def summary_figures(self):
     for tl in ax1t.get_yticklabels():
         tl.set_color(CB91_Blue)
 
-    df_SZ, df_ERA5, events = shade(df_in = self.df, col = 'T_a')
+    df_SZ, df_ERA5, events = shade(location=self.name,df_in = self.df, col = 'T_a')
     y2 = df_SZ.T_a
     y2_ERA5 = df_ERA5.T_a
     ax2.plot(x, y2, linestyle="-", color="#284D58", linewidth=1)
@@ -180,7 +188,7 @@ def summary_figures(self):
     labs = [l.get_label() for l in lns]
     ax3.legend(lns, labs, ncol=3, loc="best")
 
-    df_SZ, df_ERA5, events= shade(df_in = self.df, col = 'RH')
+    df_SZ, df_ERA5, events= shade(location=self.name,df_in = self.df, col = 'RH')
     y4 = df_SZ.RH
     y4_ERA5 = df_ERA5.RH
     ax4.plot(x, y4, linestyle="-", color="#284D58", linewidth=1)
@@ -189,7 +197,7 @@ def summary_figures(self):
         ax4.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
     ax4.set_ylabel("Humidity [$\\%$]")
 
-    df_SZ, df_ERA5, events= shade(df_in = self.df, col = 'p_a')
+    df_SZ, df_ERA5, events= shade(location=self.name,df_in = self.df, col = 'p_a')
     y5 = df_SZ.p_a
     y5_ERA5 = df_ERA5.p_a
     ax5.plot(x, y5, linestyle="-", color="#264653", linewidth=1)
@@ -198,7 +206,7 @@ def summary_figures(self):
         ax5.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
     ax5.set_ylabel("Pressure [$hPa$]")
 
-    df_SZ, df_ERA5 , events= shade(df_in = self.df, col = 'v_a')
+    df_SZ, df_ERA5 , events= shade(location=self.name,df_in = self.df, col = 'v_a')
     y6 = df_SZ.v_a
     y6_ERA5 = df_ERA5.v_a
     ax6.plot(x, y6, linestyle="-", color="#264653", linewidth=1, label="Schwarzsee")

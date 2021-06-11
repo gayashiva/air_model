@@ -20,6 +20,26 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 def config(location="Schwarzsee 2019", trigger="Manual"):
 
     logger.info("Location is %s and trigger is %s" % (location, trigger))
+    if location == "Ravat 2020" or location == "ravat20":
+
+        SITE = dict(
+            name="ravat20",
+            start_date=datetime(2020, 1, 1),
+            end_date=datetime(2020, 8, 1),
+            fountain_off_date=datetime(2020, 4, 1),
+            utc_offset=6,
+            latitude=39.87112,
+            longitude=70.170666,
+            h_aws=2, 
+
+            discharge=60,  # FOUNTAIN mean discharge
+            r_spray=7,  # FOUNTAIN mean discharge
+        )
+
+        data_h = [
+            {"When": SITE["start_date"], "h_f": 5}, # doesnt use this?
+        ]
+
     if location == "Diavolezza 2021" or location == "diavolezza21":
 
         SITE = dict(
