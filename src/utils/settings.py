@@ -32,7 +32,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             longitude=70.170666,
             h_aws=2, 
 
-            discharge=60,  # FOUNTAIN mean discharge
+            discharge=10,  # FOUNTAIN mean discharge
             r_spray=7,  # FOUNTAIN mean discharge
         )
 
