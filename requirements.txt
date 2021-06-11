@@ -63,7 +63,7 @@ pexpect==4.8.0
 phik==0.11.2
 pickle5==0.0.11
 pickleshare==0.7.5
-Pillow==8.1.2
+Pillow==8.2.0
 prometheus-client==0.9.0
 prompt-toolkit==3.0.17
 protobuf==3.15.6
@@ -106,7 +106,7 @@ tqdm==4.59.0
 traitlets==5.0.5
 typing-extensions==3.7.4.3
 tzlocal==2.1
-urllib3==1.26.4
+urllib3==1.26.5
 validators==0.18.2
 visions==0.6.0
 watchdog==2.0.2
