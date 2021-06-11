@@ -290,7 +290,7 @@ def summary_figures(self):
     y3 = dfds2["SA"]
     y4 = dfds2["iceV"]
 
-    dfds["Discharge"] *= self.TIME_STEP / (60 * 1000)
+    dfds["Discharge"] *= self.DT / (60 * 1000)
     dfds["fountain_runoff"] /= 1000
     dfds["fountain_froze"] /= 1000
     # dfds["wind_loss"] /= 1000

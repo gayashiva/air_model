@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 # @cache_it(limit=1000, expire=None)
 def get_solar(
-    latitude, longitude, start, end, TIME_STEP
+    latitude, longitude, start, end, DT
 ):  # Provides solar angle for each time step
 
     site_location = location.Location(latitude, longitude)
@@ -20,7 +20,7 @@ def get_solar(
     times = pd.date_range(
         start,
         end,
-        freq=(str(int(TIME_STEP / 60)) + "T"),
+        freq=(str(int(DT / 60)) + "T"),
     )
 
     # Get solar azimuth and zenith to pass to the transposition function
