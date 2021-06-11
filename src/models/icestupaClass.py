@@ -50,6 +50,7 @@ class Icestupa:
     A_DECAY = 10  # Albedo decay rate decay_t_d
     Z = 0.0017  # Ice Momentum and Scalar roughness length
     T_RAIN = 1  # Temperature condition for liquid precipitation
+    DX_DT = 5.5556e-06 #m/s Surface layer thickness growth rate
 
     """Fountain constants"""
     T_W = 5  # FOUNTAIN Water temperature
@@ -58,10 +59,8 @@ class Icestupa:
     trigger = "Manual"
 
     """Model constants"""
-    # DX = 10e-03  # Initial Ice layer thickness
-    # TIME_STEP = 30*60 # Model time step
-    DX = 20e-03  # Initial Ice layer thickness
-    TIME_STEP = 60*60 # Model time step
+    DT = 60*60 # Model time step
+    
 
 
     def __init__(self, location = "Guttannen 2021"):
@@ -87,6 +86,9 @@ class Icestupa:
         self.df = self.df[
             self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
         ]  # Drops garbage columns
+
+        """Surface layer thickness"""
+        self.DX = self.DX_DT * self.DT
 
         """Fountain height"""
         df_h = df_h.set_index("When")
@@ -169,16 +171,16 @@ class Icestupa:
             longitude=self.longitude,
             start=self.start_date,
             end=self.df["When"].iloc[-1],
-            TIME_STEP=self.TIME_STEP,
+            DT=self.DT,
         )
         self.df = pd.merge(solar_df, self.df, on="When")
-        self.df.Prec = self.df.Prec * self.TIME_STEP  # mm
+        self.df.Prec = self.df.Prec * self.DT  # mm
 
         """Albedo"""
 
         if "a" in unknown:
             """Albedo Decay parameters initialized"""
-            self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.TIME_STEP
+            self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
             s = 0
             f = 1
             if self.name in ["schwarzsee19", "guttannen20"]:
@@ -211,12 +213,12 @@ class Icestupa:
         f_efficiency = 100 - (
             (
                 self.df["unfrozen_water"].iloc[-1]
-                / (self.df["Discharge"].sum() * self.TIME_STEP / 60)
+                / (self.df["Discharge"].sum() * self.DT / 60)
                 * 100
             )
         )
 
-        Duration = self.df.index[-1] * self.TIME_STEP / (60 * 60 * 24)
+        Duration = self.df.index[-1] * self.DT / (60 * 60 * 24)
 
         print("\nIce Volume Max", float(round(self.df["iceV"].max(), 2)))
         print("Fountain efficiency", round(f_efficiency, 1))
@@ -372,7 +374,7 @@ class Icestupa:
 
             # Fountain water output
             self.df.loc[i,"fountain_runoff"]= (
-                self.df.Discharge.loc[i] * self.TIME_STEP / 60
+                self.df.Discharge.loc[i] * self.DT / 60
             )
 
             self.get_area(i)
@@ -390,14 +392,14 @@ class Icestupa:
             if self.df.loc[i, "Qmelt"] < 0:
                 self.df.loc[i, "solid"] -= (
                     self.df.loc[i, "Qmelt"]
-                    * self.TIME_STEP
+                    * self.DT
                     * self.df.loc[i, "SA"]
                     / (self.L_F)
                 )
             else:
                 self.df.loc[i, "melted"] += (
                     self.df.loc[i, "Qmelt"]
-                    * self.TIME_STEP
+                    * self.DT
                     * self.df.loc[i, "SA"]
                     / (self.L_F)
                 )

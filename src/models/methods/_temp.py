@@ -19,7 +19,7 @@ def get_temp(self, i):
         L = self.L_S
         self.df.loc[i, "gas"] -= (
             self.df.loc[i, "Ql"]
-            * self.TIME_STEP
+            * self.DT
             * self.df.loc[i, "SA"]
             / L
         )
@@ -27,7 +27,7 @@ def get_temp(self, i):
         # Removing gas quantity generated from ice
         self.df.loc[i, "solid"] += (
             self.df.loc[i, "Ql"]
-            * self.TIME_STEP
+            * self.DT
             * self.df.loc[i, "SA"]
             / L
         )
@@ -37,7 +37,7 @@ def get_temp(self, i):
         L = self.L_S
         self.df.loc[i, "dpt"] += (
             self.df.loc[i, "Ql"]
-            * self.TIME_STEP
+            * self.DT
             * self.df.loc[i, "SA"]
             / self.L_S
         )
@@ -57,7 +57,7 @@ def get_temp(self, i):
 
     self.df.loc[i, "delta_T_s"] = (
         self.df.loc[i, "Qt"]
-        * self.TIME_STEP
+        * self.DT
         / (self.RHO_I * self.DX * self.C_I)
     )
 
@@ -69,7 +69,7 @@ def get_temp(self, i):
             * self.RHO_I
             * self.DX
             * self.C_I
-            / self.TIME_STEP
+            / self.DT
         )
 
         self.df.loc[i, "Qt"] -= (
@@ -77,27 +77,27 @@ def get_temp(self, i):
             * self.RHO_I
             * self.DX
             * self.C_I
-            / self.TIME_STEP
+            / self.DT
         )
         self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
 
     if self.df.loc[i, "Qmelt"] < 0:
         if self.frozen:
             self.df.loc[i,"fountain_runoff"] += (
-                self.df.loc[i, "Qmelt"]* self.TIME_STEP * self.df.loc[i, "SA"]
+                self.df.loc[i, "Qmelt"]* self.DT * self.df.loc[i, "SA"]
             ) / (self.L_F)
 
             if self.df.loc[i,"fountain_runoff"] < 0:
                 self.df.loc[i,"Qmelt"] -= (
-                    self.df.loc[i, "fountain_runoff"] * (self.L_F)/ (self.TIME_STEP * self.df.loc[i, "SA"])
+                    self.df.loc[i, "fountain_runoff"] * (self.L_F)/ (self.DT * self.df.loc[i, "SA"])
                 ) 
                 self.df.loc[i,"Qt"] += (
-                    self.df.loc[i, "fountain_runoff"]* self.TIME_STEP * self.df.loc[i, "SA"]
+                    self.df.loc[i, "fountain_runoff"]* self.DT * self.df.loc[i, "SA"]
                 ) / (self.L_F)
                 self.df.loc[i, "fountain_runoff"] = 0
 
             self.df.loc[i,"fountain_froze"] -= (
-                self.df.loc[i, "Qmelt"]* self.TIME_STEP * self.df.loc[i, "SA"]
+                self.df.loc[i, "Qmelt"]* self.DT * self.df.loc[i, "SA"]
             ) / (self.L_F)
 
     # TODO Remove
@@ -110,7 +110,7 @@ def get_temp(self, i):
 def test_get_temp(self, i):
     self.get_temp(i)
 
-    if self.df.loc[i, "delta_T_s"] > 1 * self.TIME_STEP/60:
+    if self.df.loc[i, "delta_T_s"] > 1 * self.DT/60:
         logger.warning("Too much fountain energy %s causes temperature change of %0.1f on %s" %(self.df.loc[i, "Qf"],self.df.loc[i, "delta_T_s"],self.df.loc[i, "When"]))
         if math.fabs(self.df.delta_T_s[i]) > 50:
             logger.error(
@@ -141,10 +141,10 @@ def test_get_temp(self, i):
         )
         sys.exit("fountain runoff nan")
 
-    if self.df.loc[i,'fountain_runoff'] - self.df.loc[i, 'Discharge'] * self.TIME_STEP / 60 > 2:
+    if self.df.loc[i,'fountain_runoff'] - self.df.loc[i, 'Discharge'] * self.DT / 60 > 2:
 
         logger.error(
-            f"Discharge exceeded When {self.df.When[i]}, Fountain in {self.df.fountain_runoff[i]}, Discharge in {self.df.Discharge[i]* self.TIME_STEP / 60}"
+            f"Discharge exceeded When {self.df.When[i]}, Fountain in {self.df.fountain_runoff[i]}, Discharge in {self.df.Discharge[i]* self.DT / 60}"
         )
 
     if math.fabs(self.df.loc[i, "delta_T_s"]) > 20:

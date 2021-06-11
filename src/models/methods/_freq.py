@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def change_freq(self):  
     old_time_step = str(pd.to_timedelta(to_offset(pd.infer_freq(self.df["When"]))).seconds/60)
-    new_time_step = str(self.TIME_STEP/60)
+    new_time_step = str(self.DT/60)
 
     if new_time_step != old_time_step:
         self.df= self.df.set_index('When')

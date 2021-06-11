@@ -27,7 +27,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
 
             logger.debug(
                 f"Hours of spray : %.2f"
-                % (self.df.Discharge.astype(bool).sum(axis=0) * self.TIME_STEP / 3600)
+                % (self.df.Discharge.astype(bool).sum(axis=0) * self.DT / 3600)
             )
 
         if self.trigger == "None":
@@ -51,7 +51,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                 df_f["When"] += pd.DateOffset(years=121)
                 df_f = (
                     df_f.set_index("When")
-                    .resample(str(int(self.TIME_STEP / 60)) + "T")
+                    .resample(str(int(self.DT / 60)) + "T")
                     .ffill().reset_index()
                 )
 
@@ -89,7 +89,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                 df_f = df_f[["When", "fountain"]]
                 df_f = (
                     df_f.set_index("When")
-                    .resample(str(int(self.TIME_STEP / 60)) + "T")
+                    .resample(str(int(self.DT / 60)) + "T")
                     .ffill().reset_index()
                 )
 
@@ -112,7 +112,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                     )
                     df_field["When"] = pd.to_datetime(df_field["When"])
 
-                    df_field= df_field.set_index('When').resample(str(int(self.TIME_STEP/60))+'T').mean().reset_index()
+                    df_field= df_field.set_index('When').resample(str(int(self.DT/60))+'T').mean().reset_index()
 
                     mask = df_field["When"] >= self.start_date
                     mask &= df_field["When"] <= self.end_date
@@ -163,7 +163,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                     % (
                         (
                             self.df.Discharge.astype(bool).sum(axis=0)
-                            * self.TIME_STEP
+                            * self.DT
                             / 3600
                         ),
                         (self.df.Discharge.replace(0, np.nan).mean()),
@@ -181,7 +181,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                 df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")
                 df_f = (
                     df_f.set_index("When")
-                    .resample(str(int(self.TIME_STEP / 60)) + "T")
+                    .resample(str(int(self.DT / 60)) + "T")
                     .mean()
                 )
                 self.df = self.df.set_index("When")
@@ -196,7 +196,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
                     % (
                         (
                             self.df.Discharge.astype(bool).sum(axis=0)
-                            * self.TIME_STEP
+                            * self.DT
                             / 3600
                         ),
                         (self.df.Discharge.replace(0, np.nan).mean()),
