@@ -454,6 +454,8 @@ class Icestupa:
             ) / (self.df.loc[i, "SA"])
 
             if test:
+                print(self.df.loc[i, "thickness"], self.df.loc[i, "iceV"], self.df.loc[i, "SA"])
+                print(self.df.loc[i+1, "thickness"], self.df.loc[i+1, "iceV"], self.df.loc[i+1, "SA"])
                 logger.info(
                     f" When {self.df.When[i]},iceV {self.df.iceV[i+1]}, thickness  {self.df.thickness[i]}"
                 )
