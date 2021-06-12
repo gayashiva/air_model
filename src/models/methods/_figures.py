@@ -130,8 +130,8 @@ def summary_figures(self):
         axis=1,
     )
 
-    fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
-        nrows=6, ncols=1, sharex="col", sharey="row", figsize=(12, 18)
+    fig, (ax1, ax2, ax3, ax4, ax5, ax6, ax7) = plt.subplots(
+        nrows=7, ncols=1, sharex="col", sharey="row", figsize=(12, 18)
     )
 
     x = self.df.When
@@ -175,7 +175,7 @@ def summary_figures(self):
         color=orange,
         alpha=0.6,
     )
-    lns3 = ax3.plot(x, self.df.LW_in, linestyle="-", label="Longwave", color=green, alpha=0.6)
+    # lns3 = ax3.plot(x, self.df.LW_in, linestyle="-", label="Longwave", color=green, alpha=0.6)
     ax3.axvspan(
         self.df.When.head(1).values,
         self.df.When.tail(1).values,
@@ -184,35 +184,48 @@ def summary_figures(self):
     )
     ax3.set_ylabel("Radiation [$W\\,m^{-2}$]")
 
-    lns = lns1 + lns2 + lns3
+    # lns = lns1 + lns2 + lns3
+    lns = lns1 + lns2
     labs = [l.get_label() for l in lns]
-    ax3.legend(lns, labs, ncol=3, loc="best")
+    ax3.legend(lns, labs, ncol=2, loc="best")
+
+    y4 = self.df.LW_in
+    ax4.plot(x, y4, linestyle="-", color=green, alpha=0.6, label="Longwave")
+    ax4.axvspan(
+        self.df.When.head(1).values,
+        self.df.When.tail(1).values,
+        facecolor="grey",
+        alpha=0.25,
+    )
+    ax4.set_ylabel("Radiation [$W\\,m^{-2}$]")
+    ax4.legend(loc="best")
+
 
     df_SZ, df_ERA5, events= shade(location=self.name,df_in = self.df, col = 'RH')
-    y4 = df_SZ.RH
-    y4_ERA5 = df_ERA5.RH
-    ax4.plot(x, y4, linestyle="-", color="#284D58", linewidth=1)
-    ax4.plot(x, y4_ERA5, linestyle="-", color="#284D58")
-    for ev in events:
-        ax4.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
-    ax4.set_ylabel("Humidity [$\\%$]")
-
-    df_SZ, df_ERA5, events= shade(location=self.name,df_in = self.df, col = 'p_a')
-    y5 = df_SZ.p_a
-    y5_ERA5 = df_ERA5.p_a
-    ax5.plot(x, y5, linestyle="-", color="#264653", linewidth=1)
+    y5 = df_SZ.RH
+    y5_ERA5 = df_ERA5.RH
+    ax5.plot(x, y5, linestyle="-", color="#284D58", linewidth=1)
     ax5.plot(x, y5_ERA5, linestyle="-", color="#284D58")
     for ev in events:
         ax5.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
-    ax5.set_ylabel("Pressure [$hPa$]")
+    ax5.set_ylabel("Humidity [$\\%$]")
+
+    df_SZ, df_ERA5, events= shade(location=self.name,df_in = self.df, col = 'p_a')
+    y6 = df_SZ.p_a
+    y6_ERA5 = df_ERA5.p_a
+    ax6.plot(x, y6, linestyle="-", color="#264653", linewidth=1)
+    ax6.plot(x, y6_ERA5, linestyle="-", color="#284D58")
+    for ev in events:
+        ax6.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
+    ax6.set_ylabel("Pressure [$hPa$]")
 
     df_SZ, df_ERA5 , events= shade(location=self.name,df_in = self.df, col = 'v_a')
-    y6 = df_SZ.v_a
-    y6_ERA5 = df_ERA5.v_a
-    ax6.plot(x, y6, linestyle="-", color="#264653", linewidth=1, label="Schwarzsee")
-    ax6.plot(x, y6_ERA5, linestyle="-", color="#284D58")
+    y7 = df_SZ.v_a
+    y7_ERA5 = df_ERA5.v_a
+    ax7.plot(x, y7, linestyle="-", color="#264653", linewidth=1, label="Schwarzsee")
+    ax7.plot(x, y7_ERA5, linestyle="-", color="#284D58")
     for ev in events:  # Creates DeprecationWarning
-        ax6.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
+        ax7.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
     ax6.set_ylabel("Wind speed [$m\\,s^{-1}$]")
 
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -286,7 +299,6 @@ def summary_figures(self):
             "Melt",
         ]
     ]
-    # logger.error(y2.head())
 
     dfd = self.df.set_index("When").resample("D").mean().reset_index()
     dfd["When"] = dfd["When"].dt.strftime("%b %d")
@@ -321,12 +333,6 @@ def summary_figures(self):
                 color=[skyblue, "xkcd:azure", "#0C70DE"],
                 ax=ax0
                 )
-    # ax0 = y01.plot.bar(
-    #     linewidth=0.5, edgecolor="black", color="#0C70DE", alpha=0.4, label="Available", ax=ax0
-    # )
-    # ax0 = y02.plot.bar(
-    #     y="fountain_runoff", linewidth=0.5, edgecolor="black", color="#0C70DE",label="Runoff",  ax=ax0
-    # )
     ax0.xaxis.set_label_text("")
     ax0.set_ylabel("Total Discharge ($m^3$)")
     plt.legend(loc="upper center", ncol=3)
@@ -342,9 +348,7 @@ def summary_figures(self):
                 stacked=True, 
                 edgecolor="black", 
                 linewidth=0.5, 
-                # color=["xkcd:azure", "xkcd:aqua", "xkcd:orangered", "xkcd:orange", "xkcd:green", "xkcd:yellowgreen","xkcd:purple", "xkcd:tan" ],
                 color=[purple, pink, red, orange, green, "xkcd:yellowgreen", "xkcd:azure", blue ],
-                # alpha=[0.1,0.2,0.1,0.4,0.5,0.5,0.5,0.5],
                 ax=ax1
                 )
     ax1.xaxis.set_label_text("")
@@ -364,15 +368,13 @@ def summary_figures(self):
         stacked=True,
         edgecolor="black",
         linewidth=0.5,
-        # color=["#D9E9FA", "xkcd:azure", orange, green, "#0C70DE"],
         color=[skyblue, "xkcd:azure", orange, green, "#0C70DE"],
         ax=ax2,
     )
     plt.ylabel("Thickness ($m$ w. e.)")
     plt.xticks(rotation=45)
     plt.legend(loc="upper center", ncol=6)
-    if self.name in ["guttannen21", "ravat20"]:
-        ax2.set_ylim(-0.1, 0.1)
+    if y2.sum(axis=1).max() > 1: ax2.set_ylim(-0.1, 0.1) # Uneven thickness
     ax2.yaxis.set_minor_locator(AutoMinorLocator())
     ax2.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
     x_axis = ax2.axes.get_xaxis()

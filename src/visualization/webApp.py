@@ -226,11 +226,11 @@ if __name__ == "__main__":
         f_efficiency = 100 - (
             (
                 icestupa.df["unfrozen_water"].iloc[-1]
-                / (icestupa.df["Discharge"].sum() * icestupa.TIME_STEP / 60)
+                / (icestupa.df["Discharge"].sum() * icestupa.DT / 60)
                 * 100
             )
         )
-        Duration = icestupa.df.index[-1] * icestupa.TIME_STEP / (60 * 60 * 24)
+        Duration = icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24)
         st.markdown(
             """
         | Fountain | Estimation |
@@ -242,7 +242,7 @@ if __name__ == "__main__":
             % (
                 f_mean,
                 icestupa.r_spray,
-                icestupa.df.Discharge.sum() * icestupa.TIME_STEP / (60 * 1000) ,
+                icestupa.df.Discharge.sum() * icestupa.DT / (60 * 1000) ,
             )
         )
 
