@@ -24,22 +24,27 @@ def self_attributes(self, save=False):
         self.dome_vol=0
         logger.warning("Measured spray radius from fountain parameters %0.1f"%self.r_spray)
     else:
-        if not hasattr(self, "r_spray"):
+        # Get spray radius
+        if hasattr(self, "r_spray"):
+            logger.error("Arbitrary spray radius of %s" %self.r_spray)
+        else:
             if hasattr(self, "perimeter"):
                 self.r_spray = self.perimeter/(math.pi *2)
                 logger.warning("Measured spray radius from perimeter %0.1f"%self.r_spray)
             else:
                 self.r_spray= df_c.loc[df_c.When < self.fountain_off_date, "rad"].mean()
                 logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
-            # Get initial height
-            if hasattr(self, "dome_rad"):
-                self.dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
-                self.h_i = 3 * self.dome_vol/ (math.pi * self.r_spray ** 2)
-                logger.warning("Initial height estimated from dome %0.1f"%self.h_i)
-            else:
-                self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
-                self.dome_vol = df_c.loc[0, "DroneV"]
-                logger.warning("Initial height estimated from drone %0.1f"%self.h_i)
+
+
+        # Get initial height
+        if hasattr(self, "dome_rad"):
+            self.dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
+            self.h_i = 3 * self.dome_vol/ (math.pi * self.r_spray ** 2)
+            logger.warning("Initial height estimated from dome %0.1f"%self.h_i)
+        else:
+            self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
+            self.dome_vol = df_c.loc[0, "DroneV"]
+            logger.warning("Initial height estimated from drone %0.1f"%self.h_i)
 
     if save:
         df_c.to_hdf(

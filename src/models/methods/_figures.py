@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def shade(location, df_in, col):
-    if location == "ravat20":
+    if location == "ravat20" or location == "diavolezza21":
         df_ERA5 = df_in.copy()
         df = df_in.copy()
         df.loc[
@@ -226,7 +226,7 @@ def summary_figures(self):
     ax7.plot(x, y7_ERA5, linestyle="-", color="#284D58")
     for ev in events:  # Creates DeprecationWarning
         ax7.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
-    ax6.set_ylabel("Wind speed [$m\\,s^{-1}$]")
+    ax7.set_ylabel("Wind speed [$m\\,s^{-1}$]")
 
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
