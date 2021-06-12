@@ -32,8 +32,8 @@ def aws(location="diavolezza21"):
         # parse_dates=['date_time']
     )
     print(df.columns)
-    logger.error(df['date_time'].head())
-    logger.error(df['date_time'].tail())
+    logger.info(df['date_time'].head())
+    logger.info(df['date_time'].tail())
     df["When"] = pd.to_datetime(df["date_time"], format="%d/%m/%y %H:%M")
     df.rename(
         columns={
@@ -42,8 +42,12 @@ def aws(location="diavolezza21"):
             " Tair_act_AVG": "T_a",
             " Rhum_act_AVG": "RH",
             "SWdown_cor": "SW_out",
+            # " SWdown_AVG": "SW_out",
             "SWup_cor": "SW_in",
+            # " SWup_AVG": "SW_in",
+            # " LWdown_AVG": "LW_out",
             "LWdown_cor": "LW_out",
+            # " LWup_AVG": "LW_in",
             "LWup_cor": "LW_in",
             " HS_act": "HS",
             " Baro_act_AVG": "p_a",
@@ -51,11 +55,29 @@ def aws(location="diavolezza21"):
         inplace=True,
     )
     df = df[["When", "v_a", "T_a", "RH", "SW_out", "SW_in", "LW_out", "LW_in", "HS", "p_a"]]
-    df["HS"] /= 100
+    # df = df[["When", "v_a", "T_a", "RH",  "HS", "p_a"]]
+    df["Prec"]= df.HS.diff()
+
+    # print("Difference between rows(Period=1):")
+
+    # print(df.head());
+    # print(df.HS.head())
+    # df.loc[df. > 0.5, "HS"] = np.NaN 
     df["a"] = df["SW_out"]/df["SW_in"]
+    df.loc[df.a > 1, "a"] = np.NaN 
+    df.loc[:, "a"] = df["a"].interpolate()
     df= df.set_index("When").sort_index()
     df= df.resample(pd.offsets.Minute(n=15)).mean().reset_index()
-    df.loc[df.a > 1, "a"] = 1
+
+    df["Prec"] = df["Prec"] *10 / (15 * 60)  # ppt rate mm/s
+    df.loc[df.Prec < 0, "Prec"] = np.NaN 
+    df.loc[df.Prec *15*60 > 500, "Prec"] = np.NaN 
+    # df.loc[df.Prec *15*60 < 4, "Prec"] = 0
+    # logger.error(df.loc[df.Prec.isna(), "HS"].head())
+    df.loc[:, "Prec"] = df["Prec"].interpolate()
+    diffuse_fraction=0.25
+    df["SW_direct"] = (1-diffuse_fraction) * (df["SW_in"]) 
+    df["SW_diffuse"] = diffuse_fraction * (df["SW_in"]) 
     logger.warning(df.head())
     logger.warning(df.tail())
 
@@ -63,14 +85,15 @@ def aws(location="diavolezza21"):
     skyblue = "#9bc4f0"
     blue = "#0a4a97"
     x = df.When
-    y = df.T_a
+    y = df.Prec *15*60
     ax1.plot(
         x,
         y,
         linestyle="-",
         color=blue,
     )
-    ax1.set_ylabel("Temperature[$l\\, min^{-1}$]")
+    # ax1.set_ylabel("Temperature[$l\\, min^{-1}$]")
+    ax1.set_ylabel("AWS ppt[$mm$]")
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
@@ -83,7 +106,7 @@ def aws(location="diavolezza21"):
     df= df.loc[mask]
     df= df.reset_index(drop=True)
     df = df.set_index("When")
-    logger.error(pd.date_range(start = df.index[0], end = df.index[-1], freq='15T').difference(df.index))
+    logger.info(pd.date_range(start = df.index[0], end = df.index[-1], freq='15T').difference(df.index))
     df = df.reset_index()
     return df
 
@@ -198,7 +221,7 @@ if __name__ == "__main__":
 
 
     df_swiss = meteoswiss(SITE["name"])
-    df_ERA5, df_in3 = era5(df, SITE["name"])
+    df_ERA5, df_in3 = era5(SITE["name"])
 
     df_ERA5 = df_ERA5.set_index("When")
     df = df.set_index("When")
@@ -215,18 +238,11 @@ if __name__ == "__main__":
 
 
     # Fit ERA5 to field data
-    if SITE["name"] in ["guttannen21", "guttannen20"]:
-        fit_list = ["T_a", "RH", "v_a", "Prec"]
-
-    if SITE["name"] in ["schwarzsee19"]:
-        fit_list = ["T_a", "RH", "v_a", "p_a"]
-
     if SITE["name"] in ["diavolezza21"]:
         fit_list = ["T_a", "RH", "v_a", "p_a"]
 
     mask = df[fit_list].notna().any(axis=1).index
 
-    # logger.warning(df_ERA5.loc[mask][fit_list])
     logger.warning(df.loc[mask][fit_list])
 
     for column in fit_list:
@@ -242,7 +258,7 @@ if __name__ == "__main__":
     logger.warning("Temperature NaN percent: %0.2f" %(df["T_a"].isna().sum()/df.shape[0]*100))
     logger.warning("wind NaN percent: %0.2f" %(df["v_a"].isna().sum()/df.shape[0]*100))
 
-    df['missing_type'] = ''
+    df['missing_type'] = 'NA'
 
     for col in ["T_a", "RH", "v_a", "Prec", "p_a", "SW_direct", "SW_diffuse", "LW_in"]:
         try:
@@ -263,17 +279,6 @@ if __name__ == "__main__":
     logger.info(df.missing_type.describe())
     logger.info(df.missing_type.unique())
 
-    # if SITE["name"] in ["schwarzsee19"]:
-    #     for col in ["T_a", "RH", "v_a", "p_a"]:
-    #         # df.loc[df[col].isna(), "missing"] = 1
-    #         # df.loc[df[col].isna(), "missing_type"] = col
-    #         df.loc[df[col].isna(), "missing_type"] = df.loc[df[col].isna(), "missing_type"] + col
-    #         df.loc[df[col].isna(), col] = df_ERA5[col]
-
-    #     for col in ["SW_direct", "SW_diffuse", "LW_in"]:
-    #         logger.info("%s from ERA5" % col)
-    #         df[col] = df_ERA5[col]
-
     df = df.reset_index()
 
     if SITE["name"] in ["diavolezza21"]:
@@ -289,36 +294,7 @@ if __name__ == "__main__":
             "p_a",
             "missing_type",
             "LW_in",
-            # "a",
-        ]
-
-    if SITE["name"] in ["schwarzsee19"]:
-        cols = [
-            "When",
-            "T_a",
-            "RH",
-            "v_a",
-            "SW_direct",
-            "SW_diffuse",
-            "Prec",
-            # "vp_a",
-            "p_a",
-            "missing_type",
-            "LW_in",
-        ]
-    if SITE["name"] in ["guttannen20", "guttannen21"]:
-        cols = [
-            "When",
-            "T_a",
-            "RH",
-            "v_a",
-            "SW_direct",
-            "SW_diffuse",
-            "Prec",
-            "vp_a",
-            "p_a",
-            "missing_type",
-            "LW_in",
+            "a",
         ]
 
     df_out = df[cols]
@@ -333,6 +309,15 @@ if __name__ == "__main__":
             if df_out[column].isna().sum() > 0 and column in ["Discharge"]:
                 discharge = df_out.Discharge.replace(0, np.nan).mean()
 
+                # Logger switched off
+                mask = df_out.When < datetime(2021,3,3) 
+                mask &= df_out.When > datetime(2021,2,16) 
+                mask &= df_out[column].isna()
+                # logger.error(df_out.loc[mask].head())
+                # logger.error(df_out.loc[mask].tail())
+                df_out.loc[mask, column] = 0
+
+                # Fill nan
                 df_out.loc[df_out[column].isna(), column] = discharge
 
                 # df_out = df_out.set_index("When")
@@ -348,7 +333,8 @@ if __name__ == "__main__":
     df_out = df_out.round(3)
     if len(df_out[df_out.index.duplicated()]):
         logger.error("Duplicate indexes")
-
+    # mask = df_out.When < datetime(2021,3,3) 
+    mask = df_out.Discharge == 0
     # df_out["Discharge"] += 1 #Discharge never zero
 
     logger.info(df_out.tail())
@@ -358,14 +344,14 @@ if __name__ == "__main__":
     skyblue = "#9bc4f0"
     blue = "#0a4a97"
     x = df_out.When
-    y = df_out.Discharge
+    y = df_out.Prec * 15 * 60
     ax1.plot(
         x,
         y,
         linestyle="-",
         color=blue,
     )
-    ax1.set_ylabel("Discharge [$l\\, min^{-1}$]")
+    ax1.set_ylabel("Meteoswiss ppt[$mm$]")
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
