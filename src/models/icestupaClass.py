@@ -123,7 +123,7 @@ class Icestupa:
             if unknown[i] in list(self.df.columns):
                 unknown[i] = np.NaN  # Removes known variable
             else:
-                logger.info(" %s is unknown\n" % (unknown[i]))
+                logger.error(" %s is unknown\n" % (unknown[i]))
                 self.df[unknown[i]] = 0
 
         for row in stqdm(
@@ -154,7 +154,7 @@ class Icestupa:
                 self.df.loc[i, "e_a"] = (
                     1.24
                     * math.pow(
-                        abs(row.vp_a / (row.T_a + 273.15)), 1 / 7
+                        abs(self.df.loc[i, "vp_a"] / (row.T_a + 273.15)), 1 / 7
                     )
                 ) * (1 + 0.22 * math.pow(row.cld, 2))
 
@@ -454,8 +454,8 @@ class Icestupa:
             ) / (self.df.loc[i, "SA"])
 
             if test:
-                print(self.df.loc[i, "thickness"], self.df.loc[i, "iceV"], self.df.loc[i, "SA"])
-                print(self.df.loc[i+1, "thickness"], self.df.loc[i+1, "iceV"], self.df.loc[i+1, "SA"])
+                # print(self.df.loc[i, "thickness"], self.df.loc[i, "iceV"], self.df.loc[i, "SA"])
+                # print(self.df.loc[i+1, "thickness"], self.df.loc[i+1, "iceV"], self.df.loc[i+1, "SA"])
                 logger.info(
                     f" When {self.df.When[i]},iceV {self.df.iceV[i+1]}, thickness  {self.df.thickness[i]}"
                 )
