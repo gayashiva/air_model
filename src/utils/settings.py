@@ -47,7 +47,6 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             # start_date=datetime(2021, 1, 19,16),
             start_date=datetime(2021, 1, 26,9),
             # start_date=datetime(2021, 3, 1,16),
-            # start_date=datetime(2021, 1, 19),
             # end_date=datetime(2021, 3, 18),
             # end_date=datetime(2021, 5, 18),
             end_date=datetime(2021, 5, 29),
@@ -58,10 +57,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             h_aws=2.3, 
 
             dome_rad=2,
-            # r_spray=15, 
             # perimeter=65.5, # on May 19
-            # dia_f=0.008,  # FOUNTAIN aperture diameter
-            # DX = 14e-03  # Initial Ice layer thickness
         )
 
         data_h = [
@@ -159,7 +155,6 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             discharge=60,  # FOUNTAIN on mean discharge from field
             # r_spray = 13.11, # On 3 Mar
             # perimeter=82.3, # On 3 Mar
-            # dia_f=0.010,  # FOUNTAIN aperture diameter
         )
 
         data_h = [

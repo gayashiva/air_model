@@ -56,28 +56,24 @@ def aws(location="diavolezza21"):
     )
     df = df[["When", "v_a", "T_a", "RH", "SW_out", "SW_in", "LW_out", "LW_in", "HS", "p_a"]]
     # df = df[["When", "v_a", "T_a", "RH",  "HS", "p_a"]]
-    df["Prec"]= df.HS.diff()
 
-    # print("Difference between rows(Period=1):")
-
-    # print(df.head());
-    # print(df.HS.head())
-    # df.loc[df. > 0.5, "HS"] = np.NaN 
     df["a"] = df["SW_out"]/df["SW_in"]
     df.loc[df.a > 1, "a"] = np.NaN 
     df.loc[:, "a"] = df["a"].interpolate()
     df= df.set_index("When").sort_index()
     df= df.resample(pd.offsets.Minute(n=15)).mean().reset_index()
 
-    df["Prec"] = df["Prec"] *10 / (15 * 60)  # ppt rate mm/s
-    df.loc[df.Prec < 0, "Prec"] = np.NaN 
-    df.loc[df.Prec *15*60 > 500, "Prec"] = np.NaN 
+    # df["Prec"]= df.HS.diff()
+    # df["Prec"] = df["Prec"] *10 / (15 * 60)  # ppt rate mm/s
+    # df.loc[df.Prec < 0, "Prec"] = np.NaN 
+    # df.loc[df.Prec *15*60 > 500, "Prec"] = np.NaN 
     # df.loc[df.Prec *15*60 < 4, "Prec"] = 0
     # logger.error(df.loc[df.Prec.isna(), "HS"].head())
-    df.loc[:, "Prec"] = df["Prec"].interpolate()
-    diffuse_fraction=0.25
-    df["SW_direct"] = (1-diffuse_fraction) * (df["SW_in"]) 
-    df["SW_diffuse"] = diffuse_fraction * (df["SW_in"]) 
+    # df.loc[:, "Prec"] = df["Prec"].interpolate()
+
+    # diffuse_fraction=0.25
+    # df["SW_direct"] = (1-diffuse_fraction) * (df["SW_in"]) 
+    # df["SW_diffuse"] = diffuse_fraction * (df["SW_in"]) 
     logger.warning(df.head())
     logger.warning(df.tail())
 
@@ -85,7 +81,8 @@ def aws(location="diavolezza21"):
     skyblue = "#9bc4f0"
     blue = "#0a4a97"
     x = df.When
-    y = df.Prec *15*60
+    # y = df.Prec *15*60
+    y = df.a
     ax1.plot(
         x,
         y,
@@ -258,7 +255,7 @@ if __name__ == "__main__":
     logger.warning("Temperature NaN percent: %0.2f" %(df["T_a"].isna().sum()/df.shape[0]*100))
     logger.warning("wind NaN percent: %0.2f" %(df["v_a"].isna().sum()/df.shape[0]*100))
 
-    df['missing_type'] = 'NA'
+    df['missing_type'] = ''
 
     for col in ["T_a", "RH", "v_a", "Prec", "p_a", "SW_direct", "SW_diffuse", "LW_in"]:
         try:
@@ -294,7 +291,7 @@ if __name__ == "__main__":
             "p_a",
             "missing_type",
             "LW_in",
-            "a",
+            # "a",
         ]
 
     df_out = df[cols]
@@ -333,9 +330,6 @@ if __name__ == "__main__":
     df_out = df_out.round(3)
     if len(df_out[df_out.index.duplicated()]):
         logger.error("Duplicate indexes")
-    # mask = df_out.When < datetime(2021,3,3) 
-    mask = df_out.Discharge == 0
-    # df_out["Discharge"] += 1 #Discharge never zero
 
     logger.info(df_out.tail())
     df_out.to_csv(FOLDER["input"]+ SITE["name"] + "_input_model.csv", index=False)

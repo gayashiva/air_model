@@ -66,15 +66,15 @@ def get_calibration(site, input):
 
     if site in ["schwarzsee19"]:
         dataV = [
-            {"When": datetime(2019, 2, 14, 16), "DroneV": 0.856575},
-            {"When": datetime(2019, 3, 10, 18), "DroneV": 0.1295},
+            {"When": datetime(2019, 2, 14, 16), "DroneV": 0.856575, "DroneVError": 0.5},
+            {"When": datetime(2019, 3, 10, 18), "DroneV": 0.1295, "DroneVError": 0.1},
         ]
         df_c = pd.DataFrame(dataV)
         return df_c
 
     if site in ["schwarzsee19", "ravat20"]:
         dataV = [
-            {"When": datetime(2020, 1, 1,17), "DroneV": 0.1},
+            {"When": datetime(2020, 1, 1,17), "DroneV": 0.1, "DroneVError": 0.1},
         ]
         df_c = pd.DataFrame(dataV)
         return df_c
