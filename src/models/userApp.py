@@ -32,7 +32,6 @@ if __name__ == "__main__":
         # run="no",
     )
 
-    print(dirname)
     # Initialise icestupa object
     icestupa = Icestupa(answers["location"])
 
@@ -49,7 +48,7 @@ if __name__ == "__main__":
         icestupa.summary()
 
         # Create figures for web interface
-        icestupa.summary_figures()
+        # icestupa.summary_figures()
     else:
         # Use output parameters from cache
         # icestupa.derive_parameters()

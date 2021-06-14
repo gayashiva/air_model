@@ -12,35 +12,6 @@ logger = logging.getLogger(__name__)
 
 def get_temp(self, i):
 
-    # TODO Add to paper
-    # Latent Heat
-    if self.df.loc[i, "Ql"] < 0:
-        # Sublimation
-        L = self.L_S
-        self.df.loc[i, "gas"] -= (
-            self.df.loc[i, "Ql"]
-            * self.DT
-            * self.df.loc[i, "SA"]
-            / L
-        )
-
-        # Removing gas quantity generated from ice
-        self.df.loc[i, "solid"] += (
-            self.df.loc[i, "Ql"]
-            * self.DT
-            * self.df.loc[i, "SA"]
-            / L
-        )
-
-    else:
-        # Deposition
-        L = self.L_S
-        self.df.loc[i, "dpt"] += (
-            self.df.loc[i, "Ql"]
-            * self.DT
-            * self.df.loc[i, "SA"]
-            / self.L_S
-        )
 
     # TODO Add to paper
     freezing_energy = (self.df.loc[i, "Qsurf"] - self.df.loc[i, "Ql"])

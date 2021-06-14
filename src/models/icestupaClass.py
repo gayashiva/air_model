@@ -71,7 +71,6 @@ class Icestupa:
                 setattr(self, key, dictionary[key])
                 logger.info(f"%s -> %s" % (key, str(dictionary[key])))
 
-
         # Initialize input dataset
         input_file = self.input + self.name + "_input_model.csv"
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
@@ -372,6 +371,33 @@ class Icestupa:
                 self.test_get_energy(i)
             else:
                 self.get_energy(i)
+
+            # Sublimation and deposition
+            if self.df.loc[i, "Ql"] < 0:
+                L = self.L_S
+                self.df.loc[i, "gas"] -= (
+                    self.df.loc[i, "Ql"]
+                    * self.DT
+                    * self.df.loc[i, "SA"]
+                    / L
+                )
+
+                # Removing gas quantity generated from ice
+                self.df.loc[i, "solid"] += (
+                    self.df.loc[i, "Ql"]
+                    * self.DT
+                    * self.df.loc[i, "SA"]
+                    / L
+                )
+
+            else:
+                L = self.L_S
+                self.df.loc[i, "dpt"] += (
+                    self.df.loc[i, "Ql"]
+                    * self.DT
+                    * self.df.loc[i, "SA"]
+                    / self.L_S
+                )
 
             if test:
                 self.test_get_temp(i)
