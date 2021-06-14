@@ -29,11 +29,10 @@ logger = logging.getLogger(__name__)
 class Icestupa:
     """Physical Constants"""
     L_S = 2848 * 1000  # J/kg Sublimation
-    L_E = 2514 * 1000  # J/kg Evaporation
     L_F = 334 * 1000  # J/kg Fusion
     C_A = 1.01 * 1000  # J/kgC Specific heat air
-    C_W = 4.186 * 1000  # J/kgC Specific heat water
     C_I = 2.097 * 1000  # J/kgC Specific heat ice
+    C_W = 4.186 * 1000  # J/kgC Specific heat water
     RHO_W = 1000  # Density of water
     RHO_I = 917  # Density of Ice RHO_I
     RHO_A = 1.29  # kg/m3 air density at mean sea level
@@ -61,11 +60,9 @@ class Icestupa:
     """Model constants"""
     DT = 60*60 # Model time step
     
-
-
     def __init__(self, location = "Guttannen 2021"):
 
-        SITE, FOLDER, df_h = config(location)
+        SITE, FOLDER = config(location)
         initial_data = [SITE, FOLDER]
 
         # Initialise all variables of dictionary
@@ -73,7 +70,6 @@ class Icestupa:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
                 logger.info(f"%s -> %s" % (key, str(dictionary[key])))
-
 
         # Initialize input dataset
         input_file = self.input + self.name + "_input_model.csv"
@@ -89,14 +85,6 @@ class Icestupa:
 
         """Surface layer thickness"""
         self.DX = self.DX_DT * self.DT
-
-        """Fountain height"""
-        df_h = df_h.set_index("When")
-        self.df = self.df.set_index("When")
-        logger.debug(df_h.head())
-        self.df["h_f"] = df_h
-        self.df.loc[:,"h_f"] = self.df.loc[:,"h_f"].ffill()
-        self.df = self.df.reset_index()
 
         logger.debug(self.df.head())
         logger.debug(self.df.tail())
@@ -383,6 +371,33 @@ class Icestupa:
                 self.test_get_energy(i)
             else:
                 self.get_energy(i)
+
+            # Sublimation and deposition
+            if self.df.loc[i, "Ql"] < 0:
+                L = self.L_S
+                self.df.loc[i, "gas"] -= (
+                    self.df.loc[i, "Ql"]
+                    * self.DT
+                    * self.df.loc[i, "SA"]
+                    / L
+                )
+
+                # Removing gas quantity generated from ice
+                self.df.loc[i, "solid"] += (
+                    self.df.loc[i, "Ql"]
+                    * self.DT
+                    * self.df.loc[i, "SA"]
+                    / L
+                )
+
+            else:
+                L = self.L_S
+                self.df.loc[i, "dpt"] += (
+                    self.df.loc[i, "Ql"]
+                    * self.DT
+                    * self.df.loc[i, "SA"]
+                    / self.L_S
+                )
 
             if test:
                 self.test_get_temp(i)

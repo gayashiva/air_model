@@ -1,4 +1,4 @@
-"""Function that returns dataframe after changing its frequency
+"""Function that returns dataframe after changing model time step
 """
 
 import pandas as pd
@@ -17,9 +17,9 @@ def change_freq(self):
     if new_time_step != old_time_step:
         self.df= self.df.set_index('When')
         dfx = self.df.missing_type.resample(old_time_step+'T').first()
-        dfh = self.df.h_f.resample(old_time_step+'T').first()
+        # dfh = self.df.h_f.resample(old_time_step+'T').first()
         self.df= self.df.resample(old_time_step+'T').mean()
         self.df["missing_type"] = dfx
-        self.df["h_f"] = dfh
+        # self.df["h_f"] = dfh
         self.df= self.df.reset_index()
         logger.warning(f"Time steps changed from %s -> %s minutes" % (old_time_step,new_time_step ))

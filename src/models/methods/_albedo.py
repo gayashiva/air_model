@@ -1,4 +1,4 @@
-"""Icestupa class function that returns albedo column(a)
+"""Icestupa class function that returns albedo
 """
 import pandas as pd
 import math
