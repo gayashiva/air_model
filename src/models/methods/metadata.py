@@ -1,4 +1,4 @@
-"""Returns Parameter metadata to web app
+"""Returns Parameter metadata for web app
 """
 
 import streamlit as st

@@ -5,7 +5,7 @@
 import pandas as pd
 from datetime import datetime
 import logging
-import os
+import os, sys
 
 # Module logger
 logger = logging.getLogger(__name__)
@@ -15,6 +15,7 @@ logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
 logging.getLogger("numexpr").setLevel(logging.CRITICAL)
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(dirname)
 
 
 def config(location="Schwarzsee 2019", trigger="Manual"):

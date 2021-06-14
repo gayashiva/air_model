@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 # @cache_it(limit=1000, expire=None)
 def get_calibration(site, input):
-    # Add Validation data_h to input
     if site in ["guttannen21", "guttannen20", "gangles21", "diavolezza21"]:
         df_c = pd.read_csv(
             input + site + "_drone.csv",
@@ -37,7 +36,6 @@ def get_calibration(site, input):
 
             # Correct thermal cam temp.
             if site == "guttannen20":
-                # df_c = df_c.groupby(level=0).sum() # Correct duplicate datetime
                 df_c = df_c.reset_index()
                 mask = (df_cam["When"] >= datetime(2020,1,2)) & (df_cam["When"] <= datetime(2020,2,16))#No ice
                 df_cam = df_cam.loc[mask]

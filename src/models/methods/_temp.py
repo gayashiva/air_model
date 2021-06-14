@@ -1,4 +1,4 @@
-"""Icestupa class function that returns energy flux
+"""Icestupa class function that calculates surface temperature from energy flux
 """
 
 # External modules

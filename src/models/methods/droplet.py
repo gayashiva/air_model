@@ -1,4 +1,4 @@
-"""Function that returns spray radius or discharge quantity
+"""Function that returns spray radius or discharge quantity by simulating projectile motion
 """
 
 import pandas as pd
