@@ -32,7 +32,6 @@ def get_temp(self, i):
         / (self.RHO_I * self.DX * self.C_I)
     )
 
-
     """Ice temperature above zero"""
     if (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]) > 0:
         self.df.loc[i, "Qmelt"] += (
