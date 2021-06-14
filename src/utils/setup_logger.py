@@ -8,6 +8,7 @@ import logging.config
 import coloredlogs
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(dirname)
 
 def setup_logging(
     default_path=dirname + "/src/utils/logging.yaml",

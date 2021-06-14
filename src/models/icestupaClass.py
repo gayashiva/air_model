@@ -32,6 +32,7 @@ class Icestupa:
     L_F = 334 * 1000  # J/kg Fusion
     C_A = 1.01 * 1000  # J/kgC Specific heat air
     C_I = 2.097 * 1000  # J/kgC Specific heat ice
+    C_W = 4.186 * 1000  # J/kgC Specific heat water
     RHO_W = 1000  # Density of water
     RHO_I = 917  # Density of Ice RHO_I
     RHO_A = 1.29  # kg/m3 air density at mean sea level

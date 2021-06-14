@@ -81,7 +81,7 @@ if __name__ == "__main__":
     # location = "Gangles 2021"
     trigger = "Manual"
 
-    SITE, FOLDER = config(location)
+    SITE, FOLDER, df_h = config(location)
 
     icestupa = Icestupa(location)
 
