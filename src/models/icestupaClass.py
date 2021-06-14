@@ -62,7 +62,7 @@ class Icestupa:
     
     def __init__(self, location = "Guttannen 2021"):
 
-        SITE, FOLDER, df_h = config(location)
+        SITE, FOLDER = config(location)
         initial_data = [SITE, FOLDER]
 
         # Initialise all variables of dictionary
@@ -86,14 +86,6 @@ class Icestupa:
 
         """Surface layer thickness"""
         self.DX = self.DX_DT * self.DT
-
-        # """Fountain height"""
-        # df_h = df_h.set_index("When")
-        # self.df = self.df.set_index("When")
-        # logger.debug(df_h.head())
-        # self.df["h_f"] = df_h
-        # self.df.loc[:,"h_f"] = self.df.loc[:,"h_f"].ffill()
-        # self.df = self.df.reset_index()
 
         logger.debug(self.df.head())
         logger.debug(self.df.tail())

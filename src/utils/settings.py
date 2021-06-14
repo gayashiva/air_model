@@ -172,4 +172,4 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
     )
     df_h = pd.DataFrame(data_h)
 
-    return SITE, FOLDER, df_h
+    return SITE, FOLDER
