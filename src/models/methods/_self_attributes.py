@@ -19,7 +19,7 @@ def self_attributes(self, save=False):
 
     if self.name == "schwarzsee19":
         self.r_spray = get_droplet_projectile(
-            dia=self.dia_f, h=self.df.loc[0,"h_f"], d=self.discharge
+            dia=self.dia_f, h=self.h_f, d=self.discharge
         )
         self.dome_vol=0
         logger.warning("Measured spray radius from fountain parameters %0.1f"%self.r_spray)
