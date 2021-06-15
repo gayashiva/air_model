@@ -12,19 +12,18 @@ logger = logging.getLogger(__name__)
 
 def get_temp(self, i):
 
-
-    # TODO Add to paper
     freezing_energy = (self.df.loc[i, "Qsurf"] - self.df.loc[i, "Ql"])
+    self.df.loc[i, "Qt"] = self.df.loc[i, "Ql"]
+
     if self.df.loc[i, "fountain_runoff"] > 0 and freezing_energy < 0 and self.df.loc[i, "Qsurf"] < 0:
         self.frozen = 1
     else:
         self.frozen = 0
 
     if self.frozen:
-        self.df.loc[i, "Qt"] = self.df.loc[i, "Ql"]
         self.df.loc[i, "Qmelt"] = freezing_energy
     else:
-        self.df.loc[i, "Qt"] = self.df.loc[i, "Qsurf"]
+        self.df.loc[i, "Qt"] += freezing_energy
 
     self.df.loc[i, "delta_T_s"] = (
         self.df.loc[i, "Qt"]
@@ -51,31 +50,28 @@ def get_temp(self, i):
         )
         self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
 
-    if self.df.loc[i, "Qmelt"] < 0:
-        if self.frozen:
-            self.df.loc[i,"fountain_runoff"] += (
-                self.df.loc[i, "Qmelt"]* self.DT * self.df.loc[i, "SA"]
+    if self.frozen and self.df.loc[i, "Qmelt"] > 0:
+        self.frozen = 0
+        logger.error("Freezing event changed to melting event")
+
+    if self.frozen:
+        self.df.loc[i,"fountain_runoff"] += (
+            self.df.loc[i, "Qmelt"]* self.DT * self.df.loc[i, "SA"]
+        ) / (self.L_F)
+
+        if self.df.loc[i,"fountain_runoff"] < 0:
+            self.df.loc[i,"Qmelt"] -= (
+                self.df.loc[i, "fountain_runoff"] * (self.L_F)/ (self.DT * self.df.loc[i, "SA"])
+            ) 
+            self.df.loc[i,"Qt"] += (
+                self.df.loc[i, "fountain_runoff"]* self.DT * self.df.loc[i, "SA"]
             ) / (self.L_F)
+            self.df.loc[i, "fountain_runoff"] = 0
 
-            if self.df.loc[i,"fountain_runoff"] < 0:
-                self.df.loc[i,"Qmelt"] -= (
-                    self.df.loc[i, "fountain_runoff"] * (self.L_F)/ (self.DT * self.df.loc[i, "SA"])
-                ) 
-                self.df.loc[i,"Qt"] += (
-                    self.df.loc[i, "fountain_runoff"]* self.DT * self.df.loc[i, "SA"]
-                ) / (self.L_F)
-                self.df.loc[i, "fountain_runoff"] = 0
+        self.df.loc[i,"fountain_froze"] -= (
+            self.df.loc[i, "Qmelt"]* self.DT * self.df.loc[i, "SA"]
+        ) / (self.L_F)
 
-            self.df.loc[i,"fountain_froze"] -= (
-                self.df.loc[i, "Qmelt"]* self.DT * self.df.loc[i, "SA"]
-            ) / (self.L_F)
-
-    # TODO Remove
-    if self.df.loc[i, "T_s"] < -100:
-        self.df.loc[i, "T_s"] = -100
-        logger.error(
-            f"Surface temp rest to 100 When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
-        )
 
 def test_get_temp(self, i):
     self.get_temp(i)
@@ -131,3 +127,9 @@ def test_get_temp(self, i):
             logger.error(
                 f"No freezing_energy left When {self.df.When[i]}, Qmelt {self.df.Qmelt[i]}, Qt {self.df.Qt[i]}, Ql {self.df.Ql[i]}"
             )
+    # TODO Remove
+    if self.df.loc[i, "T_s"] < -100:
+        self.df.loc[i, "T_s"] = -100
+        logger.error(
+            f"Surface temp rest to 100 When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+        )

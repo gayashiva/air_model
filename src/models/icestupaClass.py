@@ -280,7 +280,6 @@ class Icestupa:
             "r_ice",
             "ppt",
             "dpt",
-            "cdt",
             "thickness",
             "fountain_runoff",
             "fountain_froze",
@@ -382,13 +381,13 @@ class Icestupa:
                     / L
                 )
 
-                # Removing gas quantity generated from ice
-                self.df.loc[i, "solid"] += (
-                    self.df.loc[i, "Ql"]
-                    * self.DT
-                    * self.df.loc[i, "SA"]
-                    / L
-                )
+                # # Removing gas quantity generated from ice
+                # self.df.loc[i, "solid"] += (
+                #     self.df.loc[i, "Ql"]
+                #     * self.DT
+                #     * self.df.loc[i, "SA"]
+                #     / L
+                # )
 
             else:
                 L = self.L_S
@@ -436,14 +435,14 @@ class Icestupa:
             self.df.loc[i + 1, "meltwater"] = (
                 self.df.loc[i, "meltwater"]
                 + self.df.loc[i, "melted"]
-                + self.df.loc[i, "cdt"]
             )
             self.df.loc[i + 1, "ice"] = (
                 self.df.loc[i, "ice"]
                 + self.df.loc[i, "solid"]
                 + self.df.loc[i, "dpt"]
-                - self.df.loc[i, "melted"]
                 + self.df.loc[i, "ppt"]
+                - self.df.loc[i, "gas"]
+                - self.df.loc[i, "melted"]
             )
             self.df.loc[i + 1, "vapour"] = (
                 self.df.loc[i, "vapour"] + self.df.loc[i, "gas"]
@@ -460,7 +459,6 @@ class Icestupa:
                 self.df.loc[i, "input"]
                 + self.df.loc[i, "ppt"]
                 + self.df.loc[i, "dpt"]
-                + self.df.loc[i, "cdt"]
                 + self.df.loc[i,"fountain_runoff"]
             )
             self.df.loc[i + 1, "thickness"] = (
