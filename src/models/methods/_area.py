@@ -11,10 +11,11 @@ logger = logging.getLogger(__name__)
 
 def get_area(self, i):
 
-    if (self.df.solid[i - 1] - self.df.melted[i - 1] > 0) & (
+    # if (self.df.solid[i - 1] - self.df.melted[i - 1] > 0) & (
+    if (self.df.ice[i] - self.df.ice[i - 1] > 0) & (
         self.df.loc[i - 1, "r_ice"] >= self.r_spray
     ):  # Growth rate positive and radius goes beyond spray radius
-        self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"] #+ self.df.loc[i - 1, "thickness"]
+        self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"]
 
         self.df.loc[i, "h_ice"] = (
             3 * self.df.loc[i, "iceV"] / (math.pi * self.df.loc[i, "r_ice"] ** 2)
@@ -28,10 +29,8 @@ def get_area(self, i):
 
         # Maintain constant Height to radius ratio
         self.df.loc[i, "s_cone"] = self.df.loc[i - 1, "s_cone"]
-        # self.df.loc[i, "s_cone"] = self.h_f/self.r_spray
 
         # Ice Radius
-        # logger.warning("%s,%s" %(self.df.loc[i, "iceV"], self.df.loc[i, "s_cone"]))
         self.df.loc[i, "r_ice"] = math.pow(
             self.df.loc[i, "iceV"] / math.pi * (3 / self.df.loc[i, "s_cone"]), 1 / 3
         )

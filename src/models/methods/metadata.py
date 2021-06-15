@@ -86,8 +86,8 @@ def get_parameter_metadata(
             "kind": "Derived",
             "units": "($kg$)",
         },
-        "gas": {
-            "name": "Vapour per time step",
+        "sub": {
+            "name": "Sublimation per time step",
             "kind": "Derived",
             "units": "($kg$)",
         },

@@ -242,9 +242,9 @@ def summary_figures(self):
             "solid",
             "ppt",
             "dpt",
-            "cdt",
+            # "cdt",
             "melted",
-            "gas",
+            "sub",
             "SA",
             "iceV",
             "Discharge",
@@ -261,17 +261,17 @@ def summary_figures(self):
                 )
                 dfds["solid"] = dfds.loc[dfds.solid >= 0, "solid"]
                 dfds.loc[i, "melted"] *= -1 / (self.df.loc[i, "SA"] * self.RHO_I)
-                dfds.loc[i, "gas"] *= -1 / (self.df.loc[i, "SA"] * self.RHO_I)
+                dfds.loc[i, "sub"] *= -1 / (self.df.loc[i, "SA"] * self.RHO_I)
                 dfds.loc[i, "ppt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
                 dfds.loc[i, "dpt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
-                dfds.loc[i, "cdt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
+                # dfds.loc[i, "cdt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
             else:
                 dfds.loc[i, "solid"] = 0 
                 dfds.loc[i, "melted"] *= 0
-                dfds.loc[i, "gas"] *= 0
+                dfds.loc[i, "sub"] *= 0
                 dfds.loc[i, "ppt"] *= 0
                 dfds.loc[i, "dpt"] *= 0
-                dfds.loc[i, "cdt"] *= 0
+                # dfds.loc[i, "cdt"] *= 0
 
     dfds = dfds.set_index("When").resample("D").sum().reset_index()
     dfds["When"] = dfds["When"].dt.strftime("%b %d")
@@ -281,17 +281,18 @@ def summary_figures(self):
             "solid": "Ice",
             "ppt": "Snow",
             "melted": "Melt",
-            "gas": "Vapour sub./evap.",
+            "sub": "Vapour sub.",
         }
     )
-    dfds["Vapour cond./dep."] = dfds["dpt"] + dfds["cdt"]
+    # dfds["Vapour cond./dep."] = dfds["dpt"] + dfds["cdt"]
+    dfds["Vapour dpt."] = dfds["dpt"]
 
     y2 = dfds[
         [
             "Ice",
             "Snow",
-            "Vapour cond./dep.",
-            "Vapour sub./evap.",
+            "Vapour dpt.",
+            "Vapour sub.",
             "Melt",
         ]
     ]
