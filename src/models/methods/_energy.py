@@ -85,7 +85,8 @@ def get_energy(self, i):
         * (self.df.loc[i, "T_bulk"] - self.df.loc[i, "T_s"])
         # / (self.df.loc[i, "h_ice"] / 3)
         # / (self.df.loc[i, "r_ice"] / 2)
-        / (self.df.loc[i, "r_ice"] / 3)
+        / (self.df.loc[i, "r_ice"] + self.df.loc[i, "h_ice"] / 2)
+        # / (self.df.loc[i, "r_ice"] / 3)
     )
 
     # Bulk Temperature
