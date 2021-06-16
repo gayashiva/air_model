@@ -52,7 +52,7 @@ class Icestupa:
     DX_DT = 5.5556e-06 #m/s Surface layer thickness growth rate
 
     """Fountain constants"""
-    T_W = 5  # FOUNTAIN Water temperature
+    T_W = 1  # FOUNTAIN Water temperature
 
     """Simulation constants"""
     trigger = "Manual"
