@@ -89,7 +89,7 @@ target/
 .mypy_cache/
 media/
 src/logs/
-.tasks
+# .tasks
 *.pdf
 *.html
 .python-version

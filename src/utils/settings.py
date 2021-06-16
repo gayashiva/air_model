@@ -57,7 +57,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             longitude=9.98425,
             h_aws=2.3, 
 
-            dome_rad=2,
+            # dome_rad=2,
             # perimeter=65.5, # on May 19
         )
 

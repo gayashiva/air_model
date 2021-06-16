@@ -28,16 +28,16 @@ def self_attributes(self, save=False):
         if hasattr(self, "r_spray"):
             logger.error("Arbitrary spray radius of %s" %self.r_spray)
         else:
-            if hasattr(self, "perimeter"):
-                self.r_spray = self.perimeter/(math.pi *2)
-                logger.warning("Measured spray radius from perimeter %0.1f"%self.r_spray)
-            else:
-                if hasattr(self, "dome_rad"):
-                    self.r_spray= df_c.loc[df_c.When < self.fountain_off_date, "rad"].mean()
-                    logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
-                else:
-                    self.r_spray= df_c.loc[(df_c.When < self.fountain_off_date) & (df_c.index!=0), "rad"].mean()
-                    logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
+            self.r_spray= df_c.loc[(df_c.When < self.fountain_off_date) & (df_c.index!=0), "rad"].mean()
+            logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
+            # if hasattr(self, "perimeter"):
+            #     self.r_spray = self.perimeter/(math.pi *2)
+            #     logger.warning("Measured spray radius from perimeter %0.1f"%self.r_spray)
+            # else:
+                # if hasattr(self, "dome_rad"):
+                #     self.r_spray= df_c.loc[df_c.When < self.fountain_off_date, "rad"].mean()
+                #     logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
+                # else:
 
 
         # Get initial height
