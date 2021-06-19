@@ -261,7 +261,6 @@ class Icestupa:
             "f_cone",
             "ice",
             "iceV",
-            # "solid",
             "sub",
             "vapour",
             "melted",
@@ -407,14 +406,6 @@ class Icestupa:
             else:
                 self.get_temp(i)
 
-            # if self.df.loc[i, "Qmelt"] < 0:
-            #     self.df.loc[i, "solid"] = -(
-            #         self.df.loc[i, "Qmelt"]
-            #         * self.DT
-            #         * self.df.loc[i, "SA"]
-            #         / (self.L_F)
-            #     )
-            # else:
             if self.df.loc[i, "Qmelt"] > 0:
                 self.df.loc[i, "melted"] = (
                     self.df.loc[i, "Qmelt"]
@@ -443,7 +434,6 @@ class Icestupa:
             )
             self.df.loc[i + 1, "ice"] = (
                 self.df.loc[i, "ice"]
-                # + self.df.loc[i, "solid"]
                 + self.df.loc[i, "fountain_froze"]
                 + self.df.loc[i, "dep"]
                 + self.df.loc[i, "ppt"]
@@ -465,7 +455,6 @@ class Icestupa:
                 self.df.loc[i, "input"]
                 + self.df.loc[i, "ppt"]
                 + self.df.loc[i, "dep"]
-                # + self.df.loc[i,"fountain_runoff"]
                 + self.df.loc[i,"Discharge"] * self.DT / 60
             )
             self.df.loc[i + 1, "thickness"] = (

@@ -6,8 +6,6 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
 from matplotlib.ticker import AutoMinorLocator
-from matplotlib.backends.backend_pdf import PdfPages
-from datetime import datetime, timedelta
 import pandas as pd
 import logging
 from codetiming import Timer
@@ -239,53 +237,48 @@ def summary_figures(self):
     dfds = self.df[
         [
             "When",
-            "solid",
+            "fountain_froze",
             "ppt",
             "dep",
-            # "cdt",
             "melted",
             "sub",
             "SA",
             "iceV",
             "Discharge",
             "fountain_runoff",
-            "fountain_froze",
         ]
     ]
 
+    # dfds["Ice"] = dfds["fountain_froze"].copy()
     with pd.option_context("mode.chained_assignment", None):
         for i in range(1, dfds.shape[0]):
             if self.df.loc[i, "SA"] != 0:
-                dfds.loc[i, "solid"] = dfds.loc[i, "solid"] / (
+                dfds.loc[i, "Ice"] = dfds.loc[i, "fountain_froze"] / (
                     self.df.loc[i, "SA"] * self.RHO_I
                 )
-                dfds["solid"] = dfds.loc[dfds.solid >= 0, "solid"]
                 dfds.loc[i, "melted"] *= -1 / (self.df.loc[i, "SA"] * self.RHO_I)
                 dfds.loc[i, "sub"] *= -1 / (self.df.loc[i, "SA"] * self.RHO_I)
                 dfds.loc[i, "ppt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
                 dfds.loc[i, "dep"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
-                # dfds.loc[i, "cdt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
             else:
-                dfds.loc[i, "solid"] = 0 
+                dfds.loc[i, "Ice"] = 0 
                 dfds.loc[i, "melted"] *= 0
                 dfds.loc[i, "sub"] *= 0
                 dfds.loc[i, "ppt"] *= 0
                 dfds.loc[i, "dep"] *= 0
-                # dfds.loc[i, "cdt"] *= 0
 
     dfds = dfds.set_index("When").resample("D").sum().reset_index()
     dfds["When"] = dfds["When"].dt.strftime("%b %d")
 
     dfds = dfds.rename(
         columns={
-            "solid": "Ice",
             "ppt": "Snow",
             "melted": "Melt",
             "sub": "Sublimation",
+            "dep": "Deposition",
         }
     )
-    # dfds["Vapour cond./dep."] = dfds["dpt"] + dfds["cdt"]
-    dfds["Deposition"] = dfds["dep"]
+    # dfds["Deposition"] = dfds["dep"]
 
     y2 = dfds[
         [
@@ -307,19 +300,12 @@ def summary_figures(self):
     y3 = dfds2["SA"]
     y4 = dfds2["iceV"]
 
-    dfds["Discharge"] *= self.DT / (60 * 1000)
-    dfds["fountain_runoff"] /= 1000
-    dfds["fountain_froze"] /= 1000
-    # dfds["wind_loss"] /= 1000
-    dfds["Frozen"] = dfds["fountain_froze"] #dfds["Discharge"] - dfds["fountain_runoff"]
-    dfds["Runoff loss"] = dfds["fountain_runoff"] #+ dfds["wind_loss"]
-    # dfds["Wind loss"] = dfds["wind_loss"]
-    y01 = dfds["Discharge"]
-    y02 = dfds["fountain_runoff"]
+    dfds["Discharge"] *= self.DT / (60*1000)
+    dfds["Frozen"] = dfds["fountain_froze"]/1000
+    dfds["Runoff loss"] = dfds["fountain_runoff"]/1000
 
     dfd[["$-q_{freeze/melt}$", "$-q_{T}$"]] *=-1
     z = dfd[["$-q_{freeze/melt}$", "$-q_{T}$", "$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
-    # y0 = dfds[["Frozen", "Wind loss", "Runoff loss"]]
     y0 = dfds[["Frozen", "Runoff loss"]]
 
     ax0 = fig.add_subplot(5, 1, 1)
