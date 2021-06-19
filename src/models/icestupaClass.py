@@ -48,7 +48,7 @@ class Icestupa:
     A_S = 0.85  # Albedo of Fresh Snow A_S
     A_DECAY = 10  # Albedo decay rate decay_t_d
     Z = 0.0017  # Ice Momentum and Scalar roughness length
-    T_RAIN = 1  # Temperature condition for liquid precipitation
+    T_PPT = 1  # Temperature condition for liquid precipitation
     DX_DT = 5.5556e-06 #m/s Surface layer thickness growth rate
 
     """Fountain constants"""
@@ -279,7 +279,7 @@ class Icestupa:
             "h_ice",
             "r_ice",
             "ppt",
-            "dpt",
+            "dep",
             "thickness",
             "fountain_runoff",
             "fountain_froze",
@@ -382,7 +382,7 @@ class Icestupa:
                 )
             else:
                 L = self.L_S
-                self.df.loc[i, "dpt"] = (
+                self.df.loc[i, "dep"] = (
                     self.df.loc[i, "Ql"]
                     * self.DT
                     * self.df.loc[i, "SA"]
@@ -410,7 +410,7 @@ class Icestupa:
                 )
 
             # Precipitation to ice quantity
-            if self.df.loc[i, "T_a"] < self.T_RAIN and self.df.loc[i, "Prec"] > 0:
+            if self.df.loc[i, "T_a"] < self.T_PPT and self.df.loc[i, "Prec"] > 0:
                 self.df.loc[i, "ppt"] = (
                     self.RHO_W
                     * self.df.loc[i, "Prec"]
@@ -430,7 +430,7 @@ class Icestupa:
             self.df.loc[i + 1, "ice"] = (
                 self.df.loc[i, "ice"]
                 + self.df.loc[i, "solid"]
-                + self.df.loc[i, "dpt"]
+                + self.df.loc[i, "dep"]
                 + self.df.loc[i, "ppt"]
                 - self.df.loc[i, "sub"]
                 - self.df.loc[i, "melted"]
@@ -449,7 +449,7 @@ class Icestupa:
             self.df.loc[i + 1, "input"] = (
                 self.df.loc[i, "input"]
                 + self.df.loc[i, "ppt"]
-                + self.df.loc[i, "dpt"]
+                + self.df.loc[i, "dep"]
                 + self.df.loc[i,"fountain_runoff"]
             )
             self.df.loc[i + 1, "thickness"] = (
