@@ -41,14 +41,14 @@ def self_attributes(self, save=False):
 
 
         # Get initial height
-        if hasattr(self, "dome_rad"):
-            self.dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
-            self.h_i = 3 * self.dome_vol/ (math.pi * self.r_spray ** 2)
-            logger.warning("Initial height estimated from dome %0.1f"%self.h_i)
-        else:
-            self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
-            self.dome_vol = df_c.loc[0, "DroneV"]
-            logger.warning("Initial height estimated from drone %0.1f"%self.h_i)
+        self.dome_vol = df_c.loc[0, "DroneV"]
+        self.h_i = self.DX + 3 * self.dome_vol / (math.pi * self.r_spray ** 2)
+        logger.warning("Initial height estimated from drone %0.1f"%self.h_i)
+        # if hasattr(self, "dome_rad"):
+        #     self.dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
+        #     self.h_i = 3 * self.dome_vol/ (math.pi * self.r_spray ** 2)
+        #     logger.warning("Initial height estimated from dome %0.1f"%self.h_i)
+        # else:
 
     if save:
         df_c.to_hdf(
