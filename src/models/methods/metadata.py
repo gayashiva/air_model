@@ -261,7 +261,7 @@ def get_parameter_metadata(
             "kind": "Derived",
             "units": "($kg$)",
         },
-        "dpt": {
+        "dep": {
             "name": "Deposition",
             "kind": "Derived",
             "units": "($kg$)",

@@ -32,7 +32,7 @@ def get_area(self, i):
 
         # Ice Radius
         self.df.loc[i, "r_ice"] = math.pow(
-            self.df.loc[i, "iceV"] / math.pi * (3 / self.df.loc[i, "s_cone"]), 1 / 3
+            3 * self.df.loc[i, "iceV"] / (math.pi * self.df.loc[i, "s_cone"]), 1 / 3
         )
 
         # Ice Height

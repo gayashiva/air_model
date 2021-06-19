@@ -120,7 +120,7 @@ def summary_figures(self):
             "Qf": "$q_{F}$",
             "Qg": "$q_{G}$",
             "Qsurf": "$q_{surf}$",
-            "Qmelt": "$-q_{melt}$",
+            "Qmelt": "$-q_{freeze/melt}$",
             "Qt": "$-q_{T}$",
         },
         axis=1,
@@ -241,7 +241,7 @@ def summary_figures(self):
             "When",
             "solid",
             "ppt",
-            "dpt",
+            "dep",
             # "cdt",
             "melted",
             "sub",
@@ -263,14 +263,14 @@ def summary_figures(self):
                 dfds.loc[i, "melted"] *= -1 / (self.df.loc[i, "SA"] * self.RHO_I)
                 dfds.loc[i, "sub"] *= -1 / (self.df.loc[i, "SA"] * self.RHO_I)
                 dfds.loc[i, "ppt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
-                dfds.loc[i, "dpt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
+                dfds.loc[i, "dep"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
                 # dfds.loc[i, "cdt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
             else:
                 dfds.loc[i, "solid"] = 0 
                 dfds.loc[i, "melted"] *= 0
                 dfds.loc[i, "sub"] *= 0
                 dfds.loc[i, "ppt"] *= 0
-                dfds.loc[i, "dpt"] *= 0
+                dfds.loc[i, "dep"] *= 0
                 # dfds.loc[i, "cdt"] *= 0
 
     dfds = dfds.set_index("When").resample("D").sum().reset_index()
@@ -281,18 +281,18 @@ def summary_figures(self):
             "solid": "Ice",
             "ppt": "Snow",
             "melted": "Melt",
-            "sub": "Vapour sub.",
+            "sub": "Sublimation",
         }
     )
     # dfds["Vapour cond./dep."] = dfds["dpt"] + dfds["cdt"]
-    dfds["Vapour dpt."] = dfds["dpt"]
+    dfds["Deposition"] = dfds["dep"]
 
     y2 = dfds[
         [
             "Ice",
             "Snow",
-            "Vapour dpt.",
-            "Vapour sub.",
+            "Deposition",
+            "Sublimation",
             "Melt",
         ]
     ]
@@ -317,8 +317,8 @@ def summary_figures(self):
     y01 = dfds["Discharge"]
     y02 = dfds["fountain_runoff"]
 
-    dfd[["$-q_{melt}$", "$-q_{T}$"]] *=-1
-    z = dfd[["$-q_{melt}$", "$-q_{T}$", "$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
+    dfd[["$-q_{freeze/melt}$", "$-q_{T}$"]] *=-1
+    z = dfd[["$-q_{freeze/melt}$", "$-q_{T}$", "$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
     # y0 = dfds[["Frozen", "Wind loss", "Runoff loss"]]
     y0 = dfds[["Frozen", "Runoff loss"]]
 
@@ -530,7 +530,7 @@ def summary_figures(self):
             "$q_{F}$": "Qf",
             "$q_{G}$": "Qg",
             "$q_{surf}$": "Qsurf",
-            "$-q_{melt}$": "Qmelt",
+            "$-q_{freeze/melt}$": "Qmelt",
             "$-q_{T}$": "Qt",
         },
         axis=1,
