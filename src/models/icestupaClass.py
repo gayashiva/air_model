@@ -285,6 +285,7 @@ class Icestupa:
             "fountain_froze",
             "Qt",
             "Qmelt",
+            "input",
         ]
 
         for column in col:
@@ -315,8 +316,18 @@ class Icestupa:
             self.initial_vol
             * self.RHO_I
         )
-        self.df.loc[self.start, "iceV"] = self.initial_vol
+        self.df.loc[self.start, "iceV"] = self.df.loc[self.start, "ice"] / self.RHO_I
         self.df.loc[self.start, "input"] = self.df.loc[self.start, "ice"]
+        self.df.loc[self.start - 1, "Discharge"] = self.df.loc[self.start - 1, "fountain_froze"]* 60 / self.DT
+
+        # self.df.loc[self.start - 1, "fountain_froze"] = (
+        #     self.initial_vol
+        #     * self.RHO_I
+        # )
+        # self.df.loc[self.start - 1, "Discharge"] = self.df.loc[self.start - 1, "fountain_froze"]* 60 / self.DT
+        # self.df.loc[self.start, "ice"] = self.df.loc[self.start - 1, "fountain_froze"]
+        # self.df.loc[self.start, "iceV"] = self.df.loc[self.start, "ice"] / self.RHO_I
+
         logger.warning(
             "Initialise: When %s, radius %.1f, height %.1f, iceV %.1f\n"
             % (
@@ -329,7 +340,7 @@ class Icestupa:
 
         t = stqdm(
             self.df[self.start:-1].itertuples(),
-            total=self.df.shape[0],
+            total=self.df.shape[0] - self.start,
         )
 
         t.set_description("Simulating %s Icestupa" % self.name)
@@ -339,18 +350,20 @@ class Icestupa:
 
             ice_melted = self.df.loc[i, "iceV"] < self.initial_vol - 1 
 
-            if ice_melted and i != self.start:   
+            # if ice_melted and i != self.start:   
+            if ice_melted:
                 logger.error("Simulation ends %s %0.1f "%(self.df.When[i], self.df.iceV[i]))
 
-                if self.df.loc[i-1, "When"] < self.fountain_off_date and self.df.loc[i-1, "solid"] <= 0:
-                    self.df.loc[i-1, "iceV"] = self.dome_vol
+                if self.df.loc[i-1, "When"] < self.fountain_off_date and self.df.loc[i-1, "melted"] > 0:
+                    # self.df.loc[i-1, "iceV"] = self.dome_vol
                     self.df.loc[i, "T_s"] = 0 
                     self.df.loc[i, "thickness"] = 0 
                     col_list = ["meltwater", "ice", "vapour", "unfrozen_water", "iceV", "input"]
                     logger.error("Skipping %s"%self.df.loc[i, "When"])
                     for column in col_list:
                         self.df.loc[i, column] = self.df.loc[i-1, column]
-                    continue
+                    # continue
+                    break
 
                 self.df.loc[i - 1, "meltwater"] += self.df.loc[i - 1, "ice"]
                 self.df.loc[i - 1, "ice"] = 0
@@ -359,10 +372,10 @@ class Icestupa:
                 self.df = self.df.reset_index(drop=True)
                 break
 
-            # Fountain water output
-            self.df.loc[i,"fountain_runoff"]= (
-                self.df.Discharge.loc[i] * self.DT / 60
-            )
+            # # Fountain water output
+            # self.df.loc[i,"fountain_runoff"]= (
+            #     self.df.Discharge.loc[i] * self.DT / 60
+            # )
 
             self.get_area(i)
 
@@ -394,14 +407,15 @@ class Icestupa:
             else:
                 self.get_temp(i)
 
-            if self.df.loc[i, "Qmelt"] < 0:
-                self.df.loc[i, "solid"] = -(
-                    self.df.loc[i, "Qmelt"]
-                    * self.DT
-                    * self.df.loc[i, "SA"]
-                    / (self.L_F)
-                )
-            else:
+            # if self.df.loc[i, "Qmelt"] < 0:
+            #     self.df.loc[i, "solid"] = -(
+            #         self.df.loc[i, "Qmelt"]
+            #         * self.DT
+            #         * self.df.loc[i, "SA"]
+            #         / (self.L_F)
+            #     )
+            # else:
+            if self.df.loc[i, "Qmelt"] > 0:
                 self.df.loc[i, "melted"] = (
                     self.df.loc[i, "Qmelt"]
                     * self.DT
@@ -429,7 +443,8 @@ class Icestupa:
             )
             self.df.loc[i + 1, "ice"] = (
                 self.df.loc[i, "ice"]
-                + self.df.loc[i, "solid"]
+                # + self.df.loc[i, "solid"]
+                + self.df.loc[i, "fountain_froze"]
                 + self.df.loc[i, "dep"]
                 + self.df.loc[i, "ppt"]
                 - self.df.loc[i, "sub"]
@@ -450,7 +465,8 @@ class Icestupa:
                 self.df.loc[i, "input"]
                 + self.df.loc[i, "ppt"]
                 + self.df.loc[i, "dep"]
-                + self.df.loc[i,"fountain_runoff"]
+                # + self.df.loc[i,"fountain_runoff"]
+                + self.df.loc[i,"Discharge"] * self.DT / 60
             )
             self.df.loc[i + 1, "thickness"] = (
                 self.df.loc[i+1, "iceV"]
@@ -458,7 +474,7 @@ class Icestupa:
             ) / (self.df.loc[i, "SA"])
 
             if test:
-                # print(self.df.loc[i, "thickness"], self.df.loc[i, "iceV"], self.df.loc[i, "SA"])
+                print(self.df.loc[i, "fountain_froze"], self.df.loc[i, "input"])
                 # print(self.df.loc[i+1, "thickness"], self.df.loc[i+1, "iceV"], self.df.loc[i+1, "SA"])
                 logger.info(
                     f" When {self.df.When[i]},iceV {self.df.iceV[i+1]}, thickness  {self.df.thickness[i]}"

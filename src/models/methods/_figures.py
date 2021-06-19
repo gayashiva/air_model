@@ -331,7 +331,7 @@ def summary_figures(self):
                 ax=ax0
                 )
     ax0.xaxis.set_label_text("")
-    ax0.set_ylabel("Total Discharge ($m^3$)")
+    ax0.set_ylabel("Fountain Discharge ($m^3$)")
     plt.legend(loc="upper center", ncol=3)
     ax0.grid(axis="y", color="#0C70DE", alpha=0.3, linewidth=0.5, which="major")
     at = AnchoredText("(a)", prop=dict(size=10), frameon=True, loc="upper left")
