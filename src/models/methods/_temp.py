@@ -16,8 +16,8 @@ def get_temp(self, i):
     self.df.loc[i, "Qt"] = self.df.loc[i, "Ql"]
     # freezing_energy = self.df.loc[i, "Qsurf"]
 
-    if self.df.loc[i, "fountain_runoff"] > 0 and freezing_energy < 0 and self.df.loc[i, "Qsurf"] < 0:
-    # if self.df.loc[i, "fountain_runoff"] > 0  and self.df.loc[i, "Qsurf"] < 0:
+    # if self.df.loc[i, "fountain_runoff"] > 0 and freezing_energy < 0 and self.df.loc[i, "Qsurf"] < 0:
+    if self.df.loc[i, "Discharge"] > 0 and freezing_energy < 0 and self.df.loc[i, "Qsurf"] < 0:
         self.frozen = 1
     else:
         self.frozen = 0

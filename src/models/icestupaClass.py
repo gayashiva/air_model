@@ -261,7 +261,7 @@ class Icestupa:
             "f_cone",
             "ice",
             "iceV",
-            "solid",
+            # "solid",
             "sub",
             "vapour",
             "melted",
@@ -474,7 +474,7 @@ class Icestupa:
             ) / (self.df.loc[i, "SA"])
 
             if test:
-                print(self.df.loc[i, "fountain_froze"], self.df.loc[i, "input"])
+                # print(self.df.loc[i, "fountain_froze"], self.df.loc[i, "input"])
                 # print(self.df.loc[i+1, "thickness"], self.df.loc[i+1, "iceV"], self.df.loc[i+1, "SA"])
                 logger.info(
                     f" When {self.df.When[i]},iceV {self.df.iceV[i+1]}, thickness  {self.df.thickness[i]}"
