@@ -14,10 +14,8 @@ def get_temp(self, i):
 
     freezing_energy = (self.df.loc[i, "Qsurf"] - self.df.loc[i, "Ql"])
     self.df.loc[i, "Qt"] = self.df.loc[i, "Ql"]
-    # freezing_energy = self.df.loc[i, "Qsurf"]
 
-    if self.df.loc[i, "fountain_runoff"] > 0 and freezing_energy < 0 and self.df.loc[i, "Qsurf"] < 0:
-    # if self.df.loc[i, "fountain_runoff"] > 0  and self.df.loc[i, "Qsurf"] < 0:
+    if self.df.loc[i, "Discharge"] > 0 and freezing_energy < 0 and self.df.loc[i, "Qsurf"] < 0:
         self.frozen = 1
     else:
         self.frozen = 0
@@ -52,14 +50,12 @@ def get_temp(self, i):
         )
         self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
 
-    if self.frozen and self.df.loc[i, "Qmelt"] > 0:
-        self.frozen = 0
-        logger.error("Freezing event changed to melting event")
-
     if self.frozen:
-        self.df.loc[i,"fountain_runoff"] += (
-            self.df.loc[i, "Qmelt"]* self.DT * self.df.loc[i, "SA"]
+        self.df.loc[i,"fountain_froze"] += (
+            -self.df.loc[i, "Qmelt"]* self.DT * self.df.loc[i, "SA"]
         ) / (self.L_F)
+
+        self.df.loc[i,"fountain_runoff"] = self.df.Discharge.loc[i] * self.DT / 60 - self.df.loc[i,"fountain_froze"]
 
         if self.df.loc[i,"fountain_runoff"] < 0:
             self.df.loc[i,"Qmelt"] -= (
@@ -69,14 +65,16 @@ def get_temp(self, i):
                 self.df.loc[i, "fountain_runoff"]* self.DT * self.df.loc[i, "SA"]
             ) / (self.L_F)
             self.df.loc[i, "fountain_runoff"] = 0
-
-        self.df.loc[i,"fountain_froze"] -= (
-            self.df.loc[i, "Qmelt"]* self.DT * self.df.loc[i, "SA"]
-        ) / (self.L_F)
-
+            self.df.loc[i,"fountain_froze"] = (
+                -self.df.loc[i, "Qmelt"]* self.DT * self.df.loc[i, "SA"]
+            ) / (self.L_F)
 
 def test_get_temp(self, i):
     self.get_temp(i)
+
+    if self.frozen and self.df.loc[i, "Qmelt"] > 0:
+        self.frozen = 0
+        logger.error("Freezing event changed to melting event")
 
     if self.df.loc[i, "delta_T_s"] > 1 * self.DT/60:
         logger.warning("Too much fountain energy %s causes temperature change of %0.1f on %s" %(self.df.loc[i, "Qf"],self.df.loc[i, "delta_T_s"],self.df.loc[i, "When"]))

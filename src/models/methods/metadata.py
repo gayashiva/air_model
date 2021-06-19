@@ -76,7 +76,7 @@ def get_parameter_metadata(
             "kind": "Derived",
             "units": "($hPa$)",
         },
-        "solid": {
+        "fountain_froze": {
             "name": "Ice per time step",
             "kind": "Derived",
             "units": "($kg$)",
