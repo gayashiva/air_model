@@ -238,11 +238,13 @@ if __name__ == "__main__":
         | Mean discharge | %.1f $l/min$|
         | Spray Radius | %.1f $m$|
         | Water sprayed| %.0f $m^3$ |
+        | Storage Efficiency | %.0f $percent$ |
         """
             % (
                 f_mean,
                 icestupa.r_spray,
                 icestupa.df.Discharge.sum() * icestupa.DT / (60 * 1000) ,
+                f_efficiency,
             )
         )
 
@@ -254,11 +256,13 @@ if __name__ == "__main__":
         | Max Ice Volume | %.1f $m^{3}$|
         | Meltwater released | %.0f $kg$ |
         | Vapour loss | %.0f $kg$ |
+        | Storage Duration | %.0f $days$ |
         """
             % (
                 icestupa.df["iceV"].max(),
                 icestupa.df["meltwater"].iloc[-1],
                 icestupa.df["vapour"].iloc[-1],
+                Duration,
             )
         )
 

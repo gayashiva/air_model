@@ -130,7 +130,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             h_aws=3,
             h_f=1.35,
 
-            fountain_off_date=datetime(2019, 3, 10, 18),
+            fountain_off_date=datetime(2019, 2, 16, 10),
             discharge=3.58,  # FOUNTAIN on mean discharge from field
             dia_f=0.0056,  # FOUNTAIN aperture diameter
         )
@@ -146,7 +146,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             # start_date=datetime(2020, 12, 14),
             start_date=datetime(2021, 1, 18),
             # end_date=datetime(2021, 3, 14),
-            end_date=datetime(2021, 5, 14),
+            end_date=datetime(2021, 6, 11),
             utc_offset=5.5,
             longitude=77.606949,
             latitude=34.216638,
