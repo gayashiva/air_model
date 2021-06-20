@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import logging, os, sys,coloredlogs
 from codetiming import Timer
+import csv
 
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -24,12 +25,13 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2021",
+        location="Guttannen 2020",
         # location="Gangles 2021",
     )
 
     # Initialise icestupa object
     icestupa = Icestupa(answers["location"])
+    SITE, FOLDER = config(answers["location"])
     icestupa.read_output()
     M_F= round(icestupa.df["Discharge"].sum()* icestupa.DT/ 60 + icestupa.df.loc[0, "input"],1)
     M_input = round(icestupa.df["input"].iloc[-1],1)
@@ -39,8 +41,17 @@ if __name__ == "__main__":
     M_runoff= round(icestupa.df["unfrozen_water"].iloc[-1],1)
     M_sub = round(icestupa.df["vapour"].iloc[-1],1)
     M_ice = round(icestupa.df["ice"].iloc[-1],1)
-    print(M_F+M_ppt+M_dep)
-    print(M_ice+M_sub+M_water+M_runoff)
-    print(M_input)
+    # print(M_F+M_ppt+M_dep)
+    # print(M_ice+M_sub+M_water+M_runoff)
+    # print(M_input)
+    var_dict={}
+    for var in ["M_F", "M_ppt", "M_dep", "M_ice", "M_sub", "M_water", "M_runoff"]:
+        var_dict[var] = eval(var)
+    print(var_dict)
+    a_file = open(FOLDER["output"] + "mass_bal.csv", "w")
+    writer = csv.writer(a_file)
+    for key, value in var_dict.items():
+        writer.writerow([key, value])
+
 
 

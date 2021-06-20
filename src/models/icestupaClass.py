@@ -104,7 +104,6 @@ class Icestupa:
     def derive_parameters(self):  # Derives additional parameters required for simulation
 
         self.change_freq()
-        self.self_attributes(save=True)
 
         unknown = ["a", "vp_a", "LW_in", "cld"]  # Possible unknown variables
         for i in range(len(unknown)):
@@ -153,6 +152,7 @@ class Icestupa:
                 )
 
         self.get_discharge()
+        self.self_attributes(save=True)
 
         solar_df = get_solar(
             latitude=self.latitude,
@@ -290,26 +290,17 @@ class Icestupa:
         for column in col:
             self.df[column] = 0
 
+        # Initialise first model time step
         self.start = self.df.index[self.df.Discharge > 0][0]
 
         if self.start == 0:
             self.start+=1
 
-        if hasattr(self, "h_i"):
-            self.df.loc[self.start - 1, "h_ice"] = self.h_i
-        else:
-            self.df.loc[self.start - 1, "h_ice"] = self.DX
-
+        self.df.loc[self.start - 1, "h_ice"] = self.h_i
         self.df.loc[self.start - 1, "r_ice"] = self.r_spray
 
         self.df.loc[self.start - 1, "s_cone"] = (
             self.df.loc[self.start - 1, "h_ice"] / self.df.loc[self.start - 1, "r_ice"]
-        )
-        self.initial_vol= (
-            math.pi
-            / 3
-            * self.df.loc[self.start - 1, "r_ice"] ** 2
-            * self.df.loc[self.start - 1, "h_ice"]
         )
         self.df.loc[self.start, "ice"] = (
             self.initial_vol
