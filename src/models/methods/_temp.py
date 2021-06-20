@@ -68,6 +68,17 @@ def get_temp(self, i):
             self.df.loc[i,"fountain_froze"] = (
                 -self.df.loc[i, "Qmelt"]* self.DT * self.df.loc[i, "SA"]
             ) / (self.L_F)
+    else:
+        self.df.loc[i, "fountain_runoff"] = self.df.Discharge.loc[i] * self.DT / 60
+        self.df.loc[i,"fountain_froze"] = 0
+
+    if self.df.loc[i, "Qmelt"] > 0:
+        self.df.loc[i, "melted"] = (
+            self.df.loc[i, "Qmelt"]
+            * self.DT
+            * self.df.loc[i, "SA"]
+            / (self.L_F)
+        )
 
 def test_get_temp(self, i):
     self.get_temp(i)
