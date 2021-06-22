@@ -84,9 +84,19 @@ if __name__ == "__main__":
     SITE, FOLDER = config(location)
 
     icestupa = Icestupa(location)
-
-    icestupa.read_input()
     icestupa.read_output()
+    icestupa.self_attributes()
+
+    M_F= round(icestupa.df["Discharge"].sum()* icestupa.DT/ 60 + icestupa.df.loc[0, "input"] - icestupa.V_dome *
+        icestupa.RHO_I,1)
+    M_input = round(icestupa.df["input"].iloc[-1],1)
+    M_ppt= round(icestupa.df["ppt"].sum(),1)
+    M_dep= round(icestupa.df["dep"].sum(),1)
+    M_water = round(icestupa.df["meltwater"].iloc[-1],1)
+    M_runoff= round(icestupa.df["unfrozen_water"].iloc[-1],1)
+    M_sub = round(icestupa.df["vapour"].iloc[-1],1)
+    M_ice = round(icestupa.df["ice"].iloc[-1]- icestupa.V_dome * icestupa.RHO_I,1)
+
     df_in = icestupa.df
     (
         input_cols,
@@ -97,9 +107,9 @@ if __name__ == "__main__":
         derived_vars,
     ) = vars(df_in)
 
-    df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
-    df_in = df_in.set_index("When")
-    df = df_in
+    # df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
+    # df_in = df_in.set_index("When")
+    # df = df_in
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
     output_folder = os.path.join(dirname, "data/" + SITE["name"] + "/processed/")
     row1_1, row1_2 = st.beta_columns((2, 5))
@@ -223,13 +233,6 @@ if __name__ == "__main__":
 
     with row3_1:
         f_mean = icestupa.df.Discharge.replace(0, np.nan).mean()
-        f_efficiency = 100 - (
-            (
-                icestupa.df["unfrozen_water"].iloc[-1]
-                / (icestupa.df["Discharge"].sum() * icestupa.DT / 60)
-                * 100
-            )
-        )
         Duration = icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24)
         st.markdown(
             """
@@ -243,8 +246,8 @@ if __name__ == "__main__":
             % (
                 f_mean,
                 icestupa.r_spray,
-                icestupa.df.Discharge.sum() * icestupa.DT / (60 * 1000) ,
-                f_efficiency,
+                M_F/1000,
+                (M_water + M_ice) / M_input * 100,
             )
         )
 

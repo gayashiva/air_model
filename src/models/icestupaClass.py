@@ -302,11 +302,14 @@ class Icestupa:
         self.df.loc[self.start - 1, "s_cone"] = (
             self.df.loc[self.start - 1, "h_ice"] / self.df.loc[self.start - 1, "r_ice"]
         )
-        self.df.loc[self.start, "ice"] = (
-            self.initial_vol
-            * self.RHO_I
+        V_initial = (
+            math.pi
+            / 3
+            * self.r_spray ** 2
+            * self.h_i
         )
-        self.df.loc[self.start, "iceV"] = self.df.loc[self.start, "ice"] / self.RHO_I
+        self.df.loc[self.start, "ice"] = (V_initial* self.RHO_I)
+        self.df.loc[self.start, "iceV"] = V_initial
         self.df.loc[self.start, "input"] = self.df.loc[self.start, "ice"]
 
         logger.warning(
@@ -329,7 +332,7 @@ class Icestupa:
         for row in t:
             i = row.Index
 
-            ice_melted = self.df.loc[i, "iceV"] < self.initial_vol - 1 
+            ice_melted = self.df.loc[i, "iceV"] < self.V_dome
 
             if ice_melted:
                 logger.error("Simulation ends %s %0.1f "%(self.df.When[i], self.df.iceV[i]))
@@ -347,7 +350,6 @@ class Icestupa:
                 col_list = ["dep", "ppt", "fountain_froze", "fountain_runoff", "sub", "melted"]
                 for column in col_list:
                     self.df.loc[i-1, column] = 0
-                logger.error("Model ends at %s" % (self.df.When[i]))
 
                 # input = self.df.loc[i-1,"input"]
                 # M_F= round(self.df.Discharge[self.start:i-1].sum() * self.DT/60,1)

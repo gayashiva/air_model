@@ -23,35 +23,69 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    answers = dict(
-        # location="Schwarzsee 2019",
-        location="Guttannen 2020",
-        # location="Gangles 2021",
+    # answers = dict(
+    #     # location="Schwarzsee 2019",
+    #     location="Guttannen 2020",
+    #     # location="Gangles 2021",
+    # )
+    locations = ["Guttannen 2021", "Guttannen 2020", "Schwarzsee 2019", "Gangles 2021"]
+    filenames = []
+
+    for location in locations:
+        # Initialise icestupa object
+        icestupa = Icestupa(location)
+        SITE, FOLDER = config(location)
+        icestupa.read_output()
+        icestupa.self_attributes()
+
+        # M_F= round(icestupa.df["Discharge"].sum()* icestupa.DT/ 60 + icestupa.df.loc[0, "input"] - icestupa.V_dome *
+        #     icestupa.RHO_I,1)
+        # M_input = round(icestupa.df["input"].iloc[-1],1)
+        # M_ppt= round(icestupa.df["ppt"].sum(),1)
+        # M_dep= round(icestupa.df["dep"].sum(),1)
+        # M_water = round(icestupa.df["meltwater"].iloc[-1],1)
+        # M_runoff= round(icestupa.df["unfrozen_water"].iloc[-1],1)
+        # M_sub = round(icestupa.df["vapour"].iloc[-1],1)
+        # M_ice = round(icestupa.df["ice"].iloc[-1]- icestupa.V_dome * icestupa.RHO_I,1)
+        # Mass_Component = location
+        # var_dict={}
+        # for var in ["Mass_Component", "M_F", "M_ppt", "M_dep", "M_ice", "M_sub", "M_water", "M_runoff"]:
+        #     var_dict[var] = eval(var)
+        # print(var_dict)
+        # a_file = open(FOLDER["output"] + "mass_bal.csv", "w")
+        # writer = csv.writer(a_file)
+        # for key, value in var_dict.items():
+        #     # key = '$' + key + '$'
+        #     key = key[2:]
+        #     writer.writerow([key, value])
+        #     print([key, value])
+
+        filenames.append(FOLDER["output"] + "mass_bal.csv")
+
+    # merging csv files
+    df = pd.concat(map(pd.read_csv, filenames), ignore_index=False)
+    print(df.columns)
+
+    df = df.rename(
+        {
+            "Guttannen 2021": "GB21",
+            "Guttannen 2020": "GB20",
+            "Gangles 2021": "IC21",
+            "Schwarzsee 2019": "EP19",
+            "ss_Component": "Mass",
+        },
+        axis=1,
     )
+    df = df.set_index("Mass")
+    df = df.groupby(level=0).sum().reset_index()
+    # print(mass_table)
 
-    # Initialise icestupa object
-    icestupa = Icestupa(answers["location"])
-    SITE, FOLDER = config(answers["location"])
-    icestupa.read_output()
-    M_F= round(icestupa.df["Discharge"].sum()* icestupa.DT/ 60 + icestupa.df.loc[0, "input"],1)
-    M_input = round(icestupa.df["input"].iloc[-1],1)
-    M_ppt= round(icestupa.df["ppt"].sum(),1)
-    M_dep= round(icestupa.df["dep"].sum(),1)
-    M_water = round(icestupa.df["meltwater"].iloc[-1],1)
-    M_runoff= round(icestupa.df["unfrozen_water"].iloc[-1],1)
-    M_sub = round(icestupa.df["vapour"].iloc[-1],1)
-    M_ice = round(icestupa.df["ice"].iloc[-1],1)
-    # print(M_F+M_ppt+M_dep)
-    # print(M_ice+M_sub+M_water+M_runoff)
-    # print(M_input)
-    var_dict={}
-    for var in ["M_F", "M_ppt", "M_dep", "M_ice", "M_sub", "M_water", "M_runoff"]:
-        var_dict[var] = eval(var)
-    print(var_dict)
-    a_file = open(FOLDER["output"] + "mass_bal.csv", "w")
-    writer = csv.writer(a_file)
-    for key, value in var_dict.items():
-        writer.writerow([key, value])
+    for i in range(0,df.shape[0]):
+        print(df.loc[i,"Mass"])
+        df.loc[i,"Mass"] = '$M_{' +df.loc[i,"Mass"] + '}$'
 
+    df = df.set_index("Mass")
+    df.to_csv("data/paper/mass_bal.csv")
+    print(df)
 
 

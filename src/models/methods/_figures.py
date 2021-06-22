@@ -68,7 +68,7 @@ def overlapped_bar(df, show=False, width=0.9, alpha=.5,
 def summary_figures(self):
     logger.info("Creating figures")
 
-    dome_vol = self.df[self.df.iceV !=0].reset_index().iceV[0]
+    # dome_vol = self.df[self.df.iceV !=0].reset_index().iceV[0]
 
     df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
 
@@ -401,42 +401,42 @@ def summary_figures(self):
     )
     plt.clf()
 
-    # fig, (ax1, ax2) = plt.subplots(
-    #     nrows=2, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
-    # )
+    fig, (ax1, ax2) = plt.subplots(
+        nrows=2, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
+    )
 
-    # x = self.df.When
+    x = self.df.When
 
-    # y1 = self.df.a
-    # y2 = self.df.f_cone
-    # ax1.plot(x, y1, color="#16697a")
-    # ax1.set_ylabel("Albedo")
-    # ax1t = ax1.twinx()
-    # ax1t.plot(x, y2, color="#ff6d00", linewidth=0.5)
-    # ax1t.set_ylabel("$f_{cone}$", color="#ff6d00")
-    # for tl in ax1t.get_yticklabels():
-    #     tl.set_color("#ff6d00")
-    # ax1.set_ylim([0, 1])
-    # ax1t.set_ylim([0, 1])
+    y1 = self.df.a
+    y2 = self.df.f_cone
+    ax1.plot(x, y1, color="#16697a")
+    ax1.set_ylabel("Albedo")
+    ax1t = ax1.twinx()
+    ax1t.plot(x, y2, color="#ff6d00", linewidth=0.5)
+    ax1t.set_ylabel("$f_{cone}$", color="#ff6d00")
+    for tl in ax1t.get_yticklabels():
+        tl.set_color("#ff6d00")
+    ax1.set_ylim([0, 1])
+    ax1t.set_ylim([0, 1])
 
-    # y1 = self.df.T_s
-    # y2 = self.df.T_bulk
-    # ax2.plot(
-    #     x, y1, "k-", linestyle="-", color="#00b4d8", linewidth=0.5, label="Surface"
-    # )
-    # ax2.set_ylabel("Temperature [$\\degree C$]")
-    # ax2.plot(x, y2, linestyle="-", color="#023e8a", linewidth=1, label="Bulk")
+    y1 = self.df.T_s
+    y2 = self.df.T_bulk
+    ax2.plot(
+        x, y1, "k-", linestyle="-", color="#00b4d8", linewidth=0.5, label="Surface"
+    )
+    ax2.set_ylabel("Temperature [$\\degree C$]")
+    ax2.plot(x, y2, linestyle="-", color="#023e8a", linewidth=1, label="Bulk")
     # ax2.set_ylim([-20, 1])
-    # ax2.legend()
+    ax2.legend()
 
-    # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    # ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    # fig.autofmt_xdate()
-    # plt.savefig(
-    #     output + "paper_figures/albedo_temperature.jpg", dpi=300, bbox_inches="tight"
-    # )
-    # plt.clf()
+    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    ax1.xaxis.set_minor_locator(mdates.DayLocator())
+    fig.autofmt_xdate()
+    plt.savefig(
+        output + "paper_figures/albedo_temperature.jpg", dpi=300, bbox_inches="tight"
+    )
+    plt.clf()
 
     fig, ax = plt.subplots()
     x = self.df.When
@@ -452,7 +452,7 @@ def summary_figures(self):
         linewidth=1,
         color=CB91_Blue,
     )
-    ax.fill_between(x, y1=dome_vol, y2=0, color=grey, label = "Dome Volume")
+    ax.fill_between(x, y1=self.V_dome, y2=0, color=grey, label = "Dome Volume")
     ax.scatter(x, y2, color=CB91_Green, label="Measured Volume")
     ax.errorbar(x, y2,yerr=df_c.DroneVError, color=CB91_Green)
 

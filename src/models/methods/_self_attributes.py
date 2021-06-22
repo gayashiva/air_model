@@ -21,7 +21,7 @@ def self_attributes(self, save=False):
         self.r_spray = get_droplet_projectile(
             dia=self.dia_f, h=self.h_f, d=self.discharge
         )
-        self.dome_vol=0
+        self.V_dome=0
         logger.warning("Measured spray radius from fountain parameters %0.1f"%self.r_spray)
     else:
         # Get spray radius
@@ -31,16 +31,11 @@ def self_attributes(self, save=False):
             self.r_spray= df_c.loc[(df_c.When < self.fountain_off_date) & (df_c.index!=0), "rad"].mean()
             logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
 
-        self.dome_vol = df_c.loc[0, "DroneV"]
+        self.V_dome = df_c.loc[0, "DroneV"]
 
+    logger.warning("Dome Volume %0.1f"%self.V_dome)
     # Get initial height
-    self.h_i = self.DX + 3 * self.dome_vol / (math.pi * self.r_spray ** 2)
-    self.initial_vol= (
-        math.pi
-        / 3
-        * self.r_spray ** 2
-        * self.h_i
-    )
+    self.h_i = self.DX + 3 * self.V_dome / (math.pi * self.r_spray ** 2)
 
 
     if save:
