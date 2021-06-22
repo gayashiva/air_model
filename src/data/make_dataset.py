@@ -26,7 +26,7 @@ sys.path.append(dirname)
 from src.utils.settings import config
 
 def field(location="schwarzsee19"):
-    SITE, FOLDER, df_h = config(location)
+    SITE, FOLDER= config(location)
     if location == "guttannen20":
         df_in = pd.read_csv(
             raw_folder + SITE["name"] + "_field.txt",
@@ -349,7 +349,7 @@ def era5(location="schwarzsee19"):
         df_in3 = df_in3.set_index("When")
         df_in3 = df_in3.reset_index()
 
-    SITE, FOLDER, df_h = config(location)
+    SITE, FOLDER= config(location)
 
     mask = (df_in3["When"] >= SITE["start_date"]) & (df_in3["When"] <= SITE["end_date"])
     df_in3 = df_in3.loc[mask]
@@ -512,7 +512,7 @@ def meteoswiss_parameter(parameter):
 
 def meteoswiss(location="schwarzsee19"):
 
-    SITE, FOLDER, df_h = config(location)
+    SITE, FOLDER= config(location)
     if location == "schwarzsee19":
         location = "plaffeien19"
 
@@ -560,34 +560,27 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    # SITE, FOUNTAIN, FOLDER = config("Guttannen 2020")
+    SITE, FOLDER = config("Guttannen 2020")
     # SITE, FOUNTAIN, FOLDER = config("Schwarzsee 2019")
-    SITE, FOUNTAIN, FOLDER = config("Ravat 2020")
+    # SITE, FOUNTAIN, FOLDER = config("Ravat 2020")
 
     raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
 
     if SITE["name"] in ["schwarzsee19"]:
         df = field(location=SITE["name"])
-        # Replace Wind zero values for 3 hours
-        mask = df.v_a.shift().eq(df.v_a)
-        for i in range(1,3*4):
-            mask &= df.v_a.shift(-1 * i).eq(df.v_a)
-        mask &= (df.v_a ==0)
-        df.v_a = df.v_a.mask(mask)
-        # # Wind zero values are errors
-        # df["v_a"] = df["v_a"].replace(0, np.NaN)
 
     if SITE["name"] in ["guttannen21", "guttannen20"]:
         dfx = field(location=SITE["name"])
         df = meteoswiss(SITE["name"])
 
-        # Replace Wind zero values for 3 hours
-        mask = df.v_a.shift().eq(df.v_a)
-        for i in range(1,3*4):
-            mask &= df.v_a.shift(-1 * i).eq(df.v_a)
-        mask &= (df.v_a ==0)
-        df.v_a = df.v_a.mask(mask)
+    # TODO add to paper
+    # Replace Wind zero values for 3 hours
+    mask = df.v_a.shift().eq(df.v_a)
+    for i in range(1,3*4):
+        mask &= df.v_a.shift(-1 * i).eq(df.v_a)
+    mask &= (df.v_a ==0)
+    df.v_a = df.v_a.mask(mask)
 
     if SITE["name"] in ["schwarzsee19"]:
         df_swiss = meteoswiss(SITE["name"])
@@ -602,7 +595,7 @@ if __name__ == "__main__":
         df= df.reset_index()
 
 
-    df_ERA5, df_in3 = era5(df, SITE["name"])
+    df_ERA5, df_in3 = era5(SITE["name"])
 
     df = df.set_index("When")
 

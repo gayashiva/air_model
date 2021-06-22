@@ -99,7 +99,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
         SITE = dict(
             name="guttannen20",
             start_date=datetime(2020, 1, 3,16),
-            end_date=datetime(2020, 4, 6),
+            # end_date=datetime(2020, 4, 6),
+            end_date=datetime(2020, 4, 10),
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
