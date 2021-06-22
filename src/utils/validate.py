@@ -101,7 +101,7 @@ if __name__ == "__main__":
         'A_DECAY': np.arange(1, 23 , 5).tolist(),
         'T_W': np.arange(1, 5, 1).tolist(),
         # 'r_spray': bounds(var=icestupa.r_spray, change=10, res = 0.5),
-        'Z': bounds(var=icestupa.Z, res = 0.005),
+        # 'Z': bounds(var=icestupa.Z, res = 0.005),
     }]
 
     file_path = 'cv-'
