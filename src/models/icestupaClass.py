@@ -49,7 +49,7 @@ class Icestupa:
     A_DECAY = 10  # Albedo decay rate decay_t_d
     Z = 0.0017  # Ice Momentum and Scalar roughness length
     T_PPT = 1  # Temperature condition for liquid precipitation
-    DX_DT = 5.5556e-06 #m/s Surface layer thickness growth rate
+    # DX_DT = 5.5556e-06 #m/s Surface layer thickness growth rate
 
     """Fountain constants"""
     T_W = 1  # FOUNTAIN Water temperature
@@ -59,6 +59,7 @@ class Icestupa:
 
     """Model constants"""
     DT = 60*60 # Model time step
+    DX = 20e-03 #m Surface layer thickness growth rate
     
     def __init__(self, location = "Guttannen 2021"):
 
@@ -83,8 +84,8 @@ class Icestupa:
             self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
         ]  # Drops garbage columns
 
-        """Surface layer thickness"""
-        self.DX = self.DX_DT * self.DT
+        # """Surface layer thickness"""
+        # self.DX = self.DX_DT * self.DT
 
         logger.debug(self.df.head())
         logger.debug(self.df.tail())

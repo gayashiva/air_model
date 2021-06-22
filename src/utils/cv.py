@@ -61,7 +61,7 @@ def bounds(var, res, change = 5):
     return np.arange(var * (100-change)/100, var * (100+change)/100 + res, res).tolist()
 
 class CV_Icestupa(BaseEstimator,Icestupa):
-    def __init__(self, name = "guttannen21", DX = 0.020, TIME_STEP = 60*60, A_I = 0.35, A_S = 0.85, IE = 0.95, T_RAIN = 1, T_W = 1, A_DECAY= 10, Z=0.0017, r_spray = 6.535):
+    def __init__(self, name = "guttannen21", DX = 0.020, DT = 60*60, A_I = 0.35, A_S = 0.85, IE = 0.95, T_PPT = 1, T_W = 1, A_DECAY= 10, Z=0.0017):
         super(Icestupa, self).__init__()
 
         print("Initializing classifier:\n")
@@ -73,7 +73,7 @@ class CV_Icestupa(BaseEstimator,Icestupa):
             setattr(self, arg, val)
             # print("{} = {}".format(arg,val))
 
-        SITE, FOLDER, df_h = config(location = self.name)
+        SITE, FOLDER = config(location = self.name)
         initial_data = [SITE, FOLDER]
          # Initialise all variables of dictionary
         for dictionary in initial_data:
@@ -86,30 +86,10 @@ class CV_Icestupa(BaseEstimator,Icestupa):
     @Timer(text="Simulation executed in {:.2f} seconds")
     def fit(self, X,y,groups=None):
 
-        # SITE, FOLDER, df_h = config(location = X[0][0])
-        # initial_data = [SITE, FOLDER]
-        #  # Initialise all variables of dictionary
-        # for dictionary in initial_data:
-        #     for key in dictionary:
-        #         setattr(self, key, dictionary[key])
 
-        # if self.name in ["guttannen21", "guttannen20"]:
-        #     df_c, df_cam = get_calibration(site=self.name, input=self.raw)
-        # else:
-        #     df_c = get_calibration(site=self.name, input=self.raw)
-        # # Get initial height
-        # if hasattr(self, "dome_rad"):
-        #     self.dome_vol = 2/3 * math.pi * self.dome_rad ** 3 # Volume of dome
-        #     self.h_i = 3 * self.dome_vol/ (math.pi * self.r_spray ** 2)
-        #     # logger.warning("Initial height estimated from dome %0.1f"%self.h_i)
-        # else:
-        #     self.h_i = 3 * df_c.loc[0, "DroneV"] / (math.pi * self.r_spray ** 2)
-        #     self.dome_vol = df_c.loc[0, "DroneV"]
-        #     # logger.warning("Initial height estimated from drone %0.1f"%self.h_i)
-
-        if self.A_DECAY !=10 or self.A_I != 0.35 or self.A_S != 0.85 or self.T_RAIN != 1: 
+        if self.A_DECAY !=10 or self.A_I != 0.35 or self.A_S != 0.85 or self.T_PPT!= 1: 
             """Albedo Decay parameters initialized"""
-            self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.TIME_STEP
+            self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
             s = 0
             if self.name in ["schwarzsee19", "guttannen20"]:
                 f = 0  # Start with snow event
