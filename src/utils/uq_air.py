@@ -168,7 +168,8 @@ if __name__ == "__main__":
 parameters = {
     "IE": ie_dist,
     "T_PPT": T_PPT_dist,
-    # "T_W": T_W_dist,
+    "T_W": T_W_dist,
+    # "A_DECAY": a_decay_dist,
     # "DX": dx_dist,
 }
 parameters = un.Parameters(parameters)

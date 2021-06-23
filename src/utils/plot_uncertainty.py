@@ -92,13 +92,10 @@ if __name__ == "__main__":
     icestupa.df= icestupa.df.reset_index()
 
     fig, ax = plt.subplots()
-    x = icestupa.df.When
+    x = df.When
+    y1 = df.iceV
     y2 = df_c.DroneV
-
-
     ax.set_ylabel("Ice Volume[$m^3$]")
-
-
     ax.fill_between(
         data["When"],
         data.percentile_5,
@@ -107,34 +104,8 @@ if __name__ == "__main__":
         alpha=0.3,
         label="90% prediction interval",
     )
-    ax.fill_between(x, y1=icestupa.V_dome, y2=0, color=grey, label = "Dome Volume")
+    ax.fill_between(data["When"], y1=icestupa.V_dome, y2=0, color=grey, label = "Dome Volume")
     ax.scatter(x, y2, color=CB91_Green, label="Measured Volume")
-
-
-    x = df.When
-    y1 = df.iceV
-
-    # ax1.set_xlabel("Days")
-
-    # # Include Validation line segment 1
-    # ax.plot(
-    #     [datetime(2019, 2, 14, 16), datetime(2019, 2, 14, 16)],
-    #     [0.67115, 1.042],
-    #     color="green",
-    #     lw=1,
-    #     label="Validation Measurement",
-    # )
-    # ax.scatter(datetime(2019, 2, 14, 16), 0.856575, color="green", marker="o")
-    # 
-    # # Include Validation line segment 2
-    # ax.plot(
-    #     [datetime(2019, 3, 10, 18), datetime(2019, 3, 10, 18)],
-    #     [0.037, 0.222],
-    #     color="green",
-    #     lw=1,
-    # )
-    # ax.scatter(datetime(2019, 3, 10, 18), 0.1295, color="green", marker="o")
-
     ax.plot(x, y1, "b-", label="Modelled Ice Volume", linewidth=1, color=CB91_Blue)
     ax.set_ylim(bottom=0)
     plt.legend()

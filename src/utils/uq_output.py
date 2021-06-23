@@ -71,10 +71,7 @@ names = [
     "$\\epsilon_{ice}$",
     r"$\alpha_{ice}$",
     r"$\alpha_{snow}$",
-    "$A_{decay}$",
-    # "$dia_{F}$",
-    # "$h_F$",
-    # "$h_{AWS}$",
+    "$\\tau$",
     "$T_{water}$",
     "$\\Delta x$",
 ]
@@ -85,8 +82,3 @@ ax.set_xlabel("Parameter")
 ax.set_ylabel("Sensitivity of Maximum Ice Volume [$m^3$]")
 ax.grid(axis="y")
 plt.savefig(output + "sensitivities.jpg", bbox_inches="tight", dpi=300)
-# plt.savefig(
-#     FOLDERS["output_folder"] + "jpg/Figure_9.jpg",
-#     bbox_inches="tight",
-#     dpi=300,
-# )
