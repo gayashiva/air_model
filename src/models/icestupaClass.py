@@ -94,7 +94,6 @@ class Icestupa:
     from src.models.methods._freq import change_freq
     from src.models.methods._self_attributes import self_attributes
     from src.models.methods._albedo import get_albedo
-    from src.models.methods._height_steps import get_height_steps
     from src.models.methods._discharge import get_discharge
     from src.models.methods._area import get_area
     from src.models.methods._temp import get_temp, test_get_temp
@@ -339,7 +338,6 @@ class Icestupa:
                 logger.error("Simulation ends %s %0.1f "%(self.df.When[i], self.df.iceV[i]))
 
                 if self.df.loc[i-1, "When"] < self.fountain_off_date and self.df.loc[i-1, "melted"] > 0:
-                    # self.df.loc[i-1, "iceV"] = self.dome_vol
                     self.df.loc[i, "T_s"] = 0 
                     self.df.loc[i, "thickness"] = 0 
                     col_list = ["meltwater", "ice", "vapour", "unfrozen_water", "iceV", "input"]
@@ -352,12 +350,6 @@ class Icestupa:
                 for column in col_list:
                     self.df.loc[i-1, column] = 0
 
-                # input = self.df.loc[i-1,"input"]
-                # M_F= round(self.df.Discharge[self.start:i-1].sum() * self.DT/60,1)
-                # M_ppt= round(self.df["ppt"].sum(),1)
-                # M_dep= round(self.df["dep"].sum(),1)
-                # print(M_F+M_ppt+M_dep+self.df.loc[self.start, "input"])
-                # print(input)
 
                 self.df = self.df[self.start : i]
                 self.df = self.df.reset_index(drop=True)

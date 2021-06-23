@@ -93,10 +93,10 @@ if __name__ == "__main__":
 
     # Set the parameters by cross-validation
     tuned_params = [{
-        'DX': np.arange(0.018, 0.024, 0.001).tolist(), 
-        'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
+        'DX': bounds(var=icestupa.DX, res = 0.0005),
         'A_I': bounds(var=icestupa.A_I, res = 0.01),
         'A_S': bounds(var=icestupa.A_S, res = 0.01),
+        'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
         'T_PPT': np.arange(0, 3 , 1).tolist(),
         'A_DECAY': np.arange(1, 23 , 5).tolist(),
         'T_W': np.arange(1, 5, 1).tolist(),
