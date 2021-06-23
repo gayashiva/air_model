@@ -56,7 +56,7 @@ class UQ_Icestupa(un.Model, Icestupa):
 
         self.read_input()
         self.self_attributes()
-        result = []
+        # result = []
 
     def run(self, **parameters):
 
@@ -97,6 +97,9 @@ if __name__ == "__main__":
 
     # Get settings for given location and trigger
     SITE, FOLDER = config(answers["location"])
+    icestupa = Icestupa("guttannen21")
+    icestupa.read_input()
+    icestupa.self_attributes()
 
     list_of_feature_functions = [max_volume]
 
@@ -104,31 +107,14 @@ if __name__ == "__main__":
         new_features=list_of_feature_functions, features_to_run=["max_volume"]
     )
 
-    # # Set all parameters to have a uniform distribution
-    # # within a 20% interval around their fixed value
-    # parameters.set_all_distributions(un.uniform(0.05))
-
-    IE = 0.95
-    A_I = 0.35
-    A_S = 0.85
-    A_DECAY = 10
-
-    interval = 0.05
+    a_i_dist = cp.Uniform(icestupa.A_I * .95, icestupa.A_I * 1.05)
+    a_s_dist = cp.Uniform(icestupa.A_S * .95, icestupa.A_S * 1.05)
+    dx_dist = cp.Uniform(icestupa.DX * .95, icestupa.DX * 1.05)
 
     ie_dist = cp.Uniform(0.949, 0.993)
-    a_i_dist = uniform(A_I, interval)
-    a_s_dist = uniform(A_S, interval)
-
     a_decay_dist = cp.Uniform(1, 22)
     T_PPT_dist = cp.Uniform(0, 2)
-
-    T_W = 1
-
-    interval = 0.01
-
     T_W_dist = cp.Uniform(0, 5)
-
-    dx_dist = cp.Uniform(0.018, 0.024)
 
 #     parameters_single = {
 #         "IE": ie_dist,
@@ -166,11 +152,13 @@ if __name__ == "__main__":
 #         )
 
 parameters = {
-    "IE": ie_dist,
-    "T_PPT": T_PPT_dist,
-    "T_W": T_W_dist,
-    # "A_DECAY": a_decay_dist,
-    # "DX": dx_dist,
+        "IE": ie_dist,
+        "A_I": a_i_dist,
+        "A_S": a_s_dist,
+        "A_DECAY": a_decay_dist,
+        "T_PPT": T_PPT_dist,
+        "T_W": T_W_dist,
+        "DX": dx_dist,
 }
 parameters = un.Parameters(parameters)
 
