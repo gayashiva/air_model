@@ -23,7 +23,11 @@ if __name__ == "__main__":
     )
 
     # Get settings for given location and trigger
-    SITE, FOLDER = config(answers["location"])
+    SITE, FOLDER = config("guttannen21")
+    icestupa = Icestupa("guttannen21")
+    icestupa.read_output()
+    icestupa.self_attributes()
+
     input = FOLDER["sim"] + "/"
     output = FOLDER["sim"] + "/"
 
@@ -35,20 +39,6 @@ if __name__ == "__main__":
     data = un.Data()
     filename1 = input + names + ".h5"
     data.load(filename1)
-    print(data)
-
-    eval = data["max_volume"].evaluations
-    print(
-        f"95 percent confidence interval caused by {names} is {round(2 * st.stdev(eval),2)}"
-    )
-
-    print(data["max_volume"].mean)
-
-    icestupa = Icestupa("guttannen21")
-    icestupa.read_output()
-    icestupa.self_attributes()
-    df = icestupa.df
-
     days = pd.date_range(
         start=SITE["start_date"],
         end=SITE["start_date"]+ timedelta(hours=180 * 24 - 1),
@@ -56,13 +46,8 @@ if __name__ == "__main__":
     )
 
     data = data["guttannen21"]
-    # print(len(data.percentile_5))
 
     data["When"] = days
-
-    # data['When'] = data['When'] +  pd.to_timedelta(data.time, unit='D')
-
-    # data["IceV"] = df["IceV"]
 
     blue = "#0a4a97"
     red = "#e23028"
@@ -89,11 +74,10 @@ if __name__ == "__main__":
     icestupa.df= icestupa.df.set_index("When")
     df_c = pd.merge_asof(left=icestupa.df,right=df_c,right_index=True,left_index=True,direction='nearest',tolerance=tol)
     df_c = df_c[["DroneV","DroneVError", "iceV"]]
-    icestupa.df= icestupa.df.reset_index()
 
     fig, ax = plt.subplots()
-    x = df.When
-    y1 = df.iceV
+    x = icestupa.df.index
+    y1 = icestupa.df.iceV
     y2 = df_c.DroneV
     ax.set_ylabel("Ice Volume[$m^3$]")
     ax.fill_between(

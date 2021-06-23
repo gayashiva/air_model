@@ -1,3 +1,5 @@
+""" UncertaintyQuantification of Icestupa class
+"""
 import uncertainpy as un
 import chaospy as cp
 import pandas as pd
@@ -17,16 +19,6 @@ from src.models.methods.calibration import get_calibration
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
-
-
-def uniform(parameter, interval):
-    if parameter == 0:
-        raise ValueError("Creating a percentage distribution around 0 does not work")
-
-    return cp.Uniform(
-        parameter - abs(interval / 2.0 * parameter),
-        parameter + abs(interval / 2.0 * parameter),
-    )
 
 
 def max_volume(time, values, info, result=[]):
@@ -80,7 +72,6 @@ class UQ_Icestupa(un.Model, Icestupa):
             self.df.loc[i, "iceV"] = self.df.loc[i-1, "iceV"]
 
         return self.df.index.values, self.df["iceV"].values, parameters
-
 
 if __name__ == "__main__":
     # Main logger
