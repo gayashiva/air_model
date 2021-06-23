@@ -13,7 +13,7 @@ sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
 
-from src.data.settings import config
+from src.utils.settings import config
 
 
 def draw_plot(data, edge_color, fill_color, labels):
@@ -28,32 +28,22 @@ def draw_plot(data, edge_color, fill_color, labels):
 
 if __name__ == "__main__":
     answers = dict(
-        # location="Schwarzsee 2019",
         location="Guttannen 2021",
-        # location="Gangles 2021",
-        trigger="Manual",
-        # trigger="None",
-        # trigger="Temperature",
-        # trigger="Weather",
-        run="yes",
     )
 
     # Get settings for given location and trigger
-    SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
+    SITE, FOLDER = config(answers["location"])
     input = FOLDER["sim"] + "/"
     output = FOLDER["sim"] + "/"
 
     names = [
         # "full",
-        # "T_RAIN",
-        # "IE",
-        # "A_I",
-        # "A_S",
-        # "T_DECAY",
-        # "dia_f",
-        # "h_f",
-        # "h_aws",
-        # "T_w",
+        "T_PPT",
+        "IE",
+        "A_I",
+        "A_S",
+        "A_DECAY",
+        "T_W",
         "DX",
     ]
     variance = []
@@ -76,25 +66,25 @@ if __name__ == "__main__":
             f"95 percent confidence interval caused by {name} is {round(st.mean(eval),2)} and {round(2 * st.stdev(eval),2)}"
         )
 
-# names = [
-#     "$T_{ppt}$",
-#     "$\\epsilon_{ice}$",
-#     r"$\alpha_{ice}$",
-#     r"$\alpha_{snow}$",
-#     "$t_{decay}$",
-#     "$dia_{F}$",
-#     "$h_F$",
-#     "$h_{AWS}$",
-#     "$T_{water}$",
-#     "$\\Delta x$",
-# ]
+names = [
+    "$T_{ppt}$",
+    "$\\epsilon_{ice}$",
+    r"$\alpha_{ice}$",
+    r"$\alpha_{snow}$",
+    "$A_{decay}$",
+    # "$dia_{F}$",
+    # "$h_F$",
+    # "$h_{AWS}$",
+    "$T_{water}$",
+    "$\\Delta x$",
+]
 
-# fig, ax = plt.subplots()
-# draw_plot(evaluations, "k", "xkcd:grey", names)
-# ax.set_xlabel("Parameter")
-# ax.set_ylabel("Sensitivity of Maximum Ice Volume [$m^3$]")
-# ax.grid(axis="y")
-# plt.savefig(output + "sensitivities.jpg", bbox_inches="tight", dpi=300)
+fig, ax = plt.subplots()
+draw_plot(evaluations, "k", "xkcd:grey", names)
+ax.set_xlabel("Parameter")
+ax.set_ylabel("Sensitivity of Maximum Ice Volume [$m^3$]")
+ax.grid(axis="y")
+plt.savefig(output + "sensitivities.jpg", bbox_inches="tight", dpi=300)
 # plt.savefig(
 #     FOLDERS["output_folder"] + "jpg/Figure_9.jpg",
 #     bbox_inches="tight",

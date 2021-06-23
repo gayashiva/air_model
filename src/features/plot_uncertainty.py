@@ -13,111 +13,137 @@ import matplotlib.colors
 import uncertainpy as un
 import statistics as st
 from datetime import datetime, timedelta
-from src.data.config import SITE, FOUNTAIN, FOLDERS
+from src.utils.settings import config
+from src.models.icestupaClass import Icestupa
 import matplotlib.dates as mdates
 
-input = FOLDERS["sim_folder"] + "/"
-figures = FOLDERS["sim_folder"] + "/"
+if __name__ == "__main__":
+    answers = dict(
+        location="Guttannen 2021",
+    )
 
-names = "full"
-variance = []
-mean = []
-evaluations = []
+    # Get settings for given location and trigger
+    SITE, FOLDER = config(answers["location"])
+    input = FOLDER["sim"] + "/"
+    output = FOLDER["sim"] + "/"
 
-data = un.Data()
-filename1 = input + names + ".h5"
-data.load(filename1)
-# print(data)
+    names = "full"
+    variance = []
+    mean = []
+    evaluations = []
 
-eval = data["max_volume"].evaluations
-print(
-    f"95 percent confidence interval caused by {names} is {round(2 * st.stdev(eval),2)}"
-)
+    data = un.Data()
+    filename1 = input + names + ".h5"
+    data.load(filename1)
+    print(data)
 
-print(data["max_volume"].mean)
+    eval = data["max_volume"].evaluations
+    print(
+        f"95 percent confidence interval caused by {names} is {round(2 * st.stdev(eval),2)}"
+    )
 
-df = pd.read_hdf(FOLDERS["output_folder"] + "model_output.h5", "df")
+    print(data["max_volume"].mean)
 
-df = df.set_index("When").resample("1H").mean().reset_index()
+    icestupa = Icestupa("guttannen21")
+    icestupa.read_output()
+    icestupa.self_attributes()
+    df = icestupa.df
 
-# start=datetime(2019, 1, 30, 20)
-# end= start + timedelta(hours = 65*24)
-days = pd.date_range(
-    start=datetime(2019, 1, 30, 20),
-    end=datetime(2019, 1, 30, 20) + timedelta(hours=75 * 24 - 1),
-    freq="1H",
-)
+    days = pd.date_range(
+        start=SITE["start_date"],
+        end=SITE["start_date"]+ timedelta(hours=180 * 24 - 1),
+        freq="1H",
+    )
 
-data = data["UQ_Icestupa"]
-# print(len(data.percentile_5))
+    data = data["guttannen21"]
+    # print(len(data.percentile_5))
 
-data["When"] = days
+    data["When"] = days
 
-# data['When'] = data['When'] +  pd.to_timedelta(data.time, unit='D')
+    # data['When'] = data['When'] +  pd.to_timedelta(data.time, unit='D')
 
-# data["IceV"] = df["IceV"]
+    # data["IceV"] = df["IceV"]
 
-# data = data.set_index("When").resample("5T").mean()
+    blue = "#0a4a97"
+    red = "#e23028"
+    purple = "#9673b9"
+    green = "#28a745"
+    orange = "#ffc107"
+    pink = "#ce507a"
+    skyblue = "#9bc4f0"
+    grey = '#ced4da'
 
-CB91_Blue = "#2CBDFE"
-CB91_Green = "#47DBCD"
-CB91_Pink = "#F3A0F2"
-CB91_Purple = "#9D2EC5"
-CB91_Violet = "#661D98"
-CB91_Amber = "#F5B14C"
+    CB91_Blue = "#2CBDFE"
+    CB91_Green = "#47DBCD"
+    CB91_Pink = "#F3A0F2"
+    CB91_Purple = "#9D2EC5"
+    CB91_Violet = "#661D98"
+    CB91_Amber = "#F5B14C"
 
-fig, ax = plt.subplots()
+    df_c = pd.read_hdf(FOLDER["input"] + "model_input_" + icestupa.trigger + ".h5", "df_c")
+    df_c = df_c[["When", "DroneV", "DroneVError"]]
+    if icestupa.name in ["guttannen21", "guttannen20"]:
+        df_c = df_c[1:]
+    tol = pd.Timedelta('15T')
+    df_c = df_c.set_index("When")
+    icestupa.df= icestupa.df.set_index("When")
+    df_c = pd.merge_asof(left=icestupa.df,right=df_c,right_index=True,left_index=True,direction='nearest',tolerance=tol)
+    df_c = df_c[["DroneV","DroneVError", "iceV"]]
+    icestupa.df= icestupa.df.reset_index()
 
-
-# ax.plot(data.When, data.mean, color = 'black', label="Mean", linewidth=0.5)
-# ax.plot(data.time, data.percentile_5, color = 'blue')
-# ax.set_xlabel("Time [Days]")
-ax.set_ylabel("Ice Volume[$m^3$]")
-
-
-ax.fill_between(
-    data["When"],
-    data.percentile_5,
-    data.percentile_95,
-    color="xkcd:gray",
-    alpha=0.2,
-    label="90% prediction interval",
-)
+    fig, ax = plt.subplots()
+    x = icestupa.df.When
+    y2 = df_c.DroneV
 
 
-x = df.When
-y1 = df.iceV
+    ax.set_ylabel("Ice Volume[$m^3$]")
 
-# ax1.set_xlabel("Days")
 
-# Include Validation line segment 1
-ax.plot(
-    [datetime(2019, 2, 14, 16), datetime(2019, 2, 14, 16)],
-    [0.67115, 1.042],
-    color="green",
-    lw=1,
-    label="Validation Measurement",
-)
-ax.scatter(datetime(2019, 2, 14, 16), 0.856575, color="green", marker="o")
+    ax.fill_between(
+        data["When"],
+        data.percentile_5,
+        data.percentile_95,
+        color="skyblue",
+        alpha=0.3,
+        label="90% prediction interval",
+    )
+    ax.fill_between(x, y1=icestupa.V_dome, y2=0, color=grey, label = "Dome Volume")
+    ax.scatter(x, y2, color=CB91_Green, label="Measured Volume")
 
-# Include Validation line segment 2
-ax.plot(
-    [datetime(2019, 3, 10, 18), datetime(2019, 3, 10, 18)],
-    [0.037, 0.222],
-    color="green",
-    lw=1,
-)
-ax.scatter(datetime(2019, 3, 10, 18), 0.1295, color="green", marker="o")
 
-ax.plot(x, y1, "b-", label="Modelled Ice Volume", linewidth=1, color=CB91_Blue)
-ax.set_ylim(bottom=0)
-plt.legend()
-# plt.legend(["Mean", "90% prediction interval", "Std", "Validation Measurement"], loc="best")
+    x = df.When
+    y1 = df.iceV
 
-ax.xaxis.set_major_locator(mdates.WeekdayLocator())
-ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-ax.xaxis.set_minor_locator(mdates.DayLocator())
-fig.autofmt_xdate()
-plt.savefig(figures + "uncertainty.jpg", bbox_inches="tight", dpi=300)
-plt.savefig(FOLDERS["output_folder"] + "jpg/Figure_8.jpg", dpi=300, bbox_inches="tight")
-# plt.show()
+    # ax1.set_xlabel("Days")
+
+    # # Include Validation line segment 1
+    # ax.plot(
+    #     [datetime(2019, 2, 14, 16), datetime(2019, 2, 14, 16)],
+    #     [0.67115, 1.042],
+    #     color="green",
+    #     lw=1,
+    #     label="Validation Measurement",
+    # )
+    # ax.scatter(datetime(2019, 2, 14, 16), 0.856575, color="green", marker="o")
+    # 
+    # # Include Validation line segment 2
+    # ax.plot(
+    #     [datetime(2019, 3, 10, 18), datetime(2019, 3, 10, 18)],
+    #     [0.037, 0.222],
+    #     color="green",
+    #     lw=1,
+    # )
+    # ax.scatter(datetime(2019, 3, 10, 18), 0.1295, color="green", marker="o")
+
+    ax.plot(x, y1, "b-", label="Modelled Ice Volume", linewidth=1, color=CB91_Blue)
+    ax.set_ylim(bottom=0)
+    plt.legend()
+    # plt.legend(["Mean", "90% prediction interval", "Std", "Validation Measurement"], loc="best")
+
+    ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    ax.xaxis.set_minor_locator(mdates.DayLocator())
+    fig.autofmt_xdate()
+    plt.savefig(FOLDER["sim"]+ "uncertainty.jpg", bbox_inches="tight", dpi=300)
+    # plt.savefig(FOLDERS["output_folder"] + "jpg/Figure_8.jpg", dpi=300, bbox_inches="tight")
+    # plt.show()
