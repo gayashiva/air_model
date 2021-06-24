@@ -146,10 +146,10 @@ parameters = {
         "IE": ie_dist,
         "A_I": a_i_dist,
         "A_S": a_s_dist,
-        # "A_DECAY": a_decay_dist,
         "T_PPT": T_PPT_dist,
-        "T_W": T_W_dist,
         "DX": dx_dist,
+        # "A_DECAY": a_decay_dist,
+        # "T_W": T_W_dist,
 }
 parameters = un.Parameters(parameters)
 

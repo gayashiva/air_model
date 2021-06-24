@@ -350,7 +350,6 @@ class Icestupa:
                 for column in col_list:
                     self.df.loc[i-1, column] = 0
 
-
                 self.df = self.df[self.start : i]
                 self.df = self.df.reset_index(drop=True)
 
