@@ -1,4 +1,3 @@
-
 from sklearn.model_selection import train_test_split, cross_val_score, ParameterGrid, GroupKFold
 from sklearn.metrics import mean_squared_error
 
@@ -98,7 +97,7 @@ if __name__ == "__main__":
         'A_S': bounds(var=icestupa.A_S, res = 0.01),
         'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
         'T_PPT': np.arange(0, 3 , 1).tolist(),
-        'A_DECAY': np.arange(1, 23 , 5).tolist(),
+        # 'A_DECAY': np.arange(1, 23 , 5).tolist(),
         # 'T_W': np.arange(1, 5, 1).tolist(),
         # 'r_spray': bounds(var=icestupa.r_spray, change=10, res = 0.5),
         # 'Z': bounds(var=icestupa.Z, res = 0.005),
