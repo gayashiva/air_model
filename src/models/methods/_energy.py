@@ -58,18 +58,13 @@ def get_energy(self, i):
         self.df.loc[i, "T_s"] + 273.15, 4
     )
 
-
-    # if self.df.loc[i,'fountain_runoff']> 0:  # Can only find Qf if water discharge quantity known
-    if self.df.loc[i,'Discharge']> 0:  # Can only find Qf if water discharge quantity known
+    if self.df.loc[i,'Discharge']> 0:
         self.df.loc[i, "Qf"] = (
-            # (self.df.loc[i - 1, "solid"])
-            # (self.df.loc[i, "fountain_runoff"])
             (self.df.loc[i, "Discharge"] * self.DT / 60)
             * self.C_W
             * self.T_W
             / (self.DT * self.df.loc[i, "SA"])
         )
-
 
         self.df.loc[i, "Qf"] += (
             (self.df.loc[i, "T_s"])
