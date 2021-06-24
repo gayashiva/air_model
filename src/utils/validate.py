@@ -99,7 +99,7 @@ if __name__ == "__main__":
         'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
         'T_PPT': np.arange(0, 3 , 1).tolist(),
         'A_DECAY': np.arange(1, 23 , 5).tolist(),
-        'T_W': np.arange(1, 5, 1).tolist(),
+        # 'T_W': np.arange(1, 5, 1).tolist(),
         # 'r_spray': bounds(var=icestupa.r_spray, change=10, res = 0.5),
         # 'Z': bounds(var=icestupa.Z, res = 0.005),
     }]
