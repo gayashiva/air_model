@@ -441,7 +441,7 @@ def era5(location="schwarzsee19"):
 
     # logger.info(df_ERA5.head())
     # logger.info(df_ERA5.tail())
-    return df_ERA5, df_in3
+    return df_ERA5
 
 
 def e_sat(T, surface="water", a1=611.21, a3=17.502, a4=32.19):
@@ -571,7 +571,6 @@ if __name__ == "__main__":
         df = field(location=SITE["name"])
 
     if SITE["name"] in ["guttannen21", "guttannen20"]:
-        dfx = field(location=SITE["name"])
         df = meteoswiss(SITE["name"])
 
     # TODO add to paper
@@ -595,7 +594,7 @@ if __name__ == "__main__":
         df= df.reset_index()
 
 
-    df_ERA5, df_in3 = era5(SITE["name"])
+    df_ERA5 = era5(SITE["name"])
 
     df = df.set_index("When")
 
@@ -605,7 +604,7 @@ if __name__ == "__main__":
 
     # Fit ERA5 to field data
     if SITE["name"] in ["guttannen21", "guttannen20"]:
-        fit_list = ["T_a", "RH", "v_a", "Prec"]
+        fit_list = ["T_a", "RH", "v_a","Prec"]
 
     if SITE["name"] in ["schwarzsee19"]:
         fit_list = ["T_a", "RH", "v_a", "p_a"]
@@ -645,7 +644,6 @@ if __name__ == "__main__":
             df["missing_type"] = df["missing_type"] + col
     logger.info(df.missing_type.describe())
     logger.info(df.missing_type.unique())
-
 
     # if SITE["name"] in ["schwarzsee19"]:
     #     for col in ["T_a", "RH", "v_a", "p_a"]:
