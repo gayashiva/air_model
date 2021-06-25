@@ -89,9 +89,9 @@ def get_era5(location="schwarzsee19"):
 
     SITE, FOLDER= config(location)
 
-    mask = (df_in3["When"] >= SITE["start_date"]) & (df_in3["When"] <= SITE["end_date"])
-    df_in3 = df_in3.loc[mask]
-    df_in3 = df_in3.reset_index(drop="True")
+    # mask = (df_in3["When"] >= SITE["start_date"]) & (df_in3["When"] <= SITE["end_date"])
+    # df_in3 = df_in3.loc[mask]
+    # df_in3 = df_in3.reset_index(drop="True")
 
     time_steps = 60 * 60
     df_in3["ssrd"] /= time_steps
@@ -138,48 +138,49 @@ def get_era5(location="schwarzsee19"):
 
     df_in3 = df_in3.round(3)
 
-    upsampled = df_in3.resample("15T")
-    interpolated = upsampled.interpolate(method="linear")
-    interpolated = interpolated.reset_index()
+    # upsampled = df_in3.resample("15T")
+    # interpolated = upsampled.interpolate(method="linear")
+    # interpolated = interpolated.reset_index()
 
-    df_in3 = interpolated[
-        [
-            "When",
-            "T_a",
-            "RH",
-            "v_a",
-            "SW_direct",
-            "SW_diffuse",
-            "LW_in",
-            "p_a",
-            "Prec",
-        ]
-    ]
+#     df_in3 = interpolated[
+#         [
+#             "When",
+#             "T_a",
+#             "RH",
+#             "v_a",
+#             "SW_direct",
+#             "SW_diffuse",
+#             "LW_in",
+#             "p_a",
+#             "Prec",
+#         ]
+#     ]
+# 
+#     df_in3 = df_in3.reset_index()
+    # mask = (df_in3["When"] >= SITE["start_date"]) & (df_in3["When"] <= SITE["end_date"])
+    # df_in3 = df_in3.loc[mask]
+
 
     df_in3 = df_in3.reset_index()
-    mask = (df_in3["When"] >= SITE["start_date"]) & (df_in3["When"] <= SITE["end_date"])
-    df_in3 = df_in3.loc[mask]
-    df_in3 = df_in3.reset_index()
-
     df_in3.to_csv(FOLDER["input"] + SITE["name"] + "_input_ERA5.csv")
 
-    df_ERA5 = interpolated[
-        [
-            "When",
-            "T_a",
-            "v_a",
-            "RH",
-            "SW_direct",
-            "SW_diffuse",
-            "LW_in",
-            "p_a",
-            "Prec",
-        ]
-    ]
+    # df_ERA5 = interpolated[
+    #     [
+    #         "When",
+    #         "T_a",
+    #         "v_a",
+    #         "RH",
+    #         "SW_direct",
+    #         "SW_diffuse",
+    #         "LW_in",
+    #         "p_a",
+    #         "Prec",
+    #     ]
+    # ]
 
     # logger.info(df_ERA5.head())
     # logger.info(df_ERA5.tail())
-    return df_ERA5
+    return df_in3
 
 
 def e_sat(T, surface="water", a1=611.21, a3=17.502, a4=32.19):

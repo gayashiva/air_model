@@ -49,10 +49,11 @@ class Icestupa:
     A_DECAY = 10  # Albedo decay rate decay_t_d
     Z = 0.0017  # Ice Momentum and Scalar roughness length
     T_PPT = 1  # Temperature condition for liquid precipitation
+    H_PPT = 1 # mm Precipitaion height that changes albedo
     # DX_DT = 5.5556e-06 #m/s Surface layer thickness growth rate
 
     """Fountain constants"""
-    T_W = 1  # FOUNTAIN Water temperature
+    T_W = 3  # FOUNTAIN Water temperature
 
     """Simulation constants"""
     trigger = "Manual"
@@ -75,10 +76,11 @@ class Icestupa:
         # Initialize input dataset
         input_file = self.input + self.name + "_input_model.csv"
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
-        mask = self.df["When"] >= self.start_date
-        mask &= self.df["When"] <= self.end_date
-        self.df = self.df.loc[mask]
-        self.df = self.df.reset_index(drop=True)
+
+        # mask = self.df["When"] >= self.start_date
+        # mask &= self.df["When"] <= self.end_date
+        # self.df = self.df.loc[mask]
+        # self.df = self.df.reset_index(drop=True)
 
         self.df = self.df[
             self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
@@ -94,7 +96,7 @@ class Icestupa:
     from src.models.methods._freq import change_freq
     from src.models.methods._self_attributes import self_attributes
     from src.models.methods._albedo import get_albedo
-    from src.models.methods._discharge import get_discharge
+    # from src.models.methods._discharge import get_discharge
     from src.models.methods._area import get_area
     from src.models.methods._temp import get_temp, test_get_temp
     from src.models.methods._energy import get_energy, test_get_energy
@@ -151,7 +153,7 @@ class Icestupa:
                     * math.pow(row.T_a + 273.15, 4)
                 )
 
-        self.get_discharge()
+        # self.get_discharge()
         self.self_attributes(save=True)
 
         solar_df = get_solar(
@@ -162,7 +164,7 @@ class Icestupa:
             DT=self.DT,
         )
         self.df = pd.merge(solar_df, self.df, on="When")
-        self.df.Prec = self.df.Prec * self.DT  # mm
+        # self.df.Prec = self.df.Prec * self.DT  # mm
 
         """Albedo"""
 
@@ -176,7 +178,7 @@ class Icestupa:
 
             for row in self.df.itertuples():
                 i=row.Index
-                s, f = self.get_albedo(i, s, f, site=self.name)
+                s, f = self.get_albedo(i, s, f)
 
         self.df = self.df.round(3)
 

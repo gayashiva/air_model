@@ -24,6 +24,128 @@ from src.utils.settings import config
 
 def get_field(location="schwarzsee19"):
     SITE, FOLDER= config(location)
+    if location == "gangles21":
+        col_list = [
+            "TIMESTAMP",
+            "AirTC_Avg",
+            "RH",
+            "WS",
+        ]
+        cols = ["T_a", "RH", "v_a"]
+
+        df_in = pd.read_csv(
+            # "data/" + site + "/Gangles_Table15Min.dat",
+            FOLDER["raw"] + "/Gangles_Table15Min.dat",
+            sep=",",
+            skiprows=[0, 2, 3, 4],
+            parse_dates=["TIMESTAMP"],
+        )
+        df_in = df_in[col_list]
+
+        df_in.rename(
+            columns={
+                "TIMESTAMP": "When",
+                "AirTC_Avg": "T_a",
+                "RH_probe_Avg": "RH",
+                "WS": "v_a",
+            },
+            inplace=True,
+        )
+
+        df_in1 = pd.read_csv(
+            # "data/" + site + "/Gangles_Table60Min.dat",
+            FOLDER["raw"] + "/Gangles_Table60Min.dat",
+            sep=",",
+            skiprows=[0, 2, 3],
+            parse_dates=["TIMESTAMP"],
+        )
+        df_in1.rename(
+            columns={
+                "TIMESTAMP": "When",
+                "BP_mbar": "p_a",  # mbar same as hPa
+            },
+            inplace=True,
+        )
+
+        for col in df_in1:
+            if col != "When":
+                df_in1[col] = pd.to_numeric(df_in1[col], errors="coerce")
+
+        df_in = df_in.set_index("When")
+        df_in1 = df_in1.set_index("When")
+
+        df_in1 = df_in1.reindex(
+            pd.date_range(df_in1.index[0], df_in1.index[-1], freq="15Min"),
+            fill_value=np.NaN,
+        )
+
+        df_in = df_in.replace("NAN", np.NaN)
+        df_in1 = df_in1.replace("NAN", np.NaN)
+        df_in1 = df_in1.resample("15Min").interpolate("linear")
+        df_in.loc[:, "p_a"] = df_in1["p_a"]
+
+        df_in = df_in.replace("NAN", np.NaN)
+        if df_in.isnull().values.any():
+            print("Warning: Null values present")
+            print(df_in[cols].isnull().sum())
+        df_in = df_in.round(3)
+        df_in = df_in.reset_index()
+        df_in.rename(
+            columns={
+                "index": "When",
+            },
+            inplace=True,
+        )
+
+        start_date = datetime(2020, 12, 14)
+        df_in = df_in.set_index("When")
+        df_in = df_in[start_date:]
+
+        df1 = pd.read_csv(
+            FOLDER["raw"] + "/HIAL_input_field.csv",
+            sep=",",
+            parse_dates=["When"],
+        )
+
+        df = df_in
+        df1 = df1.set_index("When")
+        cols = ["SW_global"]
+        for col in cols:
+            df.loc[:, col] = df1[col]
+
+        df = df.reset_index()
+        df = df[df.columns.drop(list(df.filter(regex="Unnamed")))]
+        df = df.dropna()
+        # df.to_csv("outputs/" + location + "_input_field.csv")
+
+        mask = df["SW_global"] < 0
+        mask_index = df[mask].index
+        df.loc[mask_index, 'SW_global'] = 0
+        diffuse_fraction = 0
+        df["SW_diffuse"] = diffuse_fraction * df.SW_global
+        df["SW_direct"] = (1-diffuse_fraction)* df.SW_global
+        df = (
+            df.set_index("When")
+            .resample("H")
+            .mean()
+            .reset_index()
+        )
+
+        df["Prec"] = 0
+        df["missing_type"] ='-'
+        df["cld"] = 0
+
+
+        df.to_csv(
+            # "/home/suryab/work/air_model/data/"
+            # + location
+            # + "/interim/"
+            FOLDER["input"]
+            + location
+            + "_input_model.csv"
+        )
+        return df
+
     if location == "guttannen20":
         df_in = pd.read_csv(
             FOLDER["raw"] + SITE["name"] + "_field.txt",
@@ -61,14 +183,14 @@ def get_field(location="schwarzsee19"):
         df_in["When"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
         df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
         df_in = df_in.drop(["Pluviometer", "Date", "Time"], axis=1)
-        df_in = df_in.set_index("When").resample("15T").mean().reset_index()
+        df_in = df_in.set_index("When").resample("H").mean().reset_index()
 
         mask = (df_in["When"] >= SITE["start_date"]) & (
             df_in["When"] <= SITE["end_date"]
         )
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
-        days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="15T")
+        days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="H")
         days = pd.DataFrame({"When": days})
 
         df = pd.merge(
@@ -138,14 +260,14 @@ def get_field(location="schwarzsee19"):
         df_in = df_in.drop(["Pluviometer", "Date", "Time"], axis=1)
         logger.debug(df_in.head())
         logger.debug(df_in.tail())
-        df_in = df_in.set_index("When").resample("15T").mean().reset_index()
+        df_in = df_in.set_index("When").resample("H").mean().reset_index()
 
         mask = (df_in["When"] >= SITE["start_date"]) & (
             df_in["When"] <= SITE["end_date"]
         )
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
-        days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="15T")
+        days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="H")
         days = pd.DataFrame({"When": days})
 
         df = pd.merge(
@@ -208,7 +330,7 @@ def get_field(location="schwarzsee19"):
                     minutes=5
                 )
 
-        df_in = df_in.set_index("When").resample("15T").last().reset_index()
+        df_in = df_in.set_index("When").resample("H").last().reset_index()
 
         mask = (df_in["When"] >= SITE["start_date"]) & (
             df_in["When"] <= SITE["end_date"]
@@ -216,7 +338,7 @@ def get_field(location="schwarzsee19"):
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
 
-        days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="15T")
+        days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="H")
         days = pd.DataFrame({"When": days})
 
         df = pd.merge(
@@ -276,7 +398,7 @@ def get_field(location="schwarzsee19"):
 
         df.Discharge = df.Fountain * df.Discharge
         df.to_csv(FOLDER["input"] + SITE["name"] + "_input_field.csv")
-    df = df.set_index("When").resample("15T").mean().reset_index()
+    df = df.set_index("When").resample("H").mean().reset_index()
     return df
 
 

@@ -397,9 +397,9 @@ if __name__ == "__main__":
                     st.header("%s" % (meta["name"] + " " + meta["units"]))
                     row4_1, row4_2 = st.beta_columns((2, 5))
                     with row4_1:
-                        st.write(df[v].describe())
+                        st.write(icestupa.df[v].describe())
                     with row4_2:
-                        st.line_chart(df[v], use_container_width=True)
+                        st.line_chart(icestupa.df[v], use_container_width=True)
 
         if "Output" in display:
             st.write("## Output variables")
@@ -421,9 +421,9 @@ if __name__ == "__main__":
                     st.header("%s" % (meta["name"] + " " + meta["units"]))
                     row5_1, row5_2 = st.beta_columns((2, 5))
                     with row5_1:
-                        st.write(df[v].describe())
+                        st.write(icestupa.df[v].describe())
                     with row5_2:
-                        st.line_chart(df[v], use_container_width=True)
+                        st.line_chart(icestupa.df[v], use_container_width=True)
 
         if "Derived" in display:
             st.write("## Derived variables")
@@ -445,6 +445,6 @@ if __name__ == "__main__":
                     st.header("%s" % (meta["name"] + " " + meta["units"]))
                     row6_1, row6_2 = st.beta_columns((2, 5))
                     with row6_1:
-                        st.write(df[v].describe())
+                        st.write(icestupa.df[v].describe())
                     with row6_2:
-                        st.line_chart(df[v], use_container_width=True)
+                        st.line_chart(icestupa.df[v], use_container_width=True)

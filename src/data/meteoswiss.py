@@ -44,17 +44,22 @@ def get_meteoswiss(location="schwarzsee19"):
             df = df.drop(columns=col)
     df["When"] = pd.to_datetime(df["When"], format="%Y%m%d%H%M")
 
-    df["Prec"] = df["Prec"] / (10 * 60)  # ppt rate mm/s
-    df = (
+    # df["Prec"] = df["Prec"] / (10 * 60)  # ppt rate mm/s
+    df_out = (
         df.set_index("When")
-        .resample("15T")
-        # .interpolate(method="linear")
+        .resample("H")
         .mean()
         .reset_index()
     )
-    mask = (df["When"] >= SITE["start_date"]) & (df["When"] <= SITE["end_date"])
-    df = df.loc[mask]
-    return df
+    df_out["Prec"] = (
+        df.set_index("When")
+        .resample("H")
+        .sum()
+        .reset_index()["Prec"]
+    )
+    # mask = (df["When"] >= SITE["start_date"]) & (df["When"] <= SITE["end_date"])
+    # df = df.loc[mask]
+    return df_out
 
 def meteoswiss_parameter(parameter):
     d = {

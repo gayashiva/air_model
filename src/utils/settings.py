@@ -21,50 +21,6 @@ sys.path.append(dirname)
 def config(location="Schwarzsee 2019", trigger="Manual"):
 
     logger.info("Location is %s and trigger is %s" % (location, trigger))
-    if location == "Ravat 2020" or location == "ravat20":
-
-        SITE = dict(
-            name="ravat20",
-            start_date=datetime(2020, 1, 1),
-            end_date=datetime(2020, 8, 1),
-            fountain_off_date=datetime(2020, 4, 1),
-            utc_offset=6,
-            latitude=39.87112,
-            longitude=70.170666,
-            h_aws=2, 
-
-            discharge=10,  # FOUNTAIN mean discharge
-            r_spray=7,  # FOUNTAIN mean discharge
-        )
-
-        data_h = [
-            {"When": SITE["start_date"], "h_f": 5}, # doesnt use this?
-        ]
-
-    if location == "Diavolezza 2021" or location == "diavolezza21":
-
-        SITE = dict(
-            name="diavolezza21",
-            # start_date=datetime(2021, 1, 19,16),
-            start_date=datetime(2021, 1, 26,9),
-            # start_date=datetime(2021, 3, 1,16),
-            # end_date=datetime(2021, 3, 18),
-            # end_date=datetime(2021, 5, 18),
-            end_date=datetime(2021, 5, 29),
-            fountain_off_date=datetime(2021, 5, 1),
-            utc_offset=1,
-            latitude=46.44109,
-            longitude=9.98425,
-            h_aws=2.3, 
-
-            # dome_rad=2,
-            # perimeter=65.5, # on May 19
-        )
-
-        data_h = [
-            {"When": SITE["start_date"], "h_f": 5}, # doesnt use this?
-        ]
-
 
     if location == "Guttannen 2021" or location == "guttannen21":
 
@@ -121,6 +77,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             name="schwarzsee19",
             start_date=datetime(2019, 1, 30, 17),
             end_date=datetime(2019, 3, 17),
+            # end_date=datetime(2019, 3, 20),
             utc_offset=1,
             longitude=7.297543,
             latitude=46.693723,
@@ -148,6 +105,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             longitude=77.606949,
             latitude=34.216638,
             h_aws=3,
+            T_W = 1,
             # dome_rad=2,
 
             fountain_off_date=datetime(2021, 3, 10, 18),
@@ -160,6 +118,51 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             {"When": SITE["start_date"], "h_f": 5},
             # {"When": datetime(2021, 1, 22, 16), "h_f": 9},
         ]
+    if location == "Diavolezza 2021" or location == "diavolezza21":
+
+        SITE = dict(
+            name="diavolezza21",
+            # start_date=datetime(2021, 1, 19,16),
+            start_date=datetime(2021, 1, 26,9),
+            # start_date=datetime(2021, 3, 1,16),
+            # end_date=datetime(2021, 3, 18),
+            # end_date=datetime(2021, 5, 18),
+            end_date=datetime(2021, 5, 29),
+            fountain_off_date=datetime(2021, 5, 1),
+            utc_offset=1,
+            latitude=46.44109,
+            longitude=9.98425,
+            h_aws=2.3, 
+
+            # dome_rad=2,
+            # perimeter=65.5, # on May 19
+        )
+
+        data_h = [
+            {"When": SITE["start_date"], "h_f": 5}, # doesnt use this?
+        ]
+
+    if location == "Ravat 2020" or location == "ravat20":
+
+        SITE = dict(
+            name="ravat20",
+            start_date=datetime(2020, 1, 1),
+            end_date=datetime(2020, 8, 1),
+            fountain_off_date=datetime(2020, 4, 1),
+            utc_offset=6,
+            latitude=39.87112,
+            longitude=70.170666,
+            h_aws=2, 
+
+            discharge=10,  # FOUNTAIN mean discharge
+            r_spray=7,  # FOUNTAIN mean discharge
+        )
+
+        data_h = [
+            {"When": SITE["start_date"], "h_f": 5}, # doesnt use this?
+        ]
+
+
 
     # Define directory structure
     FOLDER = dict(
