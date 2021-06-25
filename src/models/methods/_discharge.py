@@ -15,27 +15,27 @@ logger = logging.getLogger(__name__)
 
 def get_discharge(self):  # Provides discharge info based on trigger setting
 
-    if "Discharge" not in self.df.columns:
+    # if "Discharge" not in self.df.columns:
 
-        if self.trigger == "Temperature":
-            self.df["Discharge"] = 0
-            logger.debug("Initialised discharge as zero")
-            # self.df["Prec"] = 0
-            mask = (self.df["T_a"] < self.crit_temp) & (self.df["SW_direct"] < 100)
-            mask_index = self.df[mask].index
-            self.df.loc[mask_index, "Discharge"] = 1 * self.discharge
+#         if self.trigger == "Temperature":
+#             self.df["Discharge"] = 0
+#             logger.debug("Initialised discharge as zero")
+#             # self.df["Prec"] = 0
+#             mask = (self.df["T_a"] < self.crit_temp) & (self.df["SW_direct"] < 100)
+#             mask_index = self.df[mask].index
+#             self.df.loc[mask_index, "Discharge"] = 1 * self.discharge
+# 
+#             logger.debug(
+#                 f"Hours of spray : %.2f"
+#                 % (self.df.Discharge.astype(bool).sum(axis=0) * self.DT / 3600)
+#             )
+# 
+#         if self.trigger == "None":
+#             self.df["Discharge"] = 0
+#             logger.debug("Initialised discharge as zero")
+#             self.df["Discharge"] = self.discharge
 
-            logger.debug(
-                f"Hours of spray : %.2f"
-                % (self.df.Discharge.astype(bool).sum(axis=0) * self.DT / 3600)
-            )
-
-        if self.trigger == "None":
-            self.df["Discharge"] = 0
-            logger.debug("Initialised discharge as zero")
-            self.df["Discharge"] = self.discharge
-
-        if self.trigger == "Manual":
+        # if self.trigger == "Manual":
 
             if self.name in ["gangles21"]:
                 self.df["Discharge"] = 0

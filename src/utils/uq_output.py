@@ -32,65 +32,73 @@ def draw_plot(data, edge_color, fill_color, labels):
 
 
 if __name__ == "__main__":
-    answers = dict(
-        location="Guttannen 2021",
-    )
+    # location="guttannen21"
+    location="schwarzsee19"
 
     # Get settings for given location and trigger
-    SITE, FOLDER = config("guttannen21")
-    icestupa = Icestupa("guttannen21")
+    SITE, FOLDER = config(location)
+    icestupa = Icestupa(location)
     icestupa.read_output()
     icestupa.self_attributes()
 
     input = FOLDER["sim"] + "/"
     output = FOLDER["sim"] + "/"
 
-    names = [
-        # "full",
-        "T_PPT",
-        "IE",
-        "A_I",
-        "A_S",
-        "A_DECAY",
-        "T_W",
-        "DX",
-    ]
-    variance = []
-    mean = []
-    evaluations = []
+    if location == "guttannen21":
+        total_days = 170
+    if location == "schwarzsee19":
+        total_days = 50
+    if location == "guttannen20":
+        total_days = 100
+    if location == "gangles21":
+        total_days = 150
 
-    for name in names:
-        data = un.Data()
-        filename1 = input + name + ".h5"
-        data.load(filename1)
-        variance.append(data["max_volume"].variance)
-        mean.append(data["max_volume"].mean)
-        evaluations.append(data["max_volume"].evaluations)
-
-        eval = data["max_volume"].evaluations
-        print(data)
-
-
-        print(
-            f"95 percent confidence interval caused by {name} is {round(st.mean(eval),2)} and {round(2 * st.stdev(eval),2)}"
-        )
-
-    names = [
-        "$T_{ppt}$",
-        "$\\epsilon_{ice}$",
-        r"$\alpha_{ice}$",
-        r"$\alpha_{snow}$",
-        "$\\tau$",
-        "$T_{water}$",
-        "$\\Delta x$",
-    ]
-
-    fig, ax = plt.subplots()
-    draw_plot(evaluations, "k", "xkcd:grey", names)
-    ax.set_xlabel("Parameter")
-    ax.set_ylabel("Sensitivity of Maximum Ice Volume [$m^3$]")
-    ax.grid(axis="y")
-    plt.savefig(output + "sensitivities.jpg", bbox_inches="tight", dpi=300)
+#     names = [
+#         # "full",
+#         "T_PPT",
+#         "IE",
+#         "A_I",
+#         "A_S",
+#         "A_DECAY",
+#         "T_W",
+#         "DX",
+#     ]
+#     variance = []
+#     mean = []
+#     evaluations = []
+# 
+#     for name in names:
+#         data = un.Data()
+#         filename1 = input + name + ".h5"
+#         data.load(filename1)
+#         variance.append(data["max_volume"].variance)
+#         mean.append(data["max_volume"].mean)
+#         evaluations.append(data["max_volume"].evaluations)
+# 
+#         eval = data["max_volume"].evaluations
+#         print(data)
+# 
+# 
+#         print(
+#             f"95 percent confidence interval caused by {name} is {round(st.mean(eval),2)} and {round(2 * st.stdev(eval),2)}"
+#         )
+# 
+#     names = [
+#         "$T_{ppt}$",
+#         "$\\epsilon_{ice}$",
+#         r"$\alpha_{ice}$",
+#         r"$\alpha_{snow}$",
+#         "$\\tau$",
+#         "$T_{water}$",
+#         "$\\Delta x$",
+#     ]
+# 
+#     fig, ax = plt.subplots()
+#     draw_plot(evaluations, "k", "xkcd:grey", names)
+#     ax.set_xlabel("Parameter")
+#     ax.set_ylabel("Sensitivity of Maximum Ice Volume [$m^3$]")
+#     ax.grid(axis="y")
+#     plt.savefig(output + "sensitivities.jpg", bbox_inches="tight", dpi=300)
 
     input = FOLDER["sim"] + "/"
     output = FOLDER["sim"] + "/"
@@ -105,11 +113,11 @@ if __name__ == "__main__":
     data.load(filename1)
     days = pd.date_range(
         start=SITE["start_date"],
-        end=SITE["start_date"]+ timedelta(hours=180 * 24 - 1),
+        end=SITE["start_date"]+ timedelta(hours=total_days* 24 - 1),
         freq="1H",
     )
 
-    data = data["guttannen21"]
+    data = data[location]
 
     data["When"] = days
 

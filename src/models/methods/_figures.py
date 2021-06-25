@@ -409,24 +409,38 @@ def summary_figures(self):
 
     y1 = self.df.a
     y2 = self.df.f_cone
-    ax1.plot(x, y1, color="#16697a")
+    ax1.plot(x, y1)
     ax1.set_ylabel("Albedo")
     ax1t = ax1.twinx()
-    ax1t.plot(x, y2, color="#ff6d00", linewidth=0.5)
-    ax1t.set_ylabel("$f_{cone}$", color="#ff6d00")
+    ax1t.plot(x, y2, color=red, linewidth=0.5)
+    ax1t.set_ylabel("$f_{cone}$", color=red)
     for tl in ax1t.get_yticklabels():
-        tl.set_color("#ff6d00")
+        tl.set_color(red)
     ax1.set_ylim([0, 1])
     ax1t.set_ylim([0, 1])
 
     y1 = self.df.T_s
-    y2 = self.df.T_bulk
+
     ax2.plot(
-        x, y1, "k-", linestyle="-", color="#00b4d8", linewidth=0.5, label="Surface"
+        x,
+        y1,
+        "b-",
+        label="Modelled",
+        linewidth=1,
+        color=CB91_Amber,
+        zorder=0,
     )
-    ax2.set_ylabel("Temperature [$\\degree C$]")
-    ax2.plot(x, y2, linestyle="-", color="#023e8a", linewidth=1, label="Bulk")
-    # ax2.set_ylim([-20, 1])
+    if self.name in ["guttannen21", "guttannen20"]:
+        y2 = df_cam.cam_temp
+        ax2.scatter(
+            x,
+            y2,
+            color=CB91_Violet,
+            s=1,
+            label="Measured",
+            zorder=1,
+        )
+    ax2.set_ylabel("Surface Temperature [$\\degree C$]")
     ax2.legend()
 
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -476,7 +490,6 @@ def summary_figures(self):
         CB91_Amber = "#F5B14C"
         x = self.df.When
         y1 = self.df.T_s
-        # y1 = self.df.T_bulk
         y2 = df_cam.cam_temp
         ax.plot(
             x,

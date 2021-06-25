@@ -12,11 +12,11 @@ logger = logging.getLogger(__name__)
 
 # @cache_it(limit=1000, expire=None)
 def get_albedo(
-    self, i, s=0, f=0, site="schwarzsee"
+    self, i, s=0, f=0
 ):  # Albedo Scheme described in Section 3.2.1
 
     # Precipitation event
-    if self.df.T_a[i] < self.T_PPT and self.df.Prec[i] > 0:  # Snow event
+    if self.df.T_a[i] < self.T_PPT and self.df.Prec[i] > self.H_PPT:  # Snow event
         f = 0
         s = 0
     if f == 0:  # last snowed

@@ -50,6 +50,15 @@ class UQ_Icestupa(un.Model, Icestupa):
         self.self_attributes()
         # result = []
 
+        if location == "guttannen21":
+            self.total_days = 170
+        if location == "schwarzsee19":
+            self.total_days = 50
+        if location == "guttannen20":
+            self.total_days = 100
+        if location == "gangles21":
+            self.total_days = 150
+
     def run(self, **parameters):
 
         self.set_parameters(**parameters)
@@ -68,8 +77,11 @@ class UQ_Icestupa(un.Model, Icestupa):
 
         self.melt_freeze()
 
-        for i in range(len(self.df), 180 * 24):
-            self.df.loc[i, "iceV"] = self.df.loc[i-1, "iceV"]
+        if len(self.df) >= self.total_days * 24:
+            self.df = self.df[: self.total_days * 24]
+        else:
+            for i in range(len(self.df), self.total_days * 24):
+                self.df.loc[i, "iceV"] = self.df.loc[i-1, "iceV"]
 
         return self.df.index.values, self.df["iceV"].values, parameters
 
@@ -82,13 +94,12 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    answers = dict(
-        location="Guttannen 2021",
-    )
+    # location="Guttannen 2021"
+    location="schwarzsee19"
 
     # Get settings for given location and trigger
-    SITE, FOLDER = config(answers["location"])
-    icestupa = Icestupa("guttannen21")
+    SITE, FOLDER = config(location)
+    icestupa = Icestupa(location)
     icestupa.read_input()
     icestupa.self_attributes()
 
@@ -105,7 +116,7 @@ if __name__ == "__main__":
     ie_dist = cp.Uniform(0.949, 0.993)
     a_decay_dist = cp.Uniform(1, 22)
     T_PPT_dist = cp.Uniform(0, 2)
-    T_W_dist = cp.Uniform(0, 5)
+    T_W_dist = cp.Uniform(0, 2)
 
 #     parameters_single = {
 #         "IE": ie_dist,
@@ -145,16 +156,16 @@ if __name__ == "__main__":
 parameters = {
         "IE": ie_dist,
         "A_I": a_i_dist,
-        "A_S": a_s_dist,
-        "T_PPT": T_PPT_dist,
-        "DX": dx_dist,
+        # "A_S": a_s_dist,
+        # "T_PPT": T_PPT_dist,
+        # "DX": dx_dist,
         # "A_DECAY": a_decay_dist,
         # "T_W": T_W_dist,
 }
 parameters = un.Parameters(parameters)
 
 # Initialize the model
-model = UQ_Icestupa()
+model = UQ_Icestupa(location)
 
 # Set up the uncertainty quantification
 UQ = un.UncertaintyQuantification(

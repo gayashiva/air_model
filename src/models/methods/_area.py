@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 
 def get_area(self, i):
 
-    # if (self.df.solid[i - 1] - self.df.melted[i - 1] > 0) & (
     if (self.df.ice[i] - self.df.ice[i - 1] > 0) & (
         self.df.loc[i - 1, "r_ice"] >= self.r_spray
     ):  # Growth rate positive and radius goes beyond spray radius
