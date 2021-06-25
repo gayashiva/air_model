@@ -71,14 +71,12 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
         SITE = dict(
             name="guttannen21",
             start_date=datetime(2020, 11, 22),
-            # end_date=datetime(2021, 4, 26, 23),
             end_date=datetime(2021, 5, 18),
             fountain_off_date=datetime(2021, 2, 21),
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
-            # altitude_aws=1054,
 
             discharge=10,  # FOUNTAIN mean discharge
             # min_discharge=5,  # FOUNTAIN min discharge
@@ -99,13 +97,11 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
         SITE = dict(
             name="guttannen20",
             start_date=datetime(2020, 1, 3,16),
-            # end_date=datetime(2020, 4, 6),
             end_date=datetime(2020, 4, 10),
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
-            # altitude_aws=1054,
 
             fountain_off_date=datetime(2020, 2, 27),
             # min_discharge=5,  # FOUNTAIN min discharge
