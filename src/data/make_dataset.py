@@ -26,6 +26,7 @@ from src.utils.settings import config
 from src.data.field import get_field
 from src.data.era5 import get_era5
 from src.data.meteoswiss import get_meteoswiss
+from src.data.discharge import get_discharge
 
 def linreg(X, Y):
     mask = ~np.isnan(X) & ~np.isnan(Y)
@@ -47,12 +48,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    SITE, FOLDER = config("Guttannen 2020")
-    # SITE, FOUNTAIN, FOLDER = config("Schwarzsee 2019")
-    # SITE, FOUNTAIN, FOLDER = config("Ravat 2020")
-
-    raw_folder = os.path.join(dirname, "data/" + SITE["name"] + "/raw/")
-    input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
+    # SITE, FOLDER = config("Guttannen 2021")
+    SITE, FOLDER= config("Schwarzsee 2019")
 
     if SITE["name"] in ["schwarzsee19"]:
         df = get_field(location=SITE["name"])
@@ -108,17 +105,13 @@ if __name__ == "__main__":
     df_ERA5 = df_ERA5.set_index("When")
 
     # Fill from ERA5
-    logger.warning("Temperature NaN percent: %0.2f" %(df["T_a"].isna().sum()/df.shape[0]*100))
-    logger.warning("wind NaN percent: %0.2f" %(df["v_a"].isna().sum()/df.shape[0]*100))
-
     df['missing_type'] = ''
-    # if SITE["name"] in ["guttannen20", "guttannen21"]:
     for col in ["T_a", "RH", "v_a", "Prec", "p_a", "SW_direct", "SW_diffuse", "LW_in"]:
         try:
             mask = df[col].isna()
             percent_nan = df[col].isna().sum()/df.shape[0] * 100
             logger.info(" %s has %s percent NaN values" %(col, percent_nan))
-            if percent_nan > 1 or col in ["Prec"]:
+            if percent_nan > 1 :
                 logger.warning(" Null values filled with ERA5 in %s" %col)
                 df.loc[df[col].isna(), "missing_type"] = df.loc[df[col].isna(), "missing_type"] + col
                 df.loc[df[col].isna(), col] = df_ERA5[col]
@@ -131,17 +124,6 @@ if __name__ == "__main__":
             df["missing_type"] = df["missing_type"] + col
     logger.info(df.missing_type.describe())
     logger.info(df.missing_type.unique())
-
-    # if SITE["name"] in ["schwarzsee19"]:
-    #     for col in ["T_a", "RH", "v_a", "p_a"]:
-    #         # df.loc[df[col].isna(), "missing"] = 1
-    #         # df.loc[df[col].isna(), "missing_type"] = col
-    #         df.loc[df[col].isna(), "missing_type"] = df.loc[df[col].isna(), "missing_type"] + col
-    #         df.loc[df[col].isna(), col] = df_ERA5[col]
-
-    #     for col in ["SW_direct", "SW_diffuse", "LW_in"]:
-    #         logger.info("%s from ERA5" % col)
-    #         df[col] = df_ERA5[col]
 
     df = df.reset_index()
 
@@ -189,12 +171,12 @@ if __name__ == "__main__":
 
 
     logger.info(df_out.tail())
-    df_out.to_csv(input_folder + SITE["name"] + "_input_model.csv", index=False)
+    df_out.to_csv(FOLDER["input"] + SITE["name"] + "_input_model.csv", index=False)
 
     fig = plt.figure()
     plt.plot(df_out.p_a)
     plt.ylabel('some numbers')
-    plt.savefig(input_folder + SITE["name"] + "test.png")
+    plt.savefig(FOLDER["input"] + SITE["name"] + "test.png")
 
     if SITE["name"] in ['schwarzsee19']:
         df_ERA5["Prec"] = 0
@@ -227,9 +209,9 @@ if __name__ == "__main__":
                     logger.warning(" Null values interpolated in %s" %column)
                     concat.loc[:, column] = concat[column].interpolate()
 
-        concat.to_csv(input_folder + SITE["name"] + "_input_model.csv", index=False)
+        concat.to_csv(FOLDER["input"] + SITE["name"] + "_input_model.csv", index=False)
         concat.to_hdf(
-            input_folder + SITE["name"] + "_input_model.h5",
+            FOLDER["input"] + SITE["name"] + "_input_model.h5",
             key="df",
             mode="w",
         )

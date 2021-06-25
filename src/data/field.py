@@ -2,7 +2,7 @@
 """
 
 # External modules
-import sys
+import sys, os
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -14,17 +14,19 @@ import math
 import time
 from pathlib import Path
 from tqdm import tqdm
-import os
 import logging
 import coloredlogs
-from scipy import stats
-from sklearn.linear_model import LinearRegression
+
+# Locals
+dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(dirname)
+from src.utils.settings import config
 
 def get_field(location="schwarzsee19"):
     SITE, FOLDER= config(location)
     if location == "guttannen20":
         df_in = pd.read_csv(
-            raw_folder + SITE["name"] + "_field.txt",
+            FOLDER["raw"] + SITE["name"] + "_field.txt",
             header=None,
             encoding="latin-1",
             skiprows=7,
@@ -97,12 +99,12 @@ def get_field(location="schwarzsee19"):
         )
         logger.info(df_in.head())
         logger.info(df_in.tail())
-        df.to_csv(input_folder + SITE["name"] + "_input_field.csv")
+        df.to_csv(FOLDER["input"] + SITE["name"] + "_input_field.csv")
 
 
     if location == "guttannen21":
         df_in = pd.read_csv(
-            raw_folder + SITE["name"] + "_field.txt",
+            FOLDER["raw"] + SITE["name"] + "_field.txt",
             header=None,
             encoding="latin-1",
             skiprows=7,
@@ -171,11 +173,11 @@ def get_field(location="schwarzsee19"):
             },
             inplace=True,
         )
-        df.to_csv(input_folder + SITE["name"] + "_input_field.csv")
+        df.to_csv(FOLDER["input"] + SITE["name"] + "_input_field.csv")
 
     if location == "schwarzsee19":
         df_in = pd.read_csv(
-            raw_folder + SITE["name"][:-2] + "_aws.txt",
+            FOLDER["raw"] + SITE["name"][:-2] + "_aws.txt",
             header=None,
             encoding="latin-1",
             skiprows=7,
@@ -236,7 +238,7 @@ def get_field(location="schwarzsee19"):
 
         # Include Spray time
         df_nights = pd.read_csv(
-            raw_folder + "schwarzsee_fountain_time.txt",
+            FOLDER["raw"] + "schwarzsee_fountain_time.txt",
             sep="\\s+",
         )
 
@@ -273,7 +275,7 @@ def get_field(location="schwarzsee19"):
         )
 
         df.Discharge = df.Fountain * df.Discharge
-        df.to_csv(input_folder + SITE["name"] + "_input_field.csv")
+        df.to_csv(FOLDER["input"] + SITE["name"] + "_input_field.csv")
     df = df.set_index("When").resample("15T").mean().reset_index()
     return df
 

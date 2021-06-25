@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 def get_discharge(self):  # Provides discharge info based on trigger setting
 
-    if "Discharge" not in self.df.columns:
+    # if "Discharge" not in self.df.columns:
 
 #         if self.trigger == "Temperature":
 #             self.df["Discharge"] = 0
@@ -35,7 +35,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
 #             logger.debug("Initialised discharge as zero")
 #             self.df["Discharge"] = self.discharge
 
-        if self.trigger == "Manual":
+        # if self.trigger == "Manual":
 
             if self.name in ["gangles21"]:
                 self.df["Discharge"] = 0
