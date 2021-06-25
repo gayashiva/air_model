@@ -106,6 +106,18 @@ def test_get_energy(self, i):
         logger.error(f"When {self.df.When[i]},v_a {self.df.v_a[i]}, vp_ice {self.df.vp_ice[i]}")
         sys.exit("Ql nan")
 
+    if np.isnan(self.df.loc[i, "s_cone"]):
+        logger.error(
+            f"When {self.df.When[i]}, r_ice{self.df.r_ice[i]}, SA {self.df.SA[i]}, h_ice{self.df.h_ice[i]}"
+        )
+        sys.exit("SW nan")
+
+    if np.isnan(self.df.loc[i, "SW"]):
+        logger.error(
+            f"When {self.df.When[i]}, s_cone {self.df.f_cone[i]}, albedo {self.df.a[i]}, direct {self.df.SW_direct[i]},diffuse {self.df.SW_diffuse[i]}"
+        )
+        sys.exit("SW nan")
+
     if np.isnan(self.df.loc[i, "Qsurf"]):
         logger.error(
             f"When {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}"

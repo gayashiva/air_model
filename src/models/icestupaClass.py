@@ -293,10 +293,11 @@ class Icestupa:
             self.df[column] = 0
 
         # Initialise first model time step
-        self.start = self.df.index[self.df.Discharge > 0][0]
+        # self.start = self.df.index[self.df.Discharge > 0][1]
 
-        if self.start == 0:
-            self.start+=1
+        # if self.start == 0:
+        #     self.start+=1
+        self.start = 1
 
         self.df.loc[self.start - 1, "h_ice"] = self.h_i
         self.df.loc[self.start - 1, "r_ice"] = self.r_spray
@@ -315,7 +316,7 @@ class Icestupa:
         self.df.loc[self.start, "input"] = self.df.loc[self.start, "ice"]
 
         logger.warning(
-            "Initialise: When %s, radius %.1f, height %.1f, iceV %.1f\n"
+            "Initialise: When %s, radius %.3f, height %.3f, iceV %.3f\n"
             % (
                 self.df.loc[self.start - 1, "When"],
                 self.df.loc[self.start - 1, "r_ice"],

@@ -41,9 +41,9 @@ if __name__ == "__main__":
         level=logging.INFO,
         logger=logger,
     )
-    # location = "guttannen20"
+    location = "guttannen21"
     # location = "schwarzsee19"
-    location = "gangles21"
+    # location = "gangles21"
 
 
     SITE, FOLDER = config(location)
@@ -111,7 +111,8 @@ if __name__ == "__main__":
 
         # Fit ERA5 to field data
         if SITE["name"] in ["guttannen21", "guttannen20"]:
-            fit_list = ["T_a", "RH", "v_a","Prec"]
+            # fit_list = ["T_a", "RH", "v_a","Prec"]
+            fit_list = ["T_a", "RH", "v_a"]
 
         if SITE["name"] in ["schwarzsee19"]:
             fit_list = ["T_a", "RH", "v_a", "p_a"]

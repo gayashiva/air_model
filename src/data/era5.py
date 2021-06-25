@@ -107,7 +107,7 @@ def get_era5(location="schwarzsee19"):
     df_in3 = df_in3.apply(lambda x: e_sat(x) if x.name == "d2m_RH" else x)
     df_in3["RH"] = 100 * df_in3["d2m_RH"] / df_in3["t2m_RH"]
     df_in3["sp"] = df_in3["sp"] / 100
-    df_in3["tp"] = df_in3["tp"] * 1000 / 3600  # mm/s
+    # df_in3["tp"] = df_in3["tp"] * 1000  # mm
     df_in3["SW_diffuse"] = df_in3["ssrd"] - df_in3["fdir"]
     df_in3 = df_in3.set_index("When")
 
@@ -116,7 +116,7 @@ def get_era5(location="schwarzsee19"):
         columns={
             "t2m": "T_a",
             "sp": "p_a",
-            "tp": "Prec",
+            # "tp": "Prec",
             "fdir": "SW_direct",
             "strd": "LW_in",
         },
@@ -127,7 +127,7 @@ def get_era5(location="schwarzsee19"):
         [
             "T_a",
             "RH",
-            "Prec",
+            # "Prec",
             "v_a",
             "SW_direct",
             "SW_diffuse",

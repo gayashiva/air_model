@@ -42,7 +42,6 @@ def get_discharge(location="schwarzsee19"):
         df_f["When"] = pd.to_datetime(df_f["When"], format="%Y.%m.%d %H:%M:%S")
         df_f = (
             df_f.set_index("When")
-            # .resample(str(int(self.DT / 60)) + "T")
             .resample("H")
             .mean()
         )
