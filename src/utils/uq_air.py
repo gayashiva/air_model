@@ -116,7 +116,7 @@ if __name__ == "__main__":
     ie_dist = cp.Uniform(0.949, 0.993)
     a_decay_dist = cp.Uniform(1, 22)
     T_PPT_dist = cp.Uniform(0, 2)
-    T_W_dist = cp.Uniform(0, 2)
+    T_W_dist = cp.Uniform(0, 5)
 
 #     parameters_single = {
 #         "IE": ie_dist,
@@ -156,11 +156,11 @@ if __name__ == "__main__":
 parameters = {
         "IE": ie_dist,
         "A_I": a_i_dist,
-        # "A_S": a_s_dist,
-        # "T_PPT": T_PPT_dist,
-        # "DX": dx_dist,
-        # "A_DECAY": a_decay_dist,
-        # "T_W": T_W_dist,
+        "A_S": a_s_dist,
+        "T_PPT": T_PPT_dist,
+        "DX": dx_dist,
+        "A_DECAY": a_decay_dist,
+        "T_W": T_W_dist,
 }
 parameters = un.Parameters(parameters)
 
