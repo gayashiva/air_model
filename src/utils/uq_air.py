@@ -73,7 +73,7 @@ class UQ_Icestupa(un.Model, Icestupa):
             else:
                 f = 1
             for i, row in self.df.iterrows():
-                s, f = self.get_albedo(i, s, f, site=self.name)
+                s, f = self.get_albedo(i, s, f)
 
         self.melt_freeze()
 
