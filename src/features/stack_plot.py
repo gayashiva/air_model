@@ -42,6 +42,7 @@ if __name__ == "__main__":
         },
         axis=1,
     )
+
     blue = "#0a4a97"
     red = "#e23028"
     purple = "#9673b9"
