@@ -61,7 +61,7 @@ if __name__ == "__main__":
     M_water = round(icestupa.df["meltwater"].iloc[-1],1)
     M_runoff= round(icestupa.df["unfrozen_water"].iloc[-1],1)
     M_sub = round(icestupa.df["vapour"].iloc[-1],1)
-    M_ice = round(icestupa.df["ice"].iloc[-1]- icestupa.V_dome,1)
+    M_ice = round(icestupa.df["ice"].iloc[-1]- icestupa.V_dome * icestupa.RHO_I,1)
 
     print("Contribution of M_F %.1f\n"%(M_F/M_input*100))
     print("Contribution of M_ppt %.1f\n"%(M_ppt/M_input*100))

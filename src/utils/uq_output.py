@@ -41,8 +41,8 @@ if __name__ == "__main__":
     icestupa.read_output()
     icestupa.self_attributes()
 
-    input = FOLDER["sim"] + "/"
-    output = FOLDER["sim"] + "/"
+    # input = FOLDER["sim"] + "/"
+    # output = FOLDER["sim"] + "/"
 
     if location == "guttannen21":
         total_days = 170
