@@ -52,7 +52,6 @@ if __name__ == "__main__":
         total_days = 150
 
     names = [
-        # "full",
         "T_PPT",
         "H_PPT",
         "IE",
@@ -75,14 +74,11 @@ if __name__ == "__main__":
         evaluations.append(data["max_volume"].evaluations)
 
         eval = data["max_volume"].evaluations
-        print(data)
-
-
         print(
             f"95 percent confidence interval caused by {name} is {round(st.mean(eval),2)} and {round(2 * st.stdev(eval),2)}"
         )
 
-    names = [
+    names_label = [
         "$T_{ppt}$",
         "$H_{ppt}$",
         "$\\epsilon_{ice}$",
@@ -94,7 +90,8 @@ if __name__ == "__main__":
     ]
 
     fig, ax = plt.subplots()
-    draw_plot(evaluations, "k", "xkcd:grey", names)
+    print(len(evaluations), len(names_label))
+    draw_plot(evaluations, "k", "xkcd:grey", names_label)
     ax.set_xlabel("Parameter")
     ax.set_ylabel("Sensitivity of Maximum Ice Volume [$m^3$]")
     ax.grid(axis="y")
