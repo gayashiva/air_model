@@ -95,91 +95,96 @@ if __name__ == "__main__":
     )
 
     # location="Guttannen 2021"
-    location="schwarzsee19"
+    # location="schwarzsee19"
+    locations = ['guttannen20', 'guttannen21', 'gangles21', 'schwarzsee19']
 
-    # Get settings for given location and trigger
-    SITE, FOLDER = config(location)
-    icestupa = Icestupa(location)
-    icestupa.read_input()
-    icestupa.self_attributes()
+    for location in locations:
+        # Get settings for given location and trigger
+        SITE, FOLDER = config(location)
+        icestupa = Icestupa(location)
+        icestupa.read_input()
+        icestupa.self_attributes()
 
-    list_of_feature_functions = [max_volume]
+        list_of_feature_functions = [max_volume]
 
-    features = un.Features(
-        new_features=list_of_feature_functions, features_to_run=["max_volume"]
-    )
+        features = un.Features(
+            new_features=list_of_feature_functions, features_to_run=["max_volume"]
+        )
 
-    a_i_dist = cp.Uniform(icestupa.A_I * .95, icestupa.A_I * 1.05)
-    a_s_dist = cp.Uniform(icestupa.A_S * .95, icestupa.A_S * 1.05)
-    dx_dist = cp.Uniform(icestupa.DX * .95, icestupa.DX * 1.05)
+        a_i_dist = cp.Uniform(icestupa.A_I * .95, icestupa.A_I * 1.05)
+        a_s_dist = cp.Uniform(icestupa.A_S * .95, icestupa.A_S * 1.05)
+        dx_dist = cp.Uniform(icestupa.DX * .95, icestupa.DX * 1.05)
 
-    ie_dist = cp.Uniform(0.949, 0.993)
-    a_decay_dist = cp.Uniform(1, 22)
-    T_PPT_dist = cp.Uniform(0, 2)
-    T_W_dist = cp.Uniform(0, 5)
+        ie_dist = cp.Uniform(0.949, 0.993)
+        a_decay_dist = cp.Uniform(1, 22)
+        T_PPT_dist = cp.Uniform(0, 2)
+        H_PPT_dist = cp.Uniform(0, 2)
+        T_W_dist = cp.Uniform(0, 5)
 
-#     parameters_single = {
+        parameters_single = {
+            "IE": ie_dist,
+            "A_I": a_i_dist,
+            "A_S": a_s_dist,
+            "A_DECAY": a_decay_dist,
+            "T_PPT": T_PPT_dist,
+            "H_PPT": H_PPT_dist,
+            "T_W": T_W_dist,
+            "DX": dx_dist,
+        }
+
+
+        # Create the parameters
+        for k, v in parameters_single.items():
+            print(k, v)
+            parameters = un.Parameters({k: v})
+
+            # Initialize the model
+            model = UQ_Icestupa(location=location)
+
+            # Set up the uncertainty quantification
+            UQ = un.UncertaintyQuantification(
+                model=model,
+                parameters=parameters,
+                features=features,
+                # CPUs=1,
+            )
+
+            # Perform the uncertainty quantification using # polynomial chaos with point collocation (by default) data =
+            data = UQ.quantify(
+                seed=10,
+                data_folder=FOLDER["sim"],
+                figure_folder=FOLDER["sim"],
+                filename=k,
+            )
+
+# parameters = {
 #         "IE": ie_dist,
 #         "A_I": a_i_dist,
 #         "A_S": a_s_dist,
-#         "A_DECAY": a_decay_dist,
 #         "T_PPT": T_PPT_dist,
-#         "T_W": T_W_dist,
+#         "H_PPT": H_PPT_dist,
 #         "DX": dx_dist,
-#     }
+#         "A_DECAY": a_decay_dist,
+#         "T_W": T_W_dist,
+# }
+# parameters = un.Parameters(parameters)
 # 
+# # Initialize the model
+# model = UQ_Icestupa(location)
 # 
-#     # Create the parameters
-#     for k, v in parameters_single.items():
-#         print(k, v)
-#         parameters = un.Parameters({k: v})
+# # Set up the uncertainty quantification
+# UQ = un.UncertaintyQuantification(
+#     model=model,
+#     parameters=parameters,
+#     features=features,
+#     # CPUs=2,
+# )
 # 
-#         # Initialize the model
-#         model = UQ_Icestupa(location=answers["location"])
-# 
-#         # Set up the uncertainty quantification
-#         UQ = un.UncertaintyQuantification(
-#             model=model,
-#             parameters=parameters,
-#             features=features,
-#             # CPUs=1,
-#         )
-# 
-#         # Perform the uncertainty quantification using # polynomial chaos with point collocation (by default) data =
-#         data = UQ.quantify(
-#             seed=10,
-#             data_folder=FOLDER["sim"],
-#             figure_folder=FOLDER["sim"],
-#             filename=k,
-#         )
-
-parameters = {
-        "IE": ie_dist,
-        "A_I": a_i_dist,
-        "A_S": a_s_dist,
-        "T_PPT": T_PPT_dist,
-        "DX": dx_dist,
-        "A_DECAY": a_decay_dist,
-        "T_W": T_W_dist,
-}
-parameters = un.Parameters(parameters)
-
-# Initialize the model
-model = UQ_Icestupa(location)
-
-# Set up the uncertainty quantification
-UQ = un.UncertaintyQuantification(
-    model=model,
-    parameters=parameters,
-    features=features,
-    # CPUs=2,
-)
-
-# Perform the uncertainty quantification using
-# polynomial chaos with point collocation (by default)
-data = UQ.quantify(
-    seed=10,
-    data_folder=FOLDER["sim"],
-    figure_folder=FOLDER["sim"],
-    filename="full",
-)
+# # Perform the uncertainty quantification using
+# # polynomial chaos with point collocation (by default)
+# data = UQ.quantify(
+#     seed=10,
+#     data_folder=FOLDER["sim"],
+#     figure_folder=FOLDER["sim"],
+#     filename="full",
+# )
