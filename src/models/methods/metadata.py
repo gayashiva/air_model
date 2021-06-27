@@ -11,6 +11,30 @@ def get_parameter_metadata(
     parameter,
 ):  # Provides Metadata of all input and Output variables
     return {
+        "guttannen21": {
+            "fullname": "Guttannen 2021",
+            "shortname": "CH21",
+            "kind": "Misc",
+            "units": "()",
+        },
+        "guttannen20": {
+            "fullname": "Guttannen 2020",
+            "shortname": "CH20",
+            "kind": "Misc",
+            "units": "()",
+        },
+        "schwarzsee19": {
+            "fullname": "Schwarzsee 2019",
+            "shortname": "CH19",
+            "kind": "Misc",
+            "units": "()",
+        },
+        "gangles21": {
+            "fullname": "Gangles 2021",
+            "shortname": "IN21",
+            "kind": "Misc",
+            "units": "()",
+        },
         "When": {
             "name": "Timestamp",
             "kind": "Misc",
