@@ -131,67 +131,6 @@ if __name__ == "__main__":
     fig.suptitle('Artificial Ice Reservoirs', fontsize=16)
     # plt.legend()
     plt.savefig("data/paper/try2.jpg", bbox_inches="tight", dpi=300)
+    df_out = df_out.dropna(thresh=1)
+    df_out = df_out.to_csv("data/paper/results.csv")
 
-#     df_out.to_csv("data/paper/try.csv")
-#     df_out = df_out.reset_index()
-#     SITE, FOLDER = config(location)
-#     icestupa = Icestupa(location)
-#     icestupa.read_output()
-#     icestupa.self_attributes()
-#     df_c = pd.read_hdf(FOLDER["input"] + "model_input_" + icestupa.trigger + ".h5", "df_c")
-#     if icestupa.name in ["guttannen21", "guttannen20"]:
-#         df_c = df_c[1:]
-#     df_c = df_c.set_index("When").resample("D").mean().reset_index()
-#     dfv = df_c[["When", "DroneV", "DroneVError"]]
-#     if location == 'schwarzsee19':
-#         dfv['When'] = dfv['When'].mask(df_c['When'].dt.year == 2019, 
-#                                      df_c['When'] + pd.offsets.DateOffset(year=2023))
-#     if location == 'guttannen20':
-#         dfv['When'] = dfv['When'].mask(df_c['When'].dt.year == 2019, 
-#                                      df_c['When'] + pd.offsets.DateOffset(year=2022))
-#         dfv['When'] = dfv['When'].mask(df_c['When'].dt.year == 2020, 
-#                                      df_c['When'] + pd.offsets.DateOffset(year=2023))
-#     if location == 'guttannen21':
-#         dfv['When'] = dfv['When'].mask(df_c['When'].dt.year == 2020, 
-#                                      df_c['When'] + pd.offsets.DateOffset(year=2022))
-#     dfv['When'] = dfv['When'].mask(df_c['When'].dt.year == 2021, 
-#                                  df_c['When'] + pd.offsets.DateOffset(year=2023))
-# 
-#     fig, ax = plt.subplots()
-#     x = df_out.When
-#     y1 = df_out[location]
-#     x2 = dfv.When
-#     y2 = dfv.DroneV
-#     # yerr = df_c.DroneVError
-#     # ax.set_ylabel("Ice Volume[$m^3$]")
-#     ax.plot(
-#         x,
-#         y1,
-#         "b-",
-#         label="Modelled Volume",
-#         linewidth=1,
-#         color=CB91_Blue,
-#     )
-#     # ax.fill_between(x, y1=icestupa.V_dome, y2=0, color=grey, label = "Dome Volume")
-#     ax.scatter(x2, y2, color=CB91_Green, label="Measured Volume")
-#     # ax.errorbar(x, y2,yerr=df_c.DroneVError, color=CB91_Green)
-# 
-#     ax.set_ylim(0, round(df_out[location].max(),0))
-#     # plt.legend()
-# 
-#     # Hide the right and top spines
-#     ax.spines['right'].set_visible(False)
-#     ax.spines['top'].set_visible(False)
-# 
-#     # Only show ticks on the left and bottom spines
-#     ax.yaxis.set_ticks_position('left')
-#     ax.xaxis.set_ticks_position('bottom')
-# 
-#     ax.yaxis.set_major_locator(plt.LinearLocator(numticks=2))
-#     ax.xaxis.set_major_locator(mdates.MonthLocator())
-#     # ax.xaxis.set_major_locator(mdates.WeekdayLocator("%b %d"))
-#     ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-#     # ax.xaxis.set_minor_locator(mdates.WeekdayLocator())
-#     fig.autofmt_xdate()
-#     plt.savefig("data/paper/try.jpg", bbox_inches="tight", dpi=300)
-#     plt.clf()
