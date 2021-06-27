@@ -19,6 +19,12 @@ def get_albedo(
     if self.df.T_a[i] < self.T_PPT and self.df.Prec[i] > self.H_PPT:  # Snow event
         f = 0
         s = 0
+
+    # TODO Add to paper
+    # Discharge event
+    if self.df.Discharge[i] > 0:
+        f = 1
+
     if f == 0:  # last snowed
         self.df.loc[i, "a"] = self.A_I + (self.A_S - self.A_I) * math.exp(
             -s / self.A_DECAY
