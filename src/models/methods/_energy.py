@@ -74,6 +74,15 @@ def get_energy(self, i):
             / self.DT
         )
 
+    # if self.df.loc[i,'Discharge']== 0 and self.df.loc[i,'When']< self.fountain_off_date and self.name in ["guttannen20",
+    # "guttannen21"] :
+    #     self.df.loc[i, "Qf"] += (
+    #         (self.min_discharge * self.DT / 60)
+    #         * self.C_W
+    #         * self.T_W
+    #         / (self.DT * self.df.loc[i, "SA"])
+    #     )
+
     self.df.loc[i, "Qg"] = (
         self.K_I
         * (self.df.loc[i, "T_bulk"] - self.df.loc[i, "T_s"])

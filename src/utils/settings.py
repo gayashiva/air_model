@@ -35,8 +35,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
 
             discharge=10,  # FOUNTAIN mean discharge
-            # min_discharge=5,  # FOUNTAIN min discharge
-            min_discharge=0,  # FOUNTAIN min discharge
+            min_discharge=5,  # FOUNTAIN min discharge
+            # min_discharge=0,  # FOUNTAIN min discharge
             # perimeter=45, # on Feb 11
             # dia_f=0.00785,  # FOUNTAIN aperture diameter
         )
@@ -60,8 +60,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
 
             fountain_off_date=datetime(2020, 2, 27),
-            # min_discharge=5,  # FOUNTAIN min discharge
-            min_discharge=0,  # FOUNTAIN min discharge
+            min_discharge=5,  # FOUNTAIN min discharge
+            # min_discharge=0,  # FOUNTAIN min discharge
             # perimeter=28, # on 24 Jan
             # dia_f=0.0056,  # FOUNTAIN aperture diameter
         )
@@ -83,7 +83,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             latitude=46.693723,
             h_aws=3,
             h_f=1.35,
-            T_W=1,
+            # T_W=1,
 
             fountain_off_date=datetime(2019, 2, 16, 10),
             discharge=3.58,  # FOUNTAIN on mean discharge from field
@@ -106,7 +106,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             longitude=77.606949,
             latitude=34.216638,
             h_aws=3,
-            T_W = 1,
+            # T_W = 1,
             # dome_rad=2,
 
             fountain_off_date=datetime(2021, 3, 10, 18),

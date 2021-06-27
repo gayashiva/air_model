@@ -150,9 +150,9 @@ def get_discharge(location="schwarzsee19"):
             df_f = df_f.set_index("When")
             df["Discharge_fill"] = 0
             df.loc[df_f.index, "Discharge_fill"] = df_f["fountain"] * df_field.Discharge.max()
-            # df.loc[
-            #     df[df.Discharge_fill == 0].index, "Discharge_fill"
-            # ] = self.min_discharge  # Fountain was always on
+            df.loc[
+                df[df.Discharge_fill == 0].index, "Discharge_fill"
+            ] = SITE["min_discharge"]  # Fountain was always on
             df['Discharge'] = df.apply(
                 lambda row: row['Discharge_fill'] if np.isnan(row['Discharge']) else row['Discharge'],
                 axis=1
@@ -160,25 +160,18 @@ def get_discharge(location="schwarzsee19"):
             df = df.drop(['Discharge_fill'], axis = 1)
 
         if location in ["guttannen21"]:
-            print(df_f.head())
-            print(df_f.tail())
-            # mask = df_f["When"] >= self.start_date
-            # mask &= df_f["When"] <= self.end_date
-            # df_f = df_f.loc[mask]
-            # df_f = df_f.reset_index(drop=True)
-
             df_f = df_f.set_index("When")
             df_f = df_f[SITE["start_date"]:SITE["end_date"]]
             df = df.set_index("When")
 
             df.loc[df_f.index, "Discharge"] = SITE["discharge"] * df_f["fountain"]
-            # df.loc[
-            #     df[df.Discharge== 0].index.intersection(df[df.index <= datetime(2020,12,26)].index), "Discharge"
-            # ] = 0  # Wood leak
-            # df.loc[
-            #     df[df.Discharge== 0].index.intersection(df[df.index >=
-            #     datetime(2020,12,26)].index), "Discharge"
-            # ] = SITE["min_discharge"]  # Fountain was always on
+            df.loc[
+                df[df.Discharge== 0].index.intersection(df[df.index <= datetime(2020,12,26)].index), "Discharge"
+            ] = 0  # Wood leak
+            df.loc[
+                df[df.Discharge== 0].index.intersection(df[df.index >=
+                datetime(2020,12,26)].index), "Discharge"
+            ] = SITE["min_discharge"]  # Fountain was always on
 
         # logger.debug(df.Discharge.head())
         df = df.reset_index()

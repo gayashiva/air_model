@@ -27,4 +27,7 @@ def get_albedo(
     else:  # last sprayed
         self.df.loc[i, "a"] = self.A_I
 
+    if self.name in ["guttannen20", "guttannen21"] and self.df.When[i] < self.fountain_off_date:  # fountain never off
+        self.df.loc[i, "a"] = self.A_I
+
     return s, f

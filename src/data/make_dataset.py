@@ -41,7 +41,7 @@ if __name__ == "__main__":
         level=logging.INFO,
         logger=logger,
     )
-    location = "guttannen21"
+    location = "guttannen20"
     # location = "schwarzsee19"
     # location = "gangles21"
 
