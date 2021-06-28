@@ -18,13 +18,21 @@ from src.models.icestupaClass import Icestupa
 import matplotlib.dates as mdates
 
 if __name__ == "__main__":
-    answers = dict(
-        location="Guttannen 2021",
-    )
+
+    location = "gangles21"
+
+    if location == "guttannen21":
+        total_days = 180
+    if location == "schwarzsee19":
+        total_days = 60
+    if location == "guttannen20":
+        total_days = 110
+    if location == "gangles21":
+        total_days = 150
 
     # Get settings for given location and trigger
-    SITE, FOLDER = config("guttannen21")
-    icestupa = Icestupa("guttannen21")
+    SITE, FOLDER = config(location)
+    icestupa = Icestupa(location)
     icestupa.read_output()
     icestupa.self_attributes()
 
@@ -41,11 +49,11 @@ if __name__ == "__main__":
     data.load(filename1)
     days = pd.date_range(
         start=SITE["start_date"],
-        end=SITE["start_date"]+ timedelta(hours=180 * 24 - 1),
+        end=SITE["start_date"]+ timedelta(hours=total_days * 24 - 1),
         freq="1H",
     )
 
-    data = data["guttannen21"]
+    data = data[location]
 
     data["When"] = days
 
