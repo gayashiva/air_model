@@ -27,9 +27,6 @@ def max_volume(time, values, info, result=[]):
     # result.append([info, icev_max])
     for param_name in sorted(info.keys()):
         print("\n\t%s: %r" % (param_name, info[param_name]))
-
-    if icev_max == np.nan:
-        icev_max = 0
     print("Max Ice Volume %0.1f\n"% (icev_max))
     # Return the feature times and values.
     return None, icev_max  # todo include efficiency
