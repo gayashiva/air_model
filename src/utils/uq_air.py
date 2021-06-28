@@ -35,7 +35,7 @@ def max_volume(time, values, info, result=[]):
     return None, icev_max  # todo include efficiency
 
 class UQ_Icestupa(un.Model, Icestupa):
-    def __init__(self, location, total_days):
+    def __init__(self, location):
         super(UQ_Icestupa, self).__init__(
             labels=["Time (days)", "Ice Volume ($m^3$)"], interpolate=True
         )
@@ -47,20 +47,20 @@ class UQ_Icestupa(un.Model, Icestupa):
         for dictionary in initial_data:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
-                logger.info(f"%s -> %s" % (key, str(dictionary[key])))
+                # logger.info(f"%s -> %s" % (key, str(dictionary[key])))
 
         self.read_input()
         self.self_attributes()
         # result = []
 
-        # if location == "guttannen21":
-        #     self.total_days = 180
-        # if location == "schwarzsee19":
-        #     self.total_days = 60
-        # if location == "guttannen20":
-        #     self.total_days = 110
-        # if location == "gangles21":
-        #     self.total_days = 150
+        if location == "guttannen21":
+            self.total_days = 180
+        if location == "schwarzsee19":
+            self.total_days = 60
+        if location == "guttannen20":
+            self.total_days = 110
+        if location == "gangles21":
+            self.total_days = 150
 
     def run(self, **parameters):
 
@@ -144,7 +144,7 @@ if __name__ == "__main__":
             parameters = un.Parameters({k: v})
 
             # Initialize the model
-            model = UQ_Icestupa(location=location, total_days=total_days)
+            model = UQ_Icestupa(location=location)
 
             # Set up the uncertainty quantification
             UQ = un.UncertaintyQuantification(
