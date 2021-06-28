@@ -234,6 +234,7 @@ if __name__ == "__main__":
     with row3_1:
         f_mean = icestupa.df.Discharge.replace(0, np.nan).mean()
         Duration = icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24)
+        max_freeze_rate = icestupa.df.fountain_froze.max()/(icestupa.DT/60)
         st.markdown(
             """
         | Fountain | Estimation |
@@ -242,12 +243,14 @@ if __name__ == "__main__":
         | Spray Radius | %.1f $m$|
         | Water sprayed| %.0f $m^3$ |
         | Storage Efficiency | %.0f $percent$ |
+        | Max freeze rate | %.2f $l/min$ |
         """
             % (
                 f_mean,
                 icestupa.r_spray,
                 M_F/1000,
                 (M_water + M_ice) / M_input * 100,
+                max_freeze_rate,
             )
         )
 

@@ -22,7 +22,8 @@ from src.models.methods.metadata import get_parameter_metadata
 if __name__ == "__main__":
 
     # location = "gangles21"
-    locations = ['guttannen21',  'gangles21', 'schwarzsee19']
+    # locations = ['guttannen21',  'gangles21', 'guttannen20', 'schwarzsee19']
+    locations = ['guttannen21',  'gangles21', 'guttannen20']
     # locations = ['guttannen21',  'gangles21']
 
     blue = "#0a4a97"
@@ -45,7 +46,7 @@ if __name__ == "__main__":
          end ='1-1-2024', freq ='D', name= "When")
     df_out = pd.DataFrame(columns=locations,index=index)
 
-    fig, ax = plt.subplots(4, 1, sharex='col', figsize=(12, 14))
+    fig, ax = plt.subplots(len(locations), 1, sharex='col', figsize=(12, 14))
     fig.subplots_adjust(hspace=0.4, wspace=0.4)
     i=0
 
@@ -55,6 +56,7 @@ if __name__ == "__main__":
         icestupa.read_output()
         icestupa.self_attributes()
 
+        # total_days = int(icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24))
         if location == "guttannen21":
             total_days = 180
         if location == "schwarzsee19":
@@ -75,7 +77,7 @@ if __name__ == "__main__":
         if location == 'schwarzsee19':
             SITE["start_date"] +=pd.offsets.DateOffset(year=2023)
         if location == 'guttannen20':
-            SITE["start_date"] +=pd.offsets.DateOffset(year=2022)
+            SITE["start_date"] +=pd.offsets.DateOffset(year=2023)
         if location == 'guttannen21':
             SITE["start_date"] +=pd.offsets.DateOffset(year=2022)
         if location == 'gangles21':

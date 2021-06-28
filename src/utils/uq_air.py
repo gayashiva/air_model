@@ -35,7 +35,7 @@ def max_volume(time, values, info, result=[]):
     return None, icev_max  # todo include efficiency
 
 class UQ_Icestupa(un.Model, Icestupa):
-    def __init__(self, location="Guttannen 2021"):
+    def __init__(self, location, total_days):
         super(UQ_Icestupa, self).__init__(
             labels=["Time (days)", "Ice Volume ($m^3$)"], interpolate=True
         )
@@ -53,14 +53,14 @@ class UQ_Icestupa(un.Model, Icestupa):
         self.self_attributes()
         # result = []
 
-        if location == "guttannen21":
-            self.total_days = 180
-        if location == "schwarzsee19":
-            self.total_days = 60
-        if location == "guttannen20":
-            self.total_days = 110
-        if location == "gangles21":
-            self.total_days = 150
+        # if location == "guttannen21":
+        #     self.total_days = 180
+        # if location == "schwarzsee19":
+        #     self.total_days = 60
+        # if location == "guttannen20":
+        #     self.total_days = 110
+        # if location == "gangles21":
+        #     self.total_days = 150
 
     def run(self, **parameters):
 
@@ -94,9 +94,6 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    # location="Guttannen 2021"
-    # location="schwarzsee19"
-
     locations = ['guttannen20', 'guttannen21', 'gangles21', 'schwarzsee19']
 
     for location in locations:
@@ -121,6 +118,12 @@ if __name__ == "__main__":
         T_PPT_dist = cp.Uniform(0, 2)
         H_PPT_dist = cp.Uniform(0, 2)
         T_W_dist = cp.Uniform(0, 5)
+        if location in ['guttannen21', 'guttannen20']:
+            discharge_dist = cp.Uniform(5, 10)
+        if location == 'gangles21':
+            discharge_dist = cp.Uniform(30, 90)
+
+        total_days = int(icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24))
 
         parameters_single = {
             "IE": ie_dist,
@@ -131,6 +134,7 @@ if __name__ == "__main__":
             "H_PPT": H_PPT_dist,
             "T_W": T_W_dist,
             "DX": dx_dist,
+            "mean_discharge": discharge_dist,
         }
 
 
@@ -140,7 +144,7 @@ if __name__ == "__main__":
             parameters = un.Parameters({k: v})
 
             # Initialize the model
-            model = UQ_Icestupa(location=location)
+            model = UQ_Icestupa(location=location, total_days=total_days)
 
             # Set up the uncertainty quantification
             UQ = un.UncertaintyQuantification(
@@ -157,35 +161,3 @@ if __name__ == "__main__":
                 figure_folder=FOLDER["sim"],
                 filename=k,
             )
-
-# parameters = {
-#         "IE": ie_dist,
-#         "A_I": a_i_dist,
-#         "A_S": a_s_dist,
-#         "T_PPT": T_PPT_dist,
-#         "H_PPT": H_PPT_dist,
-#         "DX": dx_dist,
-#         "A_DECAY": a_decay_dist,
-#         "T_W": T_W_dist,
-# }
-# parameters = un.Parameters(parameters)
-# 
-# # Initialize the model
-# model = UQ_Icestupa(location)
-# 
-# # Set up the uncertainty quantification
-# UQ = un.UncertaintyQuantification(
-#     model=model,
-#     parameters=parameters,
-#     features=features,
-#     # CPUs=2,
-# )
-# 
-# # Perform the uncertainty quantification using
-# # polynomial chaos with point collocation (by default)
-# data = UQ.quantify(
-#     seed=10,
-#     data_folder=FOLDER["sim"],
-#     figure_folder=FOLDER["sim"],
-#     filename="full",
-# )

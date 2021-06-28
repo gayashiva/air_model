@@ -54,6 +54,7 @@ class Icestupa:
 
     """Fountain constants"""
     T_W = 1  # FOUNTAIN Water temperature
+    mean_discharge = 10 
 
     """Simulation constants"""
     trigger = "Manual"
@@ -96,7 +97,7 @@ class Icestupa:
     from src.models.methods._freq import change_freq
     from src.models.methods._self_attributes import self_attributes
     from src.models.methods._albedo import get_albedo
-    # from src.models.methods._discharge import get_discharge
+    from src.models.methods._discharge import get_discharge
     from src.models.methods._area import get_area
     from src.models.methods._temp import get_temp, test_get_temp
     from src.models.methods._energy import get_energy, test_get_energy
@@ -153,7 +154,7 @@ class Icestupa:
                     * math.pow(row.T_a + 273.15, 4)
                 )
 
-        # self.get_discharge()
+        self.get_discharge()
         self.self_attributes(save=True)
 
         solar_df = get_solar(
@@ -164,10 +165,8 @@ class Icestupa:
             DT=self.DT,
         )
         self.df = pd.merge(solar_df, self.df, on="When")
-        # self.df.Prec = self.df.Prec * self.DT  # mm
 
         """Albedo"""
-
         if "a" in unknown:
             """Albedo Decay parameters initialized"""
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT

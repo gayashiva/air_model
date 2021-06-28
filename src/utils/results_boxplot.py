@@ -40,8 +40,8 @@ if __name__ == "__main__":
 # 
 #     sns.boxplot(x="day", y="total_bill", hue="smoker", data=df, palette="Set1", width=0.5)
 #     plt.savefig("data/paper/box.jpg", bbox_inches="tight", dpi=300)
-    locations = ['guttannen21',  'gangles21','guttannen20', 'schwarzsee19']
-    # locations = ['guttannen20', 'guttannen21']
+    # locations = ['guttannen21',  'gangles21','guttannen20', 'schwarzsee19']
+    locations = ['guttannen21',  'gangles21','guttannen20']
 
     index = pd.date_range(start ='1-1-2022', 
          end ='1-1-2024', freq ='D', name= "When")
@@ -69,11 +69,7 @@ if __name__ == "__main__":
     ]
     zip_iterator = zip(names, names_label)
     param_dictionary = dict(zip_iterator)
-    print(param_dictionary['T_PPT'])
 
-    # fig, ax = plt.subplots(4, 1, sharex='col', figsize=(12, 14))
-    # fig.subplots_adjust(hspace=0.4, wspace=0.4)
-    # i=0
     evaluations = []
     percent_change= []
     site= []
