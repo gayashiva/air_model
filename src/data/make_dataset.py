@@ -48,18 +48,25 @@ if __name__ == "__main__":
 
     SITE, FOLDER = config(location)
 
-    df_d = get_discharge(location)
-    start_date = df_d.loc[0,"When"]
-    logger.error(df_d[df_d["Discharge"].isna()])
-    logger.info("Model starts at %s"%start_date)
+    # df_d = get_discharge(location)
+    # start_date = df_d.loc[0,"When"]
+    # logger.error(df_d[df_d["Discharge"].isna()])
+    # logger.info("Model starts at %s"%start_date)
+
+    # logger.warning(
+    #     f"Mean Discharge:%.2f fountain off date:%s"
+    #     % (
+    #         (df_d.Discharge.replace(0, np.nan).mean()),
+    #         (SITE['fountain_off_date']),
+    #     )
+    # )
 
     if location in ["gangles21"]:
         df = get_field(location)
-        print(df.columns)
         df = df.set_index("When")
-        df = df[start_date:SITE["end_date"]]
-        df_d = df_d.set_index("When")
-        df["Discharge"] = df_d["Discharge"]
+        df = df[SITE['start_date']:SITE["end_date"]]
+        # df_d = df_d.set_index("When")
+        # df["Discharge"] = df_d["Discharge"]
         df = df.reset_index()
         logger.info(df.missing_type.describe())
         logger.info(df.missing_type.unique())
@@ -72,9 +79,9 @@ if __name__ == "__main__":
             df = get_meteoswiss(location)
 
         df = df.set_index("When")
-        df = df[start_date:SITE["end_date"]]
+        df = df[SITE['start_date']:SITE["end_date"]]
         df = df.reset_index()
-        df["Discharge"] = df_d["Discharge"]
+        # df["Discharge"] = df_d["Discharge"]
 
         # Replace Wind zero values for 3 hours
         mask = df.v_a.shift().eq(df.v_a)
@@ -86,7 +93,7 @@ if __name__ == "__main__":
         if location in ["schwarzsee19"]:
             df_swiss = get_meteoswiss(location)
             df_swiss = df_swiss.set_index("When")
-            df_swiss = df_swiss[start_date:SITE["end_date"]]
+            df_swiss = df_swiss[SITE['start_date']:SITE["end_date"]]
             df_swiss = df_swiss.reset_index()
             print(df_swiss.shape[0])
 
@@ -104,7 +111,7 @@ if __name__ == "__main__":
 
         df = df.set_index("When")
         df_ERA5_full = df_ERA5_full.set_index("When")
-        df_ERA5 = df_ERA5_full[start_date:SITE["end_date"]]
+        df_ERA5 = df_ERA5_full[SITE['start_date']:SITE["end_date"]]
         df_ERA5 = df_ERA5.reset_index()
         df_ERA5_full = df_ERA5_full.reset_index()
         print(df_ERA5.shape[0])
@@ -156,7 +163,7 @@ if __name__ == "__main__":
     if SITE["name"] in ["gangles21"]:
         cols = [
             "When",
-            "Discharge",
+            # "Discharge",
             "T_a",
             "RH",
             "v_a",
@@ -173,7 +180,7 @@ if __name__ == "__main__":
     if SITE["name"] in ["schwarzsee19"]:
         cols = [
             "When",
-            "Discharge",
+            # "Discharge",
             "T_a",
             "RH",
             "v_a",
@@ -188,7 +195,7 @@ if __name__ == "__main__":
     if SITE["name"] in ["guttannen20", "guttannen21"]:
         cols = [
             "When",
-            "Discharge",
+            # "Discharge",
             "T_a",
             "RH",
             "v_a",
@@ -238,7 +245,7 @@ if __name__ == "__main__":
 
         df_swiss = get_meteoswiss(SITE["name"])
         df_swiss = df_swiss.set_index("When")
-        df_swiss = df_swiss[start_date:datetime(2019, 4, 30)]
+        df_swiss = df_swiss[SITE['start_date']:datetime(2019, 4, 30)]
         df_swiss = df_swiss.reset_index()
 
         df_swiss = df_swiss.set_index("When")

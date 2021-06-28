@@ -17,23 +17,26 @@ def self_attributes(self, save=False):
     else:
         df_c = get_calibration(site=self.name, input=self.raw)
 
-    if self.name == "schwarzsee19":
-        self.r_spray = get_droplet_projectile(
-            dia=self.dia_f, h=self.h_f, d=self.discharge
-        )
-        self.V_dome=0
-        logger.warning("Measured spray radius from fountain parameters %0.1f"%self.r_spray)
+    # if self.name == "schwarzsee19":
+    #     self.r_spray = get_droplet_projectile(
+    #         dia=self.dia_f, h=self.h_f, d=self.discharge
+    #     )
+    #     logger.warning("Measured spray radius from fountain parameters %0.1f"%self.r_spray)
+    # else:
+    # Get spray radius
+    if hasattr(self, "r_spray"):
+        logger.error("Arbitrary spray radius of %s" %self.r_spray)
     else:
-        # Get spray radius
-        if hasattr(self, "r_spray"):
-            logger.error("Arbitrary spray radius of %s" %self.r_spray)
-        else:
-            self.r_spray= df_c.loc[(df_c.When < self.fountain_off_date) & (df_c.index!=0), "rad"].mean()
-            logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
+        self.r_spray= df_c.loc[(df_c.When < self.fountain_off_date) & (df_c.index!=0), "rad"].mean()
+        logger.warning("Measured spray radius from drone %0.1f"%self.r_spray)
 
+    if self.name == "schwarzsee19":
+        self.V_dome = 0
+    else:
         self.V_dome = df_c.loc[0, "DroneV"]
 
     logger.warning("Dome Volume %0.1f"%self.V_dome)
+
     # Get initial height
     self.h_i = self.DX + 3 * self.V_dome / (math.pi * self.r_spray ** 2)
 
