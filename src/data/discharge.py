@@ -32,7 +32,6 @@ def get_discharge(location="schwarzsee19"):
 
     if location == "schwarzsee19":
         df["Discharge"] = 0
-        # logger.debug("Initialised discharge as zero")
 
         df_f = pd.read_csv(
             os.path.join("data/" + location + "/interim/")
@@ -163,29 +162,22 @@ def get_discharge(location="schwarzsee19"):
             df_f = df_f.set_index("When")
             df_f = df_f[SITE["start_date"]:SITE["end_date"]]
             df = df.set_index("When")
+            df = df[SITE["start_date"]:]
 
             df.loc[df_f.index, "Discharge"] = SITE["discharge"] * df_f["fountain"]
+            # df.loc[
+            #     df[df.Discharge== 0].index.intersection(df[df.index <= datetime(2020,12,26)].index), "Discharge"
+            # ] = SITE["min_discharge"]  # Wood leak
+            # df.loc[
+            #     df[df.Discharge== 0].index.intersection(df[df.index >=
+            #     datetime(2020,12,26)].index), "Discharge"
+            # ] = SITE["min_discharge"]  # Fountain was always on
             df.loc[
-                df[df.Discharge== 0].index.intersection(df[df.index <= datetime(2020,12,26)].index), "Discharge"
-            ] = 0  # Wood leak
-            df.loc[
-                df[df.Discharge== 0].index.intersection(df[df.index >=
-                datetime(2020,12,26)].index), "Discharge"
+                df[df.Discharge== 0].index, "Discharge"
             ] = SITE["min_discharge"]  # Fountain was always on
 
         # logger.debug(df.Discharge.head())
         df = df.reset_index()
-        # logger.info(
-        #     f"Hours of spray : %.2f Mean Discharge:%.2f"
-        #     % (
-        #         (
-        #             df.Discharge.astype(bool).sum(axis=0)
-        #             * self.DT
-        #             / 3600
-        #         ),
-        #         (df.Discharge.replace(0, np.nan).mean()),
-        #     )
-        # )
     if location == "ravat20":
         df["Discharge"] = SITE["discharge"]
 

@@ -27,6 +27,9 @@ def max_volume(time, values, info, result=[]):
     # result.append([info, icev_max])
     for param_name in sorted(info.keys()):
         print("\n\t%s: %r" % (param_name, info[param_name]))
+
+    if icev_max == np.nan:
+        icev_max = 0
     print("Max Ice Volume %0.1f\n"% (icev_max))
     # Return the feature times and values.
     return None, icev_max  # todo include efficiency
@@ -68,10 +71,7 @@ class UQ_Icestupa(un.Model, Icestupa):
             """Albedo Decay parameters initialized"""
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
             s = 0
-            if self.name in ["schwarzsee19", "guttannen20"]:
-                f = 0  # Start with snow event
-            else:
-                f = 1
+            f = 1
             for i, row in self.df.iterrows():
                 s, f = self.get_albedo(i, s, f)
 

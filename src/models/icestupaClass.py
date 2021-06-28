@@ -173,9 +173,6 @@ class Icestupa:
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
             s = 0
             f = 1
-            if self.name in ["schwarzsee19", "guttannen20"]:
-                f = 0  # Start with snow event
-
             for row in self.df.itertuples():
                 i=row.Index
                 s, f = self.get_albedo(i, s, f)

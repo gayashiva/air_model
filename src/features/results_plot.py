@@ -52,43 +52,38 @@ if __name__ == "__main__":
         icestupa.self_attributes()
 
         df = icestupa.df[["When","iceV"]]
-        if location == 'schwarzsee19':
-            df['When'] = df['When'].mask(icestupa.df['When'].dt.year == 2019, 
-                                         icestupa.df['When'] + pd.offsets.DateOffset(year=2023))
-        if location == 'guttannen20':
-            df['When'] = df['When'].mask(icestupa.df['When'].dt.year == 2019, 
-                                         icestupa.df['When'] + pd.offsets.DateOffset(year=2022))
-            df['When'] = df['When'].mask(icestupa.df['When'].dt.year == 2020, 
-                                         icestupa.df['When'] + pd.offsets.DateOffset(year=2023))
-        if location == 'guttannen21':
-            df['When'] = df['When'].mask(icestupa.df['When'].dt.year == 2020, 
-                                         icestupa.df['When'] + pd.offsets.DateOffset(year=2022))
-        df['When'] = df['When'].mask(icestupa.df['When'].dt.year == 2021, 
-                                     icestupa.df['When'] + pd.offsets.DateOffset(year=2023))
-
-        dfd = df.set_index("When").resample("D").mean().reset_index()
-        dfd = dfd.set_index("When")
-        print(dfd.tail())
-        df_out[location] = dfd["iceV"] 
-
         df_c = pd.read_hdf(FOLDER["input"] + "model_input_" + icestupa.trigger + ".h5", "df_c")
         if icestupa.name in ["guttannen21", "guttannen20"]:
             df_c = df_c[1:]
         df_c = df_c.set_index("When").resample("D").mean().reset_index()
         dfv = df_c[["When", "DroneV", "DroneVError"]]
         if location == 'schwarzsee19':
+            df['When'] = df['When'].mask(icestupa.df['When'].dt.year == 2019, 
+                                         icestupa.df['When'] + pd.offsets.DateOffset(year=2023))
             dfv['When'] = dfv['When'].mask(df_c['When'].dt.year == 2019, 
                                          df_c['When'] + pd.offsets.DateOffset(year=2023))
         if location == 'guttannen20':
+            df['When'] = df['When'].mask(icestupa.df['When'].dt.year == 2019, 
+                                         icestupa.df['When'] + pd.offsets.DateOffset(year=2022))
+            df['When'] = df['When'].mask(icestupa.df['When'].dt.year == 2020, 
+                                         icestupa.df['When'] + pd.offsets.DateOffset(year=2023))
             dfv['When'] = dfv['When'].mask(df_c['When'].dt.year == 2019, 
                                          df_c['When'] + pd.offsets.DateOffset(year=2022))
             dfv['When'] = dfv['When'].mask(df_c['When'].dt.year == 2020, 
                                          df_c['When'] + pd.offsets.DateOffset(year=2023))
         if location == 'guttannen21':
+            df['When'] = df['When'].mask(icestupa.df['When'].dt.year == 2020, 
+                                         icestupa.df['When'] + pd.offsets.DateOffset(year=2022))
             dfv['When'] = dfv['When'].mask(df_c['When'].dt.year == 2020, 
                                          df_c['When'] + pd.offsets.DateOffset(year=2022))
+        df['When'] = df['When'].mask(icestupa.df['When'].dt.year == 2021, 
+                                     icestupa.df['When'] + pd.offsets.DateOffset(year=2023))
         dfv['When'] = dfv['When'].mask(df_c['When'].dt.year == 2021, 
                                      df_c['When'] + pd.offsets.DateOffset(year=2023))
+
+        dfd = df.set_index("When").resample("D").mean().reset_index()
+        dfd = dfd.set_index("When")
+        df_out[location] = dfd["iceV"] 
 
         df_out = df_out.reset_index()
         x = df_out.When

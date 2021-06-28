@@ -34,7 +34,6 @@ def draw_plot(data, edge_color, fill_color, labels):
         patch.set(facecolor=fill_color)
 
 if __name__ == "__main__":
-    # sns.set(style="darkgrid")
 #     df = sns.load_dataset('tips')
 #     print(df.head())
 #     print(df.describe())
@@ -42,6 +41,7 @@ if __name__ == "__main__":
 #     sns.boxplot(x="day", y="total_bill", hue="smoker", data=df, palette="Set1", width=0.5)
 #     plt.savefig("data/paper/box.jpg", bbox_inches="tight", dpi=300)
     locations = ['guttannen21',  'gangles21','guttannen20', 'schwarzsee19']
+    # locations = ['guttannen20', 'guttannen21']
 
     index = pd.date_range(start ='1-1-2022', 
          end ='1-1-2024', freq ='D', name= "When")
@@ -67,27 +67,43 @@ if __name__ == "__main__":
         "$T_{water}$",
         "$\\Delta x$",
     ]
+    zip_iterator = zip(names, names_label)
+    param_dictionary = dict(zip_iterator)
+    print(param_dictionary['T_PPT'])
 
     # fig, ax = plt.subplots(4, 1, sharex='col', figsize=(12, 14))
     # fig.subplots_adjust(hspace=0.4, wspace=0.4)
     # i=0
+    evaluations = []
+    percent_change= []
+    site= []
+    param= []
+    result= []
     fig, ax = plt.subplots()
     for location in locations:
         # Get settings for given location and trigger
         SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
         icestupa.read_output()
+        print(icestupa.df.iceV.max())
         icestupa.self_attributes()
-        evaluations = []
 
         for name in names:
             data = un.Data()
             filename1 = FOLDER["sim"] + name + ".h5"
             data.load(filename1)
             evaluations.append(data["max_volume"].evaluations)
+            percent_change.append((data["max_volume"].evaluations - icestupa.df.iceV.max())/icestupa.df.iceV.max()*100)
+            for i in range(0,len(data["max_volume"].evaluations)):
+                result.append([get_parameter_metadata(location)['shortname'], param_dictionary[name], data["max_volume"].evaluations[i],(data["max_volume"].evaluations[i]-
+    icestupa.df.iceV.max())/icestupa.df.iceV.max()*100])
 
-        draw_plot(evaluations, "k", "xkcd:grey", names_label)
-        # ax.set_xlabel("Parameter")
-        # ax.set_ylabel("Sensitivity of Maximum Ice Volume [$m^3$]")
-        ax.grid(axis="y")
+    df = pd.DataFrame(result, columns=['Site', 'param', 'iceV', 'percent_change'])
+    print(df.head())
+    print(df.tail())
+
+    sns.set(style="darkgrid")
+    ax = sns.boxplot(x="param", y="percent_change", hue="Site", data=df, palette="Set1", width=0.5)
+    ax.set_xlabel("Parameter")
+    ax.set_ylabel("Sensitivity of Maximum Ice Volume [$\%$]")
     plt.savefig("data/paper/sensitivities.jpg", bbox_inches="tight", dpi=300)

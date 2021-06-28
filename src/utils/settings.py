@@ -36,7 +36,6 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
             discharge=10,  # FOUNTAIN mean discharge
             min_discharge=5,  # FOUNTAIN min discharge
-            # min_discharge=0,  # FOUNTAIN min discharge
             # perimeter=45, # on Feb 11
             # dia_f=0.00785,  # FOUNTAIN aperture diameter
         )
@@ -77,17 +76,20 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             name="schwarzsee19",
             start_date=datetime(2019, 1, 30, 17),
             end_date=datetime(2019, 3, 17),
-            # end_date=datetime(2019, 3, 20),
             utc_offset=1,
             longitude=7.297543,
             latitude=46.693723,
             h_aws=3,
             h_f=1.35,
-            # T_W=1,
+            # T_W=0,
+            # IE=0.993,
+            # H_PPT=0,
+            # T_PPT=0,
 
             fountain_off_date=datetime(2019, 2, 16, 10),
-            discharge=3.58,  # FOUNTAIN on mean discharge from field
-            dia_f=0.0056,  # FOUNTAIN aperture diameter
+            r_spray = 1.233,
+            # discharge=3.58,  # FOUNTAIN on mean discharge from field
+            # dia_f=0.0056,  # FOUNTAIN aperture diameter
         )
 
         data_h = [
