@@ -53,6 +53,14 @@ if __name__ == "__main__":
     logger.error(df_d[df_d["Discharge"].isna()])
     logger.info("Model starts at %s"%start_date)
 
+    logger.warning(
+        f"Mean Discharge:%.2f fountain off date:%s"
+        % (
+            (df_d.Discharge.replace(0, np.nan).mean()),
+            (SITE['fountain_off_date']),
+        )
+    )
+
     if location in ["gangles21"]:
         df = get_field(location)
         print(df.columns)

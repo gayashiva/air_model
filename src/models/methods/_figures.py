@@ -233,7 +233,8 @@ def summary_figures(self):
     )
     plt.clf()
 
-    fig = plt.figure(figsize=(12, 14))
+    # fig = plt.figure(figsize=(12, 14))
+    fig = plt.figure(figsize=(15, 12))
     dfds = self.df[
         [
             "When",
@@ -308,25 +309,26 @@ def summary_figures(self):
     z = dfd[["$-q_{freeze/melt}$", "$-q_{T}$", "$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
     y0 = dfds[["Frozen", "Runoff loss"]]
 
-    ax0 = fig.add_subplot(5, 1, 1)
-    ax0 = y0.plot.bar(
-                stacked=True, 
-                edgecolor="black", 
-                linewidth=0.5, 
-                color=[skyblue, "xkcd:azure", "#0C70DE"],
-                ax=ax0
-                )
-    ax0.xaxis.set_label_text("")
-    ax0.set_ylabel("Fountain Discharge ($m^3$)")
-    plt.legend(loc="upper center", ncol=3)
-    ax0.grid(axis="y", color="#0C70DE", alpha=0.3, linewidth=0.5, which="major")
-    at = AnchoredText("(a)", prop=dict(size=10), frameon=True, loc="upper left")
-    at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-    x_axis = ax0.axes.get_xaxis()
-    x_axis.set_visible(False)
-    ax0.add_artist(at)
+    # ax0 = fig.add_subplot(5, 1, 1)
+    # ax0 = y0.plot.bar(
+    #             stacked=True, 
+    #             edgecolor="black", 
+    #             linewidth=0.5, 
+    #             color=[skyblue, "xkcd:azure", "#0C70DE"],
+    #             ax=ax0
+    #             )
+    # ax0.xaxis.set_label_text("")
+    # ax0.set_ylabel("Fountain Discharge ($m^3$)")
+    # plt.legend(loc="upper center", ncol=3)
+    # ax0.grid(axis="y", color="#0C70DE", alpha=0.3, linewidth=0.5, which="major")
+    # at = AnchoredText("(a)", prop=dict(size=10), frameon=True, loc="upper left")
+    # at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+    # x_axis = ax0.axes.get_xaxis()
+    # x_axis.set_visible(False)
+    # ax0.add_artist(at)
 
-    ax1 = fig.add_subplot(5, 1, 2)
+    # ax1 = fig.add_subplot(5, 1, 2)
+    ax1 = fig.add_subplot(2, 1, 1)
     ax1 = z.plot.bar(
                 stacked=True, 
                 edgecolor="black", 
@@ -341,12 +343,13 @@ def summary_figures(self):
     # plt.ylim(-125, 125)
     x_axis = ax1.axes.get_xaxis()
     x_axis.set_visible(False)
-    at = AnchoredText("(b)", prop=dict(size=10), frameon=True, loc="upper left")
+    at = AnchoredText("(a)", prop=dict(size=10), frameon=True, loc="upper left")
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
     ax1.add_artist(at)
 
-    ax2 = fig.add_subplot(5, 1, 3)
-    y2.plot(
+    # ax2 = fig.add_subplot(5, 1, 3)
+    ax2 = fig.add_subplot(2, 1, 2)
+    ax2 = y2.plot(
         kind="bar",
         stacked=True,
         edgecolor="black",
@@ -360,37 +363,39 @@ def summary_figures(self):
     if y2.sum(axis=1).max() > 1: ax2.set_ylim(-0.1, 0.1) # Uneven thickness
     ax2.yaxis.set_minor_locator(AutoMinorLocator())
     ax2.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
-    x_axis = ax2.axes.get_xaxis()
-    x_axis.set_visible(False)
-    at = AnchoredText("(c)", prop=dict(size=10), frameon=True, loc="upper left")
+    # x_axis = ax2.axes.get_xaxis()
+    # x_axis.set_visible(False)
+    at = AnchoredText("(b)", prop=dict(size=10), frameon=True, loc="upper left")
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
     ax2.add_artist(at)
 
-    ax3 = fig.add_subplot(5, 1, 4)
-    ax3 = y3.plot.bar(
-        y="SA", linewidth=0.5, edgecolor="black", color="xkcd:grey", ax=ax3
-    )
-    ax3.xaxis.set_label_text("")
-    ax3.set_ylabel("Surface Area ($m^2$)")
-    ax3.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
-    x_axis = ax3.axes.get_xaxis()
-    x_axis.set_visible(False)
-    at = AnchoredText("(d)", prop=dict(size=10), frameon=True, loc="upper left")
-    at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-    ax3.add_artist(at)
-
-    ax4 = fig.add_subplot(5, 1, 5)
-    ax4 = y4.plot.bar(
-        x="When", y="iceV", linewidth=0.5, edgecolor="black", color=skyblue, ax=ax4
-    )
-    ax4.xaxis.set_label_text("")
-    ax4.set_ylabel("Ice Volume($m^3$)")
-    ax4.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
-    at = AnchoredText("(e)", prop=dict(size=10), frameon=True, loc="upper left")
-    at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-    ax4.add_artist(at)
-    ax4.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax4.xaxis.set_minor_locator(mdates.DayLocator())
+#     ax3 = fig.add_subplot(5, 1, 4)
+#     ax3 = y3.plot.bar(
+#         y="SA", linewidth=0.5, edgecolor="black", color="xkcd:grey", ax=ax3
+#     )
+#     ax3.xaxis.set_label_text("")
+#     ax3.set_ylabel("Surface Area ($m^2$)")
+#     ax3.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
+#     x_axis = ax3.axes.get_xaxis()
+#     x_axis.set_visible(False)
+#     at = AnchoredText("(d)", prop=dict(size=10), frameon=True, loc="upper left")
+#     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+#     ax3.add_artist(at)
+# 
+#     ax4 = fig.add_subplot(5, 1, 5)
+#     ax4 = y4.plot.bar(
+#         x="When", y="iceV", linewidth=0.5, edgecolor="black", color=skyblue, ax=ax4
+#     )
+#     ax4.xaxis.set_label_text("")
+#     ax4.set_ylabel("Ice Volume($m^3$)")
+#     ax4.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
+#     at = AnchoredText("(e)", prop=dict(size=10), frameon=True, loc="upper left")
+#     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+#     ax4.add_artist(at)
+    # ax4.xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax4.xaxis.set_minor_locator(mdates.DayLocator())
+    ax2.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax2.xaxis.set_minor_locator(mdates.DayLocator())
     fig.autofmt_xdate()
     plt.xticks(rotation=45)
     plt.tight_layout()
