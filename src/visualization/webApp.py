@@ -79,7 +79,7 @@ if __name__ == "__main__":
     )
 
     # location = "Gangles 2021"
-    trigger = "Manual"
+    # trigger = "Manual"
 
     SITE, FOLDER = config(location)
 
@@ -277,9 +277,9 @@ if __name__ == "__main__":
         st.error("Please select at least one visualization.")
     else:
         if "Validation" in display:
-            df_c = pd.read_hdf(icestupa.input + "model_input_" + icestupa.trigger + ".h5", "df_c")
+            df_c = pd.read_hdf(icestupa.input + "model_input.h5", "df_c")
 
-            # df_c = pd.read_hdf(icestupa.input + "model_input_" + icestupa.trigger + ".h5", "df_c")
+            # df_c = pd.read_hdf(icestupa.input + "model_input.h5", "df_c")
             df_c = df_c.set_index("When")
             icestupa.df= icestupa.df.set_index("When")
             tol = pd.Timedelta('1T')
@@ -298,7 +298,7 @@ if __name__ == "__main__":
             
 
             if icestupa.name in ["guttannen21", "guttannen20"]:
-                df_cam = pd.read_hdf(icestupa.input + "model_input_" + icestupa.trigger + ".h5", "df_cam")
+                df_cam = pd.read_hdf(icestupa.input + "model_input.h5", "df_cam")
                 df = pd.merge_asof(left=icestupa.df,right=df_cam,right_index=True,left_index=True,direction='nearest',tolerance=tol)
                 rmse_T = (((df.cam_temp - df.T_s) ** 2).mean() ** .5)
                 corr_T = df['cam_temp'].corr(df['T_s'])
@@ -309,9 +309,7 @@ if __name__ == "__main__":
             st.write("## Validation")
             path = (
                 output_folder
-                + "paper_figures/Vol_Validation_"
-                + icestupa.trigger
-                + ".jpg"
+                + "paper_figures/Vol_Validation.jpg"
             )
             st.image(path)
             st.write(
@@ -324,9 +322,7 @@ if __name__ == "__main__":
             if SITE["name"] in ["guttannen21", "guttannen20"]:
                 path = (
                     output_folder
-                    + "paper_figures/Temp_Validation_"
-                    + icestupa.trigger
-                    + ".jpg"
+                    + "paper_figures/Temp_Validation.jpg"
                 )
                 st.image(path)
                 st.write(
@@ -353,7 +349,7 @@ if __name__ == "__main__":
         if "Data Overview" in display:
             st.write("## Input variables")
             st.image(
-                output_folder + "paper_figures/Model_Input_" + trigger + ".jpg"
+                output_folder + "paper_figures/Model_Input.jpg"
             )
             st.write(
                 """
@@ -366,7 +362,7 @@ if __name__ == "__main__":
             )
             st.write("## Output variables")
             st.image(
-                output_folder + "paper_figures/Model_Output_" + trigger + ".jpg"
+                output_folder + "paper_figures/Model_Output.jpg"
             )
             st.write(
                 """

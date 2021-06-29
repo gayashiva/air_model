@@ -19,71 +19,8 @@ from src.models.methods.calibration import get_calibration
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
+from src.utils.uq_air import UQ_Icestupa, max_volume
 
-
-def max_volume(time, values, info, result=[]):
-    # Calculate the feature using time, values and info.
-    icev_max = values.max()
-    # result.append([info, icev_max])
-    for param_name in sorted(info.keys()):
-        print("\n\t%s: %r" % (param_name, info[param_name]))
-    print("Max Ice Volume %0.1f\n"% (icev_max))
-    # Return the feature times and values.
-    return None, icev_max  # todo include efficiency
-
-class UQ_Icestupa(un.Model, Icestupa):
-    def __init__(self, location="Guttannen 2021"):
-        super(UQ_Icestupa, self).__init__(
-            labels=["Time (days)", "Ice Volume ($m^3$)"], interpolate=True
-        )
-
-        SITE, FOLDER = config(location)
-        initial_data = [SITE, FOLDER]
-
-        # Initialise all variables of dictionary
-        for dictionary in initial_data:
-            for key in dictionary:
-                setattr(self, key, dictionary[key])
-                logger.info(f"%s -> %s" % (key, str(dictionary[key])))
-
-        self.read_input()
-        self.self_attributes()
-        # result = []
-
-        if location == "guttannen21":
-            self.total_days = 180
-        if location == "schwarzsee19":
-            self.total_days = 60
-        if location == "guttannen20":
-            self.total_days = 110
-        if location == "gangles21":
-            self.total_days = 150
-
-    def run(self, **parameters):
-
-        self.set_parameters(**parameters)
-        # logger.info(parameters.values())
-
-        if "A_I" or "A_S" or "T_PPT" or "T_DECAY" or "H_PPT" in parameters.keys():
-            """Albedo Decay parameters initialized"""
-            self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
-            s = 0
-            if self.name in ["schwarzsee19", "guttannen20"]:
-                f = 0  # Start with snow event
-            else:
-                f = 1
-            for i, row in self.df.iterrows():
-                s, f = self.get_albedo(i, s, f)
-
-        self.melt_freeze()
-
-        if len(self.df) >= self.total_days * 24:
-            self.df = self.df[: self.total_days * 24]
-        else:
-            for i in range(len(self.df), self.total_days * 24):
-                self.df.loc[i, "iceV"] = self.df.loc[i-1, "iceV"]
-
-        return self.df.index.values, self.df["iceV"].values, parameters
 
 if __name__ == "__main__":
     # Main logger
@@ -94,7 +31,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location="schwarzsee19"
+    location="guttannen20"
 
     # Get settings for given location and trigger
     SITE, FOLDER = config(location)
@@ -118,15 +55,17 @@ if __name__ == "__main__":
     H_PPT_dist = cp.Uniform(0, 2)
     T_W_dist = cp.Uniform(0, 5)
 
+    # total_days = int(icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24))
+
     parameters = {
             "IE": ie_dist,
             "A_I": a_i_dist,
             "A_S": a_s_dist,
             "T_PPT": T_PPT_dist,
-            # "H_PPT": H_PPT_dist,
+            "H_PPT": H_PPT_dist,
             "DX": dx_dist,
-            # "A_DECAY": a_decay_dist,
-            "T_W": T_W_dist,
+            "A_DECAY": a_decay_dist,
+            # "T_W": T_W_dist,
     }
     parameters = un.Parameters(parameters)
 

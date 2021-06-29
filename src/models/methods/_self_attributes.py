@@ -43,14 +43,14 @@ def self_attributes(self, save=False):
 
     if save:
         df_c.to_hdf(
-            self.input + "model_input_" + self.trigger + ".h5",
+            self.input + "model_input.h5",
             key="df_c",
             mode="w",
         )
 
         if self.name in ["guttannen21", "guttannen20"]:
             df_cam.to_hdf(
-                self.input + "model_input_" + self.trigger + ".h5",
+                self.input + "model_input.h5",
                 key="df_cam",
                 mode="a",
             )
