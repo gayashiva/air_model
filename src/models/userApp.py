@@ -38,7 +38,6 @@ if __name__ == "__main__":
     if answers["run"] == "yes":
         # Derive all the input parameters
         icestupa.derive_parameters()
-        # icestupa.read_input()
 
         # Generate results
         icestupa.melt_freeze(test=True)
