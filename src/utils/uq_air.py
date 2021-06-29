@@ -74,11 +74,14 @@ class UQ_Icestupa(un.Model, Icestupa):
 
         self.melt_freeze()
 
-        if len(self.df) >= self.total_days * 24:
-            self.df = self.df[: self.total_days * 24]
+        if len(self.df) != 0:
+            if len(self.df) >= self.total_days * 24:
+                self.df = self.df[: self.total_days * 24]
+            else:
+                for i in range(len(self.df), self.total_days * 24):
+                    self.df.loc[i, "iceV"] = self.df.loc[i-1, "iceV"]
         else:
-            for i in range(len(self.df), self.total_days * 24):
-                self.df.loc[i, "iceV"] = self.df.loc[i-1, "iceV"]
+            self.df["iceV"] = 0
 
         return self.df.index.values, self.df["iceV"].values, parameters
 
@@ -109,7 +112,7 @@ if __name__ == "__main__":
         a_i_dist = cp.Uniform(icestupa.A_I * .95, icestupa.A_I * 1.05)
         a_s_dist = cp.Uniform(icestupa.A_S * .95, icestupa.A_S * 1.05)
         dx_dist = cp.Uniform(icestupa.DX * .95, icestupa.DX * 1.05)
-        r_spray = cp.Uniform(icestupa.r_spray * .95, icestupa.r_spray * 1.05)
+        r_spray_dist = cp.Uniform(icestupa.r_spray * .95, icestupa.r_spray * 1.05)
 
         ie_dist = cp.Uniform(0.949, 0.993)
         a_decay_dist = cp.Uniform(1, 22)
