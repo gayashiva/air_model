@@ -41,32 +41,17 @@ if __name__ == "__main__":
         level=logging.INFO,
         logger=logger,
     )
-    location = "guttannen20"
+    # location = "guttannen21"
     # location = "schwarzsee19"
-    # location = "gangles21"
+    location = "gangles21"
 
 
     SITE, FOLDER = config(location)
-
-    # df_d = get_discharge(location)
-    # start_date = df_d.loc[0,"When"]
-    # logger.error(df_d[df_d["Discharge"].isna()])
-    # logger.info("Model starts at %s"%start_date)
-
-    # logger.warning(
-    #     f"Mean Discharge:%.2f fountain off date:%s"
-    #     % (
-    #         (df_d.Discharge.replace(0, np.nan).mean()),
-    #         (SITE['fountain_off_date']),
-    #     )
-    # )
 
     if location in ["gangles21"]:
         df = get_field(location)
         df = df.set_index("When")
         df = df[SITE['start_date']:SITE["end_date"]]
-        # df_d = df_d.set_index("When")
-        # df["Discharge"] = df_d["Discharge"]
         df = df.reset_index()
         logger.info(df.missing_type.describe())
         logger.info(df.missing_type.unique())
@@ -81,7 +66,6 @@ if __name__ == "__main__":
         df = df.set_index("When")
         df = df[SITE['start_date']:SITE["end_date"]]
         df = df.reset_index()
-        # df["Discharge"] = df_d["Discharge"]
 
         # Replace Wind zero values for 3 hours
         mask = df.v_a.shift().eq(df.v_a)
@@ -118,7 +102,6 @@ if __name__ == "__main__":
 
         # Fit ERA5 to field data
         if SITE["name"] in ["guttannen21", "guttannen20"]:
-            # fit_list = ["T_a", "RH", "v_a","Prec"]
             fit_list = ["T_a", "RH", "v_a"]
 
         if SITE["name"] in ["schwarzsee19"]:

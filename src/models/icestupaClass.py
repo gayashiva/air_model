@@ -56,9 +56,6 @@ class Icestupa:
     T_W = 1  # FOUNTAIN Water temperature
     mean_discharge = 10 
 
-    """Simulation constants"""
-    trigger = "Manual"
-
     """Model constants"""
     DT = 60*60 # Model time step
     DX = 20e-03 #m Surface layer thickness growth rate
@@ -186,11 +183,11 @@ class Icestupa:
                     self.df.loc[:, column] = self.df[column].interpolate()
 
         self.df.to_hdf(
-            self.input + "model_input_" + self.trigger + ".h5",
+            self.input + "model_input.h5",
             key="df",
             mode="a",
         )
-        self.df.to_csv(self.input + "model_input_" + self.trigger + ".csv")
+        self.df.to_csv(self.input + "model_input.csv")
         logger.debug(self.df.head())
         logger.debug(self.df.tail())
 
@@ -214,16 +211,16 @@ class Icestupa:
         print("Duration", round(Duration, 2))
 
         # Full Output
-        filename4 = self.output + "model_output_" + self.trigger + ".csv"
+        filename4 = self.output + "model_output.csv"
         self.df.to_csv(filename4, sep=",")
         self.df.to_hdf(
-            self.output + "model_output_" + self.trigger + ".h5",
+            self.output + "model_output.h5",
             key="df",
             mode="a",
         )
 
         # # Output for manim
-        # filename2 = os.path.join(self.output, self.name + "_manim_" + self.trigger + ".csv")
+        # filename2 = os.path.join(self.output, self.name + "_manim.csv")
         # df = self.df.copy()
         # cols = ["When", "h_ice", "h_s", "r_ice", "ice", "T_a", "Discharge"]
         # df = df[cols]
@@ -232,18 +229,18 @@ class Icestupa:
 
     def read_input(self):  # Use processed input dataset
 
-        self.df = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df")
+        self.df = pd.read_hdf(self.input + "model_input.h5", "df")
 
         self.change_freq()
 
-        df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
+        df_c = pd.read_hdf(self.input + "model_input.h5", "df_c")
 
         if self.df.isnull().values.any():
             logger.warning("\n Null values present\n")
 
     def read_output( self ):  # Reads output
 
-        self.df = pd.read_hdf(self.output + "model_output_" + self.trigger + ".h5", "df")
+        self.df = pd.read_hdf(self.output + "model_output.h5", "df")
 
         self.change_freq()
         self.self_attributes()

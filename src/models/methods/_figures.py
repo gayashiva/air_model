@@ -70,7 +70,7 @@ def summary_figures(self):
 
     # dome_vol = self.df[self.df.iceV !=0].reset_index().iceV[0]
 
-    df_c = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_c")
+    df_c = pd.read_hdf(self.input + "model_input.h5", "df_c")
 
     df_c = df_c[["When", "DroneV", "DroneVError"]]
     if self.name in ["guttannen21", "guttannen20", "gangles21"]:
@@ -83,7 +83,7 @@ def summary_figures(self):
     self.df= self.df.reset_index()
 
     if self.name in ["guttannen21", "guttannen20"]:
-        df_cam = pd.read_hdf(self.input + "model_input_" + self.trigger + ".h5", "df_cam")
+        df_cam = pd.read_hdf(self.input + "model_input.h5", "df_cam")
         tol = pd.Timedelta('15T')
         self.df= self.df.set_index("When")
         df_cam = pd.merge_asof(left=self.df,right=df_cam,right_index=True,left_index=True,direction='nearest',tolerance=tol)
@@ -227,7 +227,7 @@ def summary_figures(self):
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
     fig.autofmt_xdate()
     plt.savefig(
-        output + "paper_figures/Model_Input_" + self.trigger + ".jpg",
+        output + "paper_figures/Model_Input.jpg",
         dpi=300,
         bbox_inches="tight",
     )
@@ -400,7 +400,7 @@ def summary_figures(self):
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.savefig(
-        output + "paper_figures/Model_Output_" + self.trigger + ".jpg",
+        output + "paper_figures/Model_Output.jpg",
         dpi=300,
         bbox_inches="tight",
     )
@@ -482,7 +482,7 @@ def summary_figures(self):
     ax.xaxis.set_minor_locator(mdates.DayLocator())
     fig.autofmt_xdate()
     plt.savefig(
-        output + "paper_figures/Vol_Validation_" + self.trigger + ".jpg",
+        output + "paper_figures/Vol_Validation.jpg",
         dpi=300,
         bbox_inches="tight",
     )
@@ -519,7 +519,7 @@ def summary_figures(self):
         ax.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
         plt.savefig(
-            output + "paper_figures/Temp_Validation_" + self.trigger + ".jpg",
+            output + "paper_figures/Temp_Validation.jpg",
             dpi=300,
             bbox_inches="tight",
         )
