@@ -81,7 +81,8 @@ class UQ_Icestupa(un.Model, Icestupa):
                 for i in range(len(self.df), self.total_days * 24):
                     self.df.loc[i, "iceV"] = self.df.loc[i-1, "iceV"]
         else:
-            self.df["iceV"] = 0
+            for i in range(0, self.total_days * 24):
+                self.df.loc[i, "iceV"] = self.V_dome 
 
         return self.df.index.values, self.df["iceV"].values, parameters
 
