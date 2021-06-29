@@ -91,7 +91,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    locations = ['guttannen20', 'guttannen21', 'gangles21', 'schwarzsee19']
+    locations = ['guttannen20', 'guttannen21', 'gangles21']
 
     for location in locations:
         # Get settings for given location and trigger
@@ -116,11 +116,9 @@ if __name__ == "__main__":
         H_PPT_dist = cp.Uniform(0, 2)
         T_W_dist = cp.Uniform(0, 5)
         if location in ['guttannen21', 'guttannen20']:
-            discharge_dist = cp.Uniform(5, 10)
+            d_dist = cp.Uniform(5, 10)
         if location == 'gangles21':
-            discharge_dist = cp.Uniform(30, 90)
-
-        total_days = int(icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24))
+            d_dist = cp.Uniform(30, 90)
 
         parameters_single = {
             "IE": ie_dist,
@@ -131,7 +129,7 @@ if __name__ == "__main__":
             "H_PPT": H_PPT_dist,
             "T_W": T_W_dist,
             "DX": dx_dist,
-            "mean_discharge": discharge_dist,
+            "d_mean": d_dist,
         }
 
 

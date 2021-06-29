@@ -54,8 +54,9 @@ if __name__ == "__main__":
         "A_I",
         "A_S",
         "A_DECAY",
-        "T_W",
         "DX",
+        "T_W",
+        "d_mean",
     ]
     names_label = [
         "$T_{ppt}$",
@@ -64,8 +65,9 @@ if __name__ == "__main__":
         r"$\alpha_{ice}$",
         r"$\alpha_{snow}$",
         "$\\tau$",
-        "$T_{water}$",
         "$\\Delta x$",
+        "$T_{water}$",
+        "$d_{mean}$",
     ]
     zip_iterator = zip(names, names_label)
     param_dictionary = dict(zip_iterator)
@@ -77,7 +79,6 @@ if __name__ == "__main__":
     result= []
     fig, ax = plt.subplots()
     for location in locations:
-        # Get settings for given location and trigger
         SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
         icestupa.read_output()

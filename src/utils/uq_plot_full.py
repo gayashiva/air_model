@@ -4,6 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 import math
+from matplotlib.offsetbox import AnchoredText
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.colors
 import uncertainpy as un
@@ -21,7 +22,6 @@ from src.models.methods.metadata import get_parameter_metadata
 
 if __name__ == "__main__":
 
-    # location = "gangles21"
     # locations = ['guttannen21',  'gangles21', 'guttannen20', 'schwarzsee19']
     locations = ['guttannen21',  'gangles21', 'guttannen20']
     # locations = ['guttannen21',  'gangles21']
@@ -46,8 +46,9 @@ if __name__ == "__main__":
          end ='1-1-2024', freq ='D', name= "When")
     df_out = pd.DataFrame(columns=locations,index=index)
 
-    fig, ax = plt.subplots(len(locations), 1, sharex='col', figsize=(12, 14))
-    fig.subplots_adjust(hspace=0.4, wspace=0.4)
+    # fig, ax = plt.subplots(len(locations), 1, sharex='col', figsize=(12, 14))
+    fig, ax = plt.subplots(len(locations), 1, sharex='col')
+    # fig.subplots_adjust(hspace=0.1, wspace=0.1)
     i=0
 
     for location in locations:
@@ -74,6 +75,7 @@ if __name__ == "__main__":
         filename1 = FOLDER['sim']+ "full.h5"
         data.load(filename1)
 
+        survived_days = icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24)
         if location == 'schwarzsee19':
             SITE["start_date"] +=pd.offsets.DateOffset(year=2023)
         if location == 'guttannen20':
@@ -88,13 +90,19 @@ if __name__ == "__main__":
             end=SITE["start_date"]+ timedelta(hours=total_days * 24 - 1),
             freq="1H",
         )
+        days2 = pd.date_range(
+            start=SITE["start_date"]+ timedelta(hours= 1),
+            end=SITE["start_date"]+ timedelta(hours=survived_days * 24 - 1),
+            freq="1H",
+        )
 
         data = data[location]
-
-        data["When"] = days
+        data['percentile_5'] = data['percentile_5'][1:len(days2)+1]
+        data['percentile_95'] = data['percentile_95'][1:len(days2)+1]
+        data["When"] = days2
 
         df = icestupa.df[["When","iceV"]]
-        df_c = pd.read_hdf(FOLDER["input"] + "model_input_" + icestupa.trigger + ".h5", "df_c")
+        df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
         if icestupa.name in ["guttannen21", "guttannen20", "gangles21"]:
             df_c = df_c[1:]
         df_c = df_c.set_index("When").resample("D").mean().reset_index()
@@ -125,8 +133,8 @@ if __name__ == "__main__":
         # df_out[location] = icestupa.df["iceV"] 
         df= df.reset_index()
 
-        x = df.When
-        y1 = df.iceV
+        x = df.When[1:]
+        y1 = df.iceV[1:]
         x2 = dfv.When
         y2 = dfv.DroneV
         ax[i].plot(
@@ -147,19 +155,32 @@ if __name__ == "__main__":
             label="90% prediction interval",
         )
         ax[i].scatter(x2, y2, color=CB91_Green, s=5, label="Measured Volume", zorder=2)
-        ax[i].fill_between(x, y1=icestupa.V_dome, y2=0, color=grey, label = "Dome Volume", zorder=0)
-        ax[i].set_ylim(0, round(data.percentile_95.max(),0))
+        # ax[i].fill_between(x, y1=icestupa.V_dome, y2=0, color=grey, label = "Dome Volume", zorder=0)
+        ax[i].set_ylim(round(icestupa.V_dome,0), round(data.percentile_95.max(),0))
         v = get_parameter_metadata(location)
-        ax[i].title.set_text(v["shortname"])
+        at = AnchoredText( v['shortname'], prop=dict(size=10), frameon=True, loc="upper left")
+        at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+        if i != 2:
+            x_axis = ax[i].axes.get_xaxis()
+            x_axis.set_visible(False)
+            ax[i].spines['bottom'].set_visible(False)
+        ax[i].add_artist(at)
+        # ax[i].title.set_text(v["shortname"])
         # Hide the right and top spines
         ax[i].spines['right'].set_visible(False)
         ax[i].spines['top'].set_visible(False)
+        ax[i].spines['left'].set_color('grey')
+        ax[i].spines['bottom'].set_color('grey')
+        [t.set_color('grey') for t in ax[i].xaxis.get_ticklines()]
+        [t.set_color('grey') for t in ax[i].yaxis.get_ticklines()]
+        # ax[i].tick_params(axis='x', colors='grey')
+        # ax[i].axes.get_yaxis().label.set_color('red')
         # Only show ticks on the left and bottom spines
         ax[i].yaxis.set_ticks_position('left')
         ax[i].xaxis.set_ticks_position('bottom')
         ax[i].yaxis.set_major_locator(plt.LinearLocator(numticks=2))
         ax[i].xaxis.set_major_locator(mdates.MonthLocator())
-        ax[i].xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax[i].xaxis.set_major_formatter(mdates.DateFormatter("%b"))
         fig.autofmt_xdate()
 
         # df_out = df_out.set_index("When")
@@ -167,7 +188,7 @@ if __name__ == "__main__":
     fig.text(0.04, 0.5, 'Ice Volume[$m^3$]', va='center', rotation='vertical')
     handles, labels = ax[1].get_legend_handles_labels()
     fig.legend(handles, labels, loc='upper right')
-    fig.suptitle('Artificial Ice Reservoirs', fontsize=16)
+    # fig.suptitle('Artificial Ice Reservoirs', fontsize=16)
     # plt.legend()
-    plt.savefig("data/paper/try3.jpg", bbox_inches="tight", dpi=300)
+    plt.savefig("data/paper/icev_results.jpg", bbox_inches="tight", dpi=300)
 
