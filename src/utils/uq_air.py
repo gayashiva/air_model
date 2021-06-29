@@ -64,6 +64,9 @@ class UQ_Icestupa(un.Model, Icestupa):
         self.set_parameters(**parameters)
         # logger.info(parameters.values())
 
+        if "r_spray" in parameters.keys():
+            self.self_attributes()
+
         if "A_I" or "A_S" or "T_PPT" or "T_DECAY" or "H_PPT" in parameters.keys():
             """Albedo Decay parameters initialized"""
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
