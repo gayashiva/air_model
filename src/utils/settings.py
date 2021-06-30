@@ -33,6 +33,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
+            H_AWS = 2,
             # perimeter=45, # on Feb 11
         )
 
@@ -54,6 +55,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
+            H_AWS = 2,
             # perimeter=28, # on 24 Jan
         )
 
@@ -93,6 +95,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             utc_offset=5.5,
             longitude=77.606949,
             latitude=34.216638,
+            H_AWS = 2,
             # perimeter=82.3, # On 3 Mar
         )
 

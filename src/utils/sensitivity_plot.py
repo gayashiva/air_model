@@ -42,23 +42,23 @@ if __name__ == "__main__":
 
     names = [
         "T_PPT",
-        "H_PPT",
         "IE",
         "A_I",
         "A_S",
         "A_DECAY",
+        "MU_CONE",
         "DX",
         "T_W",
-        "d_mean",
+        "D_MEAN",
         "r_spray",
     ]
     names_label = [
         "$T_{ppt}$",
-        "$H_{ppt}$",
         "$\\epsilon_{ice}$",
         r"$\alpha_{ice}$",
         r"$\alpha_{snow}$",
         "$\\tau$",
+        r"$\mu_{cone}$",
         "$\\Delta x$",
         "$T_{water}$",
         "$d_{mean}$",
