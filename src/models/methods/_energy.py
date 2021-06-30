@@ -84,14 +84,15 @@ def get_energy(self, i):
     # Bulk Temperature
     self.df.loc[i + 1, "T_bulk"] = self.df.loc[i, "T_bulk"] - self.df.loc[i, "Qg"] * self.DT * self.df.loc[i, "SA"] / (self.df.loc[i, "ice"] * self.C_I)
 
+    # TODO add oerleman formulation
     # Total Energy W/m2
     self.df.loc[i, "Qsurf"] = (
         self.df.loc[i, "SW"]
         + self.df.loc[i, "LW"]
-        + self.df.loc[i, "Qs"]
+        + (1+self.df.loc[i, "s_cone"]/2) * self.df.loc[i, "Qs"]
+        + (1+self.df.loc[i, "s_cone"]/2) * self.df.loc[i, "Ql"]
         + self.df.loc[i, "Qf"]
         + self.df.loc[i, "Qg"]
-        + self.df.loc[i, "Ql"]
     )
 
 def test_get_energy(self, i):

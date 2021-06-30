@@ -14,7 +14,7 @@ def get_albedo(
 ):  # Albedo Scheme described in
 
     # Precipitation event
-    if self.df.T_a[i] < self.T_PPT and self.df.Prec[i] > self.H_PPT:  # Snow event
+    if self.df.T_a[i] < self.T_PPT and self.df.Prec[i] > 0:  # Snow event
         f = 0
         s = 0
 

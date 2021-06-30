@@ -25,8 +25,8 @@ if __name__ == "__main__":
     )
 
     answers = dict(
-        # location="Schwarzsee 2019",
-        location="Guttannen 2021",
+        location="Schwarzsee 2019",
+        # location="Guttannen 2021",
         # location="Gangles 2021",
         run="yes",
         # run="no",

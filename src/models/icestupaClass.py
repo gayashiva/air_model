@@ -49,7 +49,7 @@ class Icestupa:
     A_DECAY = 10  # Albedo decay rate decay_t_d
     Z = 0.0017  # Ice Momentum and Scalar roughness length
     T_PPT = 1  # Temperature condition for liquid precipitation
-    H_PPT = 1 # mm Precipitaion height that changes albedo
+    # H_PPT = 1 # mm Precipitaion height that changes albedo
     # DX_DT = 5.5556e-06 #m/s Surface layer thickness growth rate
 
     """Fountain constants"""
@@ -355,7 +355,7 @@ class Icestupa:
                 )
 
             # Precipitation to ice quantity
-            if self.df.loc[i, "T_a"] < self.T_PPT and self.df.loc[i, "Prec"] > self.H_PPT:
+            if self.df.loc[i, "T_a"] < self.T_PPT and self.df.loc[i, "Prec"] > 0:
                 self.df.loc[i, "ppt"] = (
                     self.RHO_W
                     * self.df.loc[i, "Prec"]
