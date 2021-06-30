@@ -89,8 +89,8 @@ def get_energy(self, i):
     self.df.loc[i, "Qsurf"] = (
         self.df.loc[i, "SW"]
         + self.df.loc[i, "LW"]
-        + (1+self.df.loc[i, "s_cone"]/2) * self.df.loc[i, "Qs"]
-        + (1+self.df.loc[i, "s_cone"]/2) * self.df.loc[i, "Ql"]
+        + (1 + self.MU_CONE * self.df.loc[i, "s_cone"]) * self.df.loc[i, "Qs"]
+        + (1 + self.MU_CONE * self.df.loc[i, "s_cone"]) * self.df.loc[i, "Ql"]
         + self.df.loc[i, "Qf"]
         + self.df.loc[i, "Qg"]
     )

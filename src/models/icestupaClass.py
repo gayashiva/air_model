@@ -49,6 +49,7 @@ class Icestupa:
     A_DECAY = 10  # Albedo decay rate decay_t_d
     Z = 0.0017  # Ice Momentum and Scalar roughness length
     T_PPT = 1  # Temperature condition for liquid precipitation
+    MU_CONE = 0.5 # Turbulence of cone
     # H_PPT = 1 # mm Precipitaion height that changes albedo
     # DX_DT = 5.5556e-06 #m/s Surface layer thickness growth rate
 
