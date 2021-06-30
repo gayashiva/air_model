@@ -64,6 +64,9 @@ class UQ_Icestupa(un.Model, Icestupa):
         self.set_parameters(**parameters)
         # logger.info(parameters.values())
 
+        if "r_spray" in parameters.keys():
+            self.self_attributes()
+
         if "A_I" or "A_S" or "T_PPT" or "T_DECAY" or "H_PPT" in parameters.keys():
             """Albedo Decay parameters initialized"""
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
@@ -74,11 +77,15 @@ class UQ_Icestupa(un.Model, Icestupa):
 
         self.melt_freeze()
 
-        if len(self.df) >= self.total_days * 24:
-            self.df = self.df[: self.total_days * 24]
+        if len(self.df) != 0:
+            if len(self.df) >= self.total_days * 24:
+                self.df = self.df[: self.total_days * 24]
+            else:
+                for i in range(len(self.df), self.total_days * 24):
+                    self.df.loc[i, "iceV"] = self.df.loc[i-1, "iceV"]
         else:
-            for i in range(len(self.df), self.total_days * 24):
-                self.df.loc[i, "iceV"] = self.df.loc[i-1, "iceV"]
+            for i in range(0, self.total_days * 24):
+                self.df.loc[i, "iceV"] = self.V_dome 
 
         return self.df.index.values, self.df["iceV"].values, parameters
 
@@ -91,7 +98,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    locations = ['guttannen20', 'guttannen21', 'gangles21', 'schwarzsee19']
+    locations = ['guttannen20', 'guttannen21', 'gangles21']
 
     for location in locations:
         # Get settings for given location and trigger
@@ -109,18 +116,16 @@ if __name__ == "__main__":
         a_i_dist = cp.Uniform(icestupa.A_I * .95, icestupa.A_I * 1.05)
         a_s_dist = cp.Uniform(icestupa.A_S * .95, icestupa.A_S * 1.05)
         dx_dist = cp.Uniform(icestupa.DX * .95, icestupa.DX * 1.05)
-
+        r_spray_dist = cp.Uniform(icestupa.r_spray * .95, icestupa.r_spray * 1.05)
         ie_dist = cp.Uniform(0.949, 0.993)
         a_decay_dist = cp.Uniform(1, 22)
         T_PPT_dist = cp.Uniform(0, 2)
         H_PPT_dist = cp.Uniform(0, 2)
         T_W_dist = cp.Uniform(0, 5)
         if location in ['guttannen21', 'guttannen20']:
-            discharge_dist = cp.Uniform(5, 10)
+            d_dist = cp.Uniform(5, 10)
         if location == 'gangles21':
-            discharge_dist = cp.Uniform(30, 90)
-
-        total_days = int(icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24))
+            d_dist = cp.Uniform(30, 90)
 
         parameters_single = {
             "IE": ie_dist,
@@ -131,7 +136,8 @@ if __name__ == "__main__":
             "H_PPT": H_PPT_dist,
             "T_W": T_W_dist,
             "DX": dx_dist,
-            "mean_discharge": discharge_dist,
+            "d_mean": d_dist,
+            "r_spray": r_spray_dist,
         }
 
 
