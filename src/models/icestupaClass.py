@@ -75,17 +75,10 @@ class Icestupa:
         input_file = self.input + self.name + "_input_model.csv"
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["When"])
 
-        # mask = self.df["When"] >= self.start_date
-        # mask &= self.df["When"] <= self.end_date
-        # self.df = self.df.loc[mask]
-        # self.df = self.df.reset_index(drop=True)
-
+        # Drops garbage columns
         self.df = self.df[
             self.df.columns.drop(list(self.df.filter(regex="Unnamed")))
-        ]  # Drops garbage columns
-
-        # """Surface layer thickness"""
-        # self.DX = self.DX_DT * self.DT
+        ]  
 
         logger.debug(self.df.head())
         logger.debug(self.df.tail())
@@ -115,7 +108,6 @@ class Icestupa:
 
         for row in stqdm(
             self.df[1:].itertuples(),
-            # range(1,self.df.shape[0]),
             total=self.df.shape[0],
             desc="Creating AIR input...",
         ):
@@ -176,7 +168,6 @@ class Icestupa:
         self.df = self.df.round(3)
 
         if self.df.isnull().values.any():
-            # print(self.df[self.df.columns].isna().sum())
             for column in self.df.columns:
                 if self.df[column].isna().sum() > 0: 
                     logger.warning(" Null values interpolated in %s" %column)
@@ -219,21 +210,11 @@ class Icestupa:
             mode="a",
         )
 
-        # # Output for manim
-        # filename2 = os.path.join(self.output, self.name + "_manim.csv")
-        # df = self.df.copy()
-        # cols = ["When", "h_ice", "h_s", "r_ice", "ice", "T_a", "Discharge"]
-        # df = df[cols]
-        # df.set_index('When').to_csv(filename2, sep=",")
-        # logger.info("Manim output produced")
-
     def read_input(self):  # Use processed input dataset
 
         self.df = pd.read_hdf(self.input + "model_input.h5", "df")
 
         self.change_freq()
-
-        df_c = pd.read_hdf(self.input + "model_input.h5", "df_c")
 
         if self.df.isnull().values.any():
             logger.warning("\n Null values present\n")
@@ -341,7 +322,6 @@ class Icestupa:
 
                 self.df = self.df[1 : i]
                 self.df = self.df.reset_index(drop=True)
-
                 break
 
             self.get_area(i)
@@ -350,6 +330,11 @@ class Icestupa:
                 self.test_get_energy(i)
             else:
                 self.get_energy(i)
+
+            if test:
+                self.test_get_temp(i)
+            else:
+                self.get_temp(i)
 
             # Sublimation and deposition
             if self.df.loc[i, "Ql"] < 0:
@@ -369,13 +354,8 @@ class Icestupa:
                     / self.L_S
                 )
 
-            if test:
-                self.test_get_temp(i)
-            else:
-                self.get_temp(i)
-
             # Precipitation to ice quantity
-            if self.df.loc[i, "T_a"] < self.T_PPT and self.df.loc[i, "Prec"] > 0:
+            if self.df.loc[i, "T_a"] < self.T_PPT and self.df.loc[i, "Prec"] > self.H_PPT:
                 self.df.loc[i, "ppt"] = (
                     self.RHO_W
                     * self.df.loc[i, "Prec"]

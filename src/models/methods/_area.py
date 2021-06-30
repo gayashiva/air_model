@@ -1,5 +1,6 @@
 """Icestupa class function that calculates surface area, ice radius and height
 """
+
 import pandas as pd
 import math
 import numpy as np
@@ -7,7 +8,6 @@ from functools import lru_cache
 import logging
 
 logger = logging.getLogger(__name__)
-
 
 def get_area(self, i):
 
@@ -25,7 +25,6 @@ def get_area(self, i):
         )
 
     else:
-
         # Maintain constant Height to radius ratio
         self.df.loc[i, "s_cone"] = self.df.loc[i - 1, "s_cone"]
 

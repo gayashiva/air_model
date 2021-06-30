@@ -25,6 +25,7 @@ def get_energy(self, i):
             22.46 * (self.df.loc[i, "T_s"]) / ((self.df.loc[i, "T_s"]) + 272.62)
         )
     )
+
     self.df.loc[i, "Ql"] = (
         0.623
         * self.L_S
