@@ -120,7 +120,8 @@ if __name__ == "__main__":
         ie_dist = cp.Uniform(0.949, 0.993)
         a_decay_dist = cp.Uniform(1, 22)
         T_PPT_dist = cp.Uniform(0, 2)
-        MU_CONE_PPT_dist = cp.Uniform(0, 1)
+        MU_CONE_dist = cp.Uniform(0, 1)
+        H_AWS_dist = cp.Uniform(1, 3)
         T_W_dist = cp.Uniform(0, 5)
         if location in ['guttannen21', 'guttannen20']:
             d_dist = cp.Uniform(3, 10)
@@ -133,6 +134,7 @@ if __name__ == "__main__":
             "A_S": a_s_dist,
             "A_DECAY": a_decay_dist,
             "T_PPT": T_PPT_dist,
+            "H_AWS": H_AWS_dist,
             "MU_CONE": MU_CONE_dist,
             "DX": dx_dist,
 

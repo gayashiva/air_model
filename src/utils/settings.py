@@ -32,13 +32,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
-            h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
-
-            # discharge=10,  # FOUNTAIN mean discharge
-            # min_discharge=5,  # FOUNTAIN min discharge
             d_mean=7.5,  # FOUNTAIN min discharge
             # perimeter=45, # on Feb 11
-            # dia_f=0.00785,  # FOUNTAIN aperture diameter
         )
 
         data_h = [
@@ -54,18 +49,12 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             name="guttannen20",
             start_date=datetime(2020, 1, 3,16),
             end_date=datetime(2020, 4, 10),
+            fountain_off_date=datetime(2020, 3, 8,9), # Image shows Dani switched off at 8th Mar 10 am
+            d_mean=7.5,  # FOUNTAIN min discharge
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
-            h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
-
-            # fountain_off_date=datetime(2020, 2, 27),
-            fountain_off_date=datetime(2020, 3, 8,9), # Image shows Dani switched off at 8th Mar 10 am
-            # min_discharge=5,  # FOUNTAIN min discharge
-            d_mean=7.5,  # FOUNTAIN min discharge
-            # min_discharge=0,  # FOUNTAIN min discharge
             # perimeter=28, # on 24 Jan
-            # dia_f=0.0056,  # FOUNTAIN aperture diameter
         )
 
         data_h = [
@@ -79,18 +68,12 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             name="schwarzsee19",
             start_date=datetime(2019, 1, 30, 17),
             end_date=datetime(2019, 3, 17),
+            fountain_off_date=datetime(2019, 2, 16, 10),
             utc_offset=1,
             longitude=7.297543,
             latitude=46.693723,
-            h_aws=3,
-            h_f=1.35,
-            # T_W=0,
-            # IE=0.993,
-            # H_PPT=0,
-            # T_PPT=0,
-
-            fountain_off_date=datetime(2019, 2, 16, 10),
             r_spray = 1.233,
+            # h_f=1.35,
             # discharge=3.58,  # FOUNTAIN on mean discharge from field
             # dia_f=0.0056,  # FOUNTAIN aperture diameter
         )
@@ -103,21 +86,13 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
 
         SITE = dict(
             name="gangles21",
-            # start_date=datetime(2020, 12, 14),
             start_date=datetime(2021, 1, 18),
-            # end_date=datetime(2021, 3, 14),
             end_date=datetime(2021, 6, 11),
+            fountain_off_date=datetime(2021, 3, 10, 18),
             utc_offset=5.5,
             longitude=77.606949,
             latitude=34.216638,
-            h_aws=3,
-            # T_W = 1,
-            # dome_rad=2,
-
-            fountain_off_date=datetime(2021, 3, 10, 18),
             d_mean=60,  # FOUNTAIN min discharge
-            # discharge=60,  # FOUNTAIN on mean discharge from field
-            # r_spray = 13.11, # On 3 Mar
             # perimeter=82.3, # On 3 Mar
         )
 
@@ -139,7 +114,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             utc_offset=1,
             latitude=46.44109,
             longitude=9.98425,
-            h_aws=2.3, 
+            # h_aws=2.3, 
 
             # dome_rad=2,
             # perimeter=65.5, # on May 19
@@ -159,7 +134,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             utc_offset=6,
             latitude=39.87112,
             longitude=70.170666,
-            h_aws=2, 
+            # h_aws=2, 
 
             discharge=10,  # FOUNTAIN mean discharge
             r_spray=7,  # FOUNTAIN mean discharge

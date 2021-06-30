@@ -34,7 +34,7 @@ def get_energy(self, i):
         * math.pow(self.VAN_KARMAN, 2)
         * self.df.loc[i, "v_a"]
         * (self.df.loc[i, "vp_a"] - self.df.loc[i, "vp_ice"])
-        / ((np.log(self.h_aws / self.Z)) ** 2)
+        / ((np.log(self.H_AWS / self.Z)) ** 2)
     )
 
     # Sensible Heat Qs
@@ -46,7 +46,7 @@ def get_energy(self, i):
         * math.pow(self.VAN_KARMAN, 2)
         * self.df.loc[i, "v_a"]
         * (self.df.loc[i, "T_a"] - self.df.loc[i, "T_s"])
-        / ((np.log(self.h_aws / self.Z)) ** 2)
+        / ((np.log(self.H_AWS / self.Z)) ** 2)
     )
 
     # Short Wave Radiation SW
