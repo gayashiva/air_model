@@ -123,21 +123,21 @@ if __name__ == "__main__":
         H_PPT_dist = cp.Uniform(0, 2)
         T_W_dist = cp.Uniform(0, 5)
         if location in ['guttannen21', 'guttannen20']:
-            d_dist = cp.Uniform(5, 10)
+            d_dist = cp.Uniform(3, 10)
         if location == 'gangles21':
-            d_dist = cp.Uniform(30, 90)
+            d_dist = cp.Uniform(20, 90)
 
         parameters_single = {
-            # "IE": ie_dist,
-            # "A_I": a_i_dist,
-            # "A_S": a_s_dist,
-            # "A_DECAY": a_decay_dist,
-            # "T_PPT": T_PPT_dist,
+            "IE": ie_dist,
+            "A_I": a_i_dist,
+            "A_S": a_s_dist,
+            "A_DECAY": a_decay_dist,
+            "T_PPT": T_PPT_dist,
             "H_PPT": H_PPT_dist,
-            # "T_W": T_W_dist,
-            # "DX": dx_dist,
-            # "d_mean": d_dist,
-            # "r_spray": r_spray_dist,
+            "T_W": T_W_dist,
+            "DX": dx_dist,
+            "d_mean": d_dist,
+            "r_spray": r_spray_dist,
         }
 
 
