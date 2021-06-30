@@ -58,6 +58,7 @@ def get_temp(self, i):
         self.df.loc[i,"fountain_runoff"] = self.df.Discharge.loc[i] * self.DT / 60 - self.df.loc[i,"fountain_froze"]
 
         if self.df.loc[i,"fountain_runoff"] < 0:
+            logger.error("Water not enough. Mean discharge exceeded")
             self.df.loc[i,"Qmelt"] -= (
                 self.df.loc[i, "fountain_runoff"] * (self.L_F)/ (self.DT * self.df.loc[i, "SA"])
             ) 

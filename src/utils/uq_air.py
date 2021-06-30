@@ -67,7 +67,10 @@ class UQ_Icestupa(un.Model, Icestupa):
         if "r_spray" in parameters.keys():
             self.self_attributes()
 
-        if "A_I" or "A_S" or "T_PPT" or "T_DECAY" or "MU_CONE" in parameters.keys():
+        if "D_MEAN" in parameters.keys():
+            self.get_discharge()
+
+        if "A_I" or "A_S" or "T_PPT" or "A_DECAY" in parameters.keys():
             """Albedo Decay parameters initialized"""
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
             s = 0
@@ -129,18 +132,18 @@ if __name__ == "__main__":
             d_dist = cp.Uniform(20, 90)
 
         parameters_single = {
-            "IE": ie_dist,
-            "A_I": a_i_dist,
-            "A_S": a_s_dist,
+            # "IE": ie_dist,
+            # "A_I": a_i_dist,
+            # "A_S": a_s_dist,
             "A_DECAY": a_decay_dist,
-            "T_PPT": T_PPT_dist,
-            "H_AWS": H_AWS_dist,
-            "MU_CONE": MU_CONE_dist,
-            "DX": dx_dist,
+            # "T_PPT": T_PPT_dist,
+            # "H_AWS": H_AWS_dist,
+            # "MU_CONE": MU_CONE_dist,
+            # "DX": dx_dist,
 
-            "T_W": T_W_dist,
-            "d_mean": d_dist,
-            "r_spray": r_spray_dist,
+            # "T_W": T_W_dist,
+            "D_MEAN": d_dist,
+            # "r_spray": r_spray_dist,
         }
 
 

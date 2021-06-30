@@ -29,10 +29,10 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             start_date=datetime(2020, 11, 22,15),
             end_date=datetime(2021, 5, 18),
             fountain_off_date=datetime(2021, 2, 20,10),
+            D_MEAN=7.5,  # FOUNTAIN min discharge
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
-            d_mean=7.5,  # FOUNTAIN min discharge
             # perimeter=45, # on Feb 11
         )
 
@@ -50,7 +50,7 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             start_date=datetime(2020, 1, 3,16),
             end_date=datetime(2020, 4, 10),
             fountain_off_date=datetime(2020, 3, 8,9), # Image shows Dani switched off at 8th Mar 10 am
-            d_mean=7.5,  # FOUNTAIN min discharge
+            D_MEAN=7.5,  # FOUNTAIN min discharge
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
@@ -89,10 +89,10 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             start_date=datetime(2021, 1, 18),
             end_date=datetime(2021, 6, 11),
             fountain_off_date=datetime(2021, 3, 10, 18),
+            D_MEAN=60,  # FOUNTAIN min discharge
             utc_offset=5.5,
             longitude=77.606949,
             latitude=34.216638,
-            d_mean=60,  # FOUNTAIN min discharge
             # perimeter=82.3, # On 3 Mar
         )
 

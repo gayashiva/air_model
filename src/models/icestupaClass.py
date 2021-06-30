@@ -50,13 +50,12 @@ class Icestupa:
     Z = 0.0017  # Ice Momentum and Scalar roughness length
     T_PPT = 1  # Temperature condition for liquid precipitation
     MU_CONE = 0.5 # Turbulence of cone
-    H_AWS = 2 # Height of AWS
+    H_AWS = 3 # Height of AWS
     # H_PPT = 1 # mm Precipitaion height that changes albedo
     # DX_DT = 5.5556e-06 #m/s Surface layer thickness growth rate
 
     """Fountain constants"""
     T_W = 1  # FOUNTAIN Water temperature
-    mean_discharge = 10 
 
     """Model constants"""
     DT = 60*60 # Model time step
