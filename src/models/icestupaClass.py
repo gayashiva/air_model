@@ -286,17 +286,10 @@ class Icestupa:
             self.df[column] = 0
 
         # Initialise first model time step
-        # self.start = self.df.index[self.df.Discharge > 0][1]
-
-        # if self.start == 0:
-        #     self.start+=1
-        self.start = 1
-
-        self.df.loc[self.start - 1, "h_ice"] = self.h_i
-        self.df.loc[self.start - 1, "r_ice"] = self.r_spray
-
-        self.df.loc[self.start - 1, "s_cone"] = (
-            self.df.loc[self.start - 1, "h_ice"] / self.df.loc[self.start - 1, "r_ice"]
+        self.df.loc[0, "h_ice"] = self.h_i
+        self.df.loc[0, "r_ice"] = self.r_spray
+        self.df.loc[0, "s_cone"] = (
+            self.df.loc[0, "h_ice"] / self.df.loc[0, "r_ice"]
         )
         V_initial = (
             math.pi
@@ -304,23 +297,23 @@ class Icestupa:
             * self.r_spray ** 2
             * self.h_i
         )
-        self.df.loc[self.start, "ice"] = (V_initial* self.RHO_I)
-        self.df.loc[self.start, "iceV"] = V_initial
-        self.df.loc[self.start, "input"] = self.df.loc[self.start, "ice"]
+        self.df.loc[1, "ice"] = (V_initial* self.RHO_I)
+        self.df.loc[1, "iceV"] = V_initial
+        self.df.loc[1, "input"] = self.df.loc[1, "ice"]
 
         logger.warning(
             "Initialise: When %s, radius %.3f, height %.3f, iceV %.3f\n"
             % (
-                self.df.loc[self.start - 1, "When"],
-                self.df.loc[self.start - 1, "r_ice"],
-                self.df.loc[self.start - 1, "h_ice"],
-                self.df.loc[self.start, "iceV"],
+                self.df.loc[0, "When"],
+                self.df.loc[0, "r_ice"],
+                self.df.loc[0, "h_ice"],
+                self.df.loc[1, "iceV"],
             )
         )
 
         t = stqdm(
-            self.df[self.start:-1].itertuples(),
-            total=self.df.shape[0] - self.start,
+            self.df[1:-1].itertuples(),
+            total=self.df.shape[0] - 1,
         )
 
         t.set_description("Simulating %s Icestupa" % self.name)
@@ -346,7 +339,7 @@ class Icestupa:
                 for column in col_list:
                     self.df.loc[i-1, column] = 0
 
-                self.df = self.df[self.start : i]
+                self.df = self.df[1 : i]
                 self.df = self.df.reset_index(drop=True)
 
                 break
@@ -380,7 +373,6 @@ class Icestupa:
                 self.test_get_temp(i)
             else:
                 self.get_temp(i)
-
 
             # Precipitation to ice quantity
             if self.df.loc[i, "T_a"] < self.T_PPT and self.df.loc[i, "Prec"] > 0:
@@ -433,12 +425,12 @@ class Icestupa:
             if test:
                 output =self.df.loc[i+1,"ice"] + self.df.loc[i+1,"unfrozen_water"] +self.df.loc[i+1,"vapour"]+self.df.loc[i+1,"meltwater"] 
                 input = self.df.loc[i+1,"input"]
-                input2 = self.df.loc[self.start,"input"] + self.df.Discharge[self.start:i+1].sum() * self.DT/60 +self.df["dep"].sum() + self.df["ppt"].sum()
+                input2 = self.df.loc[1,"input"] + self.df.Discharge[1:i+1].sum() * self.DT/60 +self.df["dep"].sum() + self.df["ppt"].sum()
 
                 # Check mass conservation
                 if round(input2,2) != round(input,2):
                     logger.error("Not equal When %s input %.1f input2 %.1f" %(self.df.loc[i,"When"], input, input2))
-                    logger.error("input default%.1f Discharge %.1f"%(self.df.loc[self.start,"input"],self.df.Discharge[self.start:i+1].sum() * self.DT/60))
+                    logger.error("input default%.1f Discharge %.1f"%(self.df.loc[1,"input"],self.df.Discharge[1:i+1].sum() * self.DT/60))
                     sys.exit()
                 if round(input,2) != round(output,2):
                     logger.error("Not equal When %s input %.1f output %.1f" %(self.df.loc[i,"When"], input, output))

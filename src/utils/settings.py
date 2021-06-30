@@ -34,8 +34,8 @@ def config(location="Schwarzsee 2019", trigger="Manual"):
             longitude=8.283333,
             h_aws=2.3,  # https://www.meteoschweiz.admin.ch/home/messwerte.html?param=messnetz-partner&chart=day&table=true&sortDirection=&station=MMGTT
 
-            discharge=10,  # FOUNTAIN mean discharge
-            min_discharge=5,  # FOUNTAIN min discharge
+            # discharge=10,  # FOUNTAIN mean discharge
+            # min_discharge=5,  # FOUNTAIN min discharge
             d_mean=7.5,  # FOUNTAIN min discharge
             # perimeter=45, # on Feb 11
             # dia_f=0.00785,  # FOUNTAIN aperture diameter
