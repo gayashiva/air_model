@@ -31,7 +31,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location="gangles21"
+    location="guttannen20"
 
     # Get settings for given location and trigger
     SITE, FOLDER = config(location)
@@ -62,14 +62,14 @@ if __name__ == "__main__":
     parameters = {
             "IE": ie_dist,
             "A_I": a_i_dist,
-            # "A_S": a_s_dist,
-            # "A_DECAY": a_decay_dist,
+            "A_S": a_s_dist,
+            "A_DECAY": a_decay_dist,
             "T_PPT": T_PPT_dist,
             "MU_CONE": MU_CONE_dist,
             "DX": dx_dist,
-            "T_W": T_W_dist,
+            # "T_W": T_W_dist,
             # "d_mean": d_dist,
-            "r_spray": r_spray_dist,
+            # "r_spray": r_spray_dist,
     }
     parameters = un.Parameters(parameters)
 
