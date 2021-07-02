@@ -96,13 +96,18 @@ class Icestupa:
 
         self.change_freq()
 
-        unknown = ["a", "vp_a", "LW_in", "cld"]  # Possible unknown variables
+        unknown = ["a", "vp_a", "LW_in", "cld", "SW_diffuse"]  # Possible unknown variables
         for i in range(len(unknown)):
             if unknown[i] in list(self.df.columns):
                 unknown[i] = np.NaN  # Removes known variable
             else:
                 logger.error(" %s is unknown\n" % (unknown[i]))
                 self.df[unknown[i]] = 0
+
+        if "SW_diffuse" in unknown:
+            self.df["SW_diffuse"] = self.diffuse_fraction * self.df.SW_global
+            self.df["SW_direct"] = (1-self.diffuse_fraction)* self.df.SW_global
+            logger.warning("Diffuse and direct SW calculated with diffuse fraction %s" %self.diffuse_fraction)
 
         for row in stqdm(
             self.df[1:].itertuples(),
