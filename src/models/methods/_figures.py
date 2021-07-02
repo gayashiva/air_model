@@ -234,7 +234,8 @@ def summary_figures(self):
     plt.clf()
 
     # fig = plt.figure(figsize=(12, 14))
-    fig = plt.figure(figsize=(15, 12))
+    fig = plt.figure(figsize=(15, 10))
+    # fig = plt.figure()
     dfds = self.df[
         [
             "When",

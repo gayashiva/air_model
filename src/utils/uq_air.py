@@ -67,7 +67,10 @@ class UQ_Icestupa(un.Model, Icestupa):
         if "r_spray" in parameters.keys():
             self.self_attributes()
 
-        if "A_I" or "A_S" or "T_PPT" or "T_DECAY" or "H_PPT" in parameters.keys():
+        if "D_MEAN" in parameters.keys():
+            self.get_discharge()
+
+        if "A_I" or "A_S" or "T_PPT" or "A_DECAY" in parameters.keys():
             """Albedo Decay parameters initialized"""
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
             s = 0
@@ -120,12 +123,12 @@ if __name__ == "__main__":
         ie_dist = cp.Uniform(0.949, 0.993)
         a_decay_dist = cp.Uniform(1, 22)
         T_PPT_dist = cp.Uniform(0, 2)
-        H_PPT_dist = cp.Uniform(0, 2)
+        MU_CONE_dist = cp.Uniform(0, 1)
         T_W_dist = cp.Uniform(0, 5)
         if location in ['guttannen21', 'guttannen20']:
-            d_dist = cp.Uniform(5, 10)
+            d_dist = cp.Uniform(3, 10)
         if location == 'gangles21':
-            d_dist = cp.Uniform(30, 90)
+            d_dist = cp.Uniform(20, 90)
 
         parameters_single = {
             "IE": ie_dist,
@@ -133,10 +136,11 @@ if __name__ == "__main__":
             "A_S": a_s_dist,
             "A_DECAY": a_decay_dist,
             "T_PPT": T_PPT_dist,
-            "H_PPT": H_PPT_dist,
-            "T_W": T_W_dist,
+            "MU_CONE": MU_CONE_dist,
             "DX": dx_dist,
-            "d_mean": d_dist,
+
+            "T_W": T_W_dist,
+            "D_MEAN": d_dist,
             "r_spray": r_spray_dist,
         }
 

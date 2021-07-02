@@ -90,17 +90,15 @@ if __name__ == "__main__":
     X = [[a[0], a[1]] for a in obs]
     y = [a[2] for a in obs]
 
-    # Set the parameters by cross-validation
     tuned_params = [{
-        'DX': bounds(var=icestupa.DX, res = 0.0005),
+        'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
         'A_I': bounds(var=icestupa.A_I, res = 0.01),
         'A_S': bounds(var=icestupa.A_S, res = 0.01),
-        'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
-        'T_PPT': np.arange(0, 3 , 1).tolist(),
-        # 'A_DECAY': np.arange(1, 23 , 5).tolist(),
-        # 'T_W': np.arange(1, 5, 1).tolist(),
-        # 'r_spray': bounds(var=icestupa.r_spray, change=10, res = 0.5),
-        # 'Z': bounds(var=icestupa.Z, res = 0.005),
+        'A_DECAY': np.arange(5, 15, 2).tolist(),
+        'T_PPT': np.arange(0, 2 , 0.5).tolist(),
+        'MU_CONE': np.arange(0, 1, 0.5).tolist(),
+        # 'DX': bounds(var=icestupa.DX, res = 0.1),
+        # 'r_spray': bounds(var=icestupa.r_spray, res = 0.25),
     }]
 
     file_path = 'cv-'
@@ -108,7 +106,7 @@ if __name__ == "__main__":
 
     print()
     ctr = len(list(ParameterGrid(tuned_params))) 
-    runtime = 45
+    runtime = 60
     days = (ctr*runtime/(12*60*60*24))
     print("Total hours expected : %0.01f" % int(days*24))
     print("Total days expected : %0.01f" % days)

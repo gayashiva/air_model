@@ -234,23 +234,23 @@ if __name__ == "__main__":
     with row3_1:
         f_mean = icestupa.df.Discharge.replace(0, np.nan).mean()
         Duration = icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24)
-        max_freeze_rate = icestupa.df.fountain_froze.max()/(icestupa.DT/60)
+        mean_freeze_rate = icestupa.df[icestupa.df.fountain_froze!= 0].fountain_froze.mean()/(icestupa.DT/60)
+        mean_melt_rate = icestupa.df[icestupa.df.melted!= 0].melted.mean()/(icestupa.DT/60)
         st.markdown(
             """
         | Fountain | Estimation |
         | --- | --- |
-        | Mean discharge | %.1f $l/min$|
         | Spray Radius | %.1f $m$|
         | Water sprayed| %.0f $m^3$ |
-        | Storage Efficiency | %.0f $percent$ |
-        | Max freeze rate | %.2f $l/min$ |
+        | Mean freeze rate | %.2f $l/min$ |
+        | Mean melt rate | %.2f $l/min$ |
         """
             % (
-                f_mean,
+                # f_mean,
                 icestupa.r_spray,
                 M_F/1000,
-                (M_water + M_ice) / M_input * 100,
-                max_freeze_rate,
+                mean_freeze_rate,
+                mean_melt_rate,
             )
         )
 
@@ -262,13 +262,13 @@ if __name__ == "__main__":
         | Max Ice Volume | %.1f $m^{3}$|
         | Meltwater released | %.0f $kg$ |
         | Vapour loss | %.0f $kg$ |
-        | Storage Duration | %.0f $days$ |
+        | Storage Efficiency | %.0f $percent$ |
         """
             % (
                 icestupa.df["iceV"].max(),
                 icestupa.df["meltwater"].iloc[-1],
                 icestupa.df["vapour"].iloc[-1],
-                Duration,
+                (M_water + M_ice) / M_input * 100,
             )
         )
 
@@ -300,11 +300,11 @@ if __name__ == "__main__":
             if icestupa.name in ["guttannen21", "guttannen20"]:
                 df_cam = pd.read_hdf(icestupa.input + "model_input.h5", "df_cam")
                 df = pd.merge_asof(left=icestupa.df,right=df_cam,right_index=True,left_index=True,direction='nearest',tolerance=tol)
-                rmse_T = (((df.cam_temp - df.T_s) ** 2).mean() ** .5)
-                corr_T = df['cam_temp'].corr(df['T_s'])
-            else:
-                rmse_T = 0
-                corr_T = 0
+                # rmse_T = (((df.cam_temp - df.T_s) ** 2).mean() ** .5)
+                # corr_T = df['cam_temp'].corr(df['T_s'])
+            # else:
+            #     rmse_T = 0
+            #     corr_T = 0
 
             st.write("## Validation")
             path = (
@@ -319,18 +319,18 @@ if __name__ == "__main__":
                 % (corr_V, rmse_V)
             )
 
-            if SITE["name"] in ["guttannen21", "guttannen20"]:
-                path = (
-                    output_folder
-                    + "paper_figures/Temp_Validation.jpg"
-                )
-                st.image(path)
-                st.write(
-                    """
-                Correlation of modelled with measured surface temperature was **%.2f** and RMSE was **%.2f** C
-                """
-                    % (corr_T, rmse_T)
-                )
+            # if SITE["name"] in ["guttannen21", "guttannen20"]:
+            #     path = (
+            #         output_folder
+            #         + "paper_figures/Temp_Validation.jpg"
+            #     )
+            #     st.image(path)
+            #     st.write(
+            #         """
+            #     Correlation of modelled with measured surface temperature was **%.2f** and RMSE was **%.2f** C
+            #     """
+            #         % (corr_T, rmse_T)
+            #     )
 
         if "Timelapse" in display:
             st.write("## Timelapse")

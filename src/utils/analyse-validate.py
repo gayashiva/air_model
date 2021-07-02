@@ -30,21 +30,19 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "guttannen20"
+    location = "guttannen21"
     icestupa = Icestupa(location)
-    SITE, FOLDER, df_h = config(location)
+    SITE, FOLDER = config(location)
 
-    # Set the parameters by cross-validation
     tuned_params = [{
-        'DX': np.arange(0.018, 0.024, 0.001).tolist(), 
         'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
         'A_I': bounds(var=icestupa.A_I, res = 0.01),
-        'A_S': bounds(var=icestupa.A_S, res = 0.01),
-        'T_RAIN': np.arange(0, 2 , 1).tolist(),
-        'A_DECAY': np.arange(1, 23 , 5).tolist(),
-        # 'r_spray': bounds(var=icestupa.r_spray, change=10, res = 0.5),
-        # 'T_W': np.arange(1, 5, 1).tolist(),
-        # 'Z': bounds(var=icestupa.Z, res = 0.005),
+        # 'A_S': bounds(var=icestupa.A_S, res = 0.01),
+        # 'A_DECAY': np.arange(1, 23 , 2).tolist(),
+        # 'T_PPT': np.arange(0, 2 , 0.5).tolist(),
+        # 'MU_CONE': np.arange(0, 1, 0.5).tolist(),
+        # 'DX': bounds(var=icestupa.DX, res = 0.1),
+        # 'r_spray': bounds(var=icestupa.r_spray, res = 0.25),
     }]
 
     file_path = 'cv-'

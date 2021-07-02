@@ -45,13 +45,23 @@ if __name__ == "__main__":
     # location = "schwarzsee19"
     location = "gangles21"
 
-
     SITE, FOLDER = config(location)
 
     if location in ["gangles21"]:
         df = get_field(location)
         df = df.set_index("When")
         df = df[SITE['start_date']:SITE["end_date"]]
+        # Replace temp and Humidity from Hobo
+        df_hobo = pd.read_csv(
+            FOLDER["input"] + SITE["name"] + "_input_hobo.csv",
+            sep=",",
+            parse_dates = ['When'],
+        )
+        df_hobo = df_hobo.set_index("When")
+        df_hobo = df_hobo[SITE['start_date']:SITE["end_date"]]
+        df['T_a'] = df_hobo['T_a']
+        df['RH'] = df_hobo['RH']
+
         df = df.reset_index()
         logger.info(df.missing_type.describe())
         logger.info(df.missing_type.unique())
@@ -150,8 +160,9 @@ if __name__ == "__main__":
             "T_a",
             "RH",
             "v_a",
-            "SW_direct",
-            "SW_diffuse",
+            # "SW_direct",
+            # "SW_diffuse",
+            "SW_global",
             "Prec",
             # "vp_a",
             "p_a",

@@ -24,15 +24,6 @@ from src.models.methods.metadata import get_parameter_metadata
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-def draw_plot(data, edge_color, fill_color, labels):
-    bp = ax.boxplot(data, patch_artist=True, labels=labels, sym="o")
-
-    for element in ["boxes", "whiskers", "fliers", "means", "medians", "caps"]:
-        plt.setp(bp[element], color=edge_color)
-
-    for patch in bp["boxes"]:
-        patch.set(facecolor=fill_color)
-
 if __name__ == "__main__":
     locations = ['guttannen21',  'gangles21','guttannen20']
 
@@ -42,23 +33,23 @@ if __name__ == "__main__":
 
     names = [
         "T_PPT",
-        "H_PPT",
         "IE",
         "A_I",
         "A_S",
         "A_DECAY",
+        "MU_CONE",
         "DX",
         "T_W",
-        "d_mean",
+        "D_MEAN",
         "r_spray",
     ]
     names_label = [
         "$T_{ppt}$",
-        "$H_{ppt}$",
         "$\\epsilon_{ice}$",
         r"$\alpha_{ice}$",
         r"$\alpha_{snow}$",
         "$\\tau$",
+        r"$\mu_{cone}$",
         "$\\Delta x$",
         "$T_{water}$",
         "$d_{mean}$",

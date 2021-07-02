@@ -121,9 +121,9 @@ def get_field(location="schwarzsee19"):
         mask = df["SW_global"] < 0
         mask_index = df[mask].index
         df.loc[mask_index, 'SW_global'] = 0
-        diffuse_fraction = 0
-        df["SW_diffuse"] = diffuse_fraction * df.SW_global
-        df["SW_direct"] = (1-diffuse_fraction)* df.SW_global
+        # diffuse_fraction = 0
+        # df["SW_diffuse"] = diffuse_fraction * df.SW_global
+        # df["SW_direct"] = (1-diffuse_fraction)* df.SW_global
         df = (
             df.set_index("When")
             .resample("H")
@@ -134,7 +134,6 @@ def get_field(location="schwarzsee19"):
         df["Prec"] = 0
         df["missing_type"] ='-'
         df["cld"] = 0
-
 
         df.to_csv(
             # "/home/suryab/work/air_model/data/"

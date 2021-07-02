@@ -58,6 +58,7 @@ def get_temp(self, i):
         self.df.loc[i,"fountain_runoff"] = self.df.Discharge.loc[i] * self.DT / 60 - self.df.loc[i,"fountain_froze"]
 
         if self.df.loc[i,"fountain_runoff"] < 0:
+            logger.error("Water not enough. Mean discharge exceeded")
             self.df.loc[i,"Qmelt"] -= (
                 self.df.loc[i, "fountain_runoff"] * (self.L_F)/ (self.DT * self.df.loc[i, "SA"])
             ) 
@@ -86,10 +87,6 @@ def test_get_temp(self, i):
     if self.frozen and self.df.loc[i, "Qmelt"] > 0:
         self.frozen = 0
         logger.error("Freezing event changed to melting event")
-
-    # if self.df.loc[i,"Discharge"] > 0 and self.df.loc[i, "T_s"] != 0:
-    #     # self.frozen = 0
-    #     logger.warning("Discharge not forcing temperature zero on %s temp %0.1f" %(self.df.loc[i, "When"],self.df.loc[i, "T_s"]))
 
     if self.df.loc[i, "delta_T_s"] > 1 * self.DT/60:
         logger.warning("Too much fountain energy %s causes temperature change of %0.1f on %s" %(self.df.loc[i, "Qf"],self.df.loc[i, "delta_T_s"],self.df.loc[i, "When"]))
@@ -137,15 +134,3 @@ def test_get_temp(self, i):
                 self.df.loc[i, "T_bulk"],
             )
         )
-    # if self.df.loc[i, "Qmelt"] > 0:
-    #     if self.frozen:
-    #         logger.error(
-    #             f"No freezing_energy left When {self.df.When[i]}, Qmelt {self.df.Qmelt[i]}, Qt {self.df.Qt[i]}, Ql {self.df.Ql[i]}"
-    #         )
-
-    # # TODO Remove
-    # if self.df.loc[i, "T_s"] < -100:
-    #     self.df.loc[i, "T_s"] = -100
-    #     logger.error(
-    #         f"Surface temp rest to 100 When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
-    #     )
