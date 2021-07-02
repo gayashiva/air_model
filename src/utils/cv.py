@@ -32,23 +32,6 @@ from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
 
-def custom_cv_1folds(X):
-    n = len(X)
-    i = 1
-    # while i <= 2:
-    idx_train = np.arange(0, n-2, dtype=int)
-    idx_test = np.arange(n-3 , n-1 , dtype=int)
-    yield idx_train, idx_test
-        # i += 1
-
-def custom_cv_2folds(X):
-    n = len(X)
-    i = 1
-    while i <= 2:
-        idx = np.arange(n * (i - 1) / 2, n * i / 2, dtype=int)
-        yield idx, idx
-        i += 1
-
 def save_obj(path, name, obj ):
     with open(path + name + '.pkl', 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
@@ -61,7 +44,8 @@ def bounds(var, res, change = 5):
     return np.arange(var * (100-change)/100, var * (100+change)/100 + res, res).tolist()
 
 class CV_Icestupa(BaseEstimator,Icestupa):
-    def __init__(self, name = "guttannen21", DX = 0.020, DT = 60*60, A_I = 0.35, A_S = 0.85, IE = 0.95, T_PPT = 1, T_W = 1, A_DECAY= 10, Z=0.0017):
+    def __init__(self, name = "guttannen21", DX = 0.020, DT = 60*60, A_I = 0.35, A_S = 0.85, IE = 0.949, T_PPT = 1, T_W
+        = 1, A_DECAY= 10, MU_CONE=0.5):
         super(Icestupa, self).__init__()
 
         print("Initializing classifier:\n")
@@ -86,17 +70,19 @@ class CV_Icestupa(BaseEstimator,Icestupa):
     @Timer(text="Simulation executed in {:.2f} seconds")
     def fit(self, X,y,groups=None):
 
+#         if self.r_spray in parameters.keys():
+#             self.self_attributes()
+# 
+#         if self.D_MEAN in parameters.keys():
+#             self.get_discharge()
 
         if self.A_DECAY !=10 or self.A_I != 0.35 or self.A_S != 0.85 or self.T_PPT!= 1: 
             """Albedo Decay parameters initialized"""
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
             s = 0
-            if self.name in ["schwarzsee19", "guttannen20"]:
-                f = 0  # Start with snow event
-            else:
-                f = 1
+            f = 1
             for i, row in self.df.iterrows():
-                s, f = self.get_albedo(i, s, f, site=self.name)
+                s, f = self.get_albedo(i, s, f)
  
         self.melt_freeze()
 
@@ -137,7 +123,7 @@ if __name__ == "__main__":
     obs = list()
     for location in locations:
         # Loading measurements
-        SITE, FOLDER, df_h = config(location)
+        SITE, FOLDER = config(location)
         df_c = pd.read_hdf(FOLDER["input"] + "model_input_Manual.h5", "df_c")
 
         if location in ["Guttannen 2021", "Guttannen 2020"]:
@@ -150,17 +136,15 @@ if __name__ == "__main__":
     y = [a[2] for a in obs]
 
     # Set the parameters by cross-validation
-
     tuned_params = [{
-        # 'r_spray': bounds(var=icestupa.r_spray, change=10, res = 0.5),
-        'DX': np.arange(0.018, 0.022, 0.001).tolist(), 
         'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
         'A_I': bounds(var=icestupa.A_I, res = 0.01),
-        'A_S': bounds(var=icestupa.A_S, res = 0.01),
-        # 'T_RAIN': np.arange(0, 2 , 0.5).tolist(),
-        # 'T_W': np.arange(1, 5, 1).tolist(),
+        # 'A_S': bounds(var=icestupa.A_S, res = 0.01),
         # 'A_DECAY': np.arange(1, 23 , 2).tolist(),
-        # 'Z': bounds(var=icestupa.Z, res = 0.005),
+        # 'T_PPT': np.arange(0, 2 , 0.5).tolist(),
+        # 'MU_CONE': np.arange(0, 1, 0.5).tolist(),
+        # 'DX': bounds(var=icestupa.DX, res = 0.1),
+        # 'r_spray': bounds(var=icestupa.r_spray, res = 0.25),
     }]
     # ctr = 1
     # for item in tuned_params[0]:

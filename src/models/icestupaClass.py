@@ -43,7 +43,7 @@ class Icestupa:
     G = 9.81  # Gravitational acceleration
 
     """Surface Properties"""
-    IE = 0.95  # Ice Emissivity IE
+    IE = 0.949  # Ice Emissivity IE
     A_I = 0.35  # Albedo of Ice A_I
     A_S = 0.85  # Albedo of Fresh Snow A_S
     A_DECAY = 10  # Albedo decay rate decay_t_d

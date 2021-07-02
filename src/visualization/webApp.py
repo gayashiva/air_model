@@ -242,7 +242,6 @@ if __name__ == "__main__":
         | --- | --- |
         | Spray Radius | %.1f $m$|
         | Water sprayed| %.0f $m^3$ |
-        | Storage Efficiency | %.0f $percent$ |
         | Mean freeze rate | %.2f $l/min$ |
         | Mean melt rate | %.2f $l/min$ |
         """
@@ -250,7 +249,6 @@ if __name__ == "__main__":
                 # f_mean,
                 icestupa.r_spray,
                 M_F/1000,
-                (M_water + M_ice) / M_input * 100,
                 mean_freeze_rate,
                 mean_melt_rate,
             )
@@ -264,13 +262,13 @@ if __name__ == "__main__":
         | Max Ice Volume | %.1f $m^{3}$|
         | Meltwater released | %.0f $kg$ |
         | Vapour loss | %.0f $kg$ |
-        | Storage Duration | %.0f $days$ |
+        | Storage Efficiency | %.0f $percent$ |
         """
             % (
                 icestupa.df["iceV"].max(),
                 icestupa.df["meltwater"].iloc[-1],
                 icestupa.df["vapour"].iloc[-1],
-                Duration,
+                (M_water + M_ice) / M_input * 100,
             )
         )
 

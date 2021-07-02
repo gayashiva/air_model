@@ -26,10 +26,10 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        # location="Guttannen 2021",
+        # location="Guttannen 2020",
         location="Gangles 2021",
-        run="yes",
-        # run="no",
+        # run="yes",
+        run="no",
     )
 
     # Initialise icestupa object
@@ -47,13 +47,8 @@ if __name__ == "__main__":
         icestupa.summary()
 
         # Create figures for web interface
-        # icestupa.summary_figures()
+        icestupa.summary_figures()
     else:
         # Use output parameters from cache
-        # icestupa.derive_parameters()
-        # icestupa.read_input()
-        # icestupa.melt_freeze()
-        # icestupa.summary()
         icestupa.read_output()
-        print(icestupa.df.fountain_froze.head())
-        # icestupa.summary_figures()
+        icestupa.summary_figures()

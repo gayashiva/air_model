@@ -8,7 +8,6 @@ from pandas.plotting import register_matplotlib_converters
 import os
 from sklearn.metrics import mean_squared_error
 
-
 from src.data.config import site, dates, folders
 
 df = pd.read_csv(folders["input_folder"] + "raw_input.csv", sep=",", header=0, parse_dates=["When"])
