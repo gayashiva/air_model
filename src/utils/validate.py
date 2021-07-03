@@ -83,6 +83,14 @@ if __name__ == "__main__":
     # Loading measurements
     SITE, FOLDER= config(location)
     df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
+    print(df_c)
+
+    # Remove points
+    if location == "guttannen20":
+        df_c = df_c[:-1]
+    if location == "guttannen21":
+        df_c = df_c[:-1]
+    print(df_c)
 
     df_c["Where"] = location
     obs.extend(df_c.reset_index()[["Where", 'When', 'DroneV']].values.tolist())
@@ -90,12 +98,6 @@ if __name__ == "__main__":
     X = [[a[0], a[1]] for a in obs]
     y = [a[2] for a in obs]
 
-    # Remove points
-    if location == "guttannen20":
-        y = y[1]
-    if location == "guttannen21":
-        y = y[:-1]
-    print(y)
 
     tuned_params = [{
         'IE': np.arange(0.95, 0.991, 0.01).tolist(),
