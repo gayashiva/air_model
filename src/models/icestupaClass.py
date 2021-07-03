@@ -43,10 +43,10 @@ class Icestupa:
 
     """Surface Properties"""
     IE = 0.97  # Ice Emissivity IE
-    A_I = 0.15  # Albedo of Ice A_I
+    A_I = 0.1  # Albedo of Ice A_I
     A_S = 0.85  # Albedo of Fresh Snow A_S
-    A_DECAY = 10  # Albedo decay rate decay_t_d
-    Z = 0.001  # Ice Momentum and Scalar roughness length
+    A_DECAY = 5  # Albedo decay rate decay_t_d
+    Z = 0.002  # Ice Momentum and Scalar roughness length
     T_PPT = 1  # Temperature condition for liquid precipitation
     MU_CONE = 0.5 # Turbulence of cone
 

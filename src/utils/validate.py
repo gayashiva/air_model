@@ -83,13 +83,12 @@ if __name__ == "__main__":
     # Loading measurements
     SITE, FOLDER= config(location)
     df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
-    print(df_c)
 
-    # Remove points
-    if location == "guttannen20":
-        df_c = df_c[:-1]
-    if location == "guttannen21":
-        df_c = df_c[:-1]
+    # Remove first point
+    df_c = df_c[1:]
+    # if location in ["guttannen20", "guttannen21"]:
+    # if location == "guttannen21":
+    #     df_c = df_c[:-1]
     print(df_c)
 
     df_c["Where"] = location
