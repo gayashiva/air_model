@@ -26,8 +26,8 @@ import matplotlib.pyplot as plt
 from src.models.methods.metadata import get_parameter_metadata
 
 if __name__ == "__main__":
-    locations = ['guttannen20',  'gangles21','guttannen21']
-    # locations = ['guttannen21']
+    # locations = ['guttannen20',  'gangles21','guttannen21']
+    locations = ['guttannen21']
     fig, ax = plt.subplots()
     current_palette = sns.color_palette('Set1')
     sns.set(style="darkgrid")
@@ -45,10 +45,11 @@ if __name__ == "__main__":
         icestupa.df.growth_rate = icestupa.df.growth_rate/60
         print(icestupa.df.growth_rate.describe())
         # sns.histplot(icestupa.df[icestupa.df.growth_rate!=0].growth_rate/icestupa.DT * 60, label = location)
-        sns.histplot(icestupa.df[icestupa.df.fountain_froze!=0].fountain_froze/60, label = get_parameter_metadata(location)['shortname'], color = current_palette[ctr])
+        sns.histplot(icestupa.df[icestupa.df.melted!=0].melted/icestupa.DT * 60, label = location)
+        # sns.histplot(icestupa.df[icestupa.df.fountain_froze!=0].fountain_froze/60, label = get_parameter_metadata(location)['shortname'], color = current_palette[ctr])
         # sns.kdeplot(icestupa.df[icestupa.df.fountain_froze!=0].fountain_froze/60, label = location, color = current_palette[ctr])
         plt.ylabel("Discharge duration [ $hours$ ]")
         plt.xlabel("Freezing rate [ $l\\, min^{-1}$ ]")
         plt.legend()
-        plt.savefig("data/paper/freeze_rate.jpg", bbox_inches="tight", dpi=300)
+        plt.savefig("data/paper/try.jpg", bbox_inches="tight", dpi=300)
         ctr +=1
