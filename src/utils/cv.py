@@ -44,8 +44,8 @@ def bounds(var, res, change = 5):
     return np.arange(var * (100-change)/100, var * (100+change)/100 + res, res).tolist()
 
 class CV_Icestupa(BaseEstimator,Icestupa):
-    def __init__(self, name = "guttannen21", DX = 0.020, DT = 60*60, A_I = 0.35, A_S = 0.85, IE = 0.949, T_PPT = 1, T_W
-        = 1, A_DECAY= 10, MU_CONE=0.5):
+    def __init__(self, name = "guttannen21", DX = 0.020, DT = 60*60, A_I = 0.15, A_S = 0.85, IE = 0.97, T_PPT = 1, T_W
+        = 1, A_DECAY= 10, Z=0.001):
         super(Icestupa, self).__init__()
 
         print("Initializing classifier:\n")
