@@ -158,7 +158,7 @@ if __name__ == "__main__":
                 model=model,
                 parameters=parameters,
                 features=features,
-                # CPUs=1,
+                CPUs=2,
             )
 
             # Perform the uncertainty quantification using # polynomial chaos with point collocation (by default) data =

@@ -3,14 +3,14 @@
 
 # External modules
 import os, sys
-import logging
-import coloredlogs
+import logging, coloredlogs
 
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 from src.models.icestupaClass import Icestupa
 from src.utils.settings import config
+from src.utils import setup_logger
 
 
 if __name__ == "__main__":
@@ -26,10 +26,10 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2020",
+        location="Guttannen 2021",
         # location="Gangles 2021",
-        # run="yes",
-        run="no",
+        run="yes",
+        # run="no",
     )
 
     # Initialise icestupa object

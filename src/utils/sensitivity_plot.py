@@ -63,14 +63,16 @@ if __name__ == "__main__":
     site= []
     param= []
     result= []
+    freeze_rate = []
     fig, ax = plt.subplots()
     for location in locations:
         SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
         icestupa.read_output()
-        print(icestupa.df.iceV.max())
         icestupa.self_attributes()
-
+        for j in range(0,icestupa.df.shape[0]):
+            if icestupa.df.loc[j,"fountain_froze"] !=0:
+                freeze_rate.append([get_parameter_metadata(location)['shortname'],j,icestupa.df.loc[j,"fountain_froze"]/60])
         for name in names:
             data = un.Data()
             filename1 = FOLDER["sim"] + name + ".h5"
@@ -82,11 +84,20 @@ if __name__ == "__main__":
     icestupa.df.iceV.max())/icestupa.df.iceV.max()*100])
 
     df = pd.DataFrame(result, columns=['Site', 'param', 'iceV', 'percent_change'])
-    print(df.head())
-    print(df.tail())
+    df2 = pd.DataFrame(freeze_rate, columns=['Site', 'hour', 'frozen'])
+    print(df2.head())
+    print(df2.tail())
 
-    sns.set(style="darkgrid")
+    # sns.set(style="darkgrid")
     ax = sns.boxplot(x="param", y="percent_change", hue="Site", data=df, palette="Set1", width=0.5)
     ax.set_xlabel("Parameter")
     ax.set_ylabel("Sensitivity of Maximum Ice Volume [$\%$]")
     plt.savefig("data/paper/sensitivities.jpg", bbox_inches="tight", dpi=300)
+    plt.clf()
+
+    # sns.set(style="darkgrid")
+    ax = sns.histplot(df2, x="frozen", hue="Site", multiple="dodge", palette="Set1")
+    ax.set_ylabel("Discharge duration [ $hours$ ]")
+    ax.set_xlabel("Freezing rate [ $l\\, min^{-1}$ ]")
+    # plt.legend()
+    plt.savefig("data/paper/freeze_rate.jpg", bbox_inches="tight", dpi=300)

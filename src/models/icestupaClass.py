@@ -8,8 +8,7 @@ import pandas as pd
 import sys, os, math
 from datetime import datetime, timedelta
 import numpy as np
-from functools import lru_cache
-import logging
+import logging, coloredlogs
 from stqdm import stqdm
 from codetiming import Timer
 
@@ -18,13 +17,13 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 sys.path.append(dirname)
 from src.models.methods.solar import get_solar
 from src.utils.settings import config
-from src.utils import setup_logger
+# from src.utils import setup_logger
 from src.models.methods.calibration import get_calibration
 from src.models.methods.droplet import get_droplet_projectile
 
 # Module logger
 logger = logging.getLogger(__name__)
-
+logger.propagate = False
 
 class Icestupa:
     """Physical Constants"""
@@ -43,7 +42,7 @@ class Icestupa:
     G = 9.81  # Gravitational acceleration
 
     """Surface Properties"""
-    IE = 0.949  # Ice Emissivity IE
+    IE = 0.97  # Ice Emissivity IE
     A_I = 0.35  # Albedo of Ice A_I
     A_S = 0.85  # Albedo of Fresh Snow A_S
     A_DECAY = 10  # Albedo decay rate decay_t_d
@@ -94,7 +93,7 @@ class Icestupa:
     @Timer(text="Preprocessed data in {:.2f} seconds" , logger = logging.warning)
     def derive_parameters(self):  # Derives additional parameters required for simulation
 
-        self.change_freq()
+        # self.change_freq()
 
         unknown = ["a", "vp_a", "LW_in", "cld", "SW_diffuse"]  # Possible unknown variables
         for i in range(len(unknown)):
