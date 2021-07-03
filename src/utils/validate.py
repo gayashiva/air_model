@@ -69,7 +69,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "guttannen21"
+    location = "guttannen20"
     # location = "schwarzsee19"
 
     icestupa = Icestupa(location)
@@ -82,7 +82,7 @@ if __name__ == "__main__":
 
     # Loading measurements
     SITE, FOLDER= config(location)
-    df_c = pd.read_hdf(FOLDER["input"] + "model_input_Manual.h5", "df_c")
+    df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
 
     df_c["Where"] = location
     obs.extend(df_c.reset_index()[["Where", 'When', 'DroneV']].values.tolist())
@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
     print()
     ctr = len(list(ParameterGrid(tuned_params))) 
-    runtime = 60
+    runtime = 45
     days = (ctr*runtime/(12*60*60*24))
     print("Total hours expected : %0.01f" % int(days*24))
     print("Total days expected : %0.01f" % days)
