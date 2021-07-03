@@ -76,7 +76,7 @@ class CV_Icestupa(BaseEstimator,Icestupa):
 #         if self.D_MEAN in parameters.keys():
 #             self.get_discharge()
 
-        if self.A_DECAY !=10 or self.A_I != 0.35 or self.A_S != 0.85 or self.T_PPT!= 1: 
+        if self.A_DECAY !=10 or self.A_I != 0.15 or self.A_S != 0.85 or self.T_PPT!= 1: 
             """Albedo Decay parameters initialized"""
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
             s = 0
@@ -94,8 +94,8 @@ class CV_Icestupa(BaseEstimator,Icestupa):
         for x in X:
             if (self.df[self.df.When == x[1]].shape[0]): 
                 y_pred.append(self.df.loc[self.df.When == x[1], "iceV"].values[0])
-            # else:
-            #     y_pred.append(100)
+            else:
+                y_pred.append(1000)
                 # print(x,y[ctr])
                 # y_pred.append(y[ctr])
                 # y_pred.append(0)

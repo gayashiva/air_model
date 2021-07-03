@@ -90,6 +90,13 @@ if __name__ == "__main__":
     X = [[a[0], a[1]] for a in obs]
     y = [a[2] for a in obs]
 
+    # Remove points
+    if location == "guttannen20":
+        y = y[1]
+    if location == "guttannen21":
+        y = y[:-1]
+    print(y)
+
     tuned_params = [{
         'IE': np.arange(0.95, 0.991, 0.01).tolist(),
         'A_I': np.arange(0.1, 0.35, 0.02).tolist(),
