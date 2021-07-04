@@ -31,7 +31,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location="guttannen20"
+    location="guttannen21"
 
     # Get settings for given location and trigger
     SITE, FOLDER = config(location)
@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     a_i_dist = cp.Uniform(0.01, 0.35)
     a_s_dist = cp.Uniform(icestupa.A_S * .95, icestupa.A_S * 1.05)
-    z_dist = cp.Uniform(1, 5)
+    z_dist = cp.Uniform(0.001, 0.005)
     dx_dist = cp.Uniform(icestupa.DX * .95, icestupa.DX * 1.05)
     r_spray_dist = cp.Uniform(icestupa.r_spray * .95, icestupa.r_spray * 1.05)
     ie_dist = cp.Uniform(0.95, 0.99)
