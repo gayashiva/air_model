@@ -75,7 +75,7 @@ if __name__ == "__main__":
         # "MU_CONE": MU_CONE_dist,
     }
 
-e   parameters = un.Parameters(parameters_full)
+    parameters = un.Parameters(parameters_full)
 
     # Initialize the model
     model = UQ_Icestupa(location)
