@@ -19,7 +19,7 @@ import matplotlib.dates as mdates
 
 if __name__ == "__main__":
 
-    location = "gangles21"
+    location = "guttannen21"
 
     if location == "guttannen21":
         total_days = 180
@@ -49,6 +49,8 @@ if __name__ == "__main__":
         end=SITE["start_date"]+ timedelta(hours=total_days * 24 - 1),
         freq="1H",
     )
+
+    print(data)
 
     data = data[location]
 

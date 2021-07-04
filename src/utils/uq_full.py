@@ -19,7 +19,7 @@ from src.models.methods.calibration import get_calibration
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
-from src.utils.uq_air import UQ_Icestupa, max_volume
+from src.utils.uq_air import UQ_Icestupa, max_volume, rmse
 
 
 if __name__ == "__main__":
@@ -39,10 +39,10 @@ if __name__ == "__main__":
     icestupa.read_input()
     icestupa.self_attributes()
 
-    list_of_feature_functions = [max_volume]
+    list_of_feature_functions = [max_volume, rmse]
 
     features = un.Features(
-        new_features=list_of_feature_functions, features_to_run=["max_volume"]
+        new_features=list_of_feature_functions, features_to_run=["rmse"]
     )
 
     a_i_dist = cp.Uniform(0.01, 0.35)
@@ -63,11 +63,11 @@ if __name__ == "__main__":
     parameters_full = {
         "IE": ie_dist,
         "A_I": a_i_dist,
-        "A_S": a_s_dist,
-        "Z": z_dist,
-        "A_DECAY": a_decay_dist,
-        "T_PPT": T_PPT_dist,
-        "DX": dx_dist,
+        # "A_S": a_s_dist,
+        # "Z": z_dist,
+        # "A_DECAY": a_decay_dist,
+        # "T_PPT": T_PPT_dist,
+        # "DX": dx_dist,
 
         # "T_W": T_W_dist,
         # "D_MEAN": d_dist,
@@ -75,7 +75,7 @@ if __name__ == "__main__":
         # "MU_CONE": MU_CONE_dist,
     }
 
-    parameters = un.Parameters(parameters_full)
+e   parameters = un.Parameters(parameters_full)
 
     # Initialize the model
     model = UQ_Icestupa(location)

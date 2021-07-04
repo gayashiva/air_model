@@ -8,6 +8,7 @@ import sys
 import os
 import logging
 import coloredlogs
+from sklearn.metrics import mean_squared_error
 
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -21,15 +22,20 @@ from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
 
 
-def max_volume(time, values, info, result=[]):
-    # Calculate the feature using time, values and info.
+def max_volume(time, values, info):
     icev_max = values.max()
-    # result.append([info, icev_max])
     for param_name in sorted(info.keys()):
         print("\n\t%s: %r" % (param_name, info[param_name]))
-    print("Max Ice Volume %0.1f\n"% (icev_max))
-    # Return the feature times and values.
-    return None, icev_max  # todo include efficiency
+    print("\n\tMax Ice Volume %0.1f\n"% (icev_max))
+    return None, icev_max 
+
+def rmse(time, values, info, y_true, y_pred):
+    mse = mean_squared_error(y_true, y_pred)
+    rmse = math.sqrt(mse)
+    for param_name in sorted(info.keys()):
+        print("\n\t%s: %r" % (param_name, info[param_name]))
+    print("\n\tRMSE %0.1f\n"% (rmse))
+    return None, rmse
 
 class UQ_Icestupa(un.Model, Icestupa):
     def __init__(self, location):
@@ -48,7 +54,13 @@ class UQ_Icestupa(un.Model, Icestupa):
 
         self.read_input()
         self.self_attributes()
-        # result = []
+
+        self.df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
+        if location in ["guttannen21", "guttannen20"]:
+            self.df_c = self.df_c.iloc[1:]
+
+        self.y_true = self.df_c.DroneV.values
+        print("Ice volume measurements for %s are %s\n"% (self.name, self.y_true))
 
         if location == "guttannen21":
             self.total_days = 180
@@ -90,7 +102,15 @@ class UQ_Icestupa(un.Model, Icestupa):
             for i in range(0, self.total_days * 24):
                 self.df.loc[i, "iceV"] = self.V_dome 
 
-        return self.df.index.values, self.df["iceV"].values, parameters
+        y_pred = []
+        for date in self.df_c.When.values :
+            if (self.df[self.df.When == date].shape[0]): 
+                y_pred.append(self.df.loc[self.df.When == date, "iceV"].values[0])
+            else:
+                y_pred.append(self.V_dome)
+        self.df = self.df.reset_index()
+
+        return self.df.index.values, self.df["iceV"].values, parameters, self.y_true, y_pred
 
 if __name__ == "__main__":
     # Main logger
@@ -110,10 +130,11 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        list_of_feature_functions = [max_volume]
+        list_of_feature_functions = [max_volume, rmse]
 
         features = un.Features(
-            new_features=list_of_feature_functions, features_to_run=["max_volume"]
+            # new_features=list_of_feature_functions, features_to_run=["max_volume"]
+            new_features=list_of_feature_functions, features_to_run=["rmse"]
         )
 
         # a_i_dist = cp.Uniform(icestupa.A_I * .95, icestupa.A_I * 1.05)
@@ -136,9 +157,9 @@ if __name__ == "__main__":
             "IE": ie_dist,
             "A_I": a_i_dist,
 #             "A_S": a_s_dist,
-#             "Z": z_dist,
+            "Z": z_dist,
 #             "A_DECAY": a_decay_dist,
-#             "T_PPT": T_PPT_dist,
+            "T_PPT": T_PPT_dist,
 #             "DX": dx_dist,
 # 
 #             "T_W": T_W_dist,
@@ -161,7 +182,7 @@ if __name__ == "__main__":
                 model=model,
                 parameters=parameters_single,
                 features=features,
-                CPUs=2,
+                # CPUs=1,
             )
 
             # Perform the uncertainty quantification using # polynomial chaos with point collocation (by default) data =
