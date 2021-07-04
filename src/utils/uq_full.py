@@ -31,7 +31,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location="guttannen21"
+    location="guttannen20"
 
     # Get settings for given location and trigger
     SITE, FOLDER = config(location)
@@ -65,7 +65,7 @@ if __name__ == "__main__":
         "A_I": a_i_dist,
         "A_S": a_s_dist,
         "Z": z_dist,
-        "A_DECAY": a_decay_dist,
+        # "A_DECAY": a_decay_dist,
         "T_PPT": T_PPT_dist,
         # "DX": dx_dist,
 
@@ -85,7 +85,7 @@ if __name__ == "__main__":
         model=model,
         parameters=parameters,
         features=features,
-        # CPUs=2,
+        CPUs=2,
     )
 
     # Perform the uncertainty quantification using
