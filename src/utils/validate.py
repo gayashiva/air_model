@@ -96,20 +96,20 @@ if __name__ == "__main__":
 
     tuned_params = [{
         'IE': np.arange(0.95, 0.991, 0.01).tolist(),
-        'A_I': np.arange(0.01, 0.35, 0.1).tolist(),
+        'A_I': np.arange(0.01, 0.35, 0.05).tolist(),
         'A_S': bounds(var=icestupa.A_S, res = 0.05),
         'A_DECAY': bounds(var=icestupa.A_DECAY, res = 0.5),
-        'Z': np.arange(0.001, 0.006, 0.001).tolist(),
+        'Z': np.arange(0.001, 0.003, 0.001).tolist(),
         'T_PPT': np.arange(0, 2 , 1).tolist(),
         'T_W': np.arange(0, 5 , 1).tolist(),
-        # 'DX': bounds(var=icestupa.DX, res = 0.1),
-        # 'r_spray': bounds(var=icestupa.r_spray, res = 0.25),
+        'DX': bounds(var=icestupa.DX, res = 0.0005),
     }]
 
     file_path = 'cv-'
     file_path += '-'.join('{}'.format(key) for key, value in tuned_params[0].items())
 
     print()
+    # print(tuned_params)
     ctr = len(list(ParameterGrid(tuned_params))) 
     runtime = 45
     days = (ctr*runtime/(12*60*60*24))

@@ -1,6 +1,8 @@
 
 import os, sys, time
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 import math
 import sys
 import os
@@ -54,8 +56,21 @@ if __name__ == "__main__":
     df = df.set_index('rmse').sort_index().reset_index()
     df['params'] = df['params'].apply(literal_eval)
 
+    print(df.shape[0])
+    print(df.head())
     for i in range(0,10):
         print(df.rmse[i])
         for param_name in sorted(df.params[0].keys()):
             print("\t%s: %r" % (param_name, df.params[i][param_name]))
 
+    df = df[:101]
+    df.plot(y='rmse')
+    plt.savefig(FOLDER["sim"]+ "rmse.jpg", bbox_inches="tight", dpi=300)
+    plt.clf()
+
+    df = pd.concat([df.drop(['params'], axis=1), df['params'].apply(pd.Series)], axis=1)
+    ax = sns.boxplot( y="Z",  data=df,  width=0.5)
+    ax.set_xlabel("Parameter")
+    ax.set_ylabel("Sensitivity of Maximum Ice Volume [$\%$]")
+    plt.savefig(FOLDER["sim"]+"hist.jpg", bbox_inches="tight", dpi=300)
+    plt.clf()

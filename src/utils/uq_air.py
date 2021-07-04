@@ -99,11 +99,11 @@ class UQ_Icestupa(un.Model, Icestupa):
                     self.df.loc[i, "iceV"] = self.df.loc[i-1, "iceV"]
             y_pred = []
             for date in self.df_c.When.values :
-                # print("Length", self.df[self.df.When == date].shape[0])
                 if (self.df[self.df.When == date].shape[0]): 
                     y_pred.append(self.df.loc[self.df.When == date, "iceV"].values[0])
                 else:
-                    y_pred.append(self.V_dome)
+                    # y_pred.append(self.V_dome)
+                    y_pred.append(0)
         else:
             for i in range(0, self.total_days * 24):
                 self.df.loc[i, "iceV"] = self.V_dome 
