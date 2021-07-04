@@ -69,7 +69,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "guttannen21"
+    location = "guttannen20"
     # location = "schwarzsee19"
 
     icestupa = Icestupa(location)
@@ -86,10 +86,6 @@ if __name__ == "__main__":
 
     # Remove first point
     df_c = df_c[1:]
-    # if location in ["guttannen20", "guttannen21"]:
-    # if location == "guttannen21":
-    #     df_c = df_c[:-1]
-    print(df_c)
 
     df_c["Where"] = location
     obs.extend(df_c.reset_index()[["Where", 'When', 'DroneV']].values.tolist())
@@ -100,13 +96,12 @@ if __name__ == "__main__":
 
     tuned_params = [{
         'IE': np.arange(0.95, 0.991, 0.01).tolist(),
-        'A_I': np.arange(0.1, 0.35, 0.02).tolist(),
-        'A_S': bounds(var=icestupa.A_S, res = 0.02),
-        'A_DECAY': np.arange(5, 17, 3).tolist(),
+        'A_I': np.arange(0.01, 0.35, 0.1).tolist(),
+        'A_S': bounds(var=icestupa.A_S, res = 0.05),
+        'A_DECAY': bounds(var=icestupa.A_DECAY, res = 0.5),
         'Z': np.arange(0.001, 0.006, 0.001).tolist(),
         'T_PPT': np.arange(0, 2 , 1).tolist(),
-        # 'A_I': bounds(var=icestupa.A_I, res = 0.01),
-        # 'MU_CONE': np.arange(0, 1, 0.5).tolist(),
+        'T_W': np.arange(0, 5 , 1).tolist(),
         # 'DX': bounds(var=icestupa.DX, res = 0.1),
         # 'r_spray': bounds(var=icestupa.r_spray, res = 0.25),
     }]

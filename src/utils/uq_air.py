@@ -56,8 +56,7 @@ class UQ_Icestupa(un.Model, Icestupa):
         self.self_attributes()
 
         self.df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
-        if location in ["guttannen21", "guttannen20"]:
-            self.df_c = self.df_c.iloc[1:]
+        self.df_c = self.df_c.iloc[1:]
 
         self.y_true = self.df_c.DroneV.values
         print("Ice volume measurements for %s are %s\n"% (self.name, self.y_true))

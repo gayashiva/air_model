@@ -35,11 +35,13 @@ if __name__ == "__main__":
     SITE, FOLDER = config(location)
 
     tuned_params = [{
-        'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
-        'A_I': bounds(var=icestupa.A_I, res = 0.01),
-        # 'A_S': bounds(var=icestupa.A_S, res = 0.01),
-        # 'A_DECAY': np.arange(1, 23 , 2).tolist(),
-        # 'T_PPT': np.arange(0, 2 , 0.5).tolist(),
+        'IE': np.arange(0.95, 0.991, 0.01).tolist(),
+        'A_I': np.arange(0.1, 0.35, 0.02).tolist(),
+        'A_S': bounds(var=icestupa.A_S, res = 0.02),
+        'A_DECAY': np.arange(5, 17, 3).tolist(),
+        'Z': np.arange(0.001, 0.006, 0.001).tolist(),
+        'T_PPT': np.arange(0, 2 , 1).tolist(),
+        # 'A_I': bounds(var=icestupa.A_I, res = 0.01),
         # 'MU_CONE': np.arange(0, 1, 0.5).tolist(),
         # 'DX': bounds(var=icestupa.DX, res = 0.1),
         # 'r_spray': bounds(var=icestupa.r_spray, res = 0.25),
@@ -52,7 +54,7 @@ if __name__ == "__main__":
     df = df.set_index('rmse').sort_index().reset_index()
     df['params'] = df['params'].apply(literal_eval)
 
-    for i in range(0,5):
+    for i in range(0,10):
         print(df.rmse[i])
         for param_name in sorted(df.params[0].keys()):
             print("\t%s: %r" % (param_name, df.params[i][param_name]))
