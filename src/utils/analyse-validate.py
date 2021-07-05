@@ -19,7 +19,7 @@ from ast import literal_eval
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
-from src.utils.cv import CV_Icestupa, save_obj, load_obj, bounds
+from src.utils.cv import bounds
 from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
 

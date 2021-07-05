@@ -3,7 +3,7 @@
 
 # External modules
 import pickle
-pickle.HIGHEST_PROTOCOL = 4 # For python version 2.7
+# pickle.HIGHEST_PROTOCOL = 4 # For python version 2.7
 import pandas as pd
 import sys, os, math
 from datetime import datetime, timedelta
@@ -17,13 +17,17 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 sys.path.append(dirname)
 from src.models.methods.solar import get_solar
 from src.utils.settings import config
-# from src.utils import setup_logger
 from src.models.methods.calibration import get_calibration
 from src.models.methods.droplet import get_droplet_projectile
+# from src.utils.cv import load_obj
 
 # Module logger
 logger = logging.getLogger(__name__)
 logger.propagate = False
+
+# def load_obj(path, name ):
+#     with open(path + name + '.pkl', 'rb') as f:
+#         return pickle.load(f)
 
 class Icestupa:
     """Physical Constants"""
@@ -57,11 +61,16 @@ class Icestupa:
     DT = 60*60 # Model time step
     DX = 20e-03 #m Surface layer thickness growth rate
     
-    def __init__(self, location = "Guttannen 2021"):
+    def __init__(self, location = "Guttannen 2021", params="default"):
 
         SITE, FOLDER = config(location)
-        initial_data = [SITE, FOLDER]
-
+        if params == "best":
+            with open(FOLDER['sim']+ 'best_params.pkl', 'rb') as f:
+                best_params = pickle.load(f)
+            initial_data = [SITE, FOLDER, best_params]
+        else:
+            initial_data = [SITE, FOLDER]
+        
         # Initialise all variables of dictionary
         for dictionary in initial_data:
             for key in dictionary:
