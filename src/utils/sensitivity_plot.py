@@ -37,7 +37,7 @@ if __name__ == "__main__":
         "A_I",
         "A_S",
         "A_DECAY",
-        "MU_CONE",
+        # "MU_CONE",
         "DX",
         "T_W",
         "D_MEAN",
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         r"$\alpha_{ice}$",
         r"$\alpha_{snow}$",
         "$\\tau$",
-        r"$\mu_{cone}$",
+        # r"$\mu_{cone}$",
         "$\\Delta x$",
         "$T_{water}$",
         "$d_{mean}$",
@@ -63,14 +63,29 @@ if __name__ == "__main__":
     site= []
     param= []
     result= []
+    freeze_rate = []
+    melt_rate = []
+    # growth_rate = []
     fig, ax = plt.subplots()
     for location in locations:
         SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
         icestupa.read_output()
-        print(icestupa.df.iceV.max())
         icestupa.self_attributes()
+        # for i in range(1,icestupa.df.shape[0]-1):
+        #     icestupa.df.loc[i, "growth"] = (
+        #         icestupa.df.loc[i+1, "ice"]
+        #         - icestupa.df.loc[i, "ice"]
+        #     )/60
 
+        # print(icestupa.df.growth.describe())
+        for j in range(0,icestupa.df.shape[0]):
+            if icestupa.df.loc[j,"fountain_froze"] !=0:
+                freeze_rate.append([get_parameter_metadata(location)['shortname'],j,icestupa.df.loc[j,"fountain_froze"]/60])
+            if icestupa.df.loc[j,"melted"] !=0:
+                melt_rate.append([get_parameter_metadata(location)['shortname'],j,icestupa.df.loc[j,"melted"]/60])
+            # growth_rate.append([get_parameter_metadata(location)['shortname'],j,icestupa.df.loc[j,"growth"]])
+            # growth_rate.append([get_parameter_metadata(location)['shortname'],j,icestupa.df.loc[j,"fountain_froze"]/60 - icestupa.df.loc[j,"melted"]/60])
         for name in names:
             data = un.Data()
             filename1 = FOLDER["sim"] + name + ".h5"
@@ -82,11 +97,32 @@ if __name__ == "__main__":
     icestupa.df.iceV.max())/icestupa.df.iceV.max()*100])
 
     df = pd.DataFrame(result, columns=['Site', 'param', 'iceV', 'percent_change'])
-    print(df.head())
-    print(df.tail())
+    df2 = pd.DataFrame(freeze_rate, columns=['Site', 'hour', 'frozen'])
+    df3 = pd.DataFrame(melt_rate, columns=['Site', 'hour', 'melted'])
+    df4 = pd.DataFrame(freeze_rate, columns=['Site', 'hour', 'growth'])
+    print(df2.head())
+    print(df2.tail())
 
-    sns.set(style="darkgrid")
     ax = sns.boxplot(x="param", y="percent_change", hue="Site", data=df, palette="Set1", width=0.5)
     ax.set_xlabel("Parameter")
     ax.set_ylabel("Sensitivity of Maximum Ice Volume [$\%$]")
     plt.savefig("data/paper/sensitivities.jpg", bbox_inches="tight", dpi=300)
+    plt.clf()
+
+    ax = sns.histplot(df2, x="frozen", hue="Site",palette="Set1", element="step", fill=False)
+    ax.set_ylabel("Discharge duration [ $hours$ ]")
+    ax.set_xlabel("Freezing rate [ $l\\, min^{-1}$ ]")
+    plt.savefig("data/paper/freeze_rate.jpg", bbox_inches="tight", dpi=300)
+    plt.clf()
+
+    ax = sns.histplot(df3, x="melted", hue="Site", palette="Set1", element="step", fill=False)
+    ax.set_ylabel("Discharge duration [ $hours$ ]")
+    ax.set_xlabel("Melting rate [ $l\\, min^{-1}$ ]")
+    plt.savefig("data/paper/melt_rate.jpg", bbox_inches="tight", dpi=300)
+    plt.clf()
+
+    # ax = sns.histplot(df4, x="growth", hue="Site", palette="Set1", element="step", fill=False)
+    # ax.set_ylabel("Discharge duration [ $hours$ ]")
+    # ax.set_xlabel("Growth rate [ $l\\, min^{-1}$ ]")
+    # plt.savefig("data/paper/growth_rate.jpg", bbox_inches="tight", dpi=300)
+    # plt.clf()

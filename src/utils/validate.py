@@ -69,7 +69,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "guttannen21"
+    location = "guttannen20"
     # location = "schwarzsee19"
 
     icestupa = Icestupa(location)
@@ -82,7 +82,10 @@ if __name__ == "__main__":
 
     # Loading measurements
     SITE, FOLDER= config(location)
-    df_c = pd.read_hdf(FOLDER["input"] + "model_input_Manual.h5", "df_c")
+    df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
+
+    # Remove first point
+    df_c = df_c[1:]
 
     df_c["Where"] = location
     obs.extend(df_c.reset_index()[["Where", 'When', 'DroneV']].values.tolist())
@@ -90,23 +93,25 @@ if __name__ == "__main__":
     X = [[a[0], a[1]] for a in obs]
     y = [a[2] for a in obs]
 
+
     tuned_params = [{
-        'IE': np.arange(0.949, 0.994 , 0.005).tolist(),
-        'A_I': bounds(var=icestupa.A_I, res = 0.01),
-        'A_S': bounds(var=icestupa.A_S, res = 0.01),
-        'A_DECAY': np.arange(5, 15, 2).tolist(),
-        'T_PPT': np.arange(0, 2 , 0.5).tolist(),
-        'MU_CONE': np.arange(0, 1, 0.5).tolist(),
-        # 'DX': bounds(var=icestupa.DX, res = 0.1),
-        # 'r_spray': bounds(var=icestupa.r_spray, res = 0.25),
+        'IE': np.arange(0.95, 0.991, 0.01).tolist(),
+        'A_I': np.arange(0.01, 0.35, 0.05).tolist(),
+        'A_S': bounds(var=icestupa.A_S, res = 0.05),
+        'A_DECAY': bounds(var=icestupa.A_DECAY, res = 0.5),
+        'Z': np.arange(0.001, 0.003, 0.001).tolist(),
+        'T_PPT': np.arange(0, 2 , 1).tolist(),
+        'T_W': np.arange(0, 5 , 1).tolist(),
+        'DX': bounds(var=icestupa.DX, res = 0.0005),
     }]
 
     file_path = 'cv-'
     file_path += '-'.join('{}'.format(key) for key, value in tuned_params[0].items())
 
     print()
+    # print(tuned_params)
     ctr = len(list(ParameterGrid(tuned_params))) 
-    runtime = 60
+    runtime = 45
     days = (ctr*runtime/(12*60*60*24))
     print("Total hours expected : %0.01f" % int(days*24))
     print("Total days expected : %0.01f" % days)

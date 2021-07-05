@@ -163,7 +163,6 @@ if __name__ == "__main__":
             x_axis.set_visible(False)
             ax[i].spines['bottom'].set_visible(False)
         ax[i].add_artist(at)
-        # ax[i].title.set_text(v["shortname"])
         # Hide the right and top spines
         ax[i].spines['right'].set_visible(False)
         ax[i].spines['top'].set_visible(False)

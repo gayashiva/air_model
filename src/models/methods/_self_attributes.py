@@ -2,7 +2,7 @@ import numpy as np
 from datetime import datetime, timedelta
 import pandas as pd
 import math
-import logging
+import logging, coloredlogs
 from codetiming import Timer
 
 from src.models.methods.calibration import get_calibration
@@ -23,6 +23,7 @@ def self_attributes(self, save=False):
     #     )
     #     logger.warning("Measured spray radius from fountain parameters %0.1f"%self.r_spray)
     # else:
+
     # Get spray radius
     if hasattr(self, "r_spray"):
         logger.error("Arbitrary spray radius of %s" %self.r_spray)

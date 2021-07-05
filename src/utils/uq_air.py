@@ -8,6 +8,7 @@ import sys
 import os
 import logging
 import coloredlogs
+from sklearn.metrics import mean_squared_error
 
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -21,15 +22,20 @@ from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
 
 
-def max_volume(time, values, info, result=[]):
-    # Calculate the feature using time, values and info.
+def max_volume(time, values, info):
     icev_max = values.max()
-    # result.append([info, icev_max])
     for param_name in sorted(info.keys()):
         print("\n\t%s: %r" % (param_name, info[param_name]))
-    print("Max Ice Volume %0.1f\n"% (icev_max))
-    # Return the feature times and values.
-    return None, icev_max  # todo include efficiency
+    print("\n\tMax Ice Volume %0.1f\n"% (icev_max))
+    return None, icev_max 
+
+def rmse(time, values, info, y_true, y_pred):
+    mse = mean_squared_error(y_true, y_pred)
+    rmse = math.sqrt(mse)
+    for param_name in sorted(info.keys()):
+        print("\n\t%s: %r" % (param_name, info[param_name]))
+    print("\n\tRMSE %0.1f\n"% (rmse))
+    return None, rmse
 
 class UQ_Icestupa(un.Model, Icestupa):
     def __init__(self, location):
@@ -48,7 +54,12 @@ class UQ_Icestupa(un.Model, Icestupa):
 
         self.read_input()
         self.self_attributes()
-        # result = []
+
+        self.df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
+        self.df_c = self.df_c.iloc[1:]
+
+        self.y_true = self.df_c.DroneV.values
+        print("Ice volume measurements for %s are %s\n"% (self.name, self.y_true))
 
         if location == "guttannen21":
             self.total_days = 180
@@ -86,11 +97,21 @@ class UQ_Icestupa(un.Model, Icestupa):
             else:
                 for i in range(len(self.df), self.total_days * 24):
                     self.df.loc[i, "iceV"] = self.df.loc[i-1, "iceV"]
+            y_pred = []
+            for date in self.df_c.When.values :
+                if (self.df[self.df.When == date].shape[0]): 
+                    y_pred.append(self.df.loc[self.df.When == date, "iceV"].values[0])
+                else:
+                    # y_pred.append(self.V_dome)
+                    y_pred.append(0)
         else:
             for i in range(0, self.total_days * 24):
                 self.df.loc[i, "iceV"] = self.V_dome 
+            y_pred = [999] * len(self.df_c.When.values)
 
-        return self.df.index.values, self.df["iceV"].values, parameters
+        print(y_pred)
+
+        return self.df.index.values, self.df["iceV"].values, parameters, self.y_true, y_pred
 
 if __name__ == "__main__":
     # Main logger
@@ -110,45 +131,49 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        list_of_feature_functions = [max_volume]
+        list_of_feature_functions = [max_volume, rmse]
 
         features = un.Features(
-            new_features=list_of_feature_functions, features_to_run=["max_volume"]
+            # new_features=list_of_feature_functions, features_to_run=["max_volume"]
+            new_features=list_of_feature_functions, features_to_run=["rmse"]
         )
 
-        a_i_dist = cp.Uniform(icestupa.A_I * .95, icestupa.A_I * 1.05)
+        # a_i_dist = cp.Uniform(icestupa.A_I * .95, icestupa.A_I * 1.05)
+        a_i_dist = cp.Uniform(0.01, 0.35)
         a_s_dist = cp.Uniform(icestupa.A_S * .95, icestupa.A_S * 1.05)
+        z_dist = cp.Uniform(1, 5)
         dx_dist = cp.Uniform(icestupa.DX * .95, icestupa.DX * 1.05)
         r_spray_dist = cp.Uniform(icestupa.r_spray * .95, icestupa.r_spray * 1.05)
-        ie_dist = cp.Uniform(0.949, 0.993)
-        a_decay_dist = cp.Uniform(1, 22)
+        ie_dist = cp.Uniform(0.95, 0.99)
+        a_decay_dist = cp.Uniform(icestupa.A_DECAY * .95, icestupa.A_DECAY* 1.05)
         T_PPT_dist = cp.Uniform(0, 2)
-        MU_CONE_dist = cp.Uniform(0, 1)
+        # MU_CONE_dist = cp.Uniform(0, 1)
         T_W_dist = cp.Uniform(0, 5)
         if location in ['guttannen21', 'guttannen20']:
             d_dist = cp.Uniform(3, 10)
         if location == 'gangles21':
             d_dist = cp.Uniform(20, 90)
 
-        parameters_single = {
+        parameters_full = {
             "IE": ie_dist,
             "A_I": a_i_dist,
             "A_S": a_s_dist,
-            "A_DECAY": a_decay_dist,
-            "T_PPT": T_PPT_dist,
-            "MU_CONE": MU_CONE_dist,
-            "DX": dx_dist,
+            # "Z": z_dist,
+            # "A_DECAY": a_decay_dist,
+            # "T_PPT": T_PPT_dist,
+            # "DX": dx_dist,
 
             "T_W": T_W_dist,
-            "D_MEAN": d_dist,
-            "r_spray": r_spray_dist,
+#             "D_MEAN": d_dist,
+#             "r_spray": r_spray_dist,
+            # "MU_CONE": MU_CONE_dist,
         }
 
 
         # Create the parameters
-        for k, v in parameters_single.items():
+        for k, v in parameters_full.items():
             print(k, v)
-            parameters = un.Parameters({k: v})
+            parameters_single = un.Parameters({k: v})
 
             # Initialize the model
             model = UQ_Icestupa(location=location)
@@ -156,7 +181,7 @@ if __name__ == "__main__":
             # Set up the uncertainty quantification
             UQ = un.UncertaintyQuantification(
                 model=model,
-                parameters=parameters,
+                parameters=parameters_single,
                 features=features,
                 # CPUs=1,
             )

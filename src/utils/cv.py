@@ -44,8 +44,8 @@ def bounds(var, res, change = 5):
     return np.arange(var * (100-change)/100, var * (100+change)/100 + res, res).tolist()
 
 class CV_Icestupa(BaseEstimator,Icestupa):
-    def __init__(self, name = "guttannen21", DX = 0.020, DT = 60*60, A_I = 0.35, A_S = 0.85, IE = 0.949, T_PPT = 1, T_W
-        = 1, A_DECAY= 10, MU_CONE=0.5):
+    def __init__(self, name = "guttannen21", DX = 0.020, DT = 60*60, A_I = 0.15, A_S = 0.85, IE = 0.97, T_PPT = 1, T_W
+        = 1, A_DECAY= 10, Z=0.001):
         super(Icestupa, self).__init__()
 
         print("Initializing classifier:\n")
@@ -76,7 +76,7 @@ class CV_Icestupa(BaseEstimator,Icestupa):
 #         if self.D_MEAN in parameters.keys():
 #             self.get_discharge()
 
-        if self.A_DECAY !=10 or self.A_I != 0.35 or self.A_S != 0.85 or self.T_PPT!= 1: 
+        if self.A_DECAY !=10 or self.A_I != 0.15 or self.A_S != 0.85 or self.T_PPT!= 1: 
             """Albedo Decay parameters initialized"""
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
             s = 0
@@ -95,7 +95,7 @@ class CV_Icestupa(BaseEstimator,Icestupa):
             if (self.df[self.df.When == x[1]].shape[0]): 
                 y_pred.append(self.df.loc[self.df.When == x[1], "iceV"].values[0])
             else:
-                y_pred.append(100)
+                y_pred.append(self.V_dome)
                 # print(x,y[ctr])
                 # y_pred.append(y[ctr])
                 # y_pred.append(0)
