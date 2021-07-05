@@ -23,7 +23,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "guttannen21"
+    location = "guttannen20"
     icestupa = Icestupa(location)
     SITE, FOLDER = config(location)
     icestupa.read_output()
@@ -35,8 +35,8 @@ if __name__ == "__main__":
         'A_DECAY': bounds(var=icestupa.A_DECAY, res = 0.5),
         'Z': np.arange(0.001, 0.003, 0.001).tolist(),
         'T_PPT': np.arange(0, 2 , 1).tolist(),
-        # 'T_W': np.arange(0, 5 , 1).tolist(),
-        # 'DX': bounds(var=icestupa.DX, res = 0.0005),
+        'T_W': np.arange(0, 5 , 1).tolist(),
+        'DX': bounds(var=icestupa.DX, res = 0.0005),
     }]
 
     file_path = 'cv-'

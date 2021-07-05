@@ -26,14 +26,14 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2021",
+        location="Guttannen 2020",
         # location="Gangles 2021",
         run="yes",
         # run="no",
     )
 
     # Initialise icestupa object
-    icestupa = Icestupa(answers["location"])
+    icestupa = Icestupa(answers["location"], params='best')
 
     if answers["run"] == "yes":
         # Derive all the input parameters
