@@ -235,6 +235,7 @@ if __name__ == "__main__":
         f_mean = icestupa.df.Discharge.replace(0, np.nan).mean()
         Duration = icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24)
         mean_freeze_rate = icestupa.df[icestupa.df.fountain_froze!= 0].fountain_froze.mean()/(icestupa.DT/60)
+        fountain_duration = icestupa.df[icestupa.df.Discharge!= 0].shape[0]
         mean_melt_rate = icestupa.df[icestupa.df.melted!= 0].melted.mean()/(icestupa.DT/60)
         st.markdown(
             """
@@ -244,6 +245,7 @@ if __name__ == "__main__":
         | Water sprayed| %.0f $m^3$ |
         | Mean freeze rate | %.2f $l/min$ |
         | Mean melt rate | %.2f $l/min$ |
+        | Duration | %s $hours$ |
         """
             % (
                 # f_mean,
@@ -251,6 +253,7 @@ if __name__ == "__main__":
                 M_F/1000,
                 mean_freeze_rate,
                 mean_melt_rate,
+                fountain_duration,
             )
         )
 

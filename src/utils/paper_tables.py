@@ -38,27 +38,27 @@ if __name__ == "__main__":
         icestupa.read_output()
         icestupa.self_attributes()
 
-        # M_F= round(icestupa.df["Discharge"].sum()* icestupa.DT/ 60 + icestupa.df.loc[0, "input"] - icestupa.V_dome *
-        #     icestupa.RHO_I,1)
-        # M_input = round(icestupa.df["input"].iloc[-1],1)
-        # M_ppt= round(icestupa.df["ppt"].sum(),1)
-        # M_dep= round(icestupa.df["dep"].sum(),1)
-        # M_water = round(icestupa.df["meltwater"].iloc[-1],1)
-        # M_runoff= round(icestupa.df["unfrozen_water"].iloc[-1],1)
-        # M_sub = round(icestupa.df["vapour"].iloc[-1],1)
-        # M_ice = round(icestupa.df["ice"].iloc[-1]- icestupa.V_dome * icestupa.RHO_I,1)
-        # Mass_Component = location
-        # var_dict={}
-        # for var in ["Mass_Component", "M_F", "M_ppt", "M_dep", "M_ice", "M_sub", "M_water", "M_runoff"]:
-        #     var_dict[var] = eval(var)
-        # print(var_dict)
-        # a_file = open(FOLDER["output"] + "mass_bal.csv", "w")
-        # writer = csv.writer(a_file)
-        # for key, value in var_dict.items():
-        #     # key = '$' + key + '$'
-        #     key = key[2:]
-        #     writer.writerow([key, value])
-        #     print([key, value])
+#         M_F= round(icestupa.df["Discharge"].sum()* icestupa.DT/ 60 + icestupa.df.loc[0, "input"] - icestupa.V_dome *
+#             icestupa.RHO_I,1)
+#         M_input = round(icestupa.df["input"].iloc[-1],1)
+#         M_ppt= round(icestupa.df["ppt"].sum(),1)
+#         M_dep= round(icestupa.df["dep"].sum(),1)
+#         M_water = round(icestupa.df["meltwater"].iloc[-1],1)
+#         M_runoff= round(icestupa.df["unfrozen_water"].iloc[-1],1)
+#         M_sub = round(icestupa.df["vapour"].iloc[-1],1)
+#         M_ice = round(icestupa.df["ice"].iloc[-1]- icestupa.V_dome * icestupa.RHO_I,1)
+#         Mass_Component = location
+#         var_dict={}
+#         for var in ["Mass_Component", "M_F", "M_ppt", "M_dep", "M_ice", "M_sub", "M_water", "M_runoff"]:
+#             var_dict[var] = eval(var)
+#         print(var_dict)
+#         a_file = open(FOLDER["output"] + "mass_bal.csv", "w")
+#         writer = csv.writer(a_file)
+#         for key, value in var_dict.items():
+#             # key = '$' + key + '$'
+#             key = key[2:]
+#             writer.writerow([key, value])
+#             print([key, value])
 
         filenames.append(FOLDER["output"] + "mass_bal.csv")
 
@@ -68,10 +68,10 @@ if __name__ == "__main__":
 
     df = df.rename(
         {
-            "Guttannen 2021": "GB21",
-            "Guttannen 2020": "GB20",
-            "Gangles 2021": "IC21",
-            "Schwarzsee 2019": "EP19",
+            "Guttannen 2021": "CH21",
+            "Guttannen 2020": "CH20",
+            "Gangles 2021": "IN21",
+            "Schwarzsee 2019": "CH19",
             "ss_Component": "Mass",
         },
         axis=1,
