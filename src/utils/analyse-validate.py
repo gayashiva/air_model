@@ -35,6 +35,7 @@ if __name__ == "__main__":
     location = "guttannen21"
     icestupa = Icestupa(location)
     SITE, FOLDER = config(location)
+    icestupa.read_output()
 
     tuned_params = [{
         'IE': np.arange(0.95, 0.991, 0.01).tolist(),
@@ -64,13 +65,14 @@ if __name__ == "__main__":
             print("\t%s: %r" % (param_name, df.params[i][param_name]))
 
     df = df[:101]
-    df.plot(y='rmse')
+    df['rmse_percent'] = df['rmse']/icestupa.df.iceV.max() * 100
+    df.plot(y='rmse_percent')
     plt.savefig(FOLDER["sim"]+ "rmse.jpg", bbox_inches="tight", dpi=300)
     plt.clf()
 
     df = pd.concat([df.drop(['params'], axis=1), df['params'].apply(pd.Series)], axis=1)
-    ax = sns.boxplot( y="Z",  data=df,  width=0.5)
+    ax = sns.boxplot( y="A_I",  data=df,  width=0.5)
     ax.set_xlabel("Parameter")
-    ax.set_ylabel("Sensitivity of Maximum Ice Volume [$\%$]")
+    ax.set_ylabel("Sensitivity of RMSE [$\%$]")
     plt.savefig(FOLDER["sim"]+"hist.jpg", bbox_inches="tight", dpi=300)
     plt.clf()
