@@ -42,28 +42,6 @@ def shade(location, df_in, col):
     events = [ev for ev in events if not ev.empty]
     return df, df_ERA5, events
 
-def overlapped_bar(df, show=False, width=0.9, alpha=.5,
-                   title='', xlabel='', ylabel='', **plot_kwargs):
-    """Like a stacked bar chart except bars on top of each other with transparency"""
-    xlabel = xlabel or df.index.name
-    N = len(df)
-    M = len(df.columns)
-    indices = np.arange(N)
-    colors = ['steelblue', 'firebrick', 'darksage', 'goldenrod', 'gray'] * int(M / 5. + 1)
-    for i, label, color in zip(range(M), df.columns, colors):
-        kwargs = plot_kwargs
-        kwargs.update({'color': color, 'label': label})
-        plt.bar(indices, df[label], width=width, alpha=alpha if i else 1, **kwargs)
-        plt.xticks(indices + .5 * width,
-                   ['{}'.format(idx) for idx in df.index.values])
-    plt.legend()
-    plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    if show:
-        plt.show()
-    return plt.gcf()
-
 @Timer(text="%s executed in {:.2f} seconds" % __name__, logger = logging.warning)
 def summary_figures(self):
     logger.info("Creating figures")
@@ -301,13 +279,13 @@ def summary_figures(self):
 
     fig = plt.figure(figsize=(12, 14))
     ax1 = fig.add_subplot(3, 1, 1)
-    ax1 = z.plot.bar(
-                stacked=True, 
-                edgecolor="black", 
-                linewidth=0.5, 
-                color=[purple, pink, red, orange, green, "xkcd:yellowgreen", "xkcd:azure", blue ],
-                ax=ax1
-                )
+    z.plot.bar(
+            stacked=True, 
+            edgecolor="black", 
+            linewidth=0.5, 
+            color=[purple, pink, red, orange, green, "xkcd:yellowgreen", "xkcd:azure", blue ],
+            ax=ax1
+            )
     ax1.xaxis.set_label_text("")
     ax1.grid(color="black", alpha=0.3, linewidth=0.5, which="major")
     plt.ylabel("Energy Flux [$W\\,m^{-2}$]")

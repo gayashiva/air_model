@@ -22,7 +22,7 @@ from src.models.methods.metadata import get_parameter_metadata
 
 if __name__ == "__main__":
 
-    locations = ['guttannen21',  'gangles21', 'guttannen20']
+    locations = ['gangles21', 'guttannen21','guttannen20']
 
     blue = "#0a4a97"
     red = "#e23028"
@@ -47,9 +47,8 @@ if __name__ == "__main__":
     # fig, ax = plt.subplots(len(locations), 1, sharex='col', figsize=(12, 14))
     fig, ax = plt.subplots(len(locations), 1, sharex='col')
     # fig.subplots_adjust(hspace=0.1, wspace=0.1)
-    i=0
 
-    for location in locations:
+    for i,location in enumerate(locations):
         SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
         icestupa.read_output()
@@ -180,8 +179,6 @@ if __name__ == "__main__":
         ax[i].xaxis.set_major_formatter(mdates.DateFormatter("%b"))
         fig.autofmt_xdate()
 
-        # df_out = df_out.set_index("When")
-        i+=1
     fig.text(0.04, 0.5, 'Ice Volume[$m^3$]', va='center', rotation='vertical')
     handles, labels = ax[1].get_legend_handles_labels()
     fig.legend(handles, labels, loc='upper right')
