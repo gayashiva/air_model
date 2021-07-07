@@ -22,7 +22,7 @@ from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
 
 
-def max_volume(time, values, info):
+def max_volume(time, values, info, y_true, y_pred, se):
     icev_max = values.max()
     for param_name in sorted(info.keys()):
         print("\n\t%s: %r" % (param_name, info[param_name]))
@@ -36,6 +36,12 @@ def rmse(time, values, info, y_true, y_pred):
         print("\n\t%s: %r" % (param_name, info[param_name]))
     print("\n\tRMSE %0.1f\n"% (rmse))
     return None, rmse
+
+def efficiency(time, values, info, y_true, y_pred, se):
+    for param_name in sorted(info.keys()):
+        print("\n\t%s: %r" % (param_name, info[param_name]))
+    print("\n\tSE %0.1f\n"% (se))
+    return None, se
 
 class UQ_Icestupa(un.Model, Icestupa):
     def __init__(self, location):
@@ -109,9 +115,12 @@ class UQ_Icestupa(un.Model, Icestupa):
                 self.df.loc[i, "iceV"] = self.V_dome 
             y_pred = [999] * len(self.df_c.When.values)
 
-        print(y_pred)
+        M_input = round(self.df["input"].iloc[-1],1)
+        M_water = round(self.df["meltwater"].iloc[-1],1)
+        M_ice = round(self.df["ice"].iloc[-1]- self.V_dome * self.RHO_I,1)
+        se = (M_water + M_ice) / M_input
 
-        return self.df.index.values, self.df["iceV"].values, parameters, self.y_true, y_pred
+        return self.df.index.values, self.df["iceV"].values, parameters, self.y_true, y_pred, se
 
 if __name__ == "__main__":
     # Main logger
@@ -122,7 +131,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    locations = ['guttannen20', 'guttannen21', 'gangles21']
+    locations = ['gangles21', 'guttannen20', 'guttannen21']
 
     for location in locations:
         # Get settings for given location and trigger
@@ -131,19 +140,19 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        list_of_feature_functions = [max_volume, rmse]
+        list_of_feature_functions = [max_volume, rmse, efficiency]
 
         features = un.Features(
             # new_features=list_of_feature_functions, features_to_run=["max_volume"]
-            new_features=list_of_feature_functions, features_to_run=["rmse"]
+            # new_features=list_of_feature_functions, features_to_run=["rmse"]
+            new_features=list_of_feature_functions, features_to_run=["efficiency"]
         )
 
-        # a_i_dist = cp.Uniform(icestupa.A_I * .95, icestupa.A_I * 1.05)
         a_i_dist = cp.Uniform(0.01, 0.35)
         a_s_dist = cp.Uniform(icestupa.A_S * .95, icestupa.A_S * 1.05)
-        z_dist = cp.Uniform(1, 5)
+        z_dist = cp.Uniform(0.001, 0.005)
         dx_dist = cp.Uniform(icestupa.DX * .95, icestupa.DX * 1.05)
-        r_spray_dist = cp.Uniform(icestupa.r_spray * .95, icestupa.r_spray * 1.05)
+        # r_spray_dist = cp.Uniform(icestupa.r_spray * .95, icestupa.r_spray * 1.05)
         ie_dist = cp.Uniform(0.95, 0.99)
         a_decay_dist = cp.Uniform(icestupa.A_DECAY * .95, icestupa.A_DECAY* 1.05)
         T_PPT_dist = cp.Uniform(0, 2)
@@ -158,10 +167,10 @@ if __name__ == "__main__":
             "IE": ie_dist,
             "A_I": a_i_dist,
             "A_S": a_s_dist,
-            # "Z": z_dist,
-            # "A_DECAY": a_decay_dist,
-            # "T_PPT": T_PPT_dist,
-            # "DX": dx_dist,
+            "Z": z_dist,
+            "A_DECAY": a_decay_dist,
+            "T_PPT": T_PPT_dist,
+            "DX": dx_dist,
 
             "T_W": T_W_dist,
 #             "D_MEAN": d_dist,
@@ -183,7 +192,7 @@ if __name__ == "__main__":
                 model=model,
                 parameters=parameters_single,
                 features=features,
-                # CPUs=1,
+                CPUs=2,
             )
 
             # Perform the uncertainty quantification using # polynomial chaos with point collocation (by default) data =

@@ -45,8 +45,6 @@ if __name__ == "__main__":
     CB91_Violet = "#661D98"
     CB91_Amber = "#F5B14C"
 
-    # fig, ax = plt.subplots(ncols = 2, nrows = 2 * len(locations), figsize=(12,14))
-
     fig = plt.figure(figsize=(12, 14))
     subfigs = fig.subfigures(3, 1, wspace=0.25)
     for ctr, location in enumerate(locations):
@@ -155,7 +153,9 @@ if __name__ == "__main__":
         # ax[1,0].set_xlim(xlim1) # most of the data
         # ax[1,1].set_xlim(xlim2)
         for i in range(2):
-            # if ctr == 0:
+            if ctr == 0:
+                ax[0,0].title.set_text('Freezing period')
+                ax[0,1].title.set_text('Melting Period')
                 # lgd1 = ax[0,0].legend(loc="upper center", bbox_to_anchor=(0.6, 1.3), ncol=5)
                 # lgd2 = ax[1,1].legend(loc="upper center", bbox_to_anchor=(0.5, -1.5), ncol=4)
                 # handles, labels = ax[1,0].get_legend_handles_labels()
