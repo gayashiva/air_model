@@ -24,8 +24,6 @@ from src.utils.settings import config
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.icestupaClass import Icestupa
 from src.models.methods.metadata import get_parameter_metadata
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     locations = ['gangles21', 'guttannen21', 'guttannen20']
@@ -47,9 +45,7 @@ if __name__ == "__main__":
     CB91_Violet = "#661D98"
     CB91_Amber = "#F5B14C"
 
-    total_days = 101
-    fig, ax = plt.subplots(ncols = len(locations), nrows = 4, figsize=(12,14))
-    fig.subplots_adjust(hspace=0.05, wspace=0.05)
+    fig, ax = plt.subplots(ncols = 2, nrows = 2 * len(locations), figsize=(12,14))
     for ctr, location in enumerate(locations):
         SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
@@ -122,101 +118,83 @@ if __name__ == "__main__":
         ]
 
         dfd = icestupa.df.set_index("When").resample("D").mean().reset_index()
+        # dfd["When"] = dfd["When"].dt.strftime("%b %d")
+        # dfd = dfd.set_index('When')
+
         dfd[["$-q_{freeze/melt}$", "$-q_{T}$"]] *=-1
         z = dfd[["$-q_{freeze/melt}$",  "$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$","$-q_{T}$", "$q_{G}$"]]
 
-        # if y2.shape[0]<total_days:
-        #     df2 = pd.DataFrame([[0]*y2.shape[1]],columns=y2.columns)
-        #     for i in range(y2.shape[0], total_days):
-        #         y2 = y2.append(df2, ignore_index=True)
-        #         z = z.append(df2, ignore_index=True)
-        # else:
-        #     y2 = y2[:total_days]
-        #     z= z[:total_days]
         y2.index = y2.index + 1
         z.index = z.index + 1
+        days =19 
+        xlim1=[-0.5,days+0.5]
+        xlim2=[z.shape[0]-days-0.5,z.shape[0]+0.5]
 
-        idx_slice = y2.index < 20
-        y2.loc[idx_slice].plot.bar(
-            stacked=True,
-            edgecolor="black",
-            linewidth=0.5,
-            color=[skyblue, "xkcd:azure", orange, "#0C70DE", green ],
-            ax=ax[0, ctr],
-        )
-        ax[0,ctr].xaxis.set_label_text("")
-        ax[0,ctr].grid(color="black", alpha=0.3, linewidth=0.5, which="major")
-        ax[0,ctr].set_ylim(-0.06, 0.06)
-        at = AnchoredText(get_parameter_metadata(location)['shortname'], prop=dict(size=10), frameon=True, loc="upper left")
-        at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-        ax[0,ctr].add_artist(at)
-        ax[0,ctr].legend(loc="upper center", ncol=3)
-        # ax[0,ctr].xaxis.set_ticks(np.arange(0, 51, 10))
-        # ax[0,ctr].xaxis.set_major_formatter(ticker.FormatStrFormatter('%i'))
-        ax[0,ctr].set_ylabel('Thickness [$m$ w. e.]')
-
-        idx_slice = z.index < 20
-        z[idx_slice].plot.bar(
-            stacked=True, 
-            edgecolor="black", 
-            linewidth=0.5, 
-            color=[purple, red, orange, green, "xkcd:yellowgreen", "xkcd:azure", pink,blue ],
-            ax=ax[1,ctr]
+        for j in range(2):
+            y2.plot.bar(
+                stacked=True,
+                edgecolor="black",
+                linewidth=0.5,
+                color=[skyblue, "xkcd:azure", orange, "#0C70DE", green ],
+                ax=ax[2*ctr,j],
             )
-        ax[1,ctr].grid(color="black", alpha=0.3, linewidth=0.5, which="major")
-        ax[1,ctr].set_ylim(-300, 300)
-        ax[1,ctr].legend(loc="upper center", ncol=4)
-        # ax[1,ctr].xaxis.set_ticks(np.arange(0, 51, 10))
-        # ax[1,ctr].xaxis.set_major_formatter(ticker.FormatStrFormatter('%i'))
-        ax[1,ctr].set_ylabel("Energy Flux [$W\\,m^{-2}$]")
-        ax[1,ctr].xaxis.set_label_text("Day number")
+        ax[2*ctr,0].set_xlim(xlim1) # most of the data
+        ax[2*ctr,1].set_xlim(xlim2)
+        # at = AnchoredText(get_parameter_metadata(location)['shortname'], prop=dict(size=10), frameon=True, loc="upper left")
+        # at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+        # ax[0,ctr].add_artist(at)
 
-        idx_slice = y2.index > (y2.shape[0]) - 20
-        y2[idx_slice].plot.bar(
-            stacked=True,
-            edgecolor="black",
-            linewidth=0.5,
-            color=[skyblue, "xkcd:azure", orange, "#0C70DE", green ],
-            ax=ax[2, ctr],
-        )
-        ax[2,ctr].xaxis.set_label_text("")
-        # ax[2,ctr].grid(color="black", alpha=0.3, linewidth=0.5, which="major")
-        ax[2,ctr].set_ylim(-0.06, 0.06)
-        at = AnchoredText(get_parameter_metadata(location)['shortname'], prop=dict(size=10), frameon=True, loc="upper left")
-        at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-        ax[2,ctr].add_artist(at)
-        ax[2,ctr].legend(loc="upper center", ncol=3)
-        # ax[2,ctr].xaxis.set_ticks(np.arange(0, total_days, 10))
-        # ax[2,ctr].xaxis.set_major_formatter(ticker.FormatStrFormatter('%i'))
-        ax[2,ctr].set_ylabel('Thickness [$m$ w. e.]')
+        for j in range(2):
+            z.plot.bar(
+                stacked=True, 
+                edgecolor="black", 
+                linewidth=0.5, 
+                color=[purple, red, orange, green, "xkcd:yellowgreen", "xkcd:azure", pink,blue ],
+                ax=ax[2*ctr+1, j]
+                )
+        ax[2*ctr+1,0].set_xlim(xlim1)
+        ax[2*ctr+1,1].set_xlim(xlim2)
 
-        idx_slice = z.index > (z.shape[0]) - 20
-        z[idx_slice].plot.bar(
-            stacked=True, 
-            edgecolor="black", 
-            linewidth=0.5, 
-            color=[purple, red, orange, green, "xkcd:yellowgreen", "xkcd:azure", pink,blue ],
-            ax=ax[3,ctr]
-            )
-        # ax[3,ctr].grid(color="black", alpha=0.3, linewidth=0.5, which="major")
-        ax[3,ctr].set_ylim(-300, 300)
-        ax[3,ctr].legend(loc="upper center", ncol=4)
-        # ax[3,ctr].xaxis.set_ticks(np.arange(0, total_days, 10))
-        # ax[3,ctr].xaxis.set_major_formatter(ticker.FormatStrFormatter('%i'))
-        ax[3,ctr].set_ylabel("Energy Flux [$W\\,m^{-2}$]")
-        ax[3,ctr].xaxis.set_label_text("Day number")
+    for ctr in range(2*len(locations)):
+        for j in range(2):
+            ax[ctr,j].get_legend().remove()
 
-    for i in range(4):
-        for j in range(len(locations)):
-            ax[i,j].get_legend().remove()
-            ax[i,j].axes.get_yaxis().set_visible(False)
-        # if i != 3:
-        #     ax[i,j].xaxis.set_label_text("")
-        # if j != 0:
-        #     ax[i,j].axes.get_yaxis().set_visible(False)
+            # # hide the spines between ax and ax2
+            ax[ctr,j].spines['top'].set_visible(False)
 
-    # ax[0,1].legend(loc="upper center", bbox_to_anchor=(-0.1, 0.15), ncol=3)
-    # ax[1,1].legend(loc="upper center", bbox_to_anchor=(-0.1, 1), ncol=4)
+            if ctr%2!=0:
+                ax[ctr,j].set_ylim(-310, 310)
+                ax[ctr,j].set_ylabel("Energy Flux [$W\\,m^{-2}$]")
+
+                d = .015 # how big to make the diagonal lines in axes coordinates
+                # arguments to pass plot, just so we don't keep repeating them
+                kwargs = dict(transform=ax[ctr,j].transAxes, color='k', clip_on=False)
+                if j == 0:
+                    ax[ctr,j].plot((1-d,1+d),(-d,+d), **kwargs) # top-left diagonal
+                    # ax[ctr,j].plot((1-d,1+d),(1-d,1+d), **kwargs) # bottom-left diagonal
+                else:
+                    ax[ctr,j].plot((-d,d),(-d,+d), **kwargs) # top-right diagonal
+                    # ax[ctr,j].plot((-d,d),(1-d,1+d), **kwargs) # bottom-right diagonal
+            else:
+                ax[ctr,j].set_ylim(-0.065, 0.065)
+                ax[ctr,j].set_ylabel('Thickness [$m$ w. e.]')
+                ax[ctr,j].spines['bottom'].set_visible(False)
+                ax[ctr,j].tick_params(bottom = False)
+                ax[ctr,j].tick_params(labelbottom = False)
+
+
+            if j == 0:
+                ax[ctr,j].spines['right'].set_visible(False)
+            else:
+                ax[ctr,j].spines['left'].set_visible(False)
+                ax[ctr,j].set_ylabel('')
+                ax[ctr,j].tick_params(left=False, labelleft= False,)
+            ax[ctr,j].tick_params(right = False)
+            ax[ctr,j].grid(color="black", alpha=0.3, axis = 'y', linewidth=0.5, which="major")
+
+    fig.subplots_adjust(hspace=0.25, wspace=0.025)
+    ax[0,0].legend(loc="upper center", bbox_to_anchor=(0.5, 1.5), ncol=3)
+    ax[1,1].legend(loc="upper center", bbox_to_anchor=(0.5, 2.6), ncol=4)
     plt.savefig(
         "data/paper/mass_energy_bal.jpg",
         dpi=300,
