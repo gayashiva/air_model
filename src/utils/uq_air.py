@@ -98,6 +98,11 @@ class UQ_Icestupa(un.Model, Icestupa):
         self.melt_freeze()
 
         if len(self.df) != 0:
+            M_input = round(self.df["input"].iloc[-1],1)
+            M_water = round(self.df["meltwater"].iloc[-1],1)
+            M_ice = round(self.df["ice"].iloc[-1]- self.V_dome * self.RHO_I,1)
+            se = (M_water + M_ice) / M_input
+
             if len(self.df) >= self.total_days * 24:
                 self.df = self.df[: self.total_days * 24]
             else:
@@ -114,11 +119,8 @@ class UQ_Icestupa(un.Model, Icestupa):
             for i in range(0, self.total_days * 24):
                 self.df.loc[i, "iceV"] = self.V_dome 
             y_pred = [999] * len(self.df_c.When.values)
+            se = 0
 
-        M_input = round(self.df["input"].iloc[-1],1)
-        M_water = round(self.df["meltwater"].iloc[-1],1)
-        M_ice = round(self.df["ice"].iloc[-1]- self.V_dome * self.RHO_I,1)
-        se = (M_water + M_ice) / M_input
 
         return self.df.index.values, self.df["iceV"].values, parameters, self.y_true, y_pred, se
 
