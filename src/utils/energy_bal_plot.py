@@ -45,7 +45,10 @@ if __name__ == "__main__":
     CB91_Violet = "#661D98"
     CB91_Amber = "#F5B14C"
 
-    fig, ax = plt.subplots(ncols = 2, nrows = 2 * len(locations), figsize=(12,14))
+    # fig, ax = plt.subplots(ncols = 2, nrows = 2 * len(locations), figsize=(12,14))
+
+    fig = plt.figure(figsize=(12, 14))
+    subfigs = fig.subfigures(3, 1, wspace=0.25)
     for ctr, location in enumerate(locations):
         SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
@@ -130,71 +133,70 @@ if __name__ == "__main__":
         xlim1=[-0.5,days+0.5]
         xlim2=[z.shape[0]-days-0.5,z.shape[0]+0.5]
 
+        ax = subfigs[ctr].subplots(2, 2)
+        # subfigs[ctr].suptitle(get_parameter_metadata(location)['shortname'], fontsize='x-large')
         for j in range(2):
             y2.plot.bar(
                 stacked=True,
                 edgecolor="black",
                 linewidth=0.5,
                 color=[skyblue, "xkcd:azure", orange, "#0C70DE", green ],
-                ax=ax[2*ctr,j],
+                ax=ax[0,j],
             )
-        ax[2*ctr,0].set_xlim(xlim1) # most of the data
-        ax[2*ctr,1].set_xlim(xlim2)
-        # at = AnchoredText(get_parameter_metadata(location)['shortname'], prop=dict(size=10), frameon=True, loc="upper left")
-        # at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-        # ax[0,ctr].add_artist(at)
-
-        for j in range(2):
             z.plot.bar(
                 stacked=True, 
                 edgecolor="black", 
                 linewidth=0.5, 
                 color=[purple, red, orange, green, "xkcd:yellowgreen", "xkcd:azure", pink,blue ],
-                ax=ax[2*ctr+1, j]
+                ax=ax[1,j],
                 )
-        ax[2*ctr+1,0].set_xlim(xlim1)
-        ax[2*ctr+1,1].set_xlim(xlim2)
+        # ax[0,0].set_xlim(xlim1) # most of the data
+        # ax[0,1].set_xlim(xlim2)
+        # ax[1,0].set_xlim(xlim1) # most of the data
+        # ax[1,1].set_xlim(xlim2)
+        for i in range(2):
+            # if ctr == 0:
+                # lgd1 = ax[0,0].legend(loc="upper center", bbox_to_anchor=(0.6, 1.3), ncol=5)
+                # lgd2 = ax[1,1].legend(loc="upper center", bbox_to_anchor=(0.5, -1.5), ncol=4)
+                # handles, labels = ax[1,0].get_legend_handles_labels()
+                # ax[1,1].legend(loc="upper center",  ncol=4)
+            for j in range(2):
+                ax[i,j].get_legend().remove()
+                ax[i,j].spines['top'].set_visible(False)
 
-    for ctr in range(2*len(locations)):
-        for j in range(2):
-            ax[ctr,j].get_legend().remove()
+                if i==1:
+                    ax[i,j].set_ylim(-310, 310)
+                    ax[i,j].set_ylabel("Energy Flux [$W\\,m^{-2}$]")
 
-            # # hide the spines between ax and ax2
-            ax[ctr,j].spines['top'].set_visible(False)
-
-            if ctr%2!=0:
-                ax[ctr,j].set_ylim(-310, 310)
-                ax[ctr,j].set_ylabel("Energy Flux [$W\\,m^{-2}$]")
-
-                d = .015 # how big to make the diagonal lines in axes coordinates
-                # arguments to pass plot, just so we don't keep repeating them
-                kwargs = dict(transform=ax[ctr,j].transAxes, color='k', clip_on=False)
-                if j == 0:
-                    ax[ctr,j].plot((1-d,1+d),(-d,+d), **kwargs) # top-left diagonal
-                    # ax[ctr,j].plot((1-d,1+d),(1-d,1+d), **kwargs) # bottom-left diagonal
+                    d = .015 # how big to make the diagonal lines in axes coordinates
+                    # arguments to pass plot, just so we don't keep repeating them
+                    kwargs = dict(transform=ax[i,j].transAxes, color='k', clip_on=False)
+                    if j == 0:
+                        ax[i,j].plot((1-d,1+d),(-d,+d), **kwargs) # top-left diagonal
+                    else:
+                        ax[i,j].plot((-d,d),(-d,+d), **kwargs) # top-right diagonal
                 else:
-                    ax[ctr,j].plot((-d,d),(-d,+d), **kwargs) # top-right diagonal
-                    # ax[ctr,j].plot((-d,d),(1-d,1+d), **kwargs) # bottom-right diagonal
-            else:
-                ax[ctr,j].set_ylim(-0.065, 0.065)
-                ax[ctr,j].set_ylabel('Thickness [$m$ w. e.]')
-                ax[ctr,j].spines['bottom'].set_visible(False)
-                ax[ctr,j].tick_params(bottom = False)
-                ax[ctr,j].tick_params(labelbottom = False)
+                    ax[i,j].set_ylim(-0.065, 0.065)
+                    ax[i,j].set_ylabel('Thickness [$m$ w. e.]')
+                    ax[i,j].spines['bottom'].set_visible(False)
+                    ax[i,j].tick_params(bottom = False)
+                    ax[i,j].tick_params(labelbottom = False)
 
+                if j == 0:
+                    ax[i,j].set_xlim(xlim1) # most of the data
+                    ax[i,j].spines['right'].set_visible(False)
+                else:
+                    ax[i,j].set_xlim(xlim2) # most of the data
+                    ax[i,j].spines['left'].set_visible(False)
+                    ax[i,j].set_ylabel('')
+                    ax[i,j].tick_params(left=False, labelleft= False,)
+                ax[i,j].tick_params(right = False)
+                ax[i,j].grid(color="black", alpha=0.3, axis = 'y', linewidth=0.5, which="major")
 
-            if j == 0:
-                ax[ctr,j].spines['right'].set_visible(False)
-            else:
-                ax[ctr,j].spines['left'].set_visible(False)
-                ax[ctr,j].set_ylabel('')
-                ax[ctr,j].tick_params(left=False, labelleft= False,)
-            ax[ctr,j].tick_params(right = False)
-            ax[ctr,j].grid(color="black", alpha=0.3, axis = 'y', linewidth=0.5, which="major")
-
-    fig.subplots_adjust(hspace=0.25, wspace=0.025)
-    ax[0,0].legend(loc="upper center", bbox_to_anchor=(0.5, 1.5), ncol=3)
-    ax[1,1].legend(loc="upper center", bbox_to_anchor=(0.5, 2.6), ncol=4)
+        subfigs[ctr].text(0.04, 0.5, get_parameter_metadata(location)['shortname'], va='center', rotation='vertical', fontsize='x-large')
+        subfigs[ctr].subplots_adjust(hspace=0.05, wspace=0.025)
+    ax[0,0].legend(loc="upper center", bbox_to_anchor=(0.6, 4), ncol=5)
+    ax[1,0].legend(loc="upper center", bbox_to_anchor=(0.7, 2.4), ncol=8)
     plt.savefig(
         "data/paper/mass_energy_bal.jpg",
         dpi=300,
