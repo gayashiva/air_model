@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
         a_i_dist = cp.Uniform(0.01, 0.35)
         a_s_dist = cp.Uniform(icestupa.A_S * 0.95, icestupa.A_S * 1.05)
-        z_dist = cp.Uniform(0.0017, 0.005)
+        z_dist = cp.Uniform(0.001, 0.005)
         dx_dist = cp.Uniform(icestupa.DX * 0.95, icestupa.DX * 1.05)
         # r_spray_dist = cp.Uniform(icestupa.r_spray * .95, icestupa.r_spray * 1.05)
         ie_dist = cp.Uniform(0.95, 0.99)
@@ -177,14 +177,14 @@ if __name__ == "__main__":
             d_dist = cp.Uniform(20, 90)
 
         parameters_full = {
-            "IE": ie_dist,
-            "A_I": a_i_dist,
-            "A_S": a_s_dist,
+            # "IE": ie_dist,
+            # "A_I": a_i_dist,
+            # "A_S": a_s_dist,
             "Z": z_dist,
-            "A_DECAY": a_decay_dist,
-            "T_PPT": T_PPT_dist,
-            "DX": dx_dist,
-            "T_W": T_W_dist,
+            # "A_DECAY": a_decay_dist,
+            # "T_PPT": T_PPT_dist,
+            # "DX": dx_dist,
+            # "T_W": T_W_dist,
             #             "D_MEAN": d_dist,
             #             "r_spray": r_spray_dist,
             # "MU_CONE": MU_CONE_dist,

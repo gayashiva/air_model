@@ -12,6 +12,7 @@ from matplotlib.offsetbox import AnchoredText
 from mpl_toolkits.axisartist.axislines import Axes
 from mpl_toolkits import axisartist
 import uncertainpy as un
+import statistics as st
 
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -82,13 +83,6 @@ if __name__ == "__main__":
         M_ice = round(icestupa.df["ice"].iloc[-1] - icestupa.V_dome * icestupa.RHO_I, 1)
         icestupa.se = (M_water + M_ice) / M_input * 100
 
-        # for i in range(1,icestupa.df.shape[0]-1):
-        #     icestupa.df.loc[i, "growth"] = (
-        #         icestupa.df.loc[i+1, "ice"]
-        #         - icestupa.df.loc[i, "ice"]
-        #     )/60
-
-        # print(icestupa.df.growth.describe())
         for j in range(0, icestupa.df.shape[0]):
             if icestupa.df.loc[j, "fountain_froze"] != 0:
                 freeze_rate.append(
@@ -113,6 +107,10 @@ if __name__ == "__main__":
             filename1 = FOLDER["sim"] + name + ".h5"
             data.load(filename1)
             evaluations.append(data[feature_name].evaluations)
+            eval = data[feature_name].evaluations
+            print(
+                f"95 percent confidence interval caused by {name} is {round(st.mean(eval),2)} and {round(2 * st.stdev(eval),2)}"
+            )
             # percent_change.append(
             #     (data[feature_name].evaluations - icestupa.df.iceV.max())
             #     / icestupa.df.iceV.max()
