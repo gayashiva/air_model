@@ -1,4 +1,3 @@
-
 """Icestupa class function that generates figures for web app
 """
 
@@ -6,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
-import os,sys
+import os, sys
 import matplotlib.dates as mdates
 import matplotlib as mpl
 from matplotlib.colors import ListedColormap
@@ -26,7 +25,7 @@ from src.models.icestupaClass import Icestupa
 from src.models.methods.metadata import get_parameter_metadata
 
 if __name__ == "__main__":
-    locations = ['gangles21', 'guttannen21', 'guttannen20']
+    locations = ["gangles21", "guttannen21", "guttannen20"]
     # locations = ['guttannen21',  'gangles21']
     # locations = ['guttannen21']
 
@@ -37,7 +36,7 @@ if __name__ == "__main__":
     orange = "#ffc107"
     pink = "#ce507a"
     skyblue = "#9bc4f0"
-    grey = '#ced4da'
+    grey = "#ced4da"
     CB91_Blue = "#2CBDFE"
     CB91_Green = "#47DBCD"
     CB91_Pink = "#F3A0F2"
@@ -85,12 +84,20 @@ if __name__ == "__main__":
                     dfds.loc[i, "Discharge"] = dfds.loc[i, "fountain_froze"] / (
                         icestupa.df.loc[i, "SA"] * icestupa.RHO_I
                     )
-                    dfds.loc[i, "melted"] *= -1 / (icestupa.df.loc[i, "SA"] * icestupa.RHO_I)
-                    dfds.loc[i, "sub"] *= -1 / (icestupa.df.loc[i, "SA"] * icestupa.RHO_I)
-                    dfds.loc[i, "ppt"] *= 1 / (icestupa.df.loc[i, "SA"] * icestupa.RHO_I)
-                    dfds.loc[i, "dep"] *= 1 / (icestupa.df.loc[i, "SA"] * icestupa.RHO_I)
+                    dfds.loc[i, "melted"] *= -1 / (
+                        icestupa.df.loc[i, "SA"] * icestupa.RHO_I
+                    )
+                    dfds.loc[i, "sub"] *= -1 / (
+                        icestupa.df.loc[i, "SA"] * icestupa.RHO_I
+                    )
+                    dfds.loc[i, "ppt"] *= 1 / (
+                        icestupa.df.loc[i, "SA"] * icestupa.RHO_I
+                    )
+                    dfds.loc[i, "dep"] *= 1 / (
+                        icestupa.df.loc[i, "SA"] * icestupa.RHO_I
+                    )
                 else:
-                    dfds.loc[i, "Discharge"] = 0 
+                    dfds.loc[i, "Discharge"] = 0
                     dfds.loc[i, "melted"] *= 0
                     dfds.loc[i, "sub"] *= 0
                     dfds.loc[i, "ppt"] *= 0
@@ -107,7 +114,6 @@ if __name__ == "__main__":
             }
         )
 
-
         y2 = dfds[
             [
                 "Discharge",
@@ -122,14 +128,25 @@ if __name__ == "__main__":
         # dfd["When"] = dfd["When"].dt.strftime("%b %d")
         # dfd = dfd.set_index('When')
 
-        dfd[["$-q_{freeze/melt}$", "$-q_{T}$"]] *=-1
-        z = dfd[["$-q_{freeze/melt}$",  "$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$","$-q_{T}$", "$q_{G}$"]]
+        dfd[["$-q_{freeze/melt}$", "$-q_{T}$"]] *= -1
+        z = dfd[
+            [
+                "$-q_{freeze/melt}$",
+                "$q_{SW}$",
+                "$q_{LW}$",
+                "$q_S$",
+                "$q_L$",
+                "$q_{F}$",
+                "$-q_{T}$",
+                "$q_{G}$",
+            ]
+        ]
 
         y2.index = y2.index + 1
         z.index = z.index + 1
-        days =19 
-        xlim1=[-0.5,days+0.5]
-        xlim2=[z.shape[0]-days-0.5,z.shape[0]+0.5]
+        days = 19
+        xlim1 = [-0.5, days + 0.5]
+        xlim2 = [z.shape[0] - days - 0.5, z.shape[0] + 0.5]
 
         ax = subfigs[ctr].subplots(2, 2)
         # subfigs[ctr].suptitle(get_parameter_metadata(location)['shortname'], fontsize='x-large')
@@ -138,58 +155,87 @@ if __name__ == "__main__":
                 stacked=True,
                 edgecolor="black",
                 linewidth=0.5,
-                color=[skyblue, "xkcd:azure", orange, "#0C70DE", green ],
-                ax=ax[0,j],
+                color=[skyblue, "xkcd:azure", orange, "#0C70DE", green],
+                ax=ax[0, j],
             )
             z.plot.bar(
-                stacked=True, 
-                edgecolor="black", 
-                linewidth=0.5, 
-                color=[purple, red, orange, green, "xkcd:yellowgreen", "xkcd:azure", pink,blue ],
-                ax=ax[1,j],
-                )
+                stacked=True,
+                edgecolor="black",
+                linewidth=0.5,
+                color=[
+                    purple,
+                    red,
+                    orange,
+                    green,
+                    "xkcd:yellowgreen",
+                    "xkcd:azure",
+                    pink,
+                    blue,
+                ],
+                ax=ax[1, j],
+            )
         for i in range(2):
             if ctr == 0:
-                ax[0,0].title.set_text('Freezing period')
-                ax[0,1].title.set_text('Melting Period')
-                ax[0,0].title.set_size('x-large')
-                ax[0,1].title.set_size('x-large')
+                ax[0, 0].title.set_text("Freezing period")
+                ax[0, 1].title.set_text("Melting Period")
+                ax[0, 0].title.set_size("x-large")
+                ax[0, 1].title.set_size("x-large")
             for j in range(2):
-                ax[i,j].get_legend().remove()
-                ax[i,j].spines['top'].set_visible(False)
+                ax[i, j].get_legend().remove()
+                ax[i, j].spines["top"].set_visible(False)
 
-                if i==1:
-                    ax[i,j].set_ylim(-310, 310)
-                    ax[i,j].set_ylabel("Energy Flux [$W\\,m^{-2}$]")
+                if i == 1:
+                    ax[i, j].set_ylim(-310, 310)
+                    ax[i, j].set_ylabel("Energy Flux [$W\\,m^{-2}$]")
 
-                    d = .015 # how big to make the diagonal lines in axes coordinates
-                    kwargs = dict(transform=ax[i,j].transAxes, color='k', clip_on=False)
+                    d = 0.015  # how big to make the diagonal lines in axes coordinates
+                    kwargs = dict(
+                        transform=ax[i, j].transAxes, color="k", clip_on=False
+                    )
                     if j == 0:
-                        ax[i,j].plot((1-d,1+d),(-d,+d), **kwargs) # top-left diagonal
+                        ax[i, j].plot(
+                            (1 - d, 1 + d), (-d, +d), **kwargs
+                        )  # top-left diagonal
                     else:
-                        ax[i,j].plot((-d,d),(-d,+d), **kwargs) # top-right diagonal
+                        ax[i, j].plot((-d, d), (-d, +d), **kwargs)  # top-right diagonal
                 else:
-                    ax[i,j].set_ylim(-0.065, 0.065)
-                    ax[i,j].set_ylabel('Thickness [$m$ w. e.]')
-                    ax[i,j].spines['bottom'].set_visible(False)
-                    ax[i,j].tick_params(bottom = False)
-                    ax[i,j].tick_params(labelbottom = False)
+                    ax[i, j].set_ylim(-0.065, 0.065)
+                    ax[i, j].set_ylabel("Thickness [$m$ w. e.]")
+                    ax[i, j].spines["bottom"].set_visible(False)
+                    ax[i, j].tick_params(bottom=False)
+                    ax[i, j].tick_params(labelbottom=False)
 
                 if j == 0:
-                    ax[i,j].set_xlim(xlim1) # most of the data
-                    ax[i,j].spines['right'].set_visible(False)
+                    ax[i, j].set_xlim(xlim1)  # most of the data
+                    ax[i, j].spines["right"].set_visible(False)
                 else:
-                    ax[i,j].set_xlim(xlim2) # most of the data
-                    ax[i,j].spines['left'].set_visible(False)
-                    ax[i,j].set_ylabel('')
-                    ax[i,j].tick_params(left=False, labelleft= False,)
-                ax[i,j].tick_params(right = False)
-                ax[i,j].grid(color="black", alpha=0.3, axis = 'y', linewidth=0.5, which="major")
+                    ax[i, j].set_xlim(xlim2)  # most of the data
+                    ax[i, j].spines["left"].set_visible(False)
+                    ax[i, j].set_ylabel("")
+                    ax[i, j].tick_params(
+                        left=False,
+                        labelleft=False,
+                    )
+                ax[i, j].tick_params(right=False)
+                ax[i, j].grid(
+                    color="black", alpha=0.3, axis="y", linewidth=0.5, which="major"
+                )
 
-        subfigs[ctr].text(0.04, 0.5, get_parameter_metadata(location)['shortname'], va='center', rotation='vertical', fontsize='x-large')
+        subfigs[ctr].text(
+            0.04,
+            0.5,
+            get_parameter_metadata(location)["shortname"],
+            va="center",
+            rotation="vertical",
+            fontsize="x-large",
+        )
         subfigs[ctr].subplots_adjust(hspace=0.05, wspace=0.025)
-    ax[0,0].legend(loc="upper center", bbox_to_anchor=(0.6, 4), ncol=5, title = 'Mass fluxes')
-    ax[1,0].legend(loc="upper center", bbox_to_anchor=(0.7, 2.4), ncol=8, title = 'Energy fluxes')
+    ax[0, 0].legend(
+        loc="upper center", bbox_to_anchor=(1, 4), ncol=5, title="Mass fluxes"
+    )
+    ax[1, 0].legend(
+        loc="upper center", bbox_to_anchor=(1, 2.4), ncol=8, title="Energy fluxes"
+    )
     plt.savefig(
         "data/paper/mass_energy_bal.jpg",
         dpi=300,

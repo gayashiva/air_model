@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
-import os,sys
+import os, sys
 import matplotlib.dates as mdates
 import matplotlib as mpl
 from matplotlib.colors import ListedColormap
@@ -12,12 +12,13 @@ from matplotlib.offsetbox import AnchoredText
 from mpl_toolkits.axisartist.axislines import Axes
 from mpl_toolkits import axisartist
 import uncertainpy as un
- 
+
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
 
 from src.utils.settings import config
+
 # from src.utils.uq_output import draw_plot
 from src.models.icestupaClass import Icestupa
 from src.models.methods.metadata import get_parameter_metadata
@@ -25,44 +26,46 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
-    locations = ['guttannen21',  'gangles21','guttannen20']
+    locations = ["gangles21", "guttannen21", "guttannen20"]
 
-    index = pd.date_range(start ='1-1-2022', 
-         end ='1-1-2024', freq ='D', name= "When")
-    df_out = pd.DataFrame(columns=locations,index=index)
+    index = pd.date_range(start="1-1-2022", end="1-1-2024", freq="D", name="When")
+    df_out = pd.DataFrame(columns=locations, index=index)
 
     names = [
-        "T_PPT",
         "IE",
         "A_I",
         "A_S",
         "A_DECAY",
-        # "MU_CONE",
+        "T_PPT",
+        "Z",
         "DX",
         "T_W",
-        "D_MEAN",
-        "r_spray",
+        # "D_MEAN",
+        # "MU_CONE",
+        # "r_spray",
     ]
     names_label = [
-        "$T_{ppt}$",
         "$\\epsilon_{ice}$",
         r"$\alpha_{ice}$",
         r"$\alpha_{snow}$",
         "$\\tau$",
-        # r"$\mu_{cone}$",
+        "$T_{ppt}$",
+        "$z_{0}$",
         "$\\Delta x$",
         "$T_{water}$",
-        "$d_{mean}$",
-        "$r_{spray}$",
+        # "$d_{mean}$",
+        # r"$\mu_{cone}$",
+        # "$r_{spray}$",
     ]
     zip_iterator = zip(names, names_label)
     param_dictionary = dict(zip_iterator)
 
     evaluations = []
-    percent_change= []
-    site= []
-    param= []
-    result= []
+    percent_change = []
+    efficiency_change = []
+    site = []
+    param = []
+    result = []
     freeze_rate = []
     melt_rate = []
     # growth_rate = []
@@ -72,6 +75,13 @@ if __name__ == "__main__":
         icestupa = Icestupa(location)
         icestupa.read_output()
         icestupa.self_attributes()
+        feature_name = "efficiency"
+
+        M_input = round(icestupa.df["input"].iloc[-1], 1)
+        M_water = round(icestupa.df["meltwater"].iloc[-1], 1)
+        M_ice = round(icestupa.df["ice"].iloc[-1] - icestupa.V_dome * icestupa.RHO_I, 1)
+        icestupa.se = (M_water + M_ice) / M_input * 100
+
         # for i in range(1,icestupa.df.shape[0]-1):
         #     icestupa.df.loc[i, "growth"] = (
         #         icestupa.df.loc[i+1, "ice"]
@@ -79,43 +89,75 @@ if __name__ == "__main__":
         #     )/60
 
         # print(icestupa.df.growth.describe())
-        for j in range(0,icestupa.df.shape[0]):
-            if icestupa.df.loc[j,"fountain_froze"] !=0:
-                freeze_rate.append([get_parameter_metadata(location)['shortname'],j,icestupa.df.loc[j,"fountain_froze"]/60])
-            if icestupa.df.loc[j,"melted"] !=0:
-                melt_rate.append([get_parameter_metadata(location)['shortname'],j,icestupa.df.loc[j,"melted"]/60])
+        for j in range(0, icestupa.df.shape[0]):
+            if icestupa.df.loc[j, "fountain_froze"] != 0:
+                freeze_rate.append(
+                    [
+                        get_parameter_metadata(location)["shortname"],
+                        j,
+                        icestupa.df.loc[j, "fountain_froze"] / 60,
+                    ]
+                )
+            if icestupa.df.loc[j, "melted"] != 0:
+                melt_rate.append(
+                    [
+                        get_parameter_metadata(location)["shortname"],
+                        j,
+                        icestupa.df.loc[j, "melted"] / 60,
+                    ]
+                )
             # growth_rate.append([get_parameter_metadata(location)['shortname'],j,icestupa.df.loc[j,"growth"]])
             # growth_rate.append([get_parameter_metadata(location)['shortname'],j,icestupa.df.loc[j,"fountain_froze"]/60 - icestupa.df.loc[j,"melted"]/60])
         for name in names:
             data = un.Data()
             filename1 = FOLDER["sim"] + name + ".h5"
             data.load(filename1)
-            evaluations.append(data["max_volume"].evaluations)
-            percent_change.append((data["max_volume"].evaluations - icestupa.df.iceV.max())/icestupa.df.iceV.max()*100)
-            for i in range(0,len(data["max_volume"].evaluations)):
-                result.append([get_parameter_metadata(location)['shortname'], param_dictionary[name], data["max_volume"].evaluations[i],(data["max_volume"].evaluations[i]-
-    icestupa.df.iceV.max())/icestupa.df.iceV.max()*100])
+            evaluations.append(data[feature_name].evaluations)
+            # percent_change.append(
+            #     (data[feature_name].evaluations - icestupa.df.iceV.max())
+            #     / icestupa.df.iceV.max()
+            #     * 100
+            # )
+            # efficiency_change.append((data[feature_name].evaluations - icestupa.se))
+            for i in range(0, len(data[feature_name].evaluations)):
+                result.append(
+                    [
+                        get_parameter_metadata(location)["shortname"],
+                        param_dictionary[name],
+                        data[feature_name].evaluations[i],
+                        (data[feature_name].evaluations[i] - icestupa.se),
+                        # (data[feature_name].evaluations[i] - icestupa.df.iceV.max())
+                        # / icestupa.df.iceV.max()
+                        # * 100,
+                    ]
+                )
 
-    df = pd.DataFrame(result, columns=['Site', 'param', 'iceV', 'percent_change'])
-    df2 = pd.DataFrame(freeze_rate, columns=['Site', 'hour', 'frozen'])
-    df3 = pd.DataFrame(melt_rate, columns=['Site', 'hour', 'melted'])
-    df4 = pd.DataFrame(freeze_rate, columns=['Site', 'hour', 'growth'])
+    df = pd.DataFrame(result, columns=["Site", "param", "SE", "percent_change"])
+    df2 = pd.DataFrame(freeze_rate, columns=["Site", "hour", "frozen"])
+    df3 = pd.DataFrame(melt_rate, columns=["Site", "hour", "melted"])
+    df4 = pd.DataFrame(freeze_rate, columns=["Site", "hour", "growth"])
     print(df2.head())
     print(df2.tail())
 
-    ax = sns.boxplot(x="param", y="percent_change", hue="Site", data=df, palette="Set1", width=0.5)
+    ax = sns.boxplot(
+        x="param", y="percent_change", hue="Site", data=df, palette="Set1", width=0.5
+    )
     ax.set_xlabel("Parameter")
-    ax.set_ylabel("Sensitivity of Maximum Ice Volume [$\%$]")
+    ax.set_ylabel("Sensitivity of Storage Efficiency [$\%$]")
     plt.savefig("data/paper/sensitivities.jpg", bbox_inches="tight", dpi=300)
     plt.clf()
 
-    ax = sns.histplot(df2, x="frozen", hue="Site",palette="Set1", element="step", fill=False)
+    ax = sns.histplot(
+        df2, x="frozen", hue="Site", palette="Set1", element="step", fill=False
+    )
     ax.set_ylabel("Discharge duration [ $hours$ ]")
     ax.set_xlabel("Freezing rate [ $l\\, min^{-1}$ ]")
     plt.savefig("data/paper/freeze_rate.jpg", bbox_inches="tight", dpi=300)
     plt.clf()
 
-    ax = sns.histplot(df3, x="melted", hue="Site", palette="Set1", element="step", fill=False)
+    ax = sns.histplot(
+        df3, x="melted", hue="Site", palette="Set1", element="step", fill=False
+    )
     ax.set_ylabel("Discharge duration [ $hours$ ]")
     ax.set_xlabel("Melting rate [ $l\\, min^{-1}$ ]")
     plt.savefig("data/paper/melt_rate.jpg", bbox_inches="tight", dpi=300)
