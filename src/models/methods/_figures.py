@@ -18,7 +18,7 @@ def shade(location, df_in, col):
         df_ERA5 = df_in.copy()
         df = df_in.copy()
         df.loc[
-        : , ["When", "T_a", "SW_direct", "SW_diffuse", "v_a", "p_a", "RH"]
+            :, ["When", "T_a", "SW_direct", "SW_diffuse", "v_a", "p_a", "RH"]
         ] = np.NaN
 
     else:
@@ -26,11 +26,21 @@ def shade(location, df_in, col):
         df_ERA5 = df_in.copy()
         df = df_in.copy()
         df.loc[
-            mask , ["When", "T_a", "SW_direct", "SW_diffuse", "v_a", "p_a", "RH"]
+            mask, ["When", "T_a", "SW_direct", "SW_diffuse", "v_a", "p_a", "RH"]
         ] = np.NaN
 
         df_ERA5.loc[
-            ~mask , ["When", "T_a", "SW_direct", "SW_diffuse", "v_a", "p_a", "RH", "missing_type"]
+            ~mask,
+            [
+                "When",
+                "T_a",
+                "SW_direct",
+                "SW_diffuse",
+                "v_a",
+                "p_a",
+                "RH",
+                "missing_type",
+            ],
         ] = np.NaN
 
     events = np.split(df_ERA5.When, np.where(np.isnan(df_ERA5.When.values))[0])
@@ -42,7 +52,8 @@ def shade(location, df_in, col):
     events = [ev for ev in events if not ev.empty]
     return df, df_ERA5, events
 
-@Timer(text="%s executed in {:.2f} seconds" % __name__, logger = logging.warning)
+
+@Timer(text="%s executed in {:.2f} seconds" % __name__, logger=logging.warning)
 def summary_figures(self):
     logger.info("Creating figures")
 
@@ -53,21 +64,34 @@ def summary_figures(self):
     df_c = df_c[["When", "DroneV", "DroneVError"]]
     if self.name in ["guttannen21", "guttannen20", "gangles21"]:
         df_c = df_c[1:]
-    tol = pd.Timedelta('15T')
+    tol = pd.Timedelta("15T")
     df_c = df_c.set_index("When")
-    self.df= self.df.set_index("When")
-    df_c = pd.merge_asof(left=self.df,right=df_c,right_index=True,left_index=True,direction='nearest',tolerance=tol)
-    df_c = df_c[["DroneV","DroneVError", "iceV"]]
-    self.df= self.df.reset_index()
+    self.df = self.df.set_index("When")
+    df_c = pd.merge_asof(
+        left=self.df,
+        right=df_c,
+        right_index=True,
+        left_index=True,
+        direction="nearest",
+        tolerance=tol,
+    )
+    df_c = df_c[["DroneV", "DroneVError", "iceV"]]
+    self.df = self.df.reset_index()
 
     if self.name in ["guttannen21", "guttannen20"]:
         df_cam = pd.read_hdf(self.input + "model_input.h5", "df_cam")
-        tol = pd.Timedelta('15T')
-        self.df= self.df.set_index("When")
-        df_cam = pd.merge_asof(left=self.df,right=df_cam,right_index=True,left_index=True,direction='nearest',tolerance=tol)
+        tol = pd.Timedelta("15T")
+        self.df = self.df.set_index("When")
+        df_cam = pd.merge_asof(
+            left=self.df,
+            right=df_cam,
+            right_index=True,
+            left_index=True,
+            direction="nearest",
+            tolerance=tol,
+        )
         df_cam = df_cam[["cam_temp", "T_s", "T_bulk"]]
-        self.df= self.df.reset_index()
-
+        self.df = self.df.reset_index()
 
     np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
     output = self.output
@@ -78,7 +102,7 @@ def summary_figures(self):
     orange = "#ffc107"
     pink = "#ce507a"
     skyblue = "#9bc4f0"
-    grey = '#ced4da'
+    grey = "#ced4da"
 
     CB91_Blue = "#2CBDFE"
     CB91_Green = "#47DBCD"
@@ -96,7 +120,8 @@ def summary_figures(self):
             "Qf": "$q_{F}$",
             "Qg": "$q_{G}$",
             "Qsurf": "$q_{surf}$",
-            "Qmelt": "$-q_{freeze/melt}$",
+            "Qmelt": "$-q_{melt}$",
+            "Qfreeze": "$-q_{freeze}$",
             "Qt": "$-q_{T}$",
         },
         axis=1,
@@ -125,7 +150,7 @@ def summary_figures(self):
     for tl in ax1t.get_yticklabels():
         tl.set_color(CB91_Blue)
 
-    df_SZ, df_ERA5, events = shade(location=self.name,df_in = self.df, col = 'T_a')
+    df_SZ, df_ERA5, events = shade(location=self.name, df_in=self.df, col="T_a")
     y2 = df_SZ.T_a
     y2_ERA5 = df_ERA5.T_a
     ax2.plot(x, y2, linestyle="-", color="#284D58", linewidth=1)
@@ -135,7 +160,6 @@ def summary_figures(self):
         )
     ax2.plot(x, y2_ERA5, linestyle="-", color="#284D58")
     ax2.set_ylabel("Temperature [$\\degree C$]")
-
 
     y3 = self.df.SW_direct
     lns2 = ax3.plot(x, y3, linestyle="-", label="Shortwave Direct", color=red)
@@ -172,8 +196,7 @@ def summary_figures(self):
     ax4.set_ylabel("Radiation [$W\\,m^{-2}$]")
     ax4.legend(loc="best")
 
-
-    df_SZ, df_ERA5, events= shade(location=self.name,df_in = self.df, col = 'RH')
+    df_SZ, df_ERA5, events = shade(location=self.name, df_in=self.df, col="RH")
     y5 = df_SZ.RH
     y5_ERA5 = df_ERA5.RH
     ax5.plot(x, y5, linestyle="-", color="#284D58", linewidth=1)
@@ -182,7 +205,7 @@ def summary_figures(self):
         ax5.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
     ax5.set_ylabel("Humidity [$\\%$]")
 
-    df_SZ, df_ERA5, events= shade(location=self.name,df_in = self.df, col = 'p_a')
+    df_SZ, df_ERA5, events = shade(location=self.name, df_in=self.df, col="p_a")
     y6 = df_SZ.p_a
     y6_ERA5 = df_ERA5.p_a
     ax6.plot(x, y6, linestyle="-", color="#264653", linewidth=1)
@@ -191,7 +214,7 @@ def summary_figures(self):
         ax6.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
     ax6.set_ylabel("Pressure [$hPa$]")
 
-    df_SZ, df_ERA5 , events= shade(location=self.name,df_in = self.df, col = 'v_a')
+    df_SZ, df_ERA5, events = shade(location=self.name, df_in=self.df, col="v_a")
     y7 = df_SZ.v_a
     y7_ERA5 = df_ERA5.v_a
     ax7.plot(x, y7, linestyle="-", color="#264653", linewidth=1, label="Schwarzsee")
@@ -241,7 +264,7 @@ def summary_figures(self):
                 dfds.loc[i, "ppt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
                 dfds.loc[i, "dep"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
             else:
-                dfds.loc[i, "Ice"] = 0 
+                dfds.loc[i, "Ice"] = 0
                 dfds.loc[i, "melted"] *= 0
                 dfds.loc[i, "sub"] *= 0
                 dfds.loc[i, "ppt"] *= 0
@@ -274,18 +297,40 @@ def summary_figures(self):
 
     dfd = self.df.set_index("When").resample("D").mean().reset_index()
     dfd["When"] = dfd["When"].dt.strftime("%b %d")
-    dfd[["$-q_{freeze/melt}$", "$-q_{T}$"]] *=-1
-    z = dfd[["$-q_{freeze/melt}$", "$-q_{T}$", "$q_{SW}$", "$q_{LW}$", "$q_S$", "$q_L$", "$q_{F}$", "$q_{G}$"]]
+    dfd[["$-q_{freeze}$", "$-q_{melt}$", "$-q_{T}$"]] *= -1
+    z = dfd[
+        [
+            "$-q_{freeze}$",
+            "$-q_{melt}$",
+            "$-q_{T}$",
+            "$q_{SW}$",
+            "$q_{LW}$",
+            "$q_S$",
+            "$q_L$",
+            "$q_{F}$",
+            "$q_{G}$",
+        ]
+    ]
 
     fig = plt.figure(figsize=(12, 14))
     ax1 = fig.add_subplot(3, 1, 1)
     z.plot.bar(
-            stacked=True, 
-            edgecolor="black", 
-            linewidth=0.5, 
-            color=[purple, pink, red, orange, green, "xkcd:yellowgreen", "xkcd:azure", blue ],
-            ax=ax1
-            )
+        stacked=True,
+        edgecolor="black",
+        linewidth=0.5,
+        color=[
+            "xkcd:azure",
+            purple,
+            pink,
+            red,
+            orange,
+            green,
+            "xkcd:yellowgreen",
+            CB91_Violet,
+            blue,
+        ],
+        ax=ax1,
+    )
     ax1.xaxis.set_label_text("")
     ax1.grid(color="black", alpha=0.3, linewidth=0.5, which="major")
     plt.ylabel("Energy Flux [$W\\,m^{-2}$]")
@@ -309,7 +354,8 @@ def summary_figures(self):
     plt.ylabel("Thickness ($m$ w. e.)")
     plt.xticks(rotation=45)
     plt.legend(loc="upper center", ncol=6)
-    if y2.sum(axis=1).max() > 0.1: ax2.set_ylim(-0.1, 0.1) # Uneven thickness
+    if y2.sum(axis=1).max() > 0.1:
+        ax2.set_ylim(-0.1, 0.1)  # Uneven thickness
     ax2.yaxis.set_minor_locator(AutoMinorLocator())
     ax2.grid(axis="y", color="black", alpha=0.3, linewidth=0.5, which="major")
     ax2.xaxis.set_label_text("")
@@ -324,7 +370,12 @@ def summary_figures(self):
 
     ax4 = fig.add_subplot(3, 1, 3)
     ax4.bar(
-        x="When",height="iceV", linewidth=0.5, edgecolor="black", color=skyblue, data = dfds2,
+        x="When",
+        height="iceV",
+        linewidth=0.5,
+        edgecolor="black",
+        color=skyblue,
+        data=dfds2,
     )
     ax4.xaxis.set_label_text("")
     ax4.set_ylabel("Ice Volume($m^3$)")
@@ -368,7 +419,6 @@ def summary_figures(self):
     ax2.plot(
         x,
         y1,
-        "b-",
         label="Modelled",
         linewidth=1,
         color=CB91_Amber,
@@ -410,9 +460,9 @@ def summary_figures(self):
         linewidth=1,
         color=CB91_Blue,
     )
-    ax.fill_between(x, y1=self.V_dome, y2=0, color=grey, label = "Dome Volume")
+    ax.fill_between(x, y1=self.V_dome, y2=0, color=grey, label="Dome Volume")
     ax.scatter(x, y2, color=CB91_Green, label="Measured Volume")
-    ax.errorbar(x, y2,yerr=df_c.DroneVError, color=CB91_Green)
+    ax.errorbar(x, y2, yerr=df_c.DroneVError, color=CB91_Green)
 
     ax.set_ylim(bottom=0)
     plt.legend()
@@ -438,7 +488,6 @@ def summary_figures(self):
         ax.plot(
             x,
             y1,
-            "b-",
             label="Modelled Temperature",
             linewidth=1,
             color=CB91_Amber,

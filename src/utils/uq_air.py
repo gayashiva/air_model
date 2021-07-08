@@ -30,7 +30,7 @@ def max_volume(time, values, info, y_true, y_pred, se):
     return None, icev_max
 
 
-def rmse(time, values, info, y_true, y_pred):
+def rmse(time, values, info, y_true, y_pred, se):
     mse = mean_squared_error(y_true, y_pred)
     rmse = math.sqrt(mse)
     for param_name in sorted(info.keys()):
@@ -170,21 +170,21 @@ if __name__ == "__main__":
         a_decay_dist = cp.Uniform(icestupa.A_DECAY * 0.95, icestupa.A_DECAY * 1.05)
         T_PPT_dist = cp.Uniform(0, 2)
         # MU_CONE_dist = cp.Uniform(0, 1)
-        T_W_dist = cp.Uniform(0, 5)
+        T_W_dist = cp.Uniform(0, 3)
         if location in ["guttannen21", "guttannen20"]:
             d_dist = cp.Uniform(3, 10)
         if location == "gangles21":
             d_dist = cp.Uniform(20, 90)
 
         parameters_full = {
-            # "IE": ie_dist,
-            # "A_I": a_i_dist,
-            # "A_S": a_s_dist,
+            "IE": ie_dist,
+            "A_I": a_i_dist,
+            "A_S": a_s_dist,
             "Z": z_dist,
-            # "A_DECAY": a_decay_dist,
-            # "T_PPT": T_PPT_dist,
-            # "DX": dx_dist,
-            # "T_W": T_W_dist,
+            "A_DECAY": a_decay_dist,
+            "T_PPT": T_PPT_dist,
+            "DX": dx_dist,
+            "T_W": T_W_dist,
             #             "D_MEAN": d_dist,
             #             "r_spray": r_spray_dist,
             # "MU_CONE": MU_CONE_dist,

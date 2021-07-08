@@ -46,7 +46,7 @@ class Icestupa:
 
     """Surface Properties"""
     IE = 0.97  # Ice Emissivity IE
-    A_I = 0.15  # Albedo of Ice A_I
+    A_I = 0.25  # Albedo of Ice A_I
     A_S = 0.85  # Albedo of Fresh Snow A_S
     A_DECAY = 10  # Albedo decay rate decay_t_d
     Z = 0.0017  # Ice Momentum and Scalar roughness length
@@ -54,7 +54,7 @@ class Icestupa:
     MU_CONE = 0.5  # Turbulence of cone
 
     """Fountain constants"""
-    T_W = 1  # FOUNTAIN Water temperature
+    T_W = 0.5  # FOUNTAIN Water temperature
 
     """Model constants"""
     DT = 60 * 60  # Model time step
@@ -274,6 +274,7 @@ class Icestupa:
             "fountain_froze",
             "Qt",
             "Qmelt",
+            "Qfreeze",
             "input",
         ]
 

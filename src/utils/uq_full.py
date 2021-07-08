@@ -31,7 +31,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "guttannen21"
+    location = "gangles21"
 
     # Get settings for given location and trigger
     SITE, FOLDER = config(location)

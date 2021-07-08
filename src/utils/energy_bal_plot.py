@@ -60,7 +60,8 @@ if __name__ == "__main__":
                 "Qf": "$q_{F}$",
                 "Qg": "$q_{G}$",
                 "Qsurf": "$q_{surf}$",
-                "Qmelt": "$-q_{freeze/melt}$",
+                "Qmelt": "$-q_{melt}$",
+                "Qfreeze": "$-q_{freeze}$",
                 "Qt": "$-q_{T}$",
             },
             axis=1,
@@ -128,10 +129,11 @@ if __name__ == "__main__":
         # dfd["When"] = dfd["When"].dt.strftime("%b %d")
         # dfd = dfd.set_index('When')
 
-        dfd[["$-q_{freeze/melt}$", "$-q_{T}$"]] *= -1
+        dfd[["$-q_{freeze}$", "$-q_{melt}$", "$-q_{T}$"]] *= -1
         z = dfd[
             [
-                "$-q_{freeze/melt}$",
+                "$-q_{freeze}$",
+                "$-q_{melt}$",
                 "$q_{SW}$",
                 "$q_{LW}$",
                 "$q_S$",
@@ -163,12 +165,13 @@ if __name__ == "__main__":
                 edgecolor="black",
                 linewidth=0.5,
                 color=[
+                    "xkcd:azure",
                     purple,
                     red,
                     orange,
                     green,
                     "xkcd:yellowgreen",
-                    "xkcd:azure",
+                    CB91_Violet,
                     pink,
                     blue,
                 ],
@@ -234,7 +237,7 @@ if __name__ == "__main__":
         loc="upper center", bbox_to_anchor=(1, 4), ncol=5, title="Mass fluxes"
     )
     ax[1, 0].legend(
-        loc="upper center", bbox_to_anchor=(1, 2.4), ncol=8, title="Energy fluxes"
+        loc="upper center", bbox_to_anchor=(1, 2.4), ncol=9, title="Energy fluxes"
     )
     plt.savefig(
         "data/paper/mass_energy_bal.jpg",
