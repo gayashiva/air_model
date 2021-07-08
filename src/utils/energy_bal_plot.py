@@ -148,18 +148,12 @@ if __name__ == "__main__":
                 color=[purple, red, orange, green, "xkcd:yellowgreen", "xkcd:azure", pink,blue ],
                 ax=ax[1,j],
                 )
-        # ax[0,0].set_xlim(xlim1) # most of the data
-        # ax[0,1].set_xlim(xlim2)
-        # ax[1,0].set_xlim(xlim1) # most of the data
-        # ax[1,1].set_xlim(xlim2)
         for i in range(2):
             if ctr == 0:
                 ax[0,0].title.set_text('Freezing period')
                 ax[0,1].title.set_text('Melting Period')
-                # lgd1 = ax[0,0].legend(loc="upper center", bbox_to_anchor=(0.6, 1.3), ncol=5)
-                # lgd2 = ax[1,1].legend(loc="upper center", bbox_to_anchor=(0.5, -1.5), ncol=4)
-                # handles, labels = ax[1,0].get_legend_handles_labels()
-                # ax[1,1].legend(loc="upper center",  ncol=4)
+                ax[0,0].title.set_size('x-large')
+                ax[0,1].title.set_size('x-large')
             for j in range(2):
                 ax[i,j].get_legend().remove()
                 ax[i,j].spines['top'].set_visible(False)
@@ -169,7 +163,6 @@ if __name__ == "__main__":
                     ax[i,j].set_ylabel("Energy Flux [$W\\,m^{-2}$]")
 
                     d = .015 # how big to make the diagonal lines in axes coordinates
-                    # arguments to pass plot, just so we don't keep repeating them
                     kwargs = dict(transform=ax[i,j].transAxes, color='k', clip_on=False)
                     if j == 0:
                         ax[i,j].plot((1-d,1+d),(-d,+d), **kwargs) # top-left diagonal
@@ -195,8 +188,8 @@ if __name__ == "__main__":
 
         subfigs[ctr].text(0.04, 0.5, get_parameter_metadata(location)['shortname'], va='center', rotation='vertical', fontsize='x-large')
         subfigs[ctr].subplots_adjust(hspace=0.05, wspace=0.025)
-    ax[0,0].legend(loc="upper center", bbox_to_anchor=(0.6, 4), ncol=5)
-    ax[1,0].legend(loc="upper center", bbox_to_anchor=(0.7, 2.4), ncol=8)
+    ax[0,0].legend(loc="upper center", bbox_to_anchor=(0.6, 4), ncol=5, title = 'Mass fluxes')
+    ax[1,0].legend(loc="upper center", bbox_to_anchor=(0.7, 2.4), ncol=8, title = 'Energy fluxes')
     plt.savefig(
         "data/paper/mass_energy_bal.jpg",
         dpi=300,
