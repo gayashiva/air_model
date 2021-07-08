@@ -82,7 +82,7 @@ if __name__ == "__main__":
         with pd.option_context("mode.chained_assignment", None):
             for i in range(0, dfds.shape[0]):
                 if icestupa.df.loc[i, "SA"] != 0:
-                    dfds.loc[i, "Discharge"] = dfds.loc[i, "fountain_froze"] / (
+                    dfds.loc[i, "Ice"] = dfds.loc[i, "fountain_froze"] / (
                         icestupa.df.loc[i, "SA"] * icestupa.RHO_I
                     )
                     dfds.loc[i, "melted"] *= -1 / (
@@ -98,30 +98,29 @@ if __name__ == "__main__":
                         icestupa.df.loc[i, "SA"] * icestupa.RHO_I
                     )
                 else:
-                    dfds.loc[i, "Discharge"] = 0
+                    dfds.loc[i, "Ice"] = 0
                     dfds.loc[i, "melted"] *= 0
                     dfds.loc[i, "sub"] *= 0
                     dfds.loc[i, "ppt"] *= 0
                     dfds.loc[i, "dep"] *= 0
 
+        dfds["sub/dep"] = dfds["sub"] + dfds["dep"]
         dfds = dfds.set_index("When").resample("D").sum().reset_index()
 
         dfds = dfds.rename(
             columns={
                 "ppt": "Snowfall",
                 "melted": "Melt",
-                "sub": "Sublimation",
-                "dep": "Deposition",
+                "sub/dep": "Sublimation/Deposition",
             }
         )
 
         y2 = dfds[
             [
-                "Discharge",
-                "Snowfall",
-                "Deposition",
+                "Ice",
                 "Melt",
-                "Sublimation",
+                "Snowfall",
+                "Sublimation/Deposition",
             ]
         ]
 
@@ -157,7 +156,7 @@ if __name__ == "__main__":
                 stacked=True,
                 edgecolor="black",
                 linewidth=0.5,
-                color=[skyblue, "xkcd:azure", orange, "#0C70DE", green],
+                color=["xkcd:azure", "#0C70DE", skyblue, "xkcd:yellowgreen"],
                 ax=ax[0, j],
             )
             z.plot.bar(
@@ -166,12 +165,12 @@ if __name__ == "__main__":
                 linewidth=0.5,
                 color=[
                     "xkcd:azure",
-                    purple,
+                    "#0C70DE",
                     red,
                     orange,
                     green,
                     "xkcd:yellowgreen",
-                    CB91_Violet,
+                    purple,
                     pink,
                     blue,
                 ],
