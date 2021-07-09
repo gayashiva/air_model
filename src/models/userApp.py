@@ -33,6 +33,7 @@ if __name__ == "__main__":
     )
 
     # Initialise icestupa object
+    # icestupa = Icestupa(answers["location"], params='best')
     icestupa = Icestupa(answers["location"])
 
     if answers["run"] == "yes":
