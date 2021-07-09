@@ -47,7 +47,7 @@ jupyterlab-pygments==0.1.2
 jupyterlab-widgets==1.0.0
 kiwisolver==1.3.1
 MarkupSafe==1.1.1
-matplotlib==3.1.3
+matplotlib==3.4.2
 missingno==0.4.2
 mistune==0.8.4
 multiprocess==0.70.12.2
@@ -118,7 +118,6 @@ tqdm==4.59.0
 traitlets==5.0.5
 typing-extensions==3.7.4.3
 tzlocal==2.1
-uncertainpy==1.2.3
 urllib3==1.26.5
 validators==0.18.2
 visions==0.6.0
