@@ -401,7 +401,6 @@ def summary_figures(self):
     )
 
     x = self.df.When
-
     y1 = self.df.a
     y2 = self.df.f_cone
     ax1.plot(x, y1)

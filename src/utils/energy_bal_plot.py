@@ -1,6 +1,5 @@
 """Icestupa class function that generates figures for web app
 """
-
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -22,7 +21,6 @@ sys.path.append(
 from src.utils.settings import config
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.icestupaClass import Icestupa
-from src.models.methods.metadata import get_parameter_metadata
 
 if __name__ == "__main__":
     locations = ["gangles21", "guttannen21", "guttannen20"]
@@ -147,7 +145,7 @@ if __name__ == "__main__":
         z.index = z.index + 1
         days = 19
         xlim1 = [-0.5, days + 0.5]
-        xlim2 = [z.shape[0] - days - 0.5, z.shape[0] + 0.5]
+        xlim2 = [z.shape[0] - 1.5- days -1, z.shape[0] - 1.5]
 
         ax = subfigs[ctr].subplots(2, 2)
         # subfigs[ctr].suptitle(get_parameter_metadata(location)['shortname'], fontsize='x-large')
