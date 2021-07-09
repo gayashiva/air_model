@@ -32,6 +32,8 @@ if __name__ == "__main__":
         SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
         icestupa.read_output()
+        icestupa.df.loc[icestupa.df.Qfreeze == 0, 'Qfreeze'] = np.nan
+        icestupa.df.loc[icestupa.df.Qmelt == 0, 'Qmelt'] = np.nan
         icestupa.df = icestupa.df.rename(
             {
                 "SW": "$q_{SW}$",
@@ -41,24 +43,24 @@ if __name__ == "__main__":
                 "Qf": "$q_{F}$",
                 "Qg": "$q_{G}$",
                 "Qsurf": "$q_{surf}$",
-                "Qmelt": "$-q_{melt}$",
-                "Qfreeze": "$-q_{freeze}$",
-                "Qt": "$-q_{T}$",
+                "Qmelt": "$q_{melt}$",
+                "Qfreeze": "$q_{freeze}$",
+                "Qt": "$q_{T}$",
             },
             axis=1,
         )
-        cols = ["$q_{SW}$", "$q_{LW}$","$q_S$","$q_L$","$q_{F}$","$q_{G}$"]
+        cols = ["$q_{SW}$", "$q_{LW}$","$q_S$","$q_L$","$q_{F}$","$q_{G}$", "$q_{freeze}$", "$q_{melt}$", "$q_{T}$"]
         df_e = icestupa.df[cols].describe().T[['mean', 'std']]
-        df_e = df_e.astype('int32')
-        df_e['table'] = '$' + df_e['mean'].astype(str) + ' \pm '+ df_e['std'].astype(str) + '$'
-        df_e = df_e['table']
-        print(df_e.to_latex())
+        # df_e = df_e.astype('int32')
+        print(df_e)
+        # df_e['table'] = '$' + df_e['mean'].astype(str) + ' \pm '+ df_e['std'].astype(str) + '$'
+        # df_e = df_e['table']
+        # print(df_e.to_latex())
 
         # print(df_e.describe().loc[["mean", "std"]].T)
         # print(df_e.describe().loc[["mean", "std"]].T)
 
         cols = [
-            "Discharge",
             "T_a",
             "RH",
             "v_a",
@@ -67,9 +69,12 @@ if __name__ == "__main__":
             "Prec",
             "p_a",
         ]
+        icestupa.df['Prec'] *= 1000
         df_i = icestupa.df[cols].describe().T[['mean', 'std']]
-        df_i = df_i.astype('int32')
-        df_i['table'] = '$' + df_i['mean'].astype(str) + ' \pm '+ df_i['std'].astype(str) + '$'
-        df_i = df_i['table']
-        print(df_i.to_latex())
+        # df_i = df_i.astype('int32')
+        print(df_i)
+        # df_i = df_i.astype('int32')
+        # df_i['table'] = '$' + df_i['mean'].astype(str) + ' \pm '+ df_i['std'].astype(str) + '$'
+        # df_i = df_i['table']
+        # print(df_i.to_latex())
 

@@ -177,13 +177,13 @@ if __name__ == "__main__":
             d_dist = cp.Uniform(20, 90)
 
         parameters_full = {
-            "IE": ie_dist,
-            "A_I": a_i_dist,
-            "A_S": a_s_dist,
-            "Z": z_dist,
-            "A_DECAY": a_decay_dist,
-            "T_PPT": T_PPT_dist,
-            "DX": dx_dist,
+            # "IE": ie_dist,
+            # "A_I": a_i_dist,
+            # "A_S": a_s_dist,
+            # "Z": z_dist,
+            # "A_DECAY": a_decay_dist,
+            # "T_PPT": T_PPT_dist,
+            # "DX": dx_dist,
             "T_W": T_W_dist,
             #             "D_MEAN": d_dist,
             #             "r_spray": r_spray_dist,

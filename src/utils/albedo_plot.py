@@ -84,6 +84,7 @@ if __name__ == "__main__":
         ax[1].set_ylabel("Surface Temperature [$\\degree C$]")
         # ax[1].legend()
         ax[0].set_ylim([0, 1])
+        axt.set_ylim([0, 1])
         ax[0].xaxis.set_major_locator(mdates.WeekdayLocator())
         ax[0].xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax[0].xaxis.set_minor_locator(mdates.DayLocator())
