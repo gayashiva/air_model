@@ -32,7 +32,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "guttannen20"
+    location = "gangles21"
     icestupa = Icestupa(location)
     SITE, FOLDER = config(location)
     icestupa.read_output()
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     plt.clf()
 
     df = pd.concat([df.drop(['params'], axis=1), df['params'].apply(pd.Series)], axis=1)
-    ax = sns.boxplot( y="A_I",  data=df,  width=0.5)
+    ax = sns.boxplot( y="IE",  data=df,  width=0.5)
     ax.set_xlabel("Parameter")
     ax.set_ylabel("Sensitivity of RMSE [$\%$]")
     plt.savefig(FOLDER["sim"]+"hist.jpg", bbox_inches="tight", dpi=300)
