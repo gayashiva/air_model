@@ -19,7 +19,7 @@ from ast import literal_eval
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
-from src.utils.cv import CV_Icestupa, save_obj, load_obj, bounds
+from src.utils.cv import bounds
 from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
 
@@ -32,21 +32,20 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "guttannen21"
+    location = "gangles21"
     icestupa = Icestupa(location)
     SITE, FOLDER = config(location)
+    icestupa.read_output()
 
     tuned_params = [{
         'IE': np.arange(0.95, 0.991, 0.01).tolist(),
-        'A_I': np.arange(0.1, 0.35, 0.02).tolist(),
-        'A_S': bounds(var=icestupa.A_S, res = 0.02),
-        'A_DECAY': np.arange(5, 17, 3).tolist(),
-        'Z': np.arange(0.001, 0.006, 0.001).tolist(),
+        'A_I': np.arange(0.01, 0.35, 0.05).tolist(),
+        'A_S': bounds(var=icestupa.A_S, res = 0.05),
+        'A_DECAY': bounds(var=icestupa.A_DECAY, res = 0.5),
+        'Z': np.arange(0.001, 0.003, 0.001).tolist(),
         'T_PPT': np.arange(0, 2 , 1).tolist(),
-        # 'A_I': bounds(var=icestupa.A_I, res = 0.01),
-        # 'MU_CONE': np.arange(0, 1, 0.5).tolist(),
-        # 'DX': bounds(var=icestupa.DX, res = 0.1),
-        # 'r_spray': bounds(var=icestupa.r_spray, res = 0.25),
+        'T_W': np.arange(0, 5 , 1).tolist(),
+        'DX': bounds(var=icestupa.DX, res = 0.0005),
     }]
 
     file_path = 'cv-'
@@ -64,13 +63,14 @@ if __name__ == "__main__":
             print("\t%s: %r" % (param_name, df.params[i][param_name]))
 
     df = df[:101]
-    df.plot(y='rmse')
+    df['rmse_percent'] = df['rmse']/icestupa.df.iceV.max() * 100
+    df.plot(y='rmse_percent')
     plt.savefig(FOLDER["sim"]+ "rmse.jpg", bbox_inches="tight", dpi=300)
     plt.clf()
 
     df = pd.concat([df.drop(['params'], axis=1), df['params'].apply(pd.Series)], axis=1)
-    ax = sns.boxplot( y="Z",  data=df,  width=0.5)
+    ax = sns.boxplot( y="IE",  data=df,  width=0.5)
     ax.set_xlabel("Parameter")
-    ax.set_ylabel("Sensitivity of Maximum Ice Volume [$\%$]")
+    ax.set_ylabel("Sensitivity of RMSE [$\%$]")
     plt.savefig(FOLDER["sim"]+"hist.jpg", bbox_inches="tight", dpi=300)
     plt.clf()

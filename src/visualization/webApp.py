@@ -74,7 +74,8 @@ if __name__ == "__main__":
         "built at",
         # ( "Guttannen 2021","Gangles 2021", "Diavolezza 2021","Guttannen 2020", "Schwarzsee 2019"),
         # ("Guttannen 2021", "Gangles 2021", "Guttannen 2020", "Schwarzsee 2019"),
-        ("Guttannen 2021", "Gangles 2021", "Guttannen 2020", "Schwarzsee 2019"),
+        # ("Guttannen 2021", "Gangles 2021", "Guttannen 2020", "Schwarzsee 2019"),
+        ("Gangles 2021", "Guttannen 2021", "Guttannen 2020", "Schwarzsee 2019"),
         # ("Guttannen 2021", "Guttannen 2020", "Schwarzsee 2019"),
     )
 
@@ -87,15 +88,19 @@ if __name__ == "__main__":
     icestupa.read_output()
     icestupa.self_attributes()
 
-    M_F= round(icestupa.df["Discharge"].sum()* icestupa.DT/ 60 + icestupa.df.loc[0, "input"] - icestupa.V_dome *
-        icestupa.RHO_I,1)
-    M_input = round(icestupa.df["input"].iloc[-1],1)
-    M_ppt= round(icestupa.df["ppt"].sum(),1)
-    M_dep= round(icestupa.df["dep"].sum(),1)
-    M_water = round(icestupa.df["meltwater"].iloc[-1],1)
-    M_runoff= round(icestupa.df["unfrozen_water"].iloc[-1],1)
-    M_sub = round(icestupa.df["vapour"].iloc[-1],1)
-    M_ice = round(icestupa.df["ice"].iloc[-1]- icestupa.V_dome * icestupa.RHO_I,1)
+    M_F = round(
+        icestupa.df["Discharge"].sum() * icestupa.DT / 60
+        + icestupa.df.loc[0, "input"]
+        - icestupa.V_dome * icestupa.RHO_I,
+        1,
+    )
+    M_input = round(icestupa.df["input"].iloc[-1], 1)
+    M_ppt = round(icestupa.df["ppt"].sum(), 1)
+    M_dep = round(icestupa.df["dep"].sum(), 1)
+    M_water = round(icestupa.df["meltwater"].iloc[-1], 1)
+    M_runoff = round(icestupa.df["unfrozen_water"].iloc[-1], 1)
+    M_sub = round(icestupa.df["vapour"].iloc[-1], 1)
+    M_ice = round(icestupa.df["ice"].iloc[-1] - icestupa.V_dome * icestupa.RHO_I, 1)
 
     df_in = icestupa.df
     (
@@ -234,8 +239,13 @@ if __name__ == "__main__":
     with row3_1:
         f_mean = icestupa.df.Discharge.replace(0, np.nan).mean()
         Duration = icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24)
-        mean_freeze_rate = icestupa.df[icestupa.df.fountain_froze!= 0].fountain_froze.mean()/(icestupa.DT/60)
-        mean_melt_rate = icestupa.df[icestupa.df.melted!= 0].melted.mean()/(icestupa.DT/60)
+        mean_freeze_rate = icestupa.df[
+            icestupa.df.fountain_froze != 0
+        ].fountain_froze.mean() / (icestupa.DT / 60)
+        fountain_duration = icestupa.df[icestupa.df.Discharge != 0].shape[0]
+        mean_melt_rate = icestupa.df[icestupa.df.melted != 0].melted.mean() / (
+            icestupa.DT / 60
+        )
         st.markdown(
             """
         | Fountain | Estimation |
@@ -244,13 +254,15 @@ if __name__ == "__main__":
         | Water sprayed| %.0f $m^3$ |
         | Mean freeze rate | %.2f $l/min$ |
         | Mean melt rate | %.2f $l/min$ |
+        | Duration | %s $hours$ |
         """
             % (
                 # f_mean,
                 icestupa.r_spray,
-                M_F/1000,
+                M_F / 1000,
                 mean_freeze_rate,
                 mean_melt_rate,
+                fountain_duration,
             )
         )
 
@@ -281,25 +293,47 @@ if __name__ == "__main__":
 
             # df_c = pd.read_hdf(icestupa.input + "model_input.h5", "df_c")
             df_c = df_c.set_index("When")
-            icestupa.df= icestupa.df.set_index("When")
-            tol = pd.Timedelta('1T')
-            df = pd.merge_asof(left=icestupa.df,right=df_c,right_index=True,left_index=True,direction='nearest',tolerance=tol)
+            icestupa.df = icestupa.df.set_index("When")
+            tol = pd.Timedelta("1T")
+            df = pd.merge_asof(
+                left=icestupa.df,
+                right=df_c,
+                right_index=True,
+                left_index=True,
+                direction="nearest",
+                tolerance=tol,
+            )
 
             ctr = 0
-            while (df[df.DroneV.notnull()].shape[0]) == 0 and ctr !=4:
-                tol += pd.Timedelta('15T')
-                logger.error("Timedelta increase as shape %s" %(df[df.DroneV.notnull()].shape[0]))
-                df = pd.merge_asof(left=icestupa.df,right=df_c,right_index=True,left_index=True,direction='nearest',tolerance=tol)
-                ctr+=1
+            while (df[df.DroneV.notnull()].shape[0]) == 0 and ctr != 4:
+                tol += pd.Timedelta("15T")
+                logger.error(
+                    "Timedelta increase as shape %s"
+                    % (df[df.DroneV.notnull()].shape[0])
+                )
+                df = pd.merge_asof(
+                    left=icestupa.df,
+                    right=df_c,
+                    right_index=True,
+                    left_index=True,
+                    direction="nearest",
+                    tolerance=tol,
+                )
+                ctr += 1
 
-
-            rmse_V = (((df.DroneV - df.iceV) ** 2).mean() ** .5)
-            corr_V = df['DroneV'].corr(df['iceV'])
-            
+            rmse_V = ((df.DroneV - df.iceV) ** 2).mean() ** 0.5
+            corr_V = df["DroneV"].corr(df["iceV"])
 
             if icestupa.name in ["guttannen21", "guttannen20"]:
                 df_cam = pd.read_hdf(icestupa.input + "model_input.h5", "df_cam")
-                df = pd.merge_asof(left=icestupa.df,right=df_cam,right_index=True,left_index=True,direction='nearest',tolerance=tol)
+                df = pd.merge_asof(
+                    left=icestupa.df,
+                    right=df_cam,
+                    right_index=True,
+                    left_index=True,
+                    direction="nearest",
+                    tolerance=tol,
+                )
                 # rmse_T = (((df.cam_temp - df.T_s) ** 2).mean() ** .5)
                 # corr_T = df['cam_temp'].corr(df['T_s'])
             # else:
@@ -307,10 +341,7 @@ if __name__ == "__main__":
             #     corr_T = 0
 
             st.write("## Validation")
-            path = (
-                output_folder
-                + "paper_figures/Vol_Validation.jpg"
-            )
+            path = output_folder + "paper_figures/Vol_Validation.jpg"
             st.image(path)
             st.write(
                 """
@@ -348,9 +379,7 @@ if __name__ == "__main__":
 
         if "Data Overview" in display:
             st.write("## Input variables")
-            st.image(
-                output_folder + "paper_figures/Model_Input.jpg"
-            )
+            st.image(output_folder + "paper_figures/Model_Input.jpg")
             st.write(
                 """
             Measurements at the AWS of %s were used as main model input
@@ -361,9 +390,7 @@ if __name__ == "__main__":
                 % (icestupa.name)
             )
             st.write("## Output variables")
-            st.image(
-                output_folder + "paper_figures/Model_Output.jpg"
-            )
+            st.image(output_folder + "paper_figures/Model_Output.jpg")
             st.write(
                 """
             (a) Fountain discharge (b) energy flux components, (c) mass flux components (d)
@@ -386,9 +413,7 @@ if __name__ == "__main__":
             if not (variable1):
                 st.error("Please select at least one variable.")
             else:
-                variable_in = [
-                    input_vars[input_cols.index(item)] for item in variable1
-                ]
+                variable_in = [input_vars[input_cols.index(item)] for item in variable1]
                 variable = variable_in
                 for v in variable:
 

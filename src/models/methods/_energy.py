@@ -12,6 +12,7 @@ import sys
 # Module logger
 logger = logging.getLogger(__name__)
 
+
 def get_energy(self, i):
 
     self.df.loc[i, "vp_ice"] = (
@@ -21,9 +22,7 @@ def get_energy(self, i):
             - 0.074 * math.pow(self.df.loc[i, "p_a"], -1)
         )
         * 6.112
-        * np.exp(
-            22.46 * (self.df.loc[i, "T_s"]) / ((self.df.loc[i, "T_s"]) + 272.62)
-        )
+        * np.exp(22.46 * (self.df.loc[i, "T_s"]) / ((self.df.loc[i, "T_s"]) + 272.62))
     )
 
     self.df.loc[i, "Ql"] = (
@@ -53,29 +52,26 @@ def get_energy(self, i):
 
     # Short Wave Radiation SW
     self.df.loc[i, "SW"] = (1 - self.df.loc[i, "a"]) * (
-        self.df.loc[i, "SW_direct"] * self.df.loc[i, "f_cone"] + self.df.loc[i, "SW_diffuse"]
+        self.df.loc[i, "SW_direct"] * self.df.loc[i, "f_cone"]
+        + self.df.loc[i, "SW_diffuse"]
     )
 
     # Long Wave Radiation LW
-    self.df.loc[i, "LW"] = self.df.loc[i, "LW_in"] - self.IE * self.STEFAN_BOLTZMAN * math.pow(
-        self.df.loc[i, "T_s"] + 273.15, 4
+    self.df.loc[i, "LW"] = self.df.loc[
+        i, "LW_in"
+    ] - self.IE * self.STEFAN_BOLTZMAN * math.pow(self.df.loc[i, "T_s"] + 273.15, 4)
+
+    # if self.df.loc[i, "Discharge"] > 0:
+    self.df.loc[i, "Qf"] = (
+        (self.df.loc[i, "Discharge"] * self.DT / 60)
+        * self.C_W
+        * self.T_W
+        / (self.DT * self.df.loc[i, "SA"])
     )
 
-    if self.df.loc[i,'Discharge']> 0:
-        self.df.loc[i, "Qf"] = (
-            (self.df.loc[i, "Discharge"] * self.DT / 60)
-            * self.C_W
-            * self.T_W
-            / (self.DT * self.df.loc[i, "SA"])
-        )
-
-        self.df.loc[i, "Qf"] += (
-            (self.df.loc[i, "T_s"])
-            * self.RHO_I
-            * self.DX
-            * self.C_I
-            / self.DT
-        )
+    # self.df.loc[i, "Qf"] += (
+    #     (self.df.loc[i, "T_s"]) * self.RHO_I * self.DX * self.C_I / self.DT
+    # )
 
     self.df.loc[i, "Qg"] = (
         self.K_I
@@ -84,9 +80,10 @@ def get_energy(self, i):
     )
 
     # Bulk Temperature
-    self.df.loc[i + 1, "T_bulk"] = self.df.loc[i, "T_bulk"] - self.df.loc[i, "Qg"] * self.DT * self.df.loc[i, "SA"] / (self.df.loc[i, "ice"] * self.C_I)
+    self.df.loc[i + 1, "T_bulk"] = self.df.loc[i, "T_bulk"] - self.df.loc[
+        i, "Qg"
+    ] * self.DT * self.df.loc[i, "SA"] / (self.df.loc[i, "ice"] * self.C_I)
 
-    # TODO add oerleman formulation
     # Total Energy W/m2
     self.df.loc[i, "Qsurf"] = (
         self.df.loc[i, "SW"]
@@ -96,6 +93,7 @@ def get_energy(self, i):
         + self.df.loc[i, "Qf"]
         + self.df.loc[i, "Qg"]
     )
+
 
 def test_get_energy(self, i):
     self.get_energy(i)
@@ -107,7 +105,9 @@ def test_get_energy(self, i):
         sys.exit("LW nan")
 
     if np.isnan(self.df.loc[i, "Ql"]):
-        logger.error(f"When {self.df.When[i]},v_a {self.df.v_a[i]}, vp_ice {self.df.vp_ice[i]}")
+        logger.error(
+            f"When {self.df.When[i]},v_a {self.df.v_a[i]}, vp_ice {self.df.vp_ice[i]}"
+        )
         sys.exit("Ql nan")
 
     if np.isnan(self.df.loc[i, "s_cone"]):

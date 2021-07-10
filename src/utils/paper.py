@@ -22,7 +22,7 @@ if __name__ == "__main__":
         level=logging.INFO,
         logger=logger,
     )
-    location = "Guttannen 2021"
+    location = "guttannen20"
 
     # Initialise icestupa object
     icestupa = Icestupa(location)
@@ -69,3 +69,7 @@ if __name__ == "__main__":
     print("Storage Efficiency %.0f\n"%(M_water/M_input*100))
     print("Input water %.0f\n"%(M_input))
     print("Dome Volume removed %.0f\n"%(icestupa.V_dome))
+    print("Mean freezing rate %.1f\n"%(icestupa.df[icestupa.df.fountain_froze!=0].fountain_froze.mean()/60))
+    print("Mean melting rate %.1f\n"%(icestupa.df[icestupa.df.melted!=0].melted.mean()/60))
+    print("Mean freezing energy %.0f\n"%(icestupa.df[icestupa.df.Qfreeze!=0].Qfreeze.mean()))
+    print("Mean melting energy %.0f\n"%(icestupa.df[icestupa.df.Qmelt!=0].Qmelt.mean()))
