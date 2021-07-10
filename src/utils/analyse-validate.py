@@ -32,7 +32,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "gangles21"
+    location = "guttannen20"
     icestupa = Icestupa(location)
     SITE, FOLDER = config(location)
     icestupa.read_output()
