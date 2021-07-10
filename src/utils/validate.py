@@ -100,7 +100,7 @@ if __name__ == "__main__":
         # 'A_S': bounds(var=icestupa.A_S, res = 0.05),
         # 'A_DECAY': bounds(var=icestupa.A_DECAY, res = 0.5),
         'Z': np.arange(0.001, 0.003, 0.0005).tolist(),
-        'T_PPT': np.arange(0, 3 , 1).tolist(),
+        # 'T_PPT': np.arange(0, 3 , 1).tolist(),
         'T_W': np.arange(0, 3 , 0.5).tolist(),
         'DX': bounds(var=icestupa.DX, res = 0.0005),
     }]
