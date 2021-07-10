@@ -69,7 +69,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "guttannen21"
+    location = "gangles21"
     # location = "schwarzsee19"
 
     icestupa = Icestupa(location)
@@ -95,14 +95,14 @@ if __name__ == "__main__":
 
 
     tuned_params = [{
-        'IE': np.arange(0.95, 0.991, 0.01).tolist(),
+        # 'IE': np.arange(0.95, 0.991, 0.01).tolist(),
         'A_I': np.arange(0.01, 0.351, 0.05).tolist(),
-        'A_S': bounds(var=icestupa.A_S, res = 0.05),
-        'A_DECAY': bounds(var=icestupa.A_DECAY, res = 0.5),
-        'Z': np.arange(0.001, 0.003, 0.0005).tolist(),
-        'T_PPT': np.arange(0, 3 , 1).tolist(),
-        'T_W': np.arange(0, 3 , 0.5).tolist(),
-        'DX': bounds(var=icestupa.DX, res = 0.0005),
+        # 'A_S': bounds(var=icestupa.A_S, res = 0.05),
+        # 'A_DECAY': bounds(var=icestupa.A_DECAY, res = 0.5),
+        # 'Z': np.arange(0.001, 0.003, 0.0005).tolist(),
+        # 'T_PPT': np.arange(0, 3 , 1).tolist(),
+        # 'T_W': np.arange(0, 3 , 0.5).tolist(),
+        # 'DX': bounds(var=icestupa.DX, res = 0.0005),
     }]
 
     file_path = 'cv-'
