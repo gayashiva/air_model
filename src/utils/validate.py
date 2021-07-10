@@ -69,7 +69,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "guttannen20"
+    location = "guttannen21"
     # location = "schwarzsee19"
 
     icestupa = Icestupa(location)
