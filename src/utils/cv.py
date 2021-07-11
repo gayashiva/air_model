@@ -52,7 +52,7 @@ def param_ranges(icestupa):
         'A_I': np.arange(0.15, 0.351, 0.05).tolist(),
         # 'A_S': bounds(var=icestupa.A_S, res = 0.05),
         # 'A_DECAY': bounds(var=icestupa.A_DECAY, res = 0.5),
-        'T_PPT': np.arange(0, 2.1 , 1).tolist(),
+        # 'T_PPT': np.arange(0, 2.1 , 1).tolist(),
         'Z': np.arange(0.001, 0.0031, 0.0005).tolist(),
         'T_W': np.arange(0, 3.1 , 0.5).tolist(),
         'DX': bounds(var=icestupa.DX, res = 0.0005),
