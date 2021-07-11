@@ -34,6 +34,7 @@ def config(location="Schwarzsee 2019"):
             latitude=46.649999,
             longitude=8.283333,
             H_AWS = 2,
+            total_days = 2200,
             # perimeter=45, # on Feb 11
         )
 
@@ -56,6 +57,7 @@ def config(location="Schwarzsee 2019"):
             latitude=46.649999,
             longitude=8.283333,
             H_AWS = 2,
+            total_days = 1550,
             # perimeter=28, # on 24 Jan
         )
 
@@ -78,6 +80,7 @@ def config(location="Schwarzsee 2019"):
             latitude=34.216638,
             H_AWS = 2,
             diffuse_fraction = 0,
+            total_days = 829,
             # perimeter=82.3, # On 3 Mar
         )
 

@@ -79,7 +79,7 @@ class CV_Icestupa(BaseEstimator,Icestupa):
         for dictionary in initial_data:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
-        
+
         self.read_input()
         self.self_attributes()
            
@@ -102,6 +102,8 @@ class CV_Icestupa(BaseEstimator,Icestupa):
  
         self.melt_freeze()
 
+        self.duration = self.df.index[-1] # total hours
+
         return self
 
     def predict(self, X, y=None, groups=None):
@@ -111,10 +113,10 @@ class CV_Icestupa(BaseEstimator,Icestupa):
             if (self.df[self.df.When == x[1]].shape[0]): 
                 y_pred.append(self.df.loc[self.df.When == x[1], "iceV"].values[0])
             else:
-                y_pred.append(self.V_dome)
-                # print(x,y[ctr])
-                # y_pred.append(y[ctr])
+                y_pred.append((self.total_days - self.duration)/(24*10))
+                # print("Difference in end date hours %s" %(self.total_days - self.duration))
                 # y_pred.append(0)
+                # y_pred.append(self.V_dome)
             ctr +=1
 
         return y_pred

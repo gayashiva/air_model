@@ -157,10 +157,6 @@ if __name__ == "__main__":
         new_result = results.get()
         num_finished_tasks += 1
 
-        # Print percentage of completed tasks
-        print()
-        print(print("\tCompleted : %0.1f" % (num_finished_tasks/len(task_list) * 100)))
-
         # Have a look at the results
         if new_result == -1:
             # Process has finished
@@ -174,3 +170,7 @@ if __name__ == "__main__":
                 df.to_csv(FOLDER['sim'] + file_path, index=False)
                 # save_obj(FOLDER['sim'], file_path, results_list)
                 break
+        else:
+            # Print percentage of completed tasks
+            print()
+            print(print("\tCompleted : %0.1f" % (num_finished_tasks/len(task_list) * 100)))
