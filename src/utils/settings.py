@@ -6,6 +6,7 @@ import pandas as pd
 from datetime import datetime
 import logging
 import os, sys
+import numpy as np
 
 # Module logger
 logger = logging.getLogger(__name__)
@@ -16,7 +17,6 @@ logging.getLogger("numexpr").setLevel(logging.CRITICAL)
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
-
 
 def config(location="Schwarzsee 2019"):
 
@@ -113,5 +113,6 @@ def config(location="Schwarzsee 2019"):
         sim="data/" + SITE["name"] + "/processed/simulations/",
     )
     df_h = pd.DataFrame(data_h)
+
 
     return SITE, FOLDER

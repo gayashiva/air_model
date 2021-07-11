@@ -1,3 +1,5 @@
+"""Icestupa validation function
+"""
 from sklearn.model_selection import train_test_split, cross_val_score, ParameterGrid, GroupKFold
 from sklearn.metrics import mean_squared_error
 
@@ -20,7 +22,7 @@ import json
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
-from src.utils.cv import CV_Icestupa, save_obj, load_obj, bounds
+from src.utils.cv import CV_Icestupa, save_obj, load_obj, param_ranges
 from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
 
@@ -69,7 +71,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "guttannen20"
+    location = "guttannen21"
     # location = "schwarzsee19"
 
     icestupa = Icestupa(location)
@@ -84,7 +86,7 @@ if __name__ == "__main__":
     SITE, FOLDER= config(location)
     df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
 
-    # Remove first point
+    # Remove dome volume
     df_c = df_c[1:]
 
     df_c["Where"] = location
@@ -93,28 +95,10 @@ if __name__ == "__main__":
     X = [[a[0], a[1]] for a in obs]
     y = [a[2] for a in obs]
 
-
-    tuned_params = [{
-        'IE': np.arange(0.95, 0.991, 0.01).tolist(),
-        'A_I': np.arange(0.15, 0.351, 0.05).tolist(),
-        # 'A_S': bounds(var=icestupa.A_S, res = 0.05),
-        # 'A_DECAY': bounds(var=icestupa.A_DECAY, res = 0.5),
-        'Z': np.arange(0.001, 0.003, 0.0005).tolist(),
-        'T_PPT': np.arange(0, 3 , 1).tolist(),
-        'T_W': np.arange(0, 3 , 0.5).tolist(),
-        'DX': bounds(var=icestupa.DX, res = 0.0005),
-    }]
+    tuned_params = param_ranges(icestupa)
 
     file_path = 'cv-'
-    file_path += '-'.join('{}'.format(key) for key, value in tuned_params[0].items())
-
-    print()
-    # print(tuned_params)
-    ctr = len(list(ParameterGrid(tuned_params))) 
-    runtime = 45
-    days = (ctr*runtime/(12*60*60*24))
-    print("Total hours expected : %0.01f" % int(days*24))
-    print("Total days expected : %0.01f" % days)
+    file_path += '-'.join('{}'.format(key) for key, value in tuned_params.items())
 
     # Define IPC manager
     manager = multiprocessing.Manager()
@@ -128,6 +112,14 @@ if __name__ == "__main__":
     num_processes = multiprocessing.cpu_count()
     pool = multiprocessing.Pool(processes=num_processes)
     processes = []
+
+    print()
+    ctr = len(list(ParameterGrid([tuned_params]))) 
+    runtime = 50
+    days = (ctr*runtime/(num_processes*60*60*24))
+    print("Total hours expected : %0.01f" % int(days*24))
+    print("Total days expected : %0.01f" % days)
+    num_finished_tasks = 0
 
     # Initiate the worker processes
     for i in range(num_processes):
@@ -151,7 +143,7 @@ if __name__ == "__main__":
         tasks.put(single_task)
 
     # Wait while the workers process
-    sleep(3)
+    sleep(0.5)
 
     # Quit the worker processes by sending them -1
     for i in range(num_processes):
@@ -163,12 +155,17 @@ if __name__ == "__main__":
     while True:
         # Read result
         new_result = results.get()
-        # results_list.append(results.get())
+        num_finished_tasks += 1
+
+        # Print percentage of completed tasks
+        print()
+        print(print("\tCompleted : %0.1f" % (num_finished_tasks/len(task_list) * 100)))
 
         # Have a look at the results
         if new_result == -1:
             # Process has finished
             num_finished_processes += 1
+
 
             if num_finished_processes == num_processes:
                 df = pd.DataFrame.from_records(results_list, columns=["params", "rmse"])

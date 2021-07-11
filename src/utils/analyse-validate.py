@@ -19,7 +19,7 @@ from ast import literal_eval
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
-from src.utils.cv import bounds
+from src.utils.cv import param_ranges
 from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
 
@@ -37,19 +37,10 @@ if __name__ == "__main__":
     SITE, FOLDER = config(location)
     icestupa.read_output()
 
-    tuned_params = [{
-        'IE': np.arange(0.95, 0.991, 0.01).tolist(),
-        'A_I': np.arange(0.01, 0.35, 0.05).tolist(),
-        'A_S': bounds(var=icestupa.A_S, res = 0.05),
-        'A_DECAY': bounds(var=icestupa.A_DECAY, res = 0.5),
-        'Z': np.arange(0.001, 0.003, 0.001).tolist(),
-        'T_PPT': np.arange(0, 2 , 1).tolist(),
-        'T_W': np.arange(0, 5 , 1).tolist(),
-        'DX': bounds(var=icestupa.DX, res = 0.0005),
-    }]
+    tuned_params = param_ranges(icestupa)
 
     file_path = 'cv-'
-    file_path += '-'.join('{}'.format(key) for key, value in tuned_params[0].items())
+    file_path += '-'.join('{}'.format(key) for key, value in tuned_params.items())
 
     df = pd.read_csv(FOLDER['sim'] + file_path)
     df = df.set_index('rmse').sort_index().reset_index()
