@@ -32,7 +32,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "guttannen20"
+    location = "guttannen21"
     icestupa = Icestupa(location)
     SITE, FOLDER = config(location)
     icestupa.read_output()
@@ -60,8 +60,23 @@ if __name__ == "__main__":
     plt.clf()
 
     df = pd.concat([df.drop(['params'], axis=1), df['params'].apply(pd.Series)], axis=1)
-    ax = sns.boxplot( y="DX",  data=df,  width=0.5)
-    ax.set_xlabel("Parameter")
-    ax.set_ylabel("Sensitivity of RMSE [$\%$]")
-    plt.savefig(FOLDER["sim"]+"hist.jpg", bbox_inches="tight", dpi=300)
+
+    tuned_params[param_name] =[round(num, 3) for num in tuned_params[param_name]]
+    df = df.round(3)
+    sns.set(style="darkgrid")
+    fig, ax = plt.subplots(
+        nrows=1, ncols=len(tuned_params), sharey="row", figsize=(20, 10)
+    )
+    for i,param_name in enumerate(tuned_params):
+        print(param_name, i)
+        # param_range = [tuned_params[param_name][0], tuned_params[param_name][-1]]
+        ax[i] = sns.countplot( x=param_name, data=df, order = tuned_params[param_name], ax=ax[i])
+        ax[i].set_xlabel(param_name)
+        # ax.set_ylabel("Count [$\%$]")
+
+    # ax = sns.countplot( x=param_name, data=df, order = tuned_params[param_name])
+    # ax.set_xlabel(param_name)
+    # ax.set_ylabel("Count [$\%$]")
+    # ax.set_xlim(param_range)
+    plt.savefig(FOLDER["sim"]+"param_hist.jpg", bbox_inches="tight", dpi=300)
     plt.clf()
