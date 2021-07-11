@@ -72,11 +72,12 @@ if __name__ == "__main__":
         # param_range = [tuned_params[param_name][0], tuned_params[param_name][-1]]
         ax[i] = sns.countplot( x=param_name, data=df, order = tuned_params[param_name], ax=ax[i])
         ax[i].set_xlabel(param_name)
+        if param_name in ['DX', 'Z']:
+            multiple = 1000
+            labels = [item.get_text() for item in ax[i].get_xticklabels()]
+            ax[i].set_xticklabels([str(float(label)* 1000) for label in labels])
+        ax[i].set_ylim([0,100])
         # ax.set_ylabel("Count [$\%$]")
 
-    # ax = sns.countplot( x=param_name, data=df, order = tuned_params[param_name])
-    # ax.set_xlabel(param_name)
-    # ax.set_ylabel("Count [$\%$]")
-    # ax.set_xlim(param_range)
     plt.savefig(FOLDER["sim"]+"param_hist.jpg", bbox_inches="tight", dpi=300)
     plt.clf()
