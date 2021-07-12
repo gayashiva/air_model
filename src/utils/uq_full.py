@@ -46,7 +46,7 @@ if __name__ == "__main__":
 #             new_features=list_of_feature_functions, features_to_run=["rmse"]
 #         )
 
-        a_i_dist = cp.Uniform(0.01, 0.35)
+        a_i_dist = cp.Uniform(0.15, 0.35)
         a_s_dist = cp.Uniform(icestupa.A_S * 0.95, icestupa.A_S * 1.05)
         z_dist = cp.Uniform(0.001, 0.005)
         dx_dist = cp.Uniform(icestupa.DX * 0.95, icestupa.DX * 1.05)
@@ -85,7 +85,7 @@ if __name__ == "__main__":
             model=model,
             parameters=parameters,
             # features=features,
-            CPUs=2,
+            # CPUs=2,
         )
 
         # Perform the uncertainty quantification using
