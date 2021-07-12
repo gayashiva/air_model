@@ -1,6 +1,8 @@
 """ UncertaintyQuantification of Icestupa class
 """
 import uncertainpy as un
+# import pickle
+# pickle.HIGHEST_PROTOCOL = 4 # For python version 2.7
 import chaospy as cp
 import pandas as pd
 import math
@@ -19,7 +21,7 @@ from src.models.methods.calibration import get_calibration
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
-from src.utils.uq_air import UQ_Icestupa, max_volume, rmse
+from src.utils.uq_air import UQ_Icestupa
 
 
 if __name__ == "__main__":
