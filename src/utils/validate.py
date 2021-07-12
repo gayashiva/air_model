@@ -71,7 +71,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "gangles21"
+    location = "guttannen20"
     # location = "schwarzsee19"
 
     icestupa = Icestupa(location)
@@ -109,7 +109,8 @@ if __name__ == "__main__":
     results_list = manager.list()
 
     # Create process pool with four processes
-    num_processes = multiprocessing.cpu_count()
+    # num_processes = multiprocessing.cpu_count()
+    num_processes = 2
     pool = multiprocessing.Pool(processes=num_processes)
     processes = []
 

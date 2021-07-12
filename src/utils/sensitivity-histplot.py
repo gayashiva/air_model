@@ -39,19 +39,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    units={
-        'IE':" ($mm$)",
-        'A_I':" ()",
-        'A_S':" ()",
-        'A_DECAY':" ($days$)",
-        'T_PPT':" ($\\degree C$)",
-        'Z':" ($mm$)",
-        'T_W':" ($\\degree C$)",
-        'DX':" ($mm$)",
-    }
-
-    # locations = ["gangles21", "guttannen21", "guttannen20"]
-    locations = ["guttannen21", "guttannen20"]
+    locations = ["gangles21", "guttannen21", "guttannen20"]
+    # locations = ["guttannen21", "gangles21"]
     # location = "guttannen21"
 
     sns.set(style="darkgrid")
@@ -92,10 +81,14 @@ if __name__ == "__main__":
         ax = subfigs[ctr].subplots(1, len(tuned_params), sharey=True)
         for i,param_name in enumerate(tuned_params):
             tuned_params[param_name] =[round(num, 4) for num in tuned_params[param_name]]
-            # param_range = [tuned_params[param_name][0], tuned_params[param_name][-1]]
             ax[i] = sns.countplot( x=param_name, color =custom_colors[i], data=df, order = tuned_params[param_name],
                 ax=ax[i], label = param_name)
-            ax[i].set_xlabel(param_name + units[param_name])
+            print(param_name)
+            v = get_parameter_metadata(param_name)
+            if ctr == 2:
+                ax[i].set_xlabel(v['latex'] + v['units'], fontsize=16)
+            else:
+                ax[i].set_xlabel('')
 
             if param_name in ['DX', 'Z']:
                 labels = [item.get_text() for item in ax[i].get_xticklabels()]

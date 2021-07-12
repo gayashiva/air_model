@@ -16,13 +16,13 @@ def get_parameter_metadata(
             "latex": "$z_{0}$",
             "ylim": [0.001, 0.005],
             "kind": "parameter",
-            "units": "()",
+            "units": "($mm$)",
         },
         "r_spray": {
             "name": "Spray radius",
             "latex": "$r_{F}$",
             "kind": "parameter",
-            "units": "()",
+            "units": "($m$)",
         },
         "D_MEAN": {
             "name": "Mean Discharge",
@@ -35,7 +35,7 @@ def get_parameter_metadata(
             "latex": "$T_{water}$",
             "ylim": [1, 5],
             "kind": "parameter",
-            "units": "()",
+            "units": "($\\degree C$)",
         },
         "DT": {
             "name": "Time step",
@@ -48,7 +48,7 @@ def get_parameter_metadata(
             "latex": "$\\Delta x$",
             "ylim": [19e-03, 21e-03],
             "kind": "parameter",
-            "units": "()",
+            "units": "($mm$)",
         },
         "IE": {
             "name": "Ice Emissivity",
@@ -62,7 +62,7 @@ def get_parameter_metadata(
             "latex": "$\\tau$",
             "ylim": [9.5, 10.5],
             "kind": "parameter",
-            "units": "()",
+            "units": "($days$)",
         },
         "A_S": {
             "name": "Snow Albedo",
@@ -83,7 +83,7 @@ def get_parameter_metadata(
             "latex": "$T_{ppt}$",
             "ylim": [0, 2],
             "kind": "parameter",
-            "units": "()",
+            "units": "($\\degree C$)",
         },
         "guttannen21": {
             "name": "Guttannen 2021",
