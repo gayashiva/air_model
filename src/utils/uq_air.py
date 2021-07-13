@@ -134,7 +134,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    locations = ["gangles21", "guttannen20", "guttannen21"]
+    # locations = ["gangles21", "guttannen20", "guttannen21"]
+    locations = ["guttannen21", "guttannen21"]
 
     for location in locations:
         # Get settings for given location and trigger
