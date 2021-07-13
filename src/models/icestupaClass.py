@@ -62,6 +62,12 @@ class Icestupa:
     def __init__(self, location="Guttannen 2021", params="default"):
 
         SITE, FOLDER = config(location)
+        diff = SITE["end_date"] - SITE["start_date"]
+        days, seconds = diff.days, diff.seconds
+        self.total_hours = days * 24 + seconds // 3600
+        # self.total_hours = SITE["end_date"] - SITE["start_date"]
+        print(self.total_hours)
+
         if params == "best":
             with open(FOLDER["sim"] + "best_params.pkl", "rb") as f:
                 best_params = pickle.load(f)
@@ -81,6 +87,11 @@ class Icestupa:
 
         # Drops garbage columns
         self.df = self.df[self.df.columns.drop(list(self.df.filter(regex="Unnamed")))]
+
+        # Reset date range
+        self.df = self.df.set_index("When")
+        self.df = self.df[SITE["start_date"] : SITE["end_date"]]
+        self.df = self.df.reset_index()
 
         logger.debug(self.df.head())
         logger.debug(self.df.tail())
@@ -237,14 +248,14 @@ class Icestupa:
 
         self.df = pd.read_hdf(self.output + "model_output.h5", "df")
 
-        self.change_freq()
+        # self.change_freq()
         self.self_attributes()
 
     @Timer(text="Simulation executed in {:.2f} seconds", logger=logging.warning)
     def melt_freeze(self, test=False):
 
         # Initialisaton for sites
-        col = [
+        all_cols = [
             "T_s",
             "T_bulk",
             "f_cone",
@@ -275,10 +286,14 @@ class Icestupa:
             "Qmelt",
             "Qfreeze",
             "input",
+            "event",
         ]
 
-        for column in col:
-            self.df[column] = 0
+        for column in all_cols:
+            if column in ["event"]:
+                self.df[column] = np.nan
+            else:
+                self.df[column] = 0
 
         # Initialise first model time step
         self.df.loc[0, "h_ice"] = self.h_i
@@ -301,7 +316,7 @@ class Icestupa:
 
         t = stqdm(
             self.df[1:-1].itertuples(),
-            total=self.df.shape[0] - 1,
+            total=self.total_hours,
         )
 
         t.set_description("Simulating %s Icestupa" % self.name)
@@ -346,7 +361,20 @@ class Icestupa:
                 for column in col_list:
                     self.df.loc[i - 1, column] = 0
 
-                self.df = self.df[1:i]
+                # self.df = self.df[1:i]
+                # self.df = self.df.reset_index(drop=True)
+
+                if i > self.total_hours:
+                    self.df = self.df[:self.total_hours]
+                else:
+                    for j in range(i, self.total_hours):
+                        for col in all_cols:
+                            self.df.loc[j, col] = 0
+                            if col in ["iceV"]:
+                                self.df.loc[j, col] = self.V_dome
+                            # if col in ["When"]:
+                            #     self.df.loc[i, col] += self.+ timedelta(hours=1)
+
                 self.df = self.df.reset_index(drop=True)
                 break
 

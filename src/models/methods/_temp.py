@@ -21,11 +21,11 @@ def get_temp(self, i):
         and freezing_energy < 0
         and self.df.loc[i, "Qsurf"] < 0
     ):
-        self.frozen = 1
+        self.df.loc[i, "event"] = 1
     else:
-        self.frozen = 0
+        self.df.loc[i, "event"] = 0
 
-    if self.frozen:
+    if self.df.loc[i, "event"]:
         self.df.loc[i, "Qfreeze"] = freezing_energy
 
         # Force surface temperature zero
@@ -61,7 +61,7 @@ def get_temp(self, i):
         )
         self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
 
-    if self.frozen:
+    if self.df.loc[i, "event"]:
         self.df.loc[i, "fountain_froze"] += (
             -self.df.loc[i, "Qfreeze"] * self.DT * self.df.loc[i, "SA"]
         ) / (self.L_F)
@@ -88,7 +88,7 @@ def get_temp(self, i):
         self.df.loc[i, "fountain_runoff"] = self.df.Discharge.loc[i] * self.DT / 60
         self.df.loc[i, "fountain_froze"] = 0
 
-    if self.df.loc[i, "Qmelt"] > 0:
+    if self.df.loc[i, "Qmelt"]:
         self.df.loc[i, "melted"] = (
             self.df.loc[i, "Qmelt"] * self.DT * self.df.loc[i, "SA"] / (self.L_F)
         )
@@ -96,10 +96,6 @@ def get_temp(self, i):
 
 def test_get_temp(self, i):
     self.get_temp(i)
-
-    if self.frozen and self.df.loc[i, "Qmelt"] > 0:
-        self.frozen = 0
-        logger.error("Freezing event changed to melting event")
 
     if self.df.loc[i, "delta_T_s"] > 1 * self.DT / 60:
         logger.warning(

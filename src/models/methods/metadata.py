@@ -129,6 +129,11 @@ def get_parameter_metadata(
             "kind": "Output",
             "units": "($kg\\, s^{-1}$)",
         },
+        "event": {
+            "name": "Freezing/Melting Event",
+            "kind": "Derived",
+            "units": "($kg\\, s^{-1}$)",
+        },
         "h_f": {
             "name": "Fountain Height",
             "kind": "Derived",

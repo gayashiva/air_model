@@ -57,13 +57,12 @@ def shade(location, df_in, col):
 def summary_figures(self):
     logger.info("Creating figures")
 
-    # dome_vol = self.df[self.df.iceV !=0].reset_index().iceV[0]
-
     df_c = pd.read_hdf(self.input + "model_input.h5", "df_c")
 
     df_c = df_c[["When", "DroneV", "DroneVError"]]
     if self.name in ["guttannen21", "guttannen20", "gangles21"]:
         df_c = df_c[1:]
+
     tol = pd.Timedelta("15T")
     df_c = df_c.set_index("When")
     self.df = self.df.set_index("When")
