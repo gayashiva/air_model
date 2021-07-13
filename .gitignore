@@ -91,5 +91,6 @@ media/
 src/logs/
 # .tasks
 *.pdf
+*.zip
 *.html
 .python-version
