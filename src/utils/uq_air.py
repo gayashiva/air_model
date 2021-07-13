@@ -152,7 +152,7 @@ if __name__ == "__main__":
             features_to_run=["efficiency"],
         )
 
-        a_i_dist = cp.Uniform(0.01, 0.35)
+        a_i_dist = cp.Uniform(0.15, 0.35)
         a_s_dist = cp.Uniform(icestupa.A_S * 0.95, icestupa.A_S * 1.05)
         z_dist = cp.Uniform(0.001, 0.005)
         dx_dist = cp.Uniform(icestupa.DX * 0.95, icestupa.DX * 1.05)
@@ -169,12 +169,12 @@ if __name__ == "__main__":
 
         parameters_full = {
             "IE": ie_dist,
-            # "A_I": a_i_dist,
-            # "A_S": a_s_dist,
-            # "Z": z_dist,
-            # "A_DECAY": a_decay_dist,
-            # "T_PPT": T_PPT_dist,
-            # "DX": dx_dist,
+            "A_I": a_i_dist,
+            "A_S": a_s_dist,
+            "Z": z_dist,
+            "A_DECAY": a_decay_dist,
+            "T_PPT": T_PPT_dist,
+            "DX": dx_dist,
             "T_W": T_W_dist,
             #             "D_MEAN": d_dist,
             #             "r_spray": r_spray_dist,
