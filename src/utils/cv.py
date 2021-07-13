@@ -45,30 +45,17 @@ def load_obj(path, name ):
 def bounds(var, res, change = 5):
     return np.arange(var * (100-change)/100, var * (100+change)/100 + res, res).tolist()
 
-def param_ranges(icestupa, num=10):
+def setup_params(icestupa, num=10):
     params = ['IE', 'A_I', 'Z', 'T_W']
     params_range = []
     for param in params:
         y_lim=get_parameter_metadata(param)['ylim']
-        # param_range = np.arange(y_lim[0], y_lim[1], y_lim[0]- y_lim[1])
         param_range = np.linspace(y_lim[0], y_lim[1], num)
         param_range = np.round(param_range, 4)
         params_range.append(param_range)
         print(param, param_range)
 
-
     tuned_params = {params[i]: params_range[i] for i in range(len(params))}
-    # tuned_params = {
-    #     'IE': np.arange(0.95, 0.991, 0.005).tolist(),
-    #     # 'IE': np.arange(0.95, 0.991, 0.005).tolist(),
-    #     'A_I': np.arange(0.15, 0.351, 0.025).tolist(),
-    #     'Z': np.arange(0.001, 0.0031, 0.00025).tolist(),
-    #     'T_W': np.arange(0, 2.91, 0.3).tolist(),
-    #     # 'A_S': bounds(var=icestupa.A_S, res = 0.05),
-    #     # 'A_DECAY': bounds(var=icestupa.A_DECAY, res = 0.5),
-    #     # 'T_PPT': np.arange(0, 2.1 , 1).tolist(),
-    #     # 'DX': bounds(var=icestupa.DX, res = 0.0005),
-    # }
     return tuned_params
 
 class CV_Icestupa(BaseEstimator,Icestupa):

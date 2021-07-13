@@ -22,7 +22,7 @@ import json
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
-from src.utils.cv import CV_Icestupa, save_obj, load_obj, param_ranges
+from src.utils.cv import CV_Icestupa, save_obj, load_obj, setup_params
 from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
 
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     X = [[a[0], a[1]] for a in obs]
     y = [a[2] for a in obs]
 
-    tuned_params = param_ranges(icestupa)
+    tuned_params = setup_params()
 
     file_path = 'cv-'
     file_path += '-'.join('{}'.format(key) for key, value in tuned_params.items())
