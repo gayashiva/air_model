@@ -70,15 +70,6 @@ class UQ_Icestupa(un.Model, Icestupa):
         self.y_true = self.df_c.DroneV.values
         print("Ice volume measurements for %s are %s\n" % (self.name, self.y_true))
 
-        # if location == "guttannen21":
-        #     self.total_days = 180
-        # if location == "schwarzsee19":
-        #     self.total_days = 60
-        # if location == "guttannen20":
-        #     self.total_days = 110
-        # if location == "gangles21":
-        #     self.total_days = 150
-
     def run(self, **parameters):
 
         self.set_parameters(**parameters)
@@ -177,7 +168,7 @@ if __name__ == "__main__":
             d_dist = cp.Uniform(20, 90)
 
         parameters_full = {
-            # "IE": ie_dist,
+            "IE": ie_dist,
             # "A_I": a_i_dist,
             # "A_S": a_s_dist,
             # "Z": z_dist,
@@ -203,7 +194,7 @@ if __name__ == "__main__":
                 model=model,
                 parameters=parameters_single,
                 features=features,
-                CPUs=3,
+                # CPUs=3,
             )
 
             # Perform the uncertainty quantification using # polynomial chaos with point collocation (by default) data =
