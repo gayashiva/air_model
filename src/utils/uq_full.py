@@ -87,7 +87,7 @@ if __name__ == "__main__":
             model=model,
             parameters=parameters,
             # features=features,
-            # CPUs=2,
+            CPUs=2,
         )
 
         # Perform the uncertainty quantification using
