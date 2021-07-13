@@ -16,6 +16,7 @@ import inspect
 import json
 from ast import literal_eval
 import matplotlib.ticker as mtick
+from matplotlib.lines import Line2D
 import math
 
 sys.path.append(
@@ -49,6 +50,10 @@ if __name__ == "__main__":
     # )
     fig = plt.figure(figsize=(18, 12))
     subfigs = fig.subfigures(len(locations), 1)
+    custom_colors = sns.color_palette("Set1", len(locations))
+    custom_lines = [Line2D([0], [0], color=custom_colors[0], lw=4),
+                    Line2D([0], [0], color=custom_colors[1], lw=4),
+                    Line2D([0], [0], color=custom_colors[2], lw=4)]
 
     for ctr, location in enumerate(locations):
         icestupa = Icestupa(location)
@@ -76,19 +81,21 @@ if __name__ == "__main__":
 
         df['A_I'] = df['A_I'].map(lambda x: (truncate(x,3)))
         print(df.head())
-        custom_colors = sns.color_palette("Set1", len(tuned_params))
 
         ax = subfigs[ctr].subplots(1, len(tuned_params), sharey=True)
         for i,param_name in enumerate(tuned_params):
             tuned_params[param_name] =[round(num, 4) for num in tuned_params[param_name]]
-            ax[i] = sns.countplot( x=param_name, color =custom_colors[i], data=df, order = tuned_params[param_name],
+            ax[i] = sns.countplot( x=param_name, color =custom_colors[ctr], data=df, order = tuned_params[param_name],
                 ax=ax[i], label = param_name)
             print(param_name)
             v = get_parameter_metadata(param_name)
             if ctr == 2:
-                ax[i].set_xlabel(v['latex'] + v['units'], fontsize=16)
+                ax[i].set_xlabel(v['latex'] + v['units'], fontsize="x-large")
             else:
                 ax[i].set_xlabel('')
+            if ctr == 0 and i == len(tuned_params)-1:
+                labels = [get_parameter_metadata(item)['shortname'] for item in locations]
+                ax[i].legend(custom_lines, labels, fontsize = "x-large")
 
             if param_name in ['DX', 'Z']:
                 labels = [item.get_text() for item in ax[i].get_xticklabels()]
@@ -101,14 +108,6 @@ if __name__ == "__main__":
             ax[i].set_ylabel("")
             ax[i].set_ylim([0,num_selected*0.6])
             ax[i].yaxis.set_major_formatter(mtick.PercentFormatter(num_selected))
-        subfigs[ctr].text(
-            0.04,
-            0.5,
-            get_parameter_metadata(location)["shortname"],
-            va="center",
-            rotation="vertical",
-            fontsize="x-large",
-        )
         subfigs[ctr].subplots_adjust(hspace=0.05, wspace=0.025)
 
     plt.savefig(

@@ -14,7 +14,7 @@ def get_parameter_metadata(
         "Z": {
             "name": "Surface roughness",
             "latex": "$z_{0}$",
-            "ylim": [0.001, 0.005],
+            "ylim": [0.001, 0.003],
             "kind": "parameter",
             "units": "($mm$)",
         },
@@ -33,7 +33,7 @@ def get_parameter_metadata(
         "T_W": {
             "name": "Water temperature",
             "latex": "$T_{water}$",
-            "ylim": [1, 5],
+            "ylim": [0, 3],
             "kind": "parameter",
             "units": "($\\degree C$)",
         },
