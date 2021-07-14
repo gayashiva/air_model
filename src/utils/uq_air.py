@@ -97,10 +97,10 @@ class UQ_Icestupa(un.Model, Icestupa):
             M_ice = round(self.df["ice"].iloc[-1] - self.V_dome * self.RHO_I, 1)
             se = (M_water + M_ice) / M_input * 100
 
-            if len(self.df) >= self.total_days * 24:
-                self.df = self.df[: self.total_days * 24]
+            if len(self.df) >= self.total_hours:
+                self.df = self.df[: self.total_hours]
             else:
-                for i in range(len(self.df), self.total_days * 24):
+                for i in range(len(self.df), self.total_hours * 24):
                     self.df.loc[i, "iceV"] = self.df.loc[i - 1, "iceV"]
             y_pred = []
             for date in self.df_c.When.values:
@@ -110,7 +110,7 @@ class UQ_Icestupa(un.Model, Icestupa):
                     # y_pred.append(self.V_dome)
                     y_pred.append(0)
         else:
-            for i in range(0, self.total_days * 24):
+            for i in range(0, self.total_hours * 24):
                 self.df.loc[i, "iceV"] = self.V_dome
             y_pred = [999] * len(self.df_c.When.values)
             se = 0

@@ -361,6 +361,7 @@ class Icestupa:
                 for column in col_list:
                     self.df.loc[i - 1, column] = 0
 
+                self.last_hour = i
                 # self.df = self.df[1:i]
                 # self.df = self.df.reset_index(drop=True)
 
