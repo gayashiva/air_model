@@ -22,6 +22,19 @@ from src.utils.settings import config
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.icestupaClass import Icestupa
 
+def add_patch(legend):
+    from matplotlib.patches import Patch
+    ax = legend.axes
+
+    handles, labels = ax.get_legend_handles_labels()
+    handles.append(Patch(facecolor='k'))
+    labels.append("$q_{surf}$")
+
+    legend._legend_box = None
+    legend._init_legend_box(handles, labels)
+    legend._set_loc(legend._loc)
+    legend.set_title(legend.get_title().get_text())
+
 if __name__ == "__main__":
     locations = ["gangles21", "guttannen21", "guttannen20"]
     # locations = ['guttannen21',  'gangles21']
@@ -48,6 +61,7 @@ if __name__ == "__main__":
         SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
         icestupa.read_output()
+        icestupa.df = icestupa.df[:icestupa.last_hour]
 
         icestupa.df = icestupa.df.rename(
             {
@@ -121,6 +135,7 @@ if __name__ == "__main__":
                 "Sublimation/Deposition",
             ]
         ]
+        y2 = y2.mul(1000)
 
         dfd = icestupa.df.set_index("When").resample("D").mean().reset_index()
         # dfd["When"] = dfd["When"].dt.strftime("%b %d")
@@ -174,6 +189,8 @@ if __name__ == "__main__":
                 ],
                 ax=ax[1, j],
             )
+            ax[1, j].plot(dfd["$q_{surf}$"],'--k.')
+
         for i in range(2):
             if ctr == 0:
                 ax[0, 0].title.set_text("Freezing period")
@@ -199,8 +216,8 @@ if __name__ == "__main__":
                     else:
                         ax[i, j].plot((-d, d), (-d, +d), **kwargs)  # top-right diagonal
                 else:
-                    ax[i, j].set_ylim(-0.065, 0.065)
-                    ax[i, j].set_ylabel("Thickness [$m$ w. e.]")
+                    ax[i, j].set_ylim(-65, 65)
+                    ax[i, j].set_ylabel("Thickness [$mm$ w. e.]")
                     ax[i, j].spines["bottom"].set_visible(False)
                     ax[i, j].tick_params(bottom=False)
                     ax[i, j].tick_params(labelbottom=False)
@@ -233,9 +250,10 @@ if __name__ == "__main__":
     ax[0, 0].legend(
         loc="upper center", bbox_to_anchor=(1, 4), ncol=5, title="Mass fluxes"
     )
-    ax[1, 0].legend(
-        loc="upper center", bbox_to_anchor=(1, 2.4), ncol=9, title="Energy fluxes"
+    lgd = ax[1, 0].legend(
+        loc="upper center", bbox_to_anchor=(1, 2.4), ncol=10, title="Energy fluxes"
     )
+    add_patch(lgd)
     plt.savefig(
         "data/paper/mass_energy_bal.jpg",
         dpi=300,
