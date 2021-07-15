@@ -149,7 +149,7 @@ if __name__ == "__main__":
     )
 
     # locations = ["gangles21", "guttannen20", "guttannen21"]
-    locations = ["guttannen21", "guttannen21"]
+    locations = ["gangles21", "guttannen20"]
 
     for location in locations:
         # Get settings for given location and trigger
