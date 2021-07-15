@@ -22,7 +22,6 @@ from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
 
 def setup_params(params):
-    # params = ['IE', 'A_I', 'T_PPT', 'Z', 'T_W']
     params_range = []
     for param in params:
         y_lim=get_parameter_metadata(param)['ylim']
@@ -58,9 +57,11 @@ def efficiency(time, values, info, y_true, y_pred, se):
 
 
 class UQ_Icestupa(un.Model, Icestupa):
-    def __init__(self, location):
+    def __init__(self, location, ignore=False):
         super(UQ_Icestupa, self).__init__(
-            labels=["Time (days)", "Ice Volume ($m^3$)"], interpolate=True
+            labels=["Time (days)", "Ice Volume ($m^3$)"], 
+            interpolate=False,
+            ignore = ignore
         )
 
         SITE, FOLDER = config(location)
