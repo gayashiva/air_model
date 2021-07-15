@@ -25,8 +25,8 @@ if __name__ == "__main__":
     )
 
     answers = dict(
-        location="Schwarzsee 2019",
-        # location="Guttannen 2020",
+        # location="Schwarzsee 2019",
+        location="Guttannen 2021",
         # location="Gangles 2021",
         run="yes",
         # run="no",
@@ -45,7 +45,7 @@ if __name__ == "__main__":
         # icestupa.melt_freeze()
 
         # Summarise and save model results
-        icestupa.summary()
+        # icestupa.summary()
 
         # Create figures for web interface
         icestupa.summary_figures()

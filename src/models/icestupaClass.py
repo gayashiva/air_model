@@ -65,8 +65,6 @@ class Icestupa:
         diff = SITE["end_date"] - SITE["start_date"]
         days, seconds = diff.days, diff.seconds
         self.total_hours = days * 24 + seconds // 3600
-        # self.total_hours = SITE["end_date"] - SITE["start_date"]
-        print(self.total_hours)
 
         if params == "best":
             with open(FOLDER["sim"] + "best_params.pkl", "rb") as f:
@@ -105,6 +103,7 @@ class Icestupa:
     from src.models.methods._temp import get_temp, test_get_temp
     from src.models.methods._energy import get_energy, test_get_energy
     from src.models.methods._figures import summary_figures
+    from src.models.methods._stop import stop_model
 
     @Timer(text="Preprocessed data in {:.2f} seconds", logger=logging.warning)
     def derive_parameters(
@@ -207,34 +206,6 @@ class Icestupa:
         logger.debug(self.df.head())
         logger.debug(self.df.tail())
 
-    def summary(self):  # Summarizes results and saves output
-
-        f_efficiency = 100 - (
-            (
-                self.df["unfrozen_water"].iloc[-1]
-                / (self.df["Discharge"].sum() * self.DT / 60)
-                * 100
-            )
-        )
-
-        Duration = self.df.index[-1] * self.DT / (60 * 60 * 24)
-
-        print("\nIce Volume Max", float(round(self.df["iceV"].max(), 2)))
-        print("Fountain efficiency", round(f_efficiency, 1))
-        print("Ice Mass Remaining", round(self.df["ice"].iloc[-1], 2))
-        print("Meltwater", round(self.df["meltwater"].iloc[-1], 2))
-        print("Ppt", round(self.df["ppt"].sum(), 2))
-        print("Duration", round(Duration, 2))
-
-        # Full Output
-        filename4 = self.output + "model_output.csv"
-        self.df.to_csv(filename4, sep=",")
-        self.df.to_hdf(
-            self.output + "model_output.h5",
-            key="df",
-            mode="a",
-        )
-
     def read_input(self):  # Use processed input dataset
 
         self.df = pd.read_hdf(self.input + "model_input.h5", "df")
@@ -247,6 +218,15 @@ class Icestupa:
     def read_output(self):  # Reads output
 
         self.df = pd.read_hdf(self.output + "model_output.h5", "df")
+
+        with open(self.output + "results.json", "r") as read_file:
+            print("Converting JSON encoded data into Python dictionary")
+            results_dict = json.load(read_file)
+
+        # Initialise all variables of dictionary
+        for key in results_dict:
+            setattr(self, key, results_dict[key])
+            logger.warning(f"%s -> %s" % (key, str(results_dict[key])))
 
         # self.change_freq()
         self.self_attributes()
@@ -325,59 +305,8 @@ class Icestupa:
             i = row.Index
 
             ice_melted = self.df.loc[i, "iceV"] < self.V_dome
-
             if ice_melted:
-                logger.error(
-                    "Simulation ends %s %0.1f " % (self.df.When[i], self.df.iceV[i])
-                )
-
-                if (
-                    self.df.loc[i - 1, "When"] < self.fountain_off_date
-                    and self.df.loc[i - 1, "melted"] > 0
-                ):
-                    self.df.loc[i, "T_s"] = 0
-                    self.df.loc[i, "thickness"] = 0
-                    col_list = [
-                        "meltwater",
-                        "ice",
-                        "vapour",
-                        "unfrozen_water",
-                        "iceV",
-                        "input",
-                    ]
-                    logger.error("Skipping %s" % self.df.loc[i, "When"])
-                    for column in col_list:
-                        self.df.loc[i, column] = self.df.loc[i - 1, column]
-                    continue
-
-                col_list = [
-                    "dep",
-                    "ppt",
-                    "fountain_froze",
-                    "fountain_runoff",
-                    "sub",
-                    "melted",
-                ]
-                for column in col_list:
-                    self.df.loc[i - 1, column] = 0
-
-                self.last_hour = i
-                # self.df = self.df[1:i]
-                # self.df = self.df.reset_index(drop=True)
-
-                if i > self.total_hours:
-                    self.df = self.df[:self.total_hours]
-                else:
-                    for j in range(i, self.total_hours):
-                        for col in all_cols:
-                            self.df.loc[j, col] = 0
-                            if col in ["iceV"]:
-                                self.df.loc[j, col] = self.V_dome
-                            # if col in ["When"]:
-                            #     self.df.loc[i, col] += self.+ timedelta(hours=1)
-
-                self.df = self.df.reset_index(drop=True)
-                break
+                self.stop_model(i,all_cols)
 
             self.get_area(i)
 
@@ -446,7 +375,7 @@ class Icestupa:
                 self.df.loc[i + 1, "iceV"] - self.df.loc[i, "iceV"]
             ) / (self.df.loc[i, "SA"])
 
-            if test:
+            if test and not ice_melted:
                 output = (
                     self.df.loc[i + 1, "ice"]
                     + self.df.loc[i + 1, "unfrozen_water"]
