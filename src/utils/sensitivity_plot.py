@@ -78,10 +78,10 @@ if __name__ == "__main__":
         icestupa.self_attributes()
         feature_name = "efficiency"
 
-        M_input = round(icestupa.df["input"].iloc[-1], 1)
-        M_water = round(icestupa.df["meltwater"].iloc[-1], 1)
-        M_ice = round(icestupa.df["ice"].iloc[-1] - icestupa.V_dome * icestupa.RHO_I, 1)
-        icestupa.se = (M_water + M_ice) / M_input * 100
+        # M_input = round(icestupa.df["input"].iloc[-1], 1)
+        # M_water = round(icestupa.df["meltwater"].iloc[-1], 1)
+        # M_ice = round(icestupa.df["ice"].iloc[-1] - icestupa.V_dome * icestupa.RHO_I, 1)
+        icestupa.se = (icestupa.M_water + icestupa.M_ice) / icestupa.M_input * 100
 
         for j in range(0, icestupa.df.shape[0]):
             if icestupa.df.loc[j, "fountain_froze"] != 0:

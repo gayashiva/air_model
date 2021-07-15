@@ -14,7 +14,7 @@ def get_parameter_metadata(
         "Z": {
             "name": "Surface roughness",
             "latex": "$z_{0}$",
-            "ylim": [0.001, 0.003],
+            "ylim": [0.001, 0.005],
             "kind": "parameter",
             "units": "($mm$)",
         },
