@@ -47,8 +47,6 @@ if __name__ == "__main__":
         list_of_feature_functions = [max_volume, rmse, efficiency]
 
         features = un.Features(
-            # new_features=list_of_feature_functions, features_to_run=["max_volume"]
-            # new_features=list_of_feature_functions, features_to_run=["rmse"]
             new_features=list_of_feature_functions,
             features_to_run=["rmse"],
         )

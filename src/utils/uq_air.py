@@ -61,6 +61,8 @@ class UQ_Icestupa(un.Model, Icestupa):
         super(UQ_Icestupa, self).__init__(
             labels=["Time (days)", "Ice Volume ($m^3$)"], 
             interpolate=False,
+            suppress_graphics=True,
+            logger_level="debug",
             ignore = ignore
         )
 
