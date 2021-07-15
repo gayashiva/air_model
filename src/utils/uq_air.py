@@ -54,6 +54,9 @@ class UQ_Icestupa(un.Model, Icestupa):
 
         SITE, FOLDER = config(location)
         initial_data = [SITE, FOLDER]
+        diff = SITE["end_date"] - SITE["start_date"]
+        days, seconds = diff.days, diff.seconds
+        self.total_hours = days * 24 + seconds // 3600
 
         # Initialise all variables of dictionary
         for dictionary in initial_data:
