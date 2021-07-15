@@ -21,6 +21,17 @@ from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
 
+def setup_params(params):
+    # params = ['IE', 'A_I', 'T_PPT', 'Z', 'T_W']
+    params_range = []
+    for param in params:
+        y_lim=get_parameter_metadata(param)['ylim']
+        param_range = cp.Uniform(y_lim[0], y_lim[1])
+        params_range.append(param_range)
+        print(param, param_range)
+
+    tuned_params = {params[i]: params_range[i] for i in range(len(params))}
+    return tuned_params
 
 def max_volume(time, values, info, y_true, y_pred, se):
     icev_max = values.max()
@@ -156,34 +167,7 @@ if __name__ == "__main__":
             features_to_run=["efficiency"],
         )
 
-        a_i_dist = cp.Uniform(0.15, 0.35)
-        a_s_dist = cp.Uniform(icestupa.A_S * 0.95, icestupa.A_S * 1.05)
-        z_dist = cp.Uniform(0.001, 0.005)
-        dx_dist = cp.Uniform(icestupa.DX * 0.95, icestupa.DX * 1.05)
-        # r_spray_dist = cp.Uniform(icestupa.r_spray * .95, icestupa.r_spray * 1.05)
-        ie_dist = cp.Uniform(0.95, 0.99)
-        a_decay_dist = cp.Uniform(icestupa.A_DECAY * 0.95, icestupa.A_DECAY * 1.05)
-        T_PPT_dist = cp.Uniform(0, 2)
-        # MU_CONE_dist = cp.Uniform(0, 1)
-        T_W_dist = cp.Uniform(0, 3)
-        if location in ["guttannen21", "guttannen20"]:
-            d_dist = cp.Uniform(3, 10)
-        if location == "gangles21":
-            d_dist = cp.Uniform(20, 90)
-
-        parameters_full = {
-            "IE": ie_dist,
-            "A_I": a_i_dist,
-            "A_S": a_s_dist,
-            "Z": z_dist,
-            "A_DECAY": a_decay_dist,
-            "T_PPT": T_PPT_dist,
-            "DX": dx_dist,
-            "T_W": T_W_dist,
-            #             "D_MEAN": d_dist,
-            #             "r_spray": r_spray_dist,
-            # "MU_CONE": MU_CONE_dist,
-        }
+        parameters_full = setup_params(['IE', 'A_I', 'A_S', 'Z', 'A_DECAY', 'T_PPT', 'DX', 'T_W'])
 
         # Create the parameters
         for k, v in parameters_full.items():

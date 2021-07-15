@@ -67,14 +67,14 @@ def get_parameter_metadata(
         "A_S": {
             "name": "Snow Albedo",
             "latex": r"$\alpha_{snow}$",
-            "ylim": [0.8, 0.9],
+            "ylim": [0.85*0.95, 0.85*1.05],
             "kind": "parameter",
             "units": "()",
         },
         "A_I": {
             "name": "Ice Albedo",
             "latex": r"$\alpha_{ice}$",
-            "ylim": [0.01, 0.35],
+            "ylim": [0.15, 0.35],
             "kind": "parameter",
             "units": "()",
         },

@@ -21,19 +21,7 @@ from src.models.methods.calibration import get_calibration
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
-from src.utils.uq_air import UQ_Icestupa
-
-def setup_params():
-    params = ['IE', 'A_I', 'T_PPT', 'Z', 'T_W']
-    params_range = []
-    for param in params:
-        y_lim=get_parameter_metadata(param)['ylim']
-        param_range = cp.Uniform(y_lim[0], y_lim[1])
-        params_range.append(param_range)
-        print(param, param_range)
-
-    tuned_params = {params[i]: params_range[i] for i in range(len(params))}
-    return tuned_params
+from src.utils.uq_air import UQ_Icestupa, setup_params
 
 if __name__ == "__main__":
     # Main logger
@@ -53,7 +41,8 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        parameters = un.Parameters(setup_params())
+        params = ['IE', 'A_I', 'T_PPT', 'Z', 'T_W']
+        parameters = un.Parameters(setup_params(params))
 
         # Initialize the model
         model = UQ_Icestupa(location)
