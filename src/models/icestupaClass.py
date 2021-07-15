@@ -5,11 +5,12 @@
 import pickle
 pickle.HIGHEST_PROTOCOL = 4 # For python version 2.7
 import pandas as pd
-import sys, os, math
+import sys, os, math, json
 import numpy as np
 import logging
 from stqdm import stqdm
 from codetiming import Timer
+from datetime import timedelta
 
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -103,7 +104,7 @@ class Icestupa:
     from src.models.methods._temp import get_temp, test_get_temp
     from src.models.methods._energy import get_energy, test_get_energy
     from src.models.methods._figures import summary_figures
-    from src.models.methods._stop import stop_model
+    # from src.models.methods._stop import stop_model
 
     @Timer(text="Preprocessed data in {:.2f} seconds", logger=logging.warning)
     def derive_parameters(
@@ -206,11 +207,68 @@ class Icestupa:
         logger.debug(self.df.head())
         logger.debug(self.df.tail())
 
+    def save(self):  # Use processed input dataset
+
+        iceV_max = round(self.df["iceV"].max(), 1)
+        M_input = round(self.df["input"].iloc[-1], 1)
+        M_F = round(
+            self.df["Discharge"].sum() * self.DT / 60
+            + self.df.loc[0, "input"]
+            - self.V_dome * self.RHO_I,
+            1,
+        )
+        M_ppt = self.df["ppt"].sum()
+        M_dep = self.df["dep"].sum()
+        M_water = self.df["meltwater"].iloc[-1]
+        M_runoff = self.df["unfrozen_water"].iloc[-1]
+        M_sub = self.df["vapour"].iloc[-1]
+        M_ice = self.df["ice"].iloc[-1] - self.V_dome * self.RHO_I
+        last_hour = self.df.shape[0]
+
+        results_dict = {}
+        results = ["iceV_max", "last_hour", "M_input","M_F", "M_ppt", "M_dep", "M_water", "M_runoff", "M_sub", "M_ice"]
+
+        for variable in results:
+            results_dict[variable] = int(eval(variable))
+
+        print("Summary of results for %s :"%self.name)
+        print()
+        for var in sorted(results_dict.keys()):
+            print("\t%s: %r" % (var, results_dict[var]))
+        print()
+
+        with open(self.output + 'results.json', 'w') as fp:
+            json.dump(results_dict, fp, sort_keys=True, indent=4)
+
+        if last_hour > self.total_hours+1:
+            self.df = self.df[:self.total_hours]
+        else:
+            for j in range(last_hour, self.total_hours):
+                for col in self.df.columns:
+                    self.df.loc[j, col] = 0
+                    if col in ["iceV"]:
+                        self.df.loc[j, col] = self.V_dome
+                    if col in ["When"]:
+                        self.df.loc[j, col] = self.df.loc[j-1, col] + timedelta(hours=1)
+                    if col in ["missing_type"]:
+                        self.df.loc[j, col] = self.df.loc[j-1, col]
+
+        self.df = self.df.reset_index(drop=True)
+
+        # Full Output
+        filename4 = self.output + "model_output.csv"
+        self.df.to_csv(filename4, sep=",")
+        self.df.to_hdf(
+            self.output + "model_output.h5",
+            key="df",
+            mode="a",
+        )
+
     def read_input(self):  # Use processed input dataset
 
         self.df = pd.read_hdf(self.input + "model_input.h5", "df")
 
-        self.change_freq()
+        # self.change_freq()
 
         if self.df.isnull().values.any():
             logger.warning("\n Null values present\n")
@@ -220,7 +278,6 @@ class Icestupa:
         self.df = pd.read_hdf(self.output + "model_output.h5", "df")
 
         with open(self.output + "results.json", "r") as read_file:
-            print("Converting JSON encoded data into Python dictionary")
             results_dict = json.load(read_file)
 
         # Initialise all variables of dictionary
@@ -305,8 +362,31 @@ class Icestupa:
             i = row.Index
 
             ice_melted = self.df.loc[i, "iceV"] < self.V_dome
+
             if ice_melted:
-                self.stop_model(i,all_cols)
+                if (
+                    self.df.loc[i - 1, "When"] < self.fountain_off_date
+                    and self.df.loc[i - 1, "melted"] > 0
+                ):
+                    logger.error("Skipping %s" % self.df.loc[i, "When"])
+                else:
+
+                    col_list = [
+                        "dep",
+                        "ppt",
+                        "fountain_froze",
+                        "fountain_runoff",
+                        "sub",
+                        "melted",
+                    ]
+                    for column in col_list:
+                        self.df.loc[i - 1, column] = 0
+
+                    last_hour = i-1
+                    self.df = self.df[1:i]
+                    self.df = self.df.reset_index(drop=True)
+                break
+                # self.stop_model(i,all_cols)
 
             self.get_area(i)
 

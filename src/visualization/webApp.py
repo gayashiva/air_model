@@ -88,20 +88,6 @@ if __name__ == "__main__":
     icestupa.read_output()
     icestupa.self_attributes()
 
-    M_F = round(
-        icestupa.df["Discharge"].sum() * icestupa.DT / 60
-        + icestupa.df.loc[0, "input"]
-        - icestupa.V_dome * icestupa.RHO_I,
-        1,
-    )
-    M_input = round(icestupa.df["input"].iloc[-1], 1)
-    M_ppt = round(icestupa.df["ppt"].sum(), 1)
-    M_dep = round(icestupa.df["dep"].sum(), 1)
-    M_water = round(icestupa.df["meltwater"].iloc[-1], 1)
-    M_runoff = round(icestupa.df["unfrozen_water"].iloc[-1], 1)
-    M_sub = round(icestupa.df["vapour"].iloc[-1], 1)
-    M_ice = round(icestupa.df["ice"].iloc[-1] - icestupa.V_dome * icestupa.RHO_I, 1)
-
     df_in = icestupa.df
     (
         input_cols,
@@ -237,8 +223,8 @@ if __name__ == "__main__":
         )
 
     with row3_1:
-        f_mean = icestupa.df.Discharge.replace(0, np.nan).mean()
-        Duration = icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24)
+        # f_mean = icestupa.df.Discharge.replace(0, np.nan).mean()
+        # Duration = icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24)
         mean_freeze_rate = icestupa.df[
             icestupa.df.fountain_froze != 0
         ].fountain_froze.mean() / (icestupa.DT / 60)
@@ -259,7 +245,7 @@ if __name__ == "__main__":
             % (
                 # f_mean,
                 icestupa.r_spray,
-                M_F / 1000,
+                icestupa.M_F / 1000,
                 mean_freeze_rate,
                 mean_melt_rate,
                 fountain_duration,
@@ -278,9 +264,9 @@ if __name__ == "__main__":
         """
             % (
                 icestupa.df["iceV"].max(),
-                icestupa.df["meltwater"].iloc[-1],
-                icestupa.df["vapour"].iloc[-1],
-                (M_water + M_ice) / M_input * 100,
+                icestupa.M_water,
+                icestupa.M_sub,
+                (icestupa.M_water + icestupa.M_ice) / icestupa.M_input * 100,
             )
         )
 

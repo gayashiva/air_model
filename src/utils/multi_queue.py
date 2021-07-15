@@ -36,7 +36,7 @@ def calculate(process_name, tasks, results):
             icestupa.melt_freeze()
 
             # Summarise and save model results
-            icestupa.summary()
+            icestupa.save()
 
             # Read Output
             # icestupa.read_output()
