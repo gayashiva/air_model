@@ -71,7 +71,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "guttannen20"
+    location = "guttannen21"
     # location = "schwarzsee19"
 
     icestupa = Icestupa(location)
@@ -95,7 +95,8 @@ if __name__ == "__main__":
     X = [[a[0], a[1]] for a in obs]
     y = [a[2] for a in obs]
 
-    tuned_params = setup_params()
+    params = ['A_I', 'T_F', 'IE', 'Z', 'DX']
+    tuned_params = setup_params(params)
 
     file_path = 'cv-'
     file_path += '-'.join('{}'.format(key) for key, value in tuned_params.items())

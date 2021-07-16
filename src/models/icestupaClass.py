@@ -49,12 +49,12 @@ class Icestupa:
     A_I = 0.25  # Albedo of Ice A_I
     A_S = 0.85  # Albedo of Fresh Snow A_S
     A_DECAY = 10  # Albedo decay rate decay_t_d
-    Z = 0.0017  # Ice Momentum and Scalar roughness length
+    Z = 0.0025  # Ice Momentum and Scalar roughness length
     T_PPT = 1  # Temperature condition for liquid precipitation
     MU_CONE = 0.5  # Turbulence of cone
 
     """Fountain constants"""
-    T_F = 0.5  # FOUNTAIN Water temperature
+    T_F = 2.5  # FOUNTAIN Water temperature
 
     """Model constants"""
     DT = 60 * 60  # Model time step

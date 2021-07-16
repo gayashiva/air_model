@@ -45,8 +45,8 @@ def load_obj(path, name ):
 def bounds(var, res, change = 5):
     return np.arange(var * (100-change)/100, var * (100+change)/100 + res, res).tolist()
 
-def setup_params(icestupa, num=10):
-    params = ['IE', 'A_I', 'Z', 'T_W']
+def setup_params(params, num=10):
+
     params_range = []
     for param in params:
         y_lim=get_parameter_metadata(param)['ylim']
@@ -59,8 +59,8 @@ def setup_params(icestupa, num=10):
     return tuned_params
 
 class CV_Icestupa(BaseEstimator,Icestupa):
-    def __init__(self, name = "guttannen21", DX = 0.020, DT = 60*60, A_I = 0.25, A_S = 0.85, IE = 0.97, T_PPT = 1, T_W
-        = 0.5, A_DECAY= 10, Z=0.0017):
+    def __init__(self, name = "guttannen21", DX = 0.020, DT = 60*60, A_I = 0.25, A_S = 0.85, IE = 0.97, T_PPT = 1, T_F
+        = 2.5, A_DECAY= 10, Z=0.0025):
         super(Icestupa, self).__init__()
 
         print("Initializing classifier:\n")
@@ -74,6 +74,10 @@ class CV_Icestupa(BaseEstimator,Icestupa):
 
         SITE, FOLDER = config(location = self.name)
         initial_data = [SITE, FOLDER]
+        diff = SITE["end_date"] - SITE["start_date"]
+        days, seconds = diff.days, diff.seconds
+        self.total_hours = days * 24 + seconds // 3600
+
          # Initialise all variables of dictionary
         for dictionary in initial_data:
             for key in dictionary:
@@ -85,13 +89,12 @@ class CV_Icestupa(BaseEstimator,Icestupa):
     @Timer(text="Simulation executed in {:.2f} seconds")
     def fit(self, X,y,groups=None):
 
-#         if self.r_spray in parameters.keys():
-#             self.self_attributes()
+#         self.self_attributes() # For r_F
 # 
-#         if self.D_MEAN in parameters.keys():
-#             self.get_discharge()
+#         if self.D_F in parameters.keys():
+#             self.df.loc[self.df.Discharge !=0, "Discharge"] = self.D_F
 
-        if self.A_DECAY !=10 or self.A_I != 0.25 or self.A_S != 0.85 or self.T_PPT!= 0.5: 
+        if self.A_DECAY !=10 or self.A_I != 0.25 or self.A_S != 0.85 or self.T_PPT!= 2.5: 
             """Albedo Decay parameters initialized"""
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
             s = 0
