@@ -128,7 +128,7 @@ class UQ_Icestupa(un.Model, Icestupa):
             M_ice = round(self.df["ice"].iloc[-1] - self.V_dome * self.RHO_I, 1)
             se = (M_water + M_ice) / M_input * 100
 
-            self.last_hour = len(self.df) -1
+            self.last_hour = len(self.df) -2
             if len(self.df) >= self.total_hours:
                 self.df = self.df[: self.total_hours]
             else:

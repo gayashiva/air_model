@@ -21,19 +21,21 @@ def get_parameter_metadata(
         "r_spray": {
             "name": "Spray radius",
             "latex": "$r_{F}$",
+            "ylim": [6, 11],
             "kind": "parameter",
             "units": "($m$)",
         },
         "D_MEAN": {
             "name": "Mean Discharge",
             "latex": "$d_{mean}$",
+            "ylim": [1, 60],
             "kind": "parameter",
             "units": "()",
         },
         "T_W": {
             "name": "Water temperature",
             "latex": "$T_{water}$",
-            "ylim": [0, 3],
+            "ylim": [0, 5],
             "kind": "parameter",
             "units": "($\\degree C$)",
         },
@@ -46,7 +48,7 @@ def get_parameter_metadata(
         "DX": {
             "name": "Surface layer thickness",
             "latex": "$\\Delta x$",
-            "ylim": [19e-03, 21e-03],
+            "ylim": [16e-03, 24e-03],
             "kind": "parameter",
             "units": "($mm$)",
         },
@@ -60,14 +62,14 @@ def get_parameter_metadata(
         "A_DECAY": {
             "name": "Albedo decay rate",
             "latex": "$\\tau$",
-            "ylim": [9.5, 10.5],
+            "ylim": [8, 12],
             "kind": "parameter",
             "units": "($days$)",
         },
         "A_S": {
             "name": "Snow Albedo",
             "latex": r"$\alpha_{snow}$",
-            "ylim": [0.85*0.95, 0.85*1.05],
+            "ylim": [0.8, 0.9],
             "kind": "parameter",
             "units": "()",
         },
