@@ -90,13 +90,15 @@ class UQ_Icestupa(un.Model, Icestupa):
 
         self.df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
         self.df_c = self.df_c.iloc[1:]
-
-        self.df_cam = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_cam")
-        self.df_cam = self.df_cam.reset_index()
-        # self.df_cam = self.df_cam.iloc[1180:]
-
         self.y_true = self.df_c.DroneV.values
-        self.z_true = self.df_cam.cam_temp.values
+
+        if location == 'gangles21':
+            self.z_true = [0]
+        else:
+            self.df_cam = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_cam")
+            self.df_cam = self.df_cam.reset_index()
+            # self.df_cam = self.df_cam.iloc[1180:]
+            self.z_true = self.df_cam.cam_temp.values
 
         print("Ice volume measurements for %s are %s\n" % (self.name, len(self.y_true)))
         print("Surface temp measurements for %s are %s\n" % (self.name, len(self.z_true)))
@@ -143,12 +145,15 @@ class UQ_Icestupa(un.Model, Icestupa):
                     # y_pred.append(self.V_dome)
                     y_pred.append(0)
 
-            for date in self.df_cam.When.values:
-                if self.df[self.df.When == date].shape[0]:
-                    z_pred.append(self.df.loc[self.df.When == date, "T_s"].values[0])
-                else:
-                    print("Error: Date not found")
-                    z_pred.append(0)
+            if self.name != 'gangles21':
+                for date in self.df_cam.When.values:
+                    if self.df[self.df.When == date].shape[0]:
+                        z_pred.append(self.df.loc[self.df.When == date, "T_s"].values[0])
+                    else:
+                        print("Error: Date not found")
+                        z_pred.append(0)
+            else:
+                z_pred = [0]
         else:
             for i in range(0, self.total_hours):
                 self.df.loc[i, "iceV"] = self.V_dome
@@ -177,8 +182,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    # locations = ["gangles21", "guttannen20", "guttannen21"]
-    locations = ["guttannen21"]
+    locations = ["gangles21", "guttannen20", "guttannen21"]
+    # locations = ["guttannen21"]
 
     for location in locations:
         # Get settings for given location and trigger
@@ -196,7 +201,7 @@ if __name__ == "__main__":
             features_to_run=["rmse_T", "rmse_V"],
         )
 
-        params = ['DX']
+        params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_W', 'DX', 'D_MEAN', 'r_spray']
         # params = ['IE', 'A_I', 'A_S', 'Z', 'A_DECAY', 'T_PPT', 'DX', 'T_W']
         parameters_full = setup_params(params)
 

@@ -32,8 +32,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    # locations = ["gangles21", "guttannen21", "guttannen20"]
-    locations = ["guttannen21"]
+    locations = ["gangles21", "guttannen21", "guttannen20"]
+    # locations = ["guttannen21"]
     for location in locations:
 
         # Get settings for given location and trigger
@@ -42,8 +42,8 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_W', 'DX', 'D_MEAN', 'r_spray']
-        params = ['D_MEAN', 'r_spray']
+        params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_W', 'DX', 'D_MEAN', 'r_spray']
+        # params = ['D_MEAN', 'r_spray']
         parameters = un.Parameters(setup_params(params))
 
 #         list_of_feature_functions = [rmse_V]
@@ -70,7 +70,7 @@ if __name__ == "__main__":
             seed=10,
             data_folder=FOLDER["sim"],
             figure_folder=FOLDER["sim"],
-            filename="full",
+            filename="SE_full",
             method="pc",
             # pc_method="spectral",
             rosenblatt=True           

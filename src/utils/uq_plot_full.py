@@ -54,16 +54,6 @@ if __name__ == "__main__":
         icestupa.read_output()
         icestupa.self_attributes()
 
-        # total_days = int(icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24))
-        if location == "guttannen21":
-            total_days = 180
-        if location == "schwarzsee19":
-            total_days = 60
-        if location == "guttannen20":
-            total_days = 110
-        if location == "gangles21":
-            total_days = 150
-
         variance = []
         mean = []
         evaluations = []
@@ -87,7 +77,7 @@ if __name__ == "__main__":
 
         days = pd.date_range(
             start=SITE["start_date"],
-            end=SITE["start_date"]+ timedelta(hours=total_days * 24 - 1),
+            end=SITE["start_date"]+ timedelta(hours=icestupa.total_days * 24 - 1),
             freq="1H",
         )
         days2 = pd.date_range(
