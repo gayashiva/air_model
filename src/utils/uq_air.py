@@ -146,7 +146,7 @@ class UQ_Icestupa(un.Model, Icestupa):
                     y_pred.append(self.df.loc[self.df.When == date, "iceV"].values[0])
                 else:
                     # y_pred.append(self.V_dome)
-                    print("Error: Date not found")
+                    # print("Error: Date not found")
                     y_pred.append(0)
 
             if self.name != 'gangles21':
@@ -154,7 +154,7 @@ class UQ_Icestupa(un.Model, Icestupa):
                     if self.df[self.df.When == date].shape[0]:
                         z_pred.append(self.df.loc[self.df.When == date, "T_s"].values[0])
                     else:
-                        print("Error: Date not found")
+                        # print("Error: Date not found")
                         z_pred.append(0)
             else:
                 z_pred = [0]
