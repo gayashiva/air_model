@@ -28,7 +28,7 @@ def get_parameter_metadata(
         "D_MEAN": {
             "name": "Mean Discharge",
             "latex": "$d_{mean}$",
-            "ylim": [1, 60],
+            "ylim": [5, 60],
             "kind": "parameter",
             "units": "()",
         },

@@ -41,6 +41,7 @@ def setup_params(params):
 
 
 def rmse_V(time, values, params, y_true, y_pred, z_true, z_pred):
+    print(y_pred)
     mse = mean_squared_error(y_true, y_pred)
     rmse = math.sqrt(mse)
     for param_name in sorted(params.keys()):
@@ -135,7 +136,7 @@ class UQ_Icestupa(un.Model, Icestupa):
                 self.df = self.df[: self.total_hours]
             else:
                 for i in range(len(self.df), self.total_hours):
-                    self.df.loc[i, "iceV"] = self.df.loc[i - 1, "iceV"]
+                    self.df.loc[i, "iceV"] = 0
             y_pred = []
             z_pred = []
             for date in self.df_c.When.values:
@@ -143,6 +144,7 @@ class UQ_Icestupa(un.Model, Icestupa):
                     y_pred.append(self.df.loc[self.df.When == date, "iceV"].values[0])
                 else:
                     # y_pred.append(self.V_dome)
+                    print("Error: Date not found")
                     y_pred.append(0)
 
             if self.name != 'gangles21':
@@ -201,7 +203,7 @@ if __name__ == "__main__":
             features_to_run=["rmse_T", "rmse_V"],
         )
 
-        params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_W', 'DX', 'D_MEAN', 'r_spray']
+        params = ['D_MEAN', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_W', 'DX', 'IE', 'r_spray']
         # params = ['IE', 'A_I', 'A_S', 'Z', 'A_DECAY', 'T_PPT', 'DX', 'T_W']
         parameters_full = setup_params(params)
 
