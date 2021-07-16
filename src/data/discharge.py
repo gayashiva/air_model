@@ -68,7 +68,7 @@ def get_discharge(location="schwarzsee19"):
         df_f = df_f[SITE["start_date"] : SITE["end_date"]]
 
         df = df.set_index("When")
-        df.loc[df_f.index, "Discharge"] = SITE["D_MEAN"] * df_f["fountain"]
+        df.loc[df_f.index, "Discharge"] = SITE["D_F"] * df_f["fountain"]
         df = df.reset_index()
 
     if location in ["guttannen21", "guttannen20"]:

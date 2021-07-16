@@ -65,7 +65,7 @@ def get_energy(self, i):
     self.df.loc[i, "Qf"] = (
         (self.df.loc[i, "Discharge"] * self.DT / 60)
         * self.C_W
-        * self.T_W
+        * self.T_F
         / (self.DT * self.df.loc[i, "SA"])
     )
 

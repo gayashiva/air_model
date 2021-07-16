@@ -18,21 +18,21 @@ def get_parameter_metadata(
             "kind": "parameter",
             "units": "($mm$)",
         },
-        "r_spray": {
+        "r_F": {
             "name": "Spray radius",
             "latex": "$r_{F}$",
             "ylim": [6, 11],
             "kind": "parameter",
             "units": "($m$)",
         },
-        "D_MEAN": {
+        "D_F": {
             "name": "Mean Discharge",
             "latex": "$d_{mean}$",
             "ylim": [5, 60],
             "kind": "parameter",
             "units": "()",
         },
-        "T_W": {
+        "T_F": {
             "name": "Water temperature",
             "latex": "$T_{water}$",
             "ylim": [0, 5],

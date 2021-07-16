@@ -109,11 +109,12 @@ class UQ_Icestupa(un.Model, Icestupa):
         self.set_parameters(**parameters)
         # logger.info(parameters.values())
 
-        if "r_spray" in parameters.keys():
+        if "r_F" in parameters.keys():
             self.self_attributes()
 
-        if "D_MEAN" in parameters.keys():
-            self.get_discharge()
+        if "D_F" in parameters.keys():
+            self.df.loc[self.df.Discharge !=0, "Discharge"] = self.D_F
+            # self.get_discharge()
 
         if "A_I" or "A_S" or "T_PPT" or "A_DECAY" in parameters.keys():
             """Albedo Decay parameters initialized"""
@@ -204,8 +205,8 @@ if __name__ == "__main__":
             features_to_run=["rmse_T", "rmse_V"],
         )
 
-        params = ['D_MEAN', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_W', 'DX', 'IE', 'r_spray']
-        # params = ['IE', 'A_I', 'A_S', 'Z', 'A_DECAY', 'T_PPT', 'DX', 'T_W']
+        params = ['D_F', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX', 'IE', 'r_F']
+        # params = ['IE', 'A_I', 'A_S', 'Z', 'A_DECAY', 'T_PPT', 'DX', 'T_F']
         parameters_full = setup_params(params)
 
         # Create the parameters

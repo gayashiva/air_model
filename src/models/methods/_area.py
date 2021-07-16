@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def get_area(self, i):
 
     if (self.df.ice[i] - self.df.ice[i - 1] > 0) & (
-        self.df.loc[i - 1, "r_ice"] >= self.r_spray
+        self.df.loc[i - 1, "r_ice"] >= self.r_F
     ):  # Growth rate positive and radius goes beyond spray radius
         self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"]
 

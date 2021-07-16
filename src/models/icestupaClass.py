@@ -54,7 +54,7 @@ class Icestupa:
     MU_CONE = 0.5  # Turbulence of cone
 
     """Fountain constants"""
-    T_W = 0.5  # FOUNTAIN Water temperature
+    T_F = 0.5  # FOUNTAIN Water temperature
 
     """Model constants"""
     DT = 60 * 60  # Model time step
@@ -99,7 +99,7 @@ class Icestupa:
     from src.models.methods._freq import change_freq
     from src.models.methods._self_attributes import self_attributes
     from src.models.methods._albedo import get_albedo
-    from src.models.methods._discharge import get_discharge
+    # from src.models.methods._discharge import get_discharge
     from src.models.methods._area import get_area
     from src.models.methods._temp import get_temp, test_get_temp
     from src.models.methods._energy import get_energy, test_get_energy
@@ -334,9 +334,9 @@ class Icestupa:
 
         # Initialise first model time step
         self.df.loc[0, "h_ice"] = self.h_i
-        self.df.loc[0, "r_ice"] = self.r_spray
+        self.df.loc[0, "r_ice"] = self.r_F
         self.df.loc[0, "s_cone"] = self.df.loc[0, "h_ice"] / self.df.loc[0, "r_ice"]
-        V_initial = math.pi / 3 * self.r_spray ** 2 * self.h_i
+        V_initial = math.pi / 3 * self.r_F ** 2 * self.h_i
         self.df.loc[1, "ice"] = V_initial * self.RHO_I
         self.df.loc[1, "iceV"] = V_initial
         self.df.loc[1, "input"] = self.df.loc[1, "ice"]

@@ -42,8 +42,8 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_W', 'DX', 'D_MEAN', 'r_spray']
-        # params = ['D_MEAN', 'r_spray']
+        params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX', 'D_F', 'r_F']
+        # params = ['D_F', 'r_F']
         parameters = un.Parameters(setup_params(params))
 
 #         list_of_feature_functions = [rmse_V]
