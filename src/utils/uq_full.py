@@ -69,4 +69,7 @@ if __name__ == "__main__":
             data_folder=FOLDER["sim"],
             figure_folder=FOLDER["sim"],
             filename="full",
+            method="pc",
+            pc_method="spectral",
+            rosenblatt=True           
         )
