@@ -69,8 +69,11 @@ if __name__ == "__main__":
         evaluations = []
 
         data = un.Data()
+        # filename1 = FOLDER['sim']+ "full.h5"
         filename1 = FOLDER['sim']+ "efficiency.h5"
         data.load(filename1)
+        print(data)
+        break
 
         survived_days = icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24)
         if location == 'schwarzsee19':

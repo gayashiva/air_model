@@ -52,12 +52,13 @@ if __name__ == "__main__":
         )
 
         # Initialize the model
-        model = UQ_Icestupa(location, ignore=True)
+        model = UQ_Icestupa(location)
 
         # Set up the uncertainty quantification
         UQ = un.UncertaintyQuantification(
             model=model,
             parameters=parameters,
+            # features=features,
             # CPUs=2,
         )
 
