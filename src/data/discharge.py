@@ -65,7 +65,7 @@ def get_discharge(location="schwarzsee19"):
             .resample("H").ffill()
         )
 
-        df_f = df_f[SITE["start_date"] : SITE["end_date"]]
+        df_f = df_f[self.start_date : self.end_date]
 
         df = df.set_index("When")
         df.loc[df_f.index, "Discharge"] = SITE["D_F"] * df_f["fountain"]
