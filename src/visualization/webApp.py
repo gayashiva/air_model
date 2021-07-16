@@ -320,11 +320,11 @@ if __name__ == "__main__":
                     direction="nearest",
                     tolerance=tol,
                 )
-                # rmse_T = (((df.cam_temp - df.T_s) ** 2).mean() ** .5)
-                # corr_T = df['cam_temp'].corr(df['T_s'])
-            # else:
-            #     rmse_T = 0
-            #     corr_T = 0
+                rmse_T = (((df.cam_temp - df.T_s) ** 2).mean() ** .5)
+                corr_T = df['cam_temp'].corr(df['T_s'])
+            else:
+                rmse_T = 0
+                corr_T = 0
 
             st.write("## Validation")
             path = output_folder + "paper_figures/Vol_Validation.jpg"
@@ -336,18 +336,18 @@ if __name__ == "__main__":
                 % (corr_V, rmse_V)
             )
 
-            # if SITE["name"] in ["guttannen21", "guttannen20"]:
-            #     path = (
-            #         output_folder
-            #         + "paper_figures/Temp_Validation.jpg"
-            #     )
-            #     st.image(path)
-            #     st.write(
-            #         """
-            #     Correlation of modelled with measured surface temperature was **%.2f** and RMSE was **%.2f** C
-            #     """
-            #         % (corr_T, rmse_T)
-            #     )
+            if SITE["name"] in ["guttannen21", "guttannen20"]:
+                path = (
+                    output_folder
+                    + "paper_figures/Temp_Validation.jpg"
+                )
+                st.image(path)
+                st.write(
+                    """
+                Correlation of modelled with measured surface temperature was **%.2f** and RMSE was **%.2f** C
+                """
+                    % (corr_T, rmse_T)
+                )
 
         if "Timelapse" in display:
             st.write("## Timelapse")

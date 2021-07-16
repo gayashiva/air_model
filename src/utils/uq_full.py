@@ -21,7 +21,7 @@ from src.models.methods.calibration import get_calibration
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
-from src.utils.uq_air import UQ_Icestupa, setup_params, max_volume, rmse, efficiency
+from src.utils.uq_air import UQ_Icestupa, setup_params, rmse_V
 
 if __name__ == "__main__":
     # Main logger
@@ -32,7 +32,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    locations = ["gangles21", "guttannen21", "guttannen20"]
+    # locations = ["gangles21", "guttannen21", "guttannen20"]
+    locations = ["guttannen21"]
     for location in locations:
 
         # Get settings for given location and trigger
@@ -41,15 +42,16 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_W', 'DX']
+        # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_W', 'DX']
+        params = ['IE', 'A_I']
         parameters = un.Parameters(setup_params(params))
 
-        list_of_feature_functions = [max_volume, rmse, efficiency]
-
-        features = un.Features(
-            new_features=list_of_feature_functions,
-            features_to_run=["rmse"],
-        )
+#         list_of_feature_functions = [rmse_V]
+# 
+#         features = un.Features(
+#             new_features=list_of_feature_functions,
+#             features_to_run=["rmse_V"],
+#         )
 
         # Initialize the model
         model = UQ_Icestupa(location)
@@ -70,6 +72,6 @@ if __name__ == "__main__":
             figure_folder=FOLDER["sim"],
             filename="full",
             method="pc",
-            pc_method="spectral",
+            # pc_method="spectral",
             rosenblatt=True           
         )

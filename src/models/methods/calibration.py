@@ -54,6 +54,7 @@ def get_calibration(site, input):
             df_cam = df_cam.reset_index(drop=True)
             df_cam.loc[(df_cam["cam_temp"] > 0), "cam_temp"] = np.NaN # Sunlight causes this
             df_cam = df_cam[["When", "cam_temp"]]
+            df_cam = df_cam.dropna()
             df_cam = df_cam.set_index("When")
 
             return df_c, df_cam

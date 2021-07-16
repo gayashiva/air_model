@@ -32,28 +32,35 @@ def setup_params(params):
     tuned_params = {params[i]: params_range[i] for i in range(len(params))}
     return tuned_params
 
-def max_volume(time, values, info, y_true, y_pred, se):
-    icev_max = values.max()
-    for param_name in sorted(info.keys()):
-        print("\n\t%s: %r" % (param_name, info[param_name]))
-    print("\n\tMax Ice Volume %0.1f\n" % (icev_max))
-    return None, icev_max
+# def max_volume(time, values, params, y_true, y_pred, se):
+#     icev_max = values.max()
+#     for param_name in sorted(params.keys()):
+#         print("\n\t%s: %r" % (param_name, params[param_name]))
+#     print("\n\tMax Ice Volume %0.1f\n" % (icev_max))
+#     return None, icev_max
 
 
-def rmse(time, values, info, y_true, y_pred, se):
+def rmse_V(time, values, params, y_true, y_pred, z_true, z_pred):
     mse = mean_squared_error(y_true, y_pred)
     rmse = math.sqrt(mse)
-    for param_name in sorted(info.keys()):
-        print("\n\t%s: %r" % (param_name, info[param_name]))
+    for param_name in sorted(params.keys()):
+        print("\n\t%s: %r" % (param_name, params[param_name]))
     print("\n\tRMSE %0.1f\n" % (rmse))
     return None, rmse
 
+def rmse_T(time, values, params, y_true, y_pred, z_true, z_pred):
+    mse = mean_squared_error(z_true, z_pred)
+    rmse_T = math.sqrt(mse)
+    for param_name in sorted(params.keys()):
+        print("\n\t%s: %r" % (param_name, params[param_name]))
+    print("\n\tRMSE T %0.3f\n" % (rmse_T))
+    return None, rmse_T
 
-def efficiency(time, values, info, y_true, y_pred, se):
-    for param_name in sorted(info.keys()):
-        print("\n\t%s: %r" % (param_name, info[param_name]))
-    print("\n\tSE %0.1f\n" % (se))
-    return None, se
+# def efficiency(time, values, params, y_true, y_pred, se):
+#     for param_name in sorted(params.keys()):
+#         print("\n\t%s: %r" % (param_name, params[param_name]))
+#     print("\n\tSE %0.1f\n" % (se))
+#     return None, se
 
 
 class UQ_Icestupa(un.Model, Icestupa):
@@ -84,8 +91,15 @@ class UQ_Icestupa(un.Model, Icestupa):
         self.df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
         self.df_c = self.df_c.iloc[1:]
 
+        self.df_cam = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_cam")
+        self.df_cam = self.df_cam.reset_index()
+        # self.df_cam = self.df_cam.iloc[1180:]
+
         self.y_true = self.df_c.DroneV.values
-        print("Ice volume measurements for %s are %s\n" % (self.name, self.y_true))
+        self.z_true = self.df_cam.cam_temp.values
+
+        print("Ice volume measurements for %s are %s\n" % (self.name, len(self.y_true)))
+        print("Surface temp measurements for %s are %s\n" % (self.name, len(self.z_true)))
 
     def run(self, **parameters):
 
@@ -114,31 +128,43 @@ class UQ_Icestupa(un.Model, Icestupa):
             M_ice = round(self.df["ice"].iloc[-1] - self.V_dome * self.RHO_I, 1)
             se = (M_water + M_ice) / M_input * 100
 
+            self.last_hour = len(self.df) -1
             if len(self.df) >= self.total_hours:
                 self.df = self.df[: self.total_hours]
             else:
                 for i in range(len(self.df), self.total_hours):
                     self.df.loc[i, "iceV"] = self.df.loc[i - 1, "iceV"]
             y_pred = []
+            z_pred = []
             for date in self.df_c.When.values:
                 if self.df[self.df.When == date].shape[0]:
                     y_pred.append(self.df.loc[self.df.When == date, "iceV"].values[0])
                 else:
                     # y_pred.append(self.V_dome)
                     y_pred.append(0)
+
+            for date in self.df_cam.When.values:
+                if self.df[self.df.When == date].shape[0]:
+                    z_pred.append(self.df.loc[self.df.When == date, "T_s"].values[0])
+                else:
+                    print("Error: Date not found")
+                    z_pred.append(0)
         else:
             for i in range(0, self.total_hours):
                 self.df.loc[i, "iceV"] = self.V_dome
             y_pred = [999] * len(self.df_c.When.values)
+            z_pred = [999] * len(self.df_cam.When.values)
             se = 0
 
         return (
-            self.df.index.values,
-            self.df["iceV"].values,
+            self.df.index.values[self.last_hour],
+            # self.df["iceV"].values,
+            se,
             parameters,
             self.y_true,
             y_pred,
-            se,
+            self.z_true,
+            [round(num, 3) for num in z_pred],
         )
 
 
@@ -152,7 +178,7 @@ if __name__ == "__main__":
     )
 
     # locations = ["gangles21", "guttannen20", "guttannen21"]
-    locations = ["gangles21", "guttannen20"]
+    locations = ["guttannen21"]
 
     for location in locations:
         # Get settings for given location and trigger
@@ -161,16 +187,18 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        list_of_feature_functions = [max_volume, rmse, efficiency]
+        list_of_feature_functions = [rmse_V, rmse_T]
 
         features = un.Features(
             # new_features=list_of_feature_functions, features_to_run=["max_volume"]
             # new_features=list_of_feature_functions, features_to_run=["rmse"]
             new_features=list_of_feature_functions,
-            features_to_run=["efficiency"],
+            features_to_run=["rmse_T", "rmse_V"],
         )
 
-        parameters_full = setup_params(['IE', 'A_I', 'A_S', 'Z', 'A_DECAY', 'T_PPT', 'DX', 'T_W'])
+        params = ['DX']
+        # params = ['IE', 'A_I', 'A_S', 'Z', 'A_DECAY', 'T_PPT', 'DX', 'T_W']
+        parameters_full = setup_params(params)
 
         # Create the parameters
         for k, v in parameters_full.items():
