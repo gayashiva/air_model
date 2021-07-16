@@ -244,7 +244,7 @@ if __name__ == "__main__":
         """
             % (
                 # f_mean,
-                icestupa.r_spray,
+                icestupa.r_F,
                 icestupa.M_F / 1000,
                 mean_freeze_rate,
                 mean_melt_rate,

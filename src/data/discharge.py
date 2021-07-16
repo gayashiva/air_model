@@ -75,7 +75,7 @@ def get_discharge(location="schwarzsee19"):
         df = df.set_index("When")
         df = df[SITE["start_date"] : SITE["end_date"]]
         df = df.reset_index()
-        df["Discharge"] = SITE["mean_discharge"]
+        df["Discharge"] = SITE["D_F"]
 
     mask = df["When"] > SITE["fountain_off_date"]
     mask_index = df[mask].index
