@@ -141,6 +141,7 @@ class UQ_Icestupa(un.Model, Icestupa):
             z_pred = []
             for date in self.df_c.When.values:
                 if self.df[self.df.When == date].shape[0]:
+                    print(self.df.loc[self.df.When == date, "iceV"].values[0])
                     y_pred.append(self.df.loc[self.df.When == date, "iceV"].values[0])
                 else:
                     # y_pred.append(self.V_dome)
