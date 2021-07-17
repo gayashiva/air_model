@@ -47,7 +47,7 @@ def get_energy(self, i):
         * self.df.loc[i, "v_a"]
         * (self.df.loc[i, "T_a"] - self.df.loc[i, "T_s"])
         / ((np.log(self.H_AWS / self.Z)) ** 2)
-        * (1 + self.MU_CONE * self.df.loc[i, "s_cone"])
+        * (1 + 0.5 * self.df.loc[i, "s_cone"])
     )
 
     # Short Wave Radiation SW

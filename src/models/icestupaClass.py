@@ -51,7 +51,6 @@ class Icestupa:
     A_DECAY = 10  # Albedo decay rate decay_t_d
     Z = 0.0025  # Ice Momentum and Scalar roughness length
     T_PPT = 1  # Temperature condition for liquid precipitation
-    MU_CONE = 0.5  # Turbulence of cone
 
     """Fountain constants"""
     T_F = 2.5  # FOUNTAIN Water temperature
