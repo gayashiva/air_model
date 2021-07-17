@@ -62,7 +62,7 @@ def get_parameter_metadata(
         "A_DECAY": {
             "name": "Albedo decay rate",
             "latex": "$\\tau$",
-            "ylim": [8, 12],
+            "ylim": [5, 30],
             "kind": "parameter",
             "units": "($days$)",
         },
@@ -76,7 +76,7 @@ def get_parameter_metadata(
         "A_I": {
             "name": "Ice Albedo",
             "latex": r"$\alpha_{ice}$",
-            "ylim": [0.15, 0.35],
+            "ylim": [0.15, 0.25],
             "kind": "parameter",
             "units": "()",
         },
