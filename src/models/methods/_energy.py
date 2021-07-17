@@ -34,7 +34,7 @@ def get_energy(self, i):
         * self.df.loc[i, "v_a"]
         * (self.df.loc[i, "vp_a"] - self.df.loc[i, "vp_ice"])
         / ((np.log(self.H_AWS / self.Z)) ** 2)
-        * (1 + self.MU_CONE * self.df.loc[i, "s_cone"])
+        * (1 + 0.5 * self.df.loc[i, "s_cone"])
     )
 
     # Sensible Heat Qs
