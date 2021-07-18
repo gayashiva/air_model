@@ -66,7 +66,7 @@ def rmse_T(time, values, params, y_true, y_pred, z_true, z_pred):
 class UQ_Icestupa(un.Model, Icestupa):
     def __init__(self, location, ignore=False):
         super(UQ_Icestupa, self).__init__(
-            labels=["Time (days)", "Ice Volume ($m^3$)"], 
+            # labels=["Time (days)", "Ice Volume ($m^3$)"], 
             interpolate=False,
             suppress_graphics=False,
             logger_level="debug",
@@ -113,7 +113,6 @@ class UQ_Icestupa(un.Model, Icestupa):
 
         if "D_F" in parameters.keys():
             self.df.loc[self.df.Discharge !=0, "Discharge"] = self.D_F
-            # self.get_discharge()
 
         if "A_I" or "A_S" or "T_PPT" or "A_DECAY" in parameters.keys():
             """Albedo Decay parameters initialized"""

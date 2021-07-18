@@ -43,7 +43,7 @@ if __name__ == "__main__":
         icestupa.self_attributes()
 
         # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'D_F', 'DX']
-        params = ['D_F', 'T_F']
+        params = ['Z', 'DX']
         parameters = un.Parameters(setup_params(params))
 
 #         list_of_feature_functions = [rmse_V]
