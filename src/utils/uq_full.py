@@ -33,7 +33,7 @@ if __name__ == "__main__":
     )
 
     # locations = ["gangles21", "guttannen21", "guttannen20"]
-    locations = ["guttannen20"]
+    locations = ["guttannen21"]
     for location in locations:
 
         # Get settings for given location and trigger
@@ -42,8 +42,8 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'D_F', 'DX']
-        params = ['Z', 'DX']
+        params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'D_F', 'DX']
+        # params = ['Z', 'DX']
         parameters = un.Parameters(setup_params(params))
 
 #         list_of_feature_functions = [rmse_V]
