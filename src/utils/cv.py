@@ -59,8 +59,8 @@ def setup_params(params, num=10):
     return tuned_params
 
 class CV_Icestupa(BaseEstimator,Icestupa):
-    def __init__(self, name = "guttannen21", DX = 0.020, DT = 60*60, A_I = 0.25, A_S = 0.85, IE = 0.97, T_PPT = 1, T_F
-        = 2.5, A_DECAY= 10, Z=0.0025):
+    def __init__(self, kind, name = "guttannen21", DX = 0.020, DT = 60*60, A_I = 0.25, A_S = 0.85, IE = 0.97, T_PPT = 1, T_F
+        = 1.5, A_DECAY= 17.5, Z=0.0025):
         super(Icestupa, self).__init__()
 
         print("Initializing classifier:\n")
@@ -89,12 +89,7 @@ class CV_Icestupa(BaseEstimator,Icestupa):
     @Timer(text="Simulation executed in {:.2f} seconds")
     def fit(self, X,y,groups=None):
 
-#         self.self_attributes() # For r_F
-# 
-#         if self.D_F in parameters.keys():
-#             self.df.loc[self.df.Discharge !=0, "Discharge"] = self.D_F
-
-        if self.A_DECAY !=10 or self.A_I != 0.25 or self.A_S != 0.85 or self.T_PPT!= 2.5: 
+        if self.A_DECAY !=17.5 or self.A_I != 0.25 or self.A_S != 0.85 or self.T_PPT!= 1: 
             """Albedo Decay parameters initialized"""
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
             s = 0
@@ -112,13 +107,16 @@ class CV_Icestupa(BaseEstimator,Icestupa):
         y_pred = []
         ctr = 0
         for x in X:
-            if (self.df[self.df.When == x[1]].shape[0]): 
-                y_pred.append(self.df.loc[self.df.When == x[1], "iceV"].values[0])
+            if self.kind == 'volume':
+                if (self.df[self.df.When == x[1]].shape[0]): 
+                    y_pred.append(self.df.loc[self.df.When == x[1], "iceV"].values[0])
+                else:
+                    y_pred.append((1 - (self.total_hours - self.duration)/self.total_hours) * self.V_dome)
             else:
-                y_pred.append((self.total_hours - self.duration)/(24*10))
-                # print("Difference in end date hours %s" %(self.total_hours - self.duration))
-                # y_pred.append(0)
-                # y_pred.append(self.V_dome)
+                if (self.df[self.df.When == x[1]].shape[0]): 
+                    y_pred.append(self.df.loc[self.df.When == x[1], "T_s"].values[0])
+                else:
+                    y_pred.append((1 - (self.total_hours - self.duration)/self.total_hours))
             ctr +=1
 
         return y_pred

@@ -32,8 +32,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    # locations = ["gangles21", "guttannen21", "guttannen20"]
-    locations = ["gangles21"]
+    locations = ["gangles21", "guttannen21", "guttannen20"]
+    # locations = ["gangles21"]
     for location in locations:
 
         # Get settings for given location and trigger
@@ -42,10 +42,12 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        if location == 'gangles21':
-            params = ['IE', 'A_I', 'Z', 'T_F', 'DX']
-        else:
-            params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX']
+        # if location == 'gangles21':
+        #     params = ['IE', 'A_I', 'Z', 'T_F', 'DX']
+        # else:
+        #     params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX']
+
+        params = ['IE', 'A_I', 'Z', 'T_F', 'DX']
         # params = ['Z', 'DX']
         parameters = un.Parameters(setup_params(params))
 

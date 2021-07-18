@@ -27,7 +27,7 @@ from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
 
 # define worker function
-def calculate(process_name,location, tasks, X, y, results, results_list):
+def calculate(process_name,location, tasks, X, y, results, results_list, kind):
     print('[%s] evaluation routine starts' % process_name)
 
     while True:
@@ -40,7 +40,7 @@ def calculate(process_name,location, tasks, X, y, results, results_list):
             break
         else:
             # Initialise icestupa object
-            clf = CV_Icestupa(name = location)
+            clf = CV_Icestupa(name = location, kind = kind)
 
             # Set new parameter
             clf.set_params(**new_value)
@@ -71,7 +71,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "gangles21"
+    location = "guttannen21"
     # location = "schwarzsee19"
 
     icestupa = Icestupa(location)
@@ -80,26 +80,39 @@ if __name__ == "__main__":
     icestupa.read_input()
     icestupa.self_attributes()
 
-    obs = list()
 
     # Loading measurements
-    SITE, FOLDER= config(location)
-    df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
+    obs = list()
+    kind = 'volume'
+    kind = 'temp'
 
-    # Remove dome volume
-    df_c = df_c[1:]
+    if kind == 'volume':
+        df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
 
-    df_c["Where"] = location
-    obs.extend(df_c.reset_index()[["Where", 'When', 'DroneV']].values.tolist())
+        # Remove dome volume
+        df_c = df_c[1:]
+
+        df_c["Where"] = location
+        obs.extend(df_c.reset_index()[["Where", 'When', 'DroneV']].values.tolist())
+
+    else:
+        if location != 'gangles21':
+            df_cam = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_cam")
+            df_cam = df_cam.reset_index()
+            df_cam["Where"] = location
+            obs.extend(df_cam.reset_index()[["Where", 'When', 'cam_temp']].values.tolist())
+        else:
+            logger.error("%s doesnt have cam temp" %location)
 
     X = [[a[0], a[1]] for a in obs]
     y = [a[2] for a in obs]
 
-    if location == 'gangles21':
-        params = ['IE', 'A_I', 'Z', 'T_F', 'DX']
-    else:
-        params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX']
-    # params = ['A_I', 'T_F', 'IE', 'Z', 'DX']
+    # if location == 'gangles21':
+    #     params = ['IE', 'A_I', 'Z', 'T_F', 'DX']
+    # else:
+    #     params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX']
+    # params = ['DX', 'A_I', 'IE']
+    params = ['IE', 'A_I', 'Z', 'T_F', 'DX']
     tuned_params = setup_params(params, num=5)
 
     file_path = 'cv-'
@@ -134,7 +147,8 @@ if __name__ == "__main__":
         process_name = 'P%i' % i
 
         # Create the process, and connect it to the worker function
-        new_process = multiprocessing.Process(target=calculate, args=(process_name,location, tasks, X, y, results, results_list))
+        new_process = multiprocessing.Process(target=calculate, args=(process_name,location, tasks, X, y, results,
+            results_list, kind))
 
         # Add new process to the list of processes
         processes.append(new_process)
