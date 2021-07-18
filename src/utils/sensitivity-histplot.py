@@ -22,7 +22,7 @@ import math
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
-from src.utils.cv import param_ranges
+from src.utils.cv import setup_params
 from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
 from src.models.methods.metadata import get_parameter_metadata
@@ -40,8 +40,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    locations = ["gangles21", "guttannen21", "guttannen20"]
-    # locations = ["guttannen21", "gangles21"]
+    # locations = ["gangles21", "guttannen21", "guttannen20"]
+    locations = ["guttannen21"]
     # location = "guttannen21"
 
     sns.set(style="darkgrid")
@@ -51,16 +51,17 @@ if __name__ == "__main__":
     fig = plt.figure(figsize=(18, 12))
     subfigs = fig.subfigures(len(locations), 1)
     custom_colors = sns.color_palette("Set1", len(locations))
-    custom_lines = [Line2D([0], [0], color=custom_colors[0], lw=4),
-                    Line2D([0], [0], color=custom_colors[1], lw=4),
-                    Line2D([0], [0], color=custom_colors[2], lw=4)]
+    custom_lines = [Line2D([0], [0], color=custom_colors[0], lw=4)]#,
+                    # Line2D([0], [0], color=custom_colors[1], lw=4),]
+                    # Line2D([0], [0], color=custom_colors[2], lw=4)]
 
     for ctr, location in enumerate(locations):
         icestupa = Icestupa(location)
         SITE, FOLDER = config(location)
         icestupa.read_output()
 
-        tuned_params = param_ranges(icestupa)
+        params = ['IE', 'A_I', 'Z', 'DX']
+        tuned_params = setup_params(params)
 
         file_path = 'cv-'
         file_path += '-'.join('{}'.format(key) for key, value in tuned_params.items())
@@ -81,6 +82,22 @@ if __name__ == "__main__":
 
         df['A_I'] = df['A_I'].map(lambda x: (truncate(x,3)))
         print(df.head())
+        print()
+        for col in params:
+            print("\t%s from %s upto %s with percentage %s" % (col, df[col].min(), df[col].max(),
+                df[col].value_counts(normalize=True)))
+            # print(df[col].value_counts(normalize=True).reset_index()[0])
+
+            # g = df[col]
+            # df_c = pd.concat([g.value_counts(), 
+            #                 g.value_counts(normalize=True).mul(100)],axis=1, keys=('counts','percentage'))
+            # df_c = df_c.reset_index()
+            # print(df_c)
+            # if df_c.loc[0,'percentage'] > 40:
+            #     print(df_c.loc[0,'index'])
+            #     df = df.loc[df[col]==df_c.loc[0,'index']]
+            #     print()
+            #     print(df.head())
 
         ax = subfigs[ctr].subplots(1, len(tuned_params), sharey=True)
         for i,param_name in enumerate(tuned_params):

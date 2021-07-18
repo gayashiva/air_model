@@ -34,6 +34,21 @@ from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
 
+def setup_params(params, num=10):
+
+    params_range = []
+    for param in params:
+        y_lim=get_parameter_metadata(param)['ylim']
+        step=get_parameter_metadata(param)['step']
+        # param_range = np.linspace(y_lim[0], y_lim[1], step)
+        param_range = np.arange(y_lim[0], y_lim[1]+step/2, step)
+        param_range = np.round(param_range, 4)
+        params_range.append(param_range)
+        print(param, param_range)
+
+    tuned_params = {params[i]: params_range[i] for i in range(len(params))}
+    return tuned_params
+
 def save_obj(path, name, obj ):
     with open(path + name + '.pkl', 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
@@ -45,19 +60,6 @@ def load_obj(path, name ):
 def bounds(var, res, change = 5):
     return np.arange(var * (100-change)/100, var * (100+change)/100 + res, res).tolist()
 
-def setup_params(params, num=10):
-
-    params_range = []
-    for param in params:
-        y_lim=get_parameter_metadata(param)['ylim']
-        step=get_parameter_metadata(param)['step']
-        param_range = np.linspace(y_lim[0], y_lim[1], step)
-        param_range = np.round(param_range, 4)
-        params_range.append(param_range)
-        print(param, param_range)
-
-    tuned_params = {params[i]: params_range[i] for i in range(len(params))}
-    return tuned_params
 
 class CV_Icestupa(BaseEstimator,Icestupa):
     def __init__(self, kind, name = "guttannen21", DX = 0.020, DT = 60*60, A_I = 0.25, A_S = 0.85, IE = 0.97, T_PPT = 1, T_F

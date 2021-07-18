@@ -24,7 +24,7 @@ from src.models.methods.metadata import get_parameter_metadata
 from src.models.icestupaClass import Icestupa
 
 if __name__ == "__main__":
-    locations = ["gangles21", "guttannen21", "guttannen20"]
+    locations = ["gangles21", "guttannen21"]
     blue = "#0a4a97"
     red = "#e23028"
     purple = "#9673b9"
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     CB91_Amber = "#F5B14C"
 
     fig = plt.figure(figsize=(15, 12))
-    subfigs = fig.subfigures(3, 1, wspace=0.15)
+    subfigs = fig.subfigures(len(locations), 1)
     for ctr, location in enumerate(locations):
         SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
@@ -97,6 +97,7 @@ if __name__ == "__main__":
             rotation="vertical",
             fontsize="x-large",
         )
+        subfigs[ctr].subplots_adjust(hspace=0.05, wspace=0.025)
 
     plt.savefig(
         "data/paper/albedo.jpg",
