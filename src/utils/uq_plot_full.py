@@ -22,7 +22,7 @@ from src.models.methods.metadata import get_parameter_metadata
 
 if __name__ == "__main__":
 
-    locations = ['guttannen21','guttannen20']
+    locations = ['guttannen20','guttannen21']
 
     blue = "#0a4a97"
     red = "#e23028"
@@ -59,7 +59,8 @@ if __name__ == "__main__":
         evaluations = []
 
         data = un.Data()
-        filename1 = FOLDER['sim']+ "full.h5"
+        filename1 = FOLDER['sim']+ "SE_full.h5"
+        # filename1 = FOLDER['sim']+ "full.h5"
         # filename1 = FOLDER['sim']+ "efficiency.h5"
         data.load(filename1)
         print(data)
