@@ -56,6 +56,17 @@ def rmse_T(time, values, params, y_true, y_pred, z_true, z_pred):
     print("\n\tRMSE T %0.3f\n" % (rmse_T))
     return None, rmse_T
 
+def rmse(time, values, params, y_true, y_pred, z_true, z_pred):
+    mse_T = mean_squared_error(z_true, z_pred)
+    rmse_T = math.sqrt(mse_T)
+    mse_V = mean_squared_error(y_true, y_pred)
+    rmse_V = math.sqrt(mse_V)
+    rmse = math.sqrt(rmse_V**2+rmse_T**2)
+    for param_name in sorted(params.keys()):
+        print("\n\t%s: %r" % (param_name, params[param_name]))
+    print("\n\tRMSE T %0.3f\n" % (rmse))
+    return None, rmse
+
 # def efficiency(time, values, params, y_true, y_pred, se):
 #     for param_name in sorted(params.keys()):
 #         print("\n\t%s: %r" % (param_name, params[param_name]))
@@ -186,8 +197,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    locations = ["gangles21", "guttannen20", "guttannen21"]
-    # locations = ["guttannen21"]
+    # locations = ["gangles21", "guttannen20", "guttannen21"]
+    locations = ["gangles21"]
 
     for location in locations:
         # Get settings for given location and trigger
@@ -196,17 +207,19 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        list_of_feature_functions = [rmse_V, rmse_T]
+        list_of_feature_functions = [rmse_V, rmse_T, rmse]
 
         features = un.Features(
             # new_features=list_of_feature_functions, features_to_run=["max_volume"]
             # new_features=list_of_feature_functions, features_to_run=["rmse"]
             new_features=list_of_feature_functions,
-            features_to_run=["rmse_T", "rmse_V"],
+            features_to_run=["rmse_T", "rmse_V", "rmse"],
         )
 
-        params = ['D_F', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX', 'IE', 'r_F']
-        # params = ['IE', 'A_I', 'A_S', 'Z', 'A_DECAY', 'T_PPT', 'DX', 'T_F']
+        if location == 'gangles21':
+            params = ['IE', 'A_I', 'Z', 'T_F', 'DX']
+        else:
+            params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX']
         parameters_full = setup_params(params)
 
         # Create the parameters
