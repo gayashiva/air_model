@@ -66,7 +66,7 @@ def get_parameter_metadata(
         "A_DECAY": {
             "name": "Albedo decay rate",
             "latex": "$\\tau$",
-            "ylim": [5, 30],
+            "ylim": [5, 22],
             "kind": "parameter",
             "units": "($days$)",
         },
