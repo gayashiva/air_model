@@ -50,7 +50,7 @@ def get_parameter_metadata(
         "DX": {
             "name": "Surface layer thickness",
             "latex": "$\\Delta x$",
-            "ylim": [10e-03, 30e-03],
+            "ylim": [10e-03, 50e-03],
             "step": 10,
             "kind": "parameter",
             "units": "($mm$)",
@@ -58,8 +58,8 @@ def get_parameter_metadata(
         "IE": {
             "name": "Ice Emissivity",
             "latex": "$\\epsilon_{ice}$",
-            "ylim": [0.95, 0.99],
-            "step": 5,
+            "ylim": [0.95, 1],
+            "step": 6,
             "kind": "parameter",
             "units": "()",
         },
