@@ -41,7 +41,6 @@ def setup_params(params):
 
 
 def rmse_V(time, values, params, y_true, y_pred, z_true, z_pred):
-    print(y_pred)
     mse = mean_squared_error(y_true, y_pred)
     rmse = math.sqrt(mse)
     for param_name in sorted(params.keys()):
@@ -166,7 +165,8 @@ class UQ_Icestupa(un.Model, Icestupa):
             se = 0
 
         return (
-            self.df.index.values[self.last_hour],
+            None,
+            # self.df.index.values[self.last_hour],
             # self.df["iceV"].values,
             se,
             parameters,
