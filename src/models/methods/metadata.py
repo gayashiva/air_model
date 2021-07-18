@@ -76,7 +76,7 @@ def get_parameter_metadata(
         "A_I": {
             "name": "Ice Albedo",
             "latex": r"$\alpha_{ice}$",
-            "ylim": [0.15, 0.25],
+            "ylim": [0.15, 0.35],
             "kind": "parameter",
             "units": "()",
         },

@@ -106,6 +106,7 @@ if __name__ == "__main__":
             data = un.Data()
             filename1 = FOLDER["sim"] + name + ".h5"
             data.load(filename1)
+            print(data)
             evaluations.append(data[feature_name].evaluations)
             eval = data[feature_name].evaluations
             print(
