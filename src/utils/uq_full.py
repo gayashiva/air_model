@@ -47,7 +47,7 @@ if __name__ == "__main__":
         # else:
         #     params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX']
 
-        params = ['IE', 'A_I', 'Z', 'T_F', 'DX']
+        params = ['IE', 'A_I', 'Z', 'DX']
         # params = ['Z', 'DX']
         parameters = un.Parameters(setup_params(params))
 
