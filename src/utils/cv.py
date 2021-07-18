@@ -40,7 +40,8 @@ def setup_params(params, num=10):
     for param in params:
         y_lim=get_parameter_metadata(param)['ylim']
         step=get_parameter_metadata(param)['step']
-        param_range = np.linspace(y_lim[0], y_lim[1], step)
+        # param_range = np.linspace(y_lim[0], y_lim[1], step)
+        param_range = np.arange(y_lim[0], y_lim[1]+step/2, step)
         param_range = np.round(param_range, 4)
         params_range.append(param_range)
         print(param, param_range)
