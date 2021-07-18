@@ -84,7 +84,7 @@ if __name__ == "__main__":
     # Loading measurements
     obs = list()
     kind = 'volume'
-    kind = 'temp'
+    # kind = 'temp'
 
     if kind == 'volume':
         df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     #     params = ['IE', 'A_I', 'Z', 'T_F', 'DX']
     # else:
     #     params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX']
-    # params = ['DX', 'A_I', 'IE']
+    # params = ['DX']
     params = ['IE', 'A_I', 'Z', 'T_F', 'DX']
     tuned_params = setup_params(params, num=5)
 
