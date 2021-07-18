@@ -113,7 +113,7 @@ if __name__ == "__main__":
     #     params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX']
     # params = ['DX']
     params = ['IE', 'A_I', 'Z', 'DX']
-    tuned_params = setup_params(params, num=5)
+    tuned_params = setup_params(params)
 
     file_path = 'cv-'
     file_path += '-'.join('{}'.format(key) for key, value in tuned_params.items())

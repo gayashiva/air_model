@@ -34,7 +34,7 @@ from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
 
-def setup_params(params, num=10):
+def setup_params(params):
 
     params_range = []
     for param in params:
