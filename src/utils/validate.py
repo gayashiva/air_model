@@ -95,8 +95,12 @@ if __name__ == "__main__":
     X = [[a[0], a[1]] for a in obs]
     y = [a[2] for a in obs]
 
-    params = ['A_I', 'T_F', 'IE', 'Z', 'DX']
-    tuned_params = setup_params(params)
+    if location == 'gangles21':
+        params = ['IE', 'A_I', 'Z', 'T_F', 'DX']
+    else:
+        params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX']
+    # params = ['A_I', 'T_F', 'IE', 'Z', 'DX']
+    tuned_params = setup_params(params, num=5)
 
     file_path = 'cv-'
     file_path += '-'.join('{}'.format(key) for key, value in tuned_params.items())
@@ -117,7 +121,7 @@ if __name__ == "__main__":
 
     print()
     ctr = len(list(ParameterGrid([tuned_params]))) 
-    runtime = 50
+    runtime = 40
     days = (ctr*runtime/(num_processes*60*60*24))
     print("Total hours expected : %0.01f" % int(days*24))
     print("Total days expected : %0.01f" % days)
