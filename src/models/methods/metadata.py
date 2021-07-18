@@ -59,7 +59,7 @@ def get_parameter_metadata(
             "name": "Ice Emissivity",
             "latex": "$\\epsilon_{ice}$",
             "ylim": [0.95, 1],
-            "step": 0.01,
+            "step": 0.005,
             "kind": "parameter",
             "units": "()",
         },
