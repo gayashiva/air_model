@@ -80,7 +80,10 @@ if __name__ == "__main__":
         df = pd.concat([df.drop(['params'], axis=1), df['params'].apply(pd.Series)], axis=1)
         df = df.round(4)
 
-        df['A_I'] = df['A_I'].map(lambda x: (truncate(x,3)))
+        # df['A_I'] = df['A_I'].map(lambda x: (truncate(x,3)))
+        df['Z'] = df['Z'].map(lambda x: (round(x,3)))
+        # df = df.loc[df.Z == 0.002]
+        # df = df.loc[df.DX <= 0.03]
         print(df.head())
         print()
         for col in params:
