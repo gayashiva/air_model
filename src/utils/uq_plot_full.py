@@ -22,7 +22,7 @@ from src.models.methods.metadata import get_parameter_metadata
 
 if __name__ == "__main__":
 
-    locations = ['gangles21','guttannen21']
+    locations = ['guttannen21']
 
     blue = "#0a4a97"
     red = "#e23028"
