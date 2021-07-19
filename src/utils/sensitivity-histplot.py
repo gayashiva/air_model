@@ -70,7 +70,7 @@ if __name__ == "__main__":
         df = df.set_index('rmse').sort_index().reset_index()
         df['params'] = df['params'].apply(literal_eval)
 
-        num_selected = int(0.1 * df.shape[0])
+        num_selected = int(0.05 * df.shape[0])
         num_total = df.shape[0]
         print()
         print("\tSelected %s out of %s" % (num_selected, num_total))
@@ -106,7 +106,7 @@ if __name__ == "__main__":
                 ax=ax[i], label = param_name)
             print(param_name)
             v = get_parameter_metadata(param_name)
-            if ctr == 2:
+            if ctr == len(locations) - 1:
                 ax[i].set_xlabel(v['latex'] + v['units'], fontsize="x-large")
             else:
                 ax[i].set_xlabel('')
@@ -117,11 +117,11 @@ if __name__ == "__main__":
             if param_name in ['DX', 'Z']:
                 labels = [item.get_text() for item in ax[i].get_xticklabels()]
                 # ax[i].set_xticklabels([str(round(float(label)* 1000,1)) for label in labels])
-                ax[i].set_xticklabels([str(num*1000) for num in tuned_params[param_name]])
+                ax[i].set_xticklabels([num*1000 if i%2==0 else None for i,num in enumerate(tuned_params[param_name])])
                 # ax[i].set_xlabel(param_name + ' [mm]')
             else:
                 labels = [item.get_text() for item in ax[i].get_xticklabels()]
-                ax[i].set_xticklabels([str(round(float(label),2)) for label in labels])
+                ax[i].set_xticklabels([round(float(label),3) if i%2==0 else None for i,label in enumerate(labels)])
             ax[i].set_ylabel("")
             ax[i].set_ylim([0,num_selected*0.6])
             ax[i].yaxis.set_major_formatter(mtick.PercentFormatter(num_selected))
