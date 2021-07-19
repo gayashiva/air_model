@@ -40,8 +40,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    # locations = ["gangles21", "guttannen21", "guttannen20"]
-    locations = ["guttannen21"]
+    locations = ["gangles21", "guttannen21"]
+    # locations = ["guttannen21"]
     # location = "guttannen21"
 
     sns.set(style="darkgrid")
@@ -51,8 +51,8 @@ if __name__ == "__main__":
     fig = plt.figure(figsize=(18, 12))
     subfigs = fig.subfigures(len(locations), 1)
     custom_colors = sns.color_palette("Set1", len(locations))
-    custom_lines = [Line2D([0], [0], color=custom_colors[0], lw=4)]#,
-                    # Line2D([0], [0], color=custom_colors[1], lw=4),]
+    custom_lines = [Line2D([0], [0], color=custom_colors[0], lw=4),
+                    Line2D([0], [0], color=custom_colors[1], lw=4)]#,
                     # Line2D([0], [0], color=custom_colors[2], lw=4)]
 
     for ctr, location in enumerate(locations):

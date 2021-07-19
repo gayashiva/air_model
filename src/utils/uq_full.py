@@ -42,13 +42,8 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        # if location == 'gangles21':
-        #     params = ['IE', 'A_I', 'Z', 'DX']
-        # else:
         params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'DX']
 
-        # params = ['IE', 'A_I', 'Z', 'DX']
-        # params = ['Z', 'DX']
         parameters = un.Parameters(setup_params(params))
 
 #         list_of_feature_functions = [rmse_V]

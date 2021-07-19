@@ -14,8 +14,8 @@ def get_parameter_metadata(
         "Z": {
             "name": "Surface roughness",
             "latex": "$z_{0}$",
-            "ylim": [0.001, 0.005],
-            "step": 0.0005,
+            "ylim": [1e-03, 5e-03],
+            "step": 5e-04,
             "kind": "parameter",
             "units": "($mm$)",
         },
@@ -50,7 +50,7 @@ def get_parameter_metadata(
         "DX": {
             "name": "Surface layer thickness",
             "latex": "$\\Delta x$",
-            "ylim": [10e-03, 50e-03],
+            "ylim": [10e-03, 100e-03],
             "step": 5e-03,
             "kind": "parameter",
             "units": "($mm$)",
