@@ -83,8 +83,8 @@ if __name__ == "__main__":
 
     # Loading measurements
     obs = list()
-    # kind = 'volume'
-    kind = 'temp'
+    kind = 'volume'
+    # kind = 'temp'
 
     if kind == 'volume':
         df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
