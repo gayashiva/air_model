@@ -22,7 +22,7 @@ from src.models.methods.metadata import get_parameter_metadata
 
 if __name__ == "__main__":
 
-    locations = ['guttannen20']
+    locations = ['gangles21', 'guttannen21', 'guttannen20']
 
     blue = "#0a4a97"
     red = "#e23028"
@@ -59,8 +59,8 @@ if __name__ == "__main__":
         evaluations = []
 
         data = un.Data()
-        filename1 = FOLDER['sim']+ "SE_full.h5"
-        # filename1 = FOLDER['sim']+ "full.h5"
+        # filename1 = FOLDER['sim']+ "SE_full.h5"
+        filename1 = FOLDER['sim']+ "full.h5"
         # filename1 = FOLDER['sim']+ "efficiency.h5"
         data.load(filename1)
 
@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
         days = pd.date_range(
             start=SITE["start_date"],
-            end=SITE["start_date"]+ timedelta(hours=icestupa.total_days * 24 - 1),
+            end=SITE["start_date"]+ timedelta(hours=icestupa.total_hours - 1),
             freq="1H",
         )
         days2 = pd.date_range(
@@ -129,7 +129,6 @@ if __name__ == "__main__":
         ax[i].plot(
             x,
             y1,
-            "b-",
             label="Modelled Volume",
             linewidth=1,
             color=CB91_Blue,
