@@ -177,9 +177,10 @@ class UQ_Icestupa(un.Model, Icestupa):
             se = 0
 
         return (
-            None,
-            # self.df["iceV"].values,
-            se,
+            # None,
+            self.df.index.values,
+            self.df["iceV"].values,
+            # se,
             parameters,
             self.y_true,
             y_pred,

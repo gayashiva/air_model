@@ -40,8 +40,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    # locations = ["guttannen21", "gangles21"]
-    locations = ["guttannen21", "guttannen20"]
+    locations = ["gangles21", "guttannen21"]
+    # locations = ["guttannen21", "guttannen20"]
     # locations = ["guttannen21"]
     # location = "guttannen21"
 
@@ -61,13 +61,14 @@ if __name__ == "__main__":
         SITE, FOLDER = config(location)
         icestupa.read_output()
 
-        # params = ['IE', 'A_I', 'Z', 'DX']
-        params = ['Z', 'DX']
+        params = ['IE', 'A_I', 'Z', 'DX']
+        # params = ['Z', 'DX']
         tuned_params = setup_params(params)
 
         kind = 'temp'
         # kind = 'volume'
-        file_path = 'cv-'+kind+'-'
+        # file_path = 'cv-'+kind+'-'
+        file_path = 'cv-'
         file_path += '-'.join('{}'.format(key) for key, value in tuned_params.items())
 
         df = pd.read_csv(FOLDER['sim'] + file_path)
@@ -125,7 +126,7 @@ if __name__ == "__main__":
             if param_name in ['DX', 'Z']:
                 labels = [item.get_text() for item in ax[i].get_xticklabels()]
                 # ax[i].set_xticklabels([str(round(float(label)* 1000,1)) for label in labels])
-                ax[i].set_xticklabels([num*1000 if i%2==0 else None for i,num in enumerate(tuned_params[param_name])])
+                ax[i].set_xticklabels([int(num*1000) if i%2==0 else None for i,num in enumerate(tuned_params[param_name])])
                 # ax[i].set_xlabel(param_name + ' [mm]')
             else:
                 labels = [item.get_text() for item in ax[i].get_xticklabels()]

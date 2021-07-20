@@ -102,6 +102,7 @@ def config(location="guttannen21"):
             # end_date=datetime(2019, 3, 17),
             end_date=datetime(2019, 3, 10, 19),
             fountain_off_date=datetime(2019, 2, 16, 10),
+            T_F=1,  # FOUNTAIN min discharge
             utc_offset=1,
             longitude=7.297543,
             latitude=46.693723,

@@ -42,7 +42,8 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z']
+        # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z']
+        params = ['IE', 'A_I', 'Z']
 
         parameters = un.Parameters(setup_params(params))
 
@@ -70,7 +71,8 @@ if __name__ == "__main__":
             seed=10,
             data_folder=FOLDER["sim"],
             figure_folder=FOLDER["sim"],
-            filename="SE_full",
+            # filename="SE_full",
+            filename="full",
             method="pc",
             # pc_method="spectral",
             rosenblatt=True           
