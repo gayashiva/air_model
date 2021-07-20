@@ -71,7 +71,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "guttannen20"
+    location = "guttannen21"
     # location = "schwarzsee19"
 
     icestupa = Icestupa(location)
@@ -112,8 +112,8 @@ if __name__ == "__main__":
     # else:
     #     params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX']
     # params = ['DX']
-    # params = ['IE', 'A_I', 'Z', 'DX']
-    params = ['Z', 'DX']
+    params = ['IE', 'A_I', 'Z', 'DX']
+    # params = ['Z', 'DX']
     tuned_params = setup_params(params)
 
     file_path = 'cv-'+kind+'-'
