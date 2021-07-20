@@ -39,8 +39,14 @@ def setup_params(params):
 #     print("\n\tMax Ice Volume %0.1f\n" % (icev_max))
 #     return None, icev_max
 
+def survival(time, values, params, y_true, y_pred, z_true, z_pred, total_hours, last_hour):
+    diff = abs(total_hours - last_hour)
+    for param_name in sorted(params.keys()):
+        print("\n\t%s: %r" % (param_name, params[param_name]))
+    print("\n\tHour diff %0.1f\n" % (diff))
+    return None, diff
 
-def rmse_V(time, values, params, y_true, y_pred, z_true, z_pred):
+def rmse_V(time, values, params, y_true, y_pred, z_true, z_pred, total_hours,last_hour):
     mse = mean_squared_error(y_true, y_pred)
     rmse = math.sqrt(mse)
     for param_name in sorted(params.keys()):
@@ -48,7 +54,7 @@ def rmse_V(time, values, params, y_true, y_pred, z_true, z_pred):
     print("\n\tRMSE %0.1f\n" % (rmse))
     return None, rmse
 
-def rmse_T(time, values, params, y_true, y_pred, z_true, z_pred):
+def rmse_T(time, values, params, y_true, y_pred, z_true, z_pred, total_hours,last_hour):
     mse = mean_squared_error(z_true, z_pred)
     rmse_T = math.sqrt(mse)
     for param_name in sorted(params.keys()):
@@ -56,7 +62,7 @@ def rmse_T(time, values, params, y_true, y_pred, z_true, z_pred):
     print("\n\tRMSE T %0.3f\n" % (rmse_T))
     return None, rmse_T
 
-def rmse(time, values, params, y_true, y_pred, z_true, z_pred):
+def rmse(time, values, params, y_true, y_pred, z_true, z_pred, total_hours,last_hour):
     mse_T = mean_squared_error(z_true, z_pred)
     rmse_T = math.sqrt(mse_T)
     mse_V = mean_squared_error(y_true, y_pred)
@@ -144,7 +150,7 @@ class UQ_Icestupa(un.Model, Icestupa):
             else:
                 se=0
 
-            self.last_hour = len(self.df) -2
+            last_hour = len(self.df) -1
             if len(self.df) >= self.total_hours:
                 self.df = self.df[: self.total_hours]
             else:
@@ -175,6 +181,7 @@ class UQ_Icestupa(un.Model, Icestupa):
             y_pred = [999] * len(self.df_c.When.values)
             z_pred = [999] * len(self.df_cam.When.values)
             se = 0
+            last_hour = 0
 
         return (
             # None,
@@ -186,6 +193,8 @@ class UQ_Icestupa(un.Model, Icestupa):
             y_pred,
             self.z_true,
             [round(num, 3) for num in z_pred],
+            self.total_hours,
+            last_hour,
         )
 
 

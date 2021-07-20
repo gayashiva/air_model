@@ -11,6 +11,14 @@ def get_parameter_metadata(
     parameter,
 ):  # Provides Metadata of all input and Output variables
     return {
+        "DX": {
+            "name": "Surface layer thickness",
+            "latex": "$\\Delta x$",
+            "ylim": [10e-03, 120e-03],
+            "step": 10e-03,
+            "kind": "parameter",
+            "units": "($mm$)",
+        },
         "Z": {
             "name": "Surface roughness",
             "latex": "$z_{0}$",
@@ -46,14 +54,6 @@ def get_parameter_metadata(
             "latex": "$\\Delta t$",
             "kind": "parameter",
             "units": "()",
-        },
-        "DX": {
-            "name": "Surface layer thickness",
-            "latex": "$\\Delta x$",
-            "ylim": [10e-03, 100e-03],
-            "step": 10e-03,
-            "kind": "parameter",
-            "units": "($mm$)",
         },
         "IE": {
             "name": "Ice Emissivity",

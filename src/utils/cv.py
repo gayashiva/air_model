@@ -88,6 +88,7 @@ class CV_Icestupa(BaseEstimator,Icestupa):
 
         self.read_input()
         self.self_attributes()
+        self.diff = self.total_hours
            
     @Timer(text="Simulation executed in {:.2f} seconds")
     def fit(self, X,y,groups=None):
@@ -123,6 +124,14 @@ class CV_Icestupa(BaseEstimator,Icestupa):
             ctr +=1
 
         return y_pred
+
+    def predict_survival(self):
+        self.diff = abs(self.total_hours - self.duration)
+        print("\n\tHour diff %0.1f\n" % (self.diff))
+        print()
+        print(self.df.iceV.index[-1])
+
+        return self.diff
 
 
 if __name__ == "__main__":
