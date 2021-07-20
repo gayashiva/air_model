@@ -40,7 +40,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    locations = ["gangles21", "guttannen21"]
+    locations = ["guttannen21", "gangles21"]
     # locations = ["guttannen21"]
     # location = "guttannen21"
 
@@ -60,10 +60,13 @@ if __name__ == "__main__":
         SITE, FOLDER = config(location)
         icestupa.read_output()
 
-        params = ['IE', 'A_I', 'Z', 'DX']
+        # params = ['IE', 'A_I', 'Z', 'DX']
+        params = ['Z', 'DX']
         tuned_params = setup_params(params)
 
-        file_path = 'cv-'
+        kind = 'temp'
+        # kind = 'volume'
+        file_path = 'cv-'+kind+'-'
         file_path += '-'.join('{}'.format(key) for key, value in tuned_params.items())
 
         df = pd.read_csv(FOLDER['sim'] + file_path)
