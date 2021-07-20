@@ -1,12 +1,12 @@
 {
-    "M_F": 970667,
-    "M_dep": 3155,
-    "M_ice": 11,
-    "M_input": 1038160,
-    "M_ppt": 52214,
-    "M_runoff": 837151,
-    "M_sub": 7236,
-    "M_water": 181638,
-    "iceV_max": 97,
-    "last_hour": 3571
+    "M_F": 972044,
+    "M_dep": 3420,
+    "M_ice": 94,
+    "M_input": 1042757,
+    "M_ppt": 55169,
+    "M_runoff": 807960,
+    "M_sub": 9237,
+    "M_water": 213342,
+    "iceV_max": 146,
+    "last_hour": 4027
 }

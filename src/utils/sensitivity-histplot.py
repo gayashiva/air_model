@@ -40,7 +40,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    locations = ["guttannen21", "gangles21"]
+    # locations = ["guttannen21", "gangles21"]
+    locations = ["guttannen21", "guttannen20"]
     # locations = ["guttannen21"]
     # location = "guttannen21"
 
