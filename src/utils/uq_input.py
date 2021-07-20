@@ -59,7 +59,7 @@ class UQ_Icestupa(un.Model, Icestupa):
             "SW_diffuse",
             "LW_in",
             "Discharge",
-            "r_F",
+            # "r_F",
             "T_F",
         ]
 
