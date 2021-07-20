@@ -22,7 +22,7 @@ from src.utils.settings import config
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.icestupaClass import Icestupa
 
-def add_patch(legend):
+def add_patch(legend, title = "Energy fluxes"):
     from matplotlib.patches import Patch
     ax = legend.axes
 
@@ -33,7 +33,8 @@ def add_patch(legend):
     legend._legend_box = None
     legend._init_legend_box(handles, labels)
     legend._set_loc(legend._loc)
-    legend.set_title(legend.get_title().get_text())
+    # legend.set_title(legend.get_title().get_text())
+    legend.set_title(title)
 
 if __name__ == "__main__":
     locations = ["gangles21", "guttannen21", "guttannen20"]
@@ -251,7 +252,7 @@ if __name__ == "__main__":
         loc="upper center", bbox_to_anchor=(1, 4), ncol=5, title="Mass fluxes"
     )
     lgd = ax[1, 0].legend(
-        loc="upper center", bbox_to_anchor=(1, 2.4), ncol=10, title="Energy fluxes"
+        loc="upper center", bbox_to_anchor=(1, 2.4), ncol=10
     )
     add_patch(lgd)
     plt.savefig(
