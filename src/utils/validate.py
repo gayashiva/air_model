@@ -22,7 +22,7 @@ import json
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
-from src.utils.cv import CV_Icestupa, save_obj, load_obj, setup_params
+from src.utils.cv import CV_Icestupa, setup_params
 from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
 
@@ -49,9 +49,11 @@ def calculate(process_name,location, tasks, X, y, results, results_list, kind):
             clf.fit(X,y)
             y_pred = clf.predict(X)
             rmse = mean_squared_error(y_pred,y, squared=False)
+            # diff = clf.predict_survival()
 
             # Compute result and mimic a long-running task
             compute = rmse
+            # compute = diff
 
             # Output which process received the value
             print('[%s] received value: %s' % (process_name, new_value))
@@ -59,7 +61,7 @@ def calculate(process_name,location, tasks, X, y, results, results_list, kind):
 
             # Add result to the queue
             results.put(compute)
-            results_list.append([new_value, rmse])
+            results_list.append([new_value, compute])
 
     return
 if __name__ == "__main__":
@@ -71,7 +73,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    location = "guttannen20"
+    location = "gangles21"
     # location = "schwarzsee19"
 
     icestupa = Icestupa(location)
@@ -83,8 +85,8 @@ if __name__ == "__main__":
 
     # Loading measurements
     obs = list()
-    # kind = 'volume'
-    kind = 'temp'
+    kind = 'volume'
+    # kind = 'temp'
 
     if kind == 'volume':
         df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")

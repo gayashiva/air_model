@@ -75,8 +75,8 @@ if __name__ == "__main__":
         df = df.set_index('rmse').sort_index().reset_index()
         df['params'] = df['params'].apply(literal_eval)
 
-        num_selected = int(0.1 * df.shape[0])
-        # num_selected = 100
+        # num_selected = int(0.1 * df.shape[0])
+        num_selected = 100
         num_total = df.shape[0]
         print()
         print("\tSelected %s out of %s" % (num_selected, num_total))
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         df = df.round(4)
 
         # df['A_I'] = df['A_I'].map(lambda x: (truncate(x,3)))
-        df['Z'] = df['Z'].map(lambda x: (round(x,3)))
+        # df['Z'] = df['Z'].map(lambda x: (round(x,3)))
         # df = df.loc[df.Z == 0.002]
         # df = df.loc[df.DX == 0.05]
         print(df.head())
@@ -132,9 +132,10 @@ if __name__ == "__main__":
                 labels = [item.get_text() for item in ax[i].get_xticklabels()]
                 ax[i].set_xticklabels([round(float(label),3) if i%2==0 else None for i,label in enumerate(labels)])
             ax[i].set_ylabel("")
-            ax[i].set_ylim([0,num_selected*0.6])
-            ax[i].yaxis.set_major_formatter(mtick.PercentFormatter(num_selected))
+            # ax[i].set_ylim([0,num_selected*0.6])
+            # ax[i].yaxis.set_major_formatter(mtick.PercentFormatter(num_selected))
         subfigs[ctr].subplots_adjust(hspace=0.05, wspace=0.025)
+    # fig.text(0.04, 0.5, 'Count', va='center', rotation='vertical')
 
     plt.savefig(
         "data/paper/param_hist.jpg",
