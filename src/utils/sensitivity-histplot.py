@@ -70,7 +70,8 @@ if __name__ == "__main__":
         df = df.set_index('rmse').sort_index().reset_index()
         df['params'] = df['params'].apply(literal_eval)
 
-        num_selected = int(0.05 * df.shape[0])
+        # num_selected = int(0.1 * df.shape[0])
+        num_selected = 100
         num_total = df.shape[0]
         print()
         print("\tSelected %s out of %s" % (num_selected, num_total))
@@ -80,7 +81,10 @@ if __name__ == "__main__":
         df = pd.concat([df.drop(['params'], axis=1), df['params'].apply(pd.Series)], axis=1)
         df = df.round(4)
 
-        df['A_I'] = df['A_I'].map(lambda x: (truncate(x,3)))
+        # df['A_I'] = df['A_I'].map(lambda x: (truncate(x,3)))
+        df['Z'] = df['Z'].map(lambda x: (round(x,3)))
+        # df = df.loc[df.Z == 0.002]
+        df = df.loc[df.DX == 0.05]
         print(df.head())
         print()
         for col in params:

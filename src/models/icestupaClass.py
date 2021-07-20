@@ -58,8 +58,7 @@ class Icestupa:
 
     """Model constants"""
     DT = 60 * 60  # Model time step
-    # DX = 20e-03  # m Surface layer thickness growth rate
-    DX = 45e-03  # m Surface layer thickness growth rate
+    DX = 20e-03  # m Surface layer thickness growth rate
 
     def __init__(self, location="Guttannen 2021", params="default"):
 

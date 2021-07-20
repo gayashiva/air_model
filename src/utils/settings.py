@@ -35,7 +35,10 @@ def config(location="guttannen21"):
             latitude=46.649999,
             longitude=8.283333,
             H_AWS = 2,
+
             # perimeter=45, # on Feb 11
+            # DX= 50e-03,
+            # Z= 5e-03,
         )
 
         data_h = [
@@ -58,7 +61,10 @@ def config(location="guttannen21"):
             latitude=46.649999,
             longitude=8.283333,
             H_AWS = 2,
+
             # perimeter=28, # on 24 Jan
+            # DX= 50e-03,
+            # Z= 5e-03,
         )
 
         data_h = [
@@ -101,8 +107,11 @@ def config(location="guttannen21"):
             latitude=46.693723,
             r_F= 1.233,
             H_AWS = 2,
+
             # discharge=3.58,  # FOUNTAIN on mean discharge from field
             # dia_f=0.0056,  # FOUNTAIN aperture diameter
+            # DX= 50e-03,
+            # Z= 5e-03,
         )
 
         data_h = [
