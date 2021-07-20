@@ -453,7 +453,6 @@ def summary_figures(self):
     ax.plot(
         x,
         y1,
-        "b-",
         label="Modelled Volume",
         linewidth=1,
         color=CB91_Blue,

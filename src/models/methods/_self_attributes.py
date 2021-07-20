@@ -31,6 +31,9 @@ def self_attributes(self, save=False):
         self.r_F= df_c.loc[(df_c.When < self.fountain_off_date) & (df_c.index!=0), "rad"].mean()
         logger.warning("Measured spray radius from drone %0.1f"%self.r_F)
 
+    # Understand r_F sensitivity
+    # self.r_F*=1.1
+
     if self.name == "schwarzsee19":
         self.V_dome = 0
     else:
