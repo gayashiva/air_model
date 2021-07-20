@@ -116,7 +116,7 @@ if __name__ == "__main__":
     params = ['Z', 'DX']
     tuned_params = setup_params(params)
 
-    file_path = 'cv-'+kind
+    file_path = 'cv-'+kind+'-'
     file_path += '-'.join('{}'.format(key) for key, value in tuned_params.items())
 
     # Define IPC manager
