@@ -1,15 +1,15 @@
-import matplotlib.pyplot as plt
 import sys
 import os
 import numpy as np
 import pandas as pd
 import math
-from matplotlib.offsetbox import AnchoredText
-from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.colors
 import uncertainpy as un
 import statistics as st
 from datetime import datetime, timedelta
+from matplotlib.offsetbox import AnchoredText
+from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 sys.path.append(
@@ -63,8 +63,6 @@ if __name__ == "__main__":
         # filename1 = FOLDER['sim']+ "full.h5"
         # filename1 = FOLDER['sim']+ "efficiency.h5"
         data.load(filename1)
-        print(data)
-        break
 
         survived_days = icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24)
         if location == 'schwarzsee19':
