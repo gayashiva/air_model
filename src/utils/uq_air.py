@@ -21,7 +21,7 @@ from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
 
-def setup_params(params):
+def setup_params_dist(params):
     params_range = []
     for param in params:
         y_lim=get_parameter_metadata(param)['ylim']
@@ -230,7 +230,7 @@ if __name__ == "__main__":
             params = ['IE', 'A_I', 'Z', 'T_F', 'DX']
         else:
             params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX']
-        parameters_full = setup_params(params)
+        parameters_full = setup_params_dist(params)
 
         # Create the parameters
         for k, v in parameters_full.items():
