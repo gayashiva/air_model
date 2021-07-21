@@ -28,8 +28,11 @@ logger.propagate = False
 
 
 class Icestupa:
-    """Physical Constants"""
 
+    """Model hyperparameter"""
+    DT = 60 * 60  # Model time step
+
+    """Physical Constants"""
     L_S = 2848 * 1000  # J/kg Sublimation
     L_F = 334 * 1000  # J/kg Fusion
     C_A = 1.01 * 1000  # J/kgC Specific heat air
@@ -45,21 +48,18 @@ class Icestupa:
     G = 9.81  # Gravitational acceleration
 
     """Surface Properties"""
-
     IE = 0.97  # Ice Emissivity IE
     A_I = 0.25  # Albedo of Ice A_I
     A_S = 0.85  # Albedo of Fresh Snow A_S
     A_DECAY = 13.5 # Albedo decay rate decay_t_d
     Z = 0.005  # Ice Momentum and Scalar roughness length
     T_PPT = 1  # Temperature condition for liquid precipitation
-
-    """Fountain constants"""
-    # T_F = 1.5  # FOUNTAIN Water temperature
-
-    """Model constants"""
-    DT = 60 * 60  # Model time step
     # DX = 20e-03  # m Surface layer thickness growth rate
     DX = 50e-03  # m Surface layer thickness growth rate
+
+    # """Fountain constants"""
+    # T_F = 1.5  # FOUNTAIN Water temperature
+
 
     def __init__(self, location="Guttannen 2021", params="default"):
 

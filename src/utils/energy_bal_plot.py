@@ -217,7 +217,7 @@ if __name__ == "__main__":
                     else:
                         ax[i, j].plot((-d, d), (-d, +d), **kwargs)  # top-right diagonal
                 else:
-                    ax[i, j].set_ylim(-65, 65)
+                    ax[i, j].set_ylim(-95, 95)
                     ax[i, j].set_ylabel("Thickness [$mm$ w. e.]")
                     ax[i, j].spines["bottom"].set_visible(False)
                     ax[i, j].tick_params(bottom=False)
