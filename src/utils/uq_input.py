@@ -21,15 +21,6 @@ from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
 
-def setup_params_dist(params):
-    params_range = []
-    param_range = cp.Uniform(0.9,1.1)
-    for param in params:
-        params_range.append(param_range)
-
-    tuned_params = {params[i]: params_range[i] for i in range(len(params))}
-    return tuned_params
-
 class UQ_Icestupa(un.Model, Icestupa):
     def __init__(self, location, ignore=False):
         super(UQ_Icestupa, self).__init__(
@@ -54,26 +45,16 @@ class UQ_Icestupa(un.Model, Icestupa):
 
         self.read_input()
         self.self_attributes()
-        self.apply_dist = [
-            "SW_direct",
-            "SW_diffuse",
-            "LW_in",
-            "Discharge",
-            # "r_F",
-            "T_F",
-        ]
 
     def run(self, **parameters):
 
         self.set_parameters(**parameters)
 
-        for key in self.apply_dist:
-            if "r_F" == key:
-                self.r_F *= parameters['dist']
-            elif key == 'T_F':
-                self.T_F *= parameters['dist']
-            else:
-                self.df[key] *=parameters['dist']
+        if "r_F" in parameters.keys():
+            self.self_attributes()
+
+        if "D_F" in parameters.keys():
+            self.df.loc[self.df.Discharge !=0, "Discharge"] = self.D_F
 
         self.melt_freeze()
 
@@ -113,16 +94,16 @@ if __name__ == "__main__":
         icestupa.self_attributes()
 
         apply_dist = [
-            "SW_direct",
-            "SW_diffuse",
-            "LW_in",
-            "Discharge",
+            # "SW_direct",
+            # "SW_diffuse",
+            # "LW_in",
+            "D_F",
             "r_F",
             "T_F",
         ]
 
         # parameters= setup_params_dist(params)
-        parameters= {"dist":cp.Uniform(0.9,1.1)}
+        parameters= {"D_F":cp.Uniform(icestupa.D_F * 0.9,icestupa.D_F * 1.1)}
 
         # Initialize the model
         model = UQ_Icestupa(location)
