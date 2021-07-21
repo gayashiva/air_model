@@ -37,14 +37,14 @@ def get_parameter_metadata(
         "D_F": {
             "name": "Mean Discharge",
             "latex": "$d_{mean}$",
-            "ylim": [0.9, 1.1],
+            # "ylim": [0.9, 1.1],
             "kind": "parameter",
             "units": "()",
         },
         "T_F": {
             "name": "Water temperature",
             "latex": "$T_{water}$",
-            "ylim": [0.9, 1.1],
+            "ylim": [0, 3],
             "step": 1,
             "kind": "parameter",
             "units": "($\\degree C$)",

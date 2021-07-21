@@ -93,17 +93,17 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        apply_dist = [
-            # "SW_direct",
-            # "SW_diffuse",
-            # "LW_in",
-            "D_F",
-            "r_F",
-            "T_F",
-        ]
+        if location in ['guttannen21', 'guttannen20']:
+            D_F_dist = cp.Uniform(3.5, 15)
 
-        # parameters= setup_params_dist(params)
-        parameters= {"D_F":cp.Uniform(icestupa.D_F * 0.9,icestupa.D_F * 1.1)}
+        if location in ['gangles21']:
+            D_F_dist = cp.Uniform(30, 120)
+
+        parameters= {
+            "D_F":D_F_dist,
+            "r_F":cp.Uniform(icestupa.r_F * 0.9,icestupa.r_F * 1.1),
+            "T_F":cp.Uniform(0,3),
+        }
 
         # Initialize the model
         model = UQ_Icestupa(location)
