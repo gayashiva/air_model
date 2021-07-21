@@ -69,7 +69,6 @@ if __name__ == "__main__":
     result = []
     freeze_rate = []
     melt_rate = []
-    # growth_rate = []
     fig, ax = plt.subplots()
     for location in locations:
         SITE, FOLDER = config(location)
@@ -78,9 +77,6 @@ if __name__ == "__main__":
         icestupa.self_attributes()
         feature_name = "efficiency"
 
-        # M_input = round(icestupa.df["input"].iloc[-1], 1)
-        # M_water = round(icestupa.df["meltwater"].iloc[-1], 1)
-        # M_ice = round(icestupa.df["ice"].iloc[-1] - icestupa.V_dome * icestupa.RHO_I, 1)
         icestupa.se = (icestupa.M_water + icestupa.M_ice) / icestupa.M_input * 100
 
         for j in range(0, icestupa.df.shape[0]):
@@ -100,8 +96,6 @@ if __name__ == "__main__":
                         icestupa.df.loc[j, "melted"] / 60,
                     ]
                 )
-            # growth_rate.append([get_parameter_metadata(location)['shortname'],j,icestupa.df.loc[j,"growth"]])
-            # growth_rate.append([get_parameter_metadata(location)['shortname'],j,icestupa.df.loc[j,"fountain_froze"]/60 - icestupa.df.loc[j,"melted"]/60])
         for name in names:
             data = un.Data()
             filename1 = FOLDER["sim"] + name + ".h5"
@@ -112,12 +106,6 @@ if __name__ == "__main__":
             print(
                 f"95 percent confidence interval caused by {name} is {round(st.mean(eval),2)} and {round(2 * st.stdev(eval),2)}"
             )
-            # percent_change.append(
-            #     (data[feature_name].evaluations - icestupa.df.iceV.max())
-            #     / icestupa.df.iceV.max()
-            #     * 100
-            # )
-            # efficiency_change.append((data[feature_name].evaluations - icestupa.se))
             for i in range(0, len(data[feature_name].evaluations)):
                 result.append(
                     [
@@ -125,9 +113,6 @@ if __name__ == "__main__":
                         param_dictionary[name],
                         data[feature_name].evaluations[i],
                         (data[feature_name].evaluations[i] - icestupa.se),
-                        # (data[feature_name].evaluations[i] - icestupa.df.iceV.max())
-                        # / icestupa.df.iceV.max()
-                        # * 100,
                     ]
                 )
 
