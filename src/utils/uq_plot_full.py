@@ -44,9 +44,7 @@ if __name__ == "__main__":
          end ='1-1-2024', freq ='D', name= "When")
     df_out = pd.DataFrame(columns=locations,index=index)
 
-    # fig, ax = plt.subplots(len(locations), 1, sharex='col', figsize=(12, 14))
     fig, ax = plt.subplots(len(locations), 1, sharex='col')
-    # fig.subplots_adjust(hspace=0.1, wspace=0.1)
 
     for i,location in enumerate(locations):
         SITE, FOLDER = config(location)
@@ -61,6 +59,7 @@ if __name__ == "__main__":
         data = un.Data()
         # filename1 = FOLDER['sim']+ "SE_full.h5"
         filename1 = FOLDER['sim']+ "full.h5"
+        # filename1 = FOLDER['sim']+ "input.h5"
         # filename1 = FOLDER['sim']+ "efficiency.h5"
         data.load(filename1)
 
