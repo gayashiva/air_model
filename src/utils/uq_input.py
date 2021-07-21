@@ -55,6 +55,7 @@ class UQ_Icestupa(un.Model, Icestupa):
 
         if "D_F" in parameters.keys():
             self.df.loc[self.df.Discharge !=0, "Discharge"] = self.D_F
+            print("Discharge changed to %s"%self.D_F)
 
         self.melt_freeze()
 
