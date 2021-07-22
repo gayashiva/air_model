@@ -23,7 +23,7 @@ def get_parameter_metadata(
             "name": "Surface area correction factor",
             "latex": "$SA_{corr}$",
             "ylim": [1, 2],
-            "step": 0.2,
+            "step": 0.1,
             "kind": "parameter",
             "units": "( )",
         },
@@ -74,7 +74,7 @@ def get_parameter_metadata(
         "A_DECAY": {
             "name": "Albedo decay rate",
             "latex": "$\\tau$",
-            "ylim": [5, 22],
+            "ylim": [10, 22],
             "kind": "parameter",
             "units": "($days$)",
         },
