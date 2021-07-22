@@ -51,7 +51,7 @@ class Icestupa:
     IE = 0.97  # Ice Emissivity IE
     A_I = 0.25  # Albedo of Ice A_I
     A_S = 0.85  # Albedo of Fresh Snow A_S
-    A_DECAY = 13.5 # Albedo decay rate decay_t_d
+    A_DECAY = 16 # Albedo decay rate decay_t_d
     Z = 0.0025  # Ice Momentum and Scalar roughness length
     T_PPT = 1  # Temperature condition for liquid precipitation
     DX = 20e-03  # m Surface layer thickness growth rate
