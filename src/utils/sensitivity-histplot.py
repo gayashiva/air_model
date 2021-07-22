@@ -40,9 +40,9 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    locations = ["gangles21", "guttannen21"]
+    # locations = ["gangles21", "guttannen21"]
     # locations = ["guttannen21", "guttannen20"]
-    # locations = ["guttannen21"]
+    locations = ["guttannen21"]
     # location = "guttannen21"
 
 
@@ -53,13 +53,14 @@ if __name__ == "__main__":
         SITE, FOLDER = config(location)
         icestupa.read_output()
 
-        params = ['IE', 'A_I', 'Z', 'DX']
+        # params = ['IE', 'A_I', 'Z', 'DX']
+        params = ['DX', 'SA_corr', 'Z']
         tuned_params = setup_params(params)
 
-        kind = 'temp'
-        # kind = 'volume'
-        # file_path = 'cv-'+kind+'-'
-        file_path = 'cv-'
+        # kind = 'temp'
+        kind = 'volume'
+        file_path = 'cv-'+kind+'-'
+        # file_path = 'cv-'
         file_path += '-'.join('{}'.format(key) for key, value in tuned_params.items())
 
         df = pd.read_csv(FOLDER['sim'] + file_path)
@@ -67,7 +68,7 @@ if __name__ == "__main__":
         df['params'] = df['params'].apply(literal_eval)
 
         # num_selected = int(0.1 * df.shape[0])
-        num_selected = 100
+        num_selected = 10
         num_total = df.shape[0]
         print()
         print("\tSelected %s out of %s" % (num_selected, num_total))
