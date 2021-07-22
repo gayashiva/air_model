@@ -98,6 +98,9 @@ if __name__ == "__main__":
         df_c = df_c[1:]
 
         df_c["Where"] = location
+
+        # print(df_c.loc[df_c.Area=='NaN', 'Area'])
+        # df_c.loc[-1, 'Area']= math.pi * icestupa.r_F **2
         obs.extend(df_c.reset_index()[["Where", 'When', 'DroneV', 'Area']].values.tolist())
 
     else:
@@ -112,6 +115,7 @@ if __name__ == "__main__":
     X = [[a[0], a[1]] for a in obs]
     y = [a[2] for a in obs]
     x = [a[3] for a in obs]
+    print(x)
 
     # if location == 'gangles21':
     #     params = ['IE', 'A_I', 'Z', 'T_F', 'DX']

@@ -133,7 +133,7 @@ class CV_Icestupa(BaseEstimator,Icestupa):
 
         return self.diff
 
-    def predict_sa_v(self):
+    def predict_sa_v(self, X):
         y_pred = []
         x_pred = []
         ctr = 0
