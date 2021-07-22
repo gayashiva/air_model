@@ -43,7 +43,7 @@ if __name__ == "__main__":
         icestupa.self_attributes()
 
         # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z']
-        params = ['IE', 'A_I', 'Z']
+        params = ['IE', 'A_I', 'Z', 'DX', 'SA_corr']
 
         parameters = un.Parameters(setup_params(params))
 
