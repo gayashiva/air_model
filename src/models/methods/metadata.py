@@ -22,7 +22,7 @@ def get_parameter_metadata(
         "SA_corr": {
             "name": "Surface area correction factor",
             "latex": "$SA_{corr}$",
-            "ylim": [1, 1.5],
+            "ylim": [1, 2],
             "step": 0.1,
             "kind": "parameter",
             "units": "( )",
