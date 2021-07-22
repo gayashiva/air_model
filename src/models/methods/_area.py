@@ -39,6 +39,7 @@ def get_area(self, i):
     # Area of Conical Ice Surface
     self.df.loc[i, "SA"] = (
         math.pi
+        * self.SA_corr
         * self.df.loc[i, "r_ice"]
         * math.pow(
             (

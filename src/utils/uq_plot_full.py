@@ -40,9 +40,9 @@ if __name__ == "__main__":
     CB91_Amber = "#F5B14C"
 
 
-    index = pd.date_range(start ='1-1-2022', 
-         end ='1-1-2024', freq ='D', name= "When")
-    df_out = pd.DataFrame(columns=locations,index=index)
+    # index = pd.date_range(start ='1-1-2022', 
+    #      end ='1-1-2024', freq ='D', name= "When")
+    # df_out = pd.DataFrame(columns=locations,index=index)
 
     fig, ax = plt.subplots(len(locations), 1, sharex='col')
 
@@ -63,7 +63,7 @@ if __name__ == "__main__":
         # filename1 = FOLDER['sim']+ "efficiency.h5"
         data.load(filename1)
 
-        survived_days = icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24)
+        # survived_days = icestupa.total_hours / (24)
         if location == 'schwarzsee19':
             SITE["start_date"] +=pd.offsets.DateOffset(year=2023)
         if location == 'guttannen20':
@@ -80,7 +80,7 @@ if __name__ == "__main__":
         )
         days2 = pd.date_range(
             start=SITE["start_date"]+ timedelta(hours= 1),
-            end=SITE["start_date"]+ timedelta(hours=survived_days * 24 - 1),
+            end=SITE["start_date"]+ timedelta(hours=icestupa.total_hours - 1),
             freq="1H",
         )
 

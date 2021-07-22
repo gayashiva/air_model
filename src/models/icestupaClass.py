@@ -57,6 +57,9 @@ class Icestupa:
     # DX = 20e-03  # m Surface layer thickness growth rate
     DX = 50e-03  # m Surface layer thickness growth rate
 
+    # SA_corr = 1  # m Surface layer thickness growth rate
+    SA_corr = 1.5  # m Surface layer thickness growth rate
+
     # """Fountain constants"""
     # T_F = 1.5  # FOUNTAIN Water temperature
 

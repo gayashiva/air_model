@@ -1,4 +1,3 @@
-
 """Command line interface to create or display Icestupa class
 """
 
