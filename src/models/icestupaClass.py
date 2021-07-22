@@ -52,13 +52,13 @@ class Icestupa:
     A_I = 0.25  # Albedo of Ice A_I
     A_S = 0.85  # Albedo of Fresh Snow A_S
     A_DECAY = 13.5 # Albedo decay rate decay_t_d
-    Z = 0.005  # Ice Momentum and Scalar roughness length
+    Z = 0.0025  # Ice Momentum and Scalar roughness length
     T_PPT = 1  # Temperature condition for liquid precipitation
     DX = 20e-03  # m Surface layer thickness growth rate
     # DX = 50e-03  # m Surface layer thickness growth rate
 
     # SA_corr = 1  # m Surface layer thickness growth rate
-    SA_corr = 1.2  # m Surface layer thickness growth rate
+    SA_corr = 1.25  # m Surface layer thickness growth rate
 
     # """Fountain constants"""
     # T_F = 1.5  # FOUNTAIN Water temperature
