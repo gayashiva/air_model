@@ -47,9 +47,11 @@ def calculate(process_name,location, tasks, X, y, results, results_list, kind):
 
             # Fit new parameter
             clf.fit(X,y)
-            y_pred = clf.predict(X)
-            rmse = mean_squared_error(y_pred,y, squared=False)
             # diff = clf.predict_survival()
+            y_pred, x_pred = clf.predict_sa_v(X)
+            rmse1 = mean_squared_error(y_pred,y, squared=False)
+            rmse2 = mean_squared_error(x_pred,x, squared=False)
+            rmse = np.sqrt(rmse1**2+rmse2**2)
 
             # Compute result and mimic a long-running task
             compute = rmse
@@ -96,7 +98,7 @@ if __name__ == "__main__":
         df_c = df_c[1:]
 
         df_c["Where"] = location
-        obs.extend(df_c.reset_index()[["Where", 'When', 'DroneV']].values.tolist())
+        obs.extend(df_c.reset_index()[["Where", 'When', 'DroneV', 'Area']].values.tolist())
 
     else:
         if location != 'gangles21':
@@ -109,6 +111,7 @@ if __name__ == "__main__":
 
     X = [[a[0], a[1]] for a in obs]
     y = [a[2] for a in obs]
+    x = [a[3] for a in obs]
 
     # if location == 'gangles21':
     #     params = ['IE', 'A_I', 'Z', 'T_F', 'DX']

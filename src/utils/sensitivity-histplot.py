@@ -40,12 +40,13 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    # locations = ["gangles21", "guttannen21"]
+    locations = ["gangles21", "guttannen21"]
     # locations = ["guttannen21", "guttannen20"]
-    locations = ["guttannen21"]
+    # locations = ["guttannen21"]
     # location = "guttannen21"
 
     params = ['DX', 'SA_corr', 'Z']
+    # params = ['DX', 'SA_corr']
 
     # Creating an empty Dataframe with column names only
     dfx = pd.DataFrame(columns=params)
@@ -67,8 +68,8 @@ if __name__ == "__main__":
         df = df.set_index('rmse').sort_index().reset_index()
         df['params'] = df['params'].apply(literal_eval)
 
-        # num_selected = int(0.1 * df.shape[0])
-        num_selected = 10
+        num_selected = int(0.1 * df.shape[0])
+        # num_selected = 10
         num_total = df.shape[0]
         print()
         print("\tSelected %s out of %s" % (num_selected, num_total))
@@ -83,7 +84,7 @@ if __name__ == "__main__":
             print("\t%s from %s upto %s with percentage %s" % (col, df[col].min(), df[col].max(),
                 df[col].value_counts(normalize=True)))
 
-        # df = df.loc[df.SA_corr == 1.2]
+        df = df.loc[df.SA_corr >= 1.2]
         df['AIR'] = get_parameter_metadata(location)['shortname']
         dfx = dfx.append(df, ignore_index = True)
 
@@ -107,6 +108,8 @@ if __name__ == "__main__":
         v = get_parameter_metadata(param_name)
         label = v['latex'] + v['units']
         ax[i].set_xlabel(label)
+        # ax[i].set_xlim(v['ylim'])
+        # ax[i].set_xticks(np.arange(v['ylim'][0], v['ylim'][1], v['step']))
         if i != 0:
             ax[i].set_ylabel('')
         if i != len(tuned_params) - 1:
