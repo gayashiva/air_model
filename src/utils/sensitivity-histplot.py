@@ -45,16 +45,16 @@ if __name__ == "__main__":
     locations = ["guttannen21"]
     # location = "guttannen21"
 
+    params = ['DX', 'SA_corr', 'Z']
 
     # Creating an empty Dataframe with column names only
-    dfx = pd.DataFrame(columns=['IE', 'A_I', 'Z', 'DX', 'location'])
+    dfx = pd.DataFrame(columns=params)
     for ctr, location in enumerate(locations):
         icestupa = Icestupa(location)
         SITE, FOLDER = config(location)
         icestupa.read_output()
 
         # params = ['IE', 'A_I', 'Z', 'DX']
-        params = ['DX', 'SA_corr', 'Z']
         tuned_params = setup_params(params)
 
         # kind = 'temp'
@@ -83,7 +83,7 @@ if __name__ == "__main__":
             print("\t%s from %s upto %s with percentage %s" % (col, df[col].min(), df[col].max(),
                 df[col].value_counts(normalize=True)))
 
-        # df = df.loc[df.DX == 0.05]
+        # df = df.loc[df.SA_corr == 1.2]
         df['AIR'] = get_parameter_metadata(location)['shortname']
         dfx = dfx.append(df, ignore_index = True)
 
