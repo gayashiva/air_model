@@ -34,7 +34,6 @@ def get_field(location="schwarzsee19"):
         cols = ["T_a", "RH", "v_a"]
 
         df_in = pd.read_csv(
-            # "data/" + site + "/Gangles_Table15Min.dat",
             FOLDER["raw"] + "/Gangles_Table15Min.dat",
             sep=",",
             skiprows=[0, 2, 3, 4],
@@ -53,7 +52,6 @@ def get_field(location="schwarzsee19"):
         )
 
         df_in1 = pd.read_csv(
-            # "data/" + site + "/Gangles_Table60Min.dat",
             FOLDER["raw"] + "/Gangles_Table60Min.dat",
             sep=",",
             skiprows=[0, 2, 3],

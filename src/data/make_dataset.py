@@ -26,7 +26,6 @@ from src.utils.settings import config
 from src.data.field import get_field
 from src.data.era5 import get_era5
 from src.data.meteoswiss import get_meteoswiss
-from src.data.discharge import get_discharge
 
 def linreg(X, Y):
     mask = ~np.isnan(X) & ~np.isnan(Y)
@@ -41,10 +40,11 @@ if __name__ == "__main__":
         level=logging.INFO,
         logger=logger,
     )
-    # location = "guttannen21"
+    location = "guttannen21"
     # location = "schwarzsee19"
     # location = "gangles21"
-    locations = ["gangles21", "guttannen20", "guttannen21"]
+    # locations = ["gangles21", "guttannen20", "guttannen21"]
+    locations = ["gangles21"]
 
     for location in locations:
         SITE, FOLDER = config(location)
@@ -53,18 +53,20 @@ if __name__ == "__main__":
             df = get_field(location)
             df = df.set_index("When")
             df = df[SITE['start_date']:SITE["end_date"]]
-            # Replace temp and Humidity from Hobo
-            df_hobo = pd.read_csv(
-                FOLDER["input"] + SITE["name"] + "_input_hobo.csv",
-                sep=",",
-                parse_dates = ['When'],
-            )
-            df_hobo = df_hobo.set_index("When")
-            df_hobo = df_hobo[SITE['start_date']:SITE["end_date"]]
-            df['T_a'] = df_hobo['T_a']
-            df['RH'] = df_hobo['RH']
+            print(df.tail())
+            # # Replace temp and Humidity from Hobo
+            # df_hobo = pd.read_csv(
+            #     FOLDER["input"] + SITE["name"] + "_input_hobo.csv",
+            #     sep=",",
+            #     parse_dates = ['When'],
+            # )
+            # df_hobo = df_hobo.set_index("When")
+            # df_hobo = df_hobo[SITE['start_date']:SITE["end_date"]]
+            # df['T_a'] = df_hobo['T_a']
+            # df['RH'] = df_hobo['RH']
 
             df = df.reset_index()
+
             logger.info(df.missing_type.describe())
             logger.info(df.missing_type.unique())
         else:
