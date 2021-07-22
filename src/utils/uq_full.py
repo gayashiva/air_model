@@ -21,7 +21,7 @@ from src.models.methods.calibration import get_calibration
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
-from src.utils.uq_air import UQ_Icestupa, setup_params, rmse_V
+from src.utils.uq_air import UQ_Icestupa, setup_params_dist, rmse_V
 
 if __name__ == "__main__":
     # Main logger
@@ -43,9 +43,9 @@ if __name__ == "__main__":
         icestupa.self_attributes()
 
         # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z']
-        params = ['IE', 'A_I', 'Z', 'DX', 'SA_corr']
+        params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'DX', 'SA_corr']
 
-        parameters = un.Parameters(setup_params(params))
+        parameters = un.Parameters(setup_params_dist(params))
 
 #         list_of_feature_functions = [rmse_V]
 # 
