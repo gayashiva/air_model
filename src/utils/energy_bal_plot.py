@@ -37,7 +37,8 @@ def add_patch(legend, title = "Energy fluxes"):
     legend.set_title(title)
 
 if __name__ == "__main__":
-    locations = ["gangles21", "guttannen21", "guttannen20"]
+    locations = ["gangles21", "guttannen21"]
+    # locations = ["gangles21", "guttannen21", "guttannen20"]
     # locations = ['guttannen21',  'gangles21']
     # locations = ['guttannen21']
 
@@ -57,7 +58,7 @@ if __name__ == "__main__":
     CB91_Amber = "#F5B14C"
 
     fig = plt.figure(figsize=(12, 14))
-    subfigs = fig.subfigures(3, 1, wspace=0.25)
+    subfigs = fig.subfigures(len(locations), 1, wspace=0.25)
     for ctr, location in enumerate(locations):
         SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
@@ -80,6 +81,8 @@ if __name__ == "__main__":
             axis=1,
         )
 
+        icestupa.df.loc[icestupa.df.Discharge !=0, "Discharge"] = 1
+
         dfds = icestupa.df[
             [
                 "When",
@@ -89,6 +92,8 @@ if __name__ == "__main__":
                 "sub",
                 "SA",
                 "fountain_froze",
+                "fountain_runoff",
+                "Discharge",
             ]
         ]
 
@@ -96,19 +101,22 @@ if __name__ == "__main__":
             for i in range(0, dfds.shape[0]):
                 if icestupa.df.loc[i, "SA"] != 0:
                     dfds.loc[i, "Ice"] = dfds.loc[i, "fountain_froze"] / (
-                        icestupa.df.loc[i, "SA"] * icestupa.RHO_I
+                        icestupa.df.loc[i, "SA"] * 1000
                     )
                     dfds.loc[i, "melted"] *= -1 / (
-                        icestupa.df.loc[i, "SA"] * icestupa.RHO_I
+                        icestupa.df.loc[i, "SA"] * 1000
                     )
                     dfds.loc[i, "sub"] *= -1 / (
-                        icestupa.df.loc[i, "SA"] * icestupa.RHO_I
+                        icestupa.df.loc[i, "SA"] * 1000
                     )
                     dfds.loc[i, "ppt"] *= 1 / (
-                        icestupa.df.loc[i, "SA"] * icestupa.RHO_I
+                        icestupa.df.loc[i, "SA"] * 1000
                     )
                     dfds.loc[i, "dep"] *= 1 / (
-                        icestupa.df.loc[i, "SA"] * icestupa.RHO_I
+                        icestupa.df.loc[i, "SA"] * 1000
+                    )
+                    dfds.loc[i, "Runoff"] = dfds.loc[i, "fountain_runoff"] / (
+                        icestupa.df.loc[i, "SA"] * 1000
                     )
                 else:
                     dfds.loc[i, "Ice"] = 0
@@ -134,6 +142,7 @@ if __name__ == "__main__":
                 "Melt",
                 "Snowfall",
                 "Sublimation/Deposition",
+                # "Runoff",
             ]
         ]
         y2 = y2.mul(1000)
@@ -141,6 +150,7 @@ if __name__ == "__main__":
         dfd = icestupa.df.set_index("When").resample("D").mean().reset_index()
         # dfd["When"] = dfd["When"].dt.strftime("%b %d")
         # dfd = dfd.set_index('When')
+
 
         dfd[["$-q_{freeze}$", "$-q_{melt}$", "$-q_{T}$"]] *= -1
         z = dfd[
@@ -170,9 +180,11 @@ if __name__ == "__main__":
                 stacked=True,
                 edgecolor="black",
                 linewidth=0.5,
-                color=["xkcd:azure", "#0C70DE", skyblue, "xkcd:yellowgreen"],
+                color=["xkcd:azure", "#0C70DE", skyblue, "xkcd:yellowgreen", pink],
                 ax=ax[0, j],
             )
+            if j == 0:
+                ax[0, j].plot(dfds["Discharge"],'--k.')
             z.plot.bar(
                 stacked=True,
                 edgecolor="black",
@@ -184,7 +196,8 @@ if __name__ == "__main__":
                     orange,
                     green,
                     "xkcd:yellowgreen",
-                    purple,
+                    # purple,
+                    CB91_Violet,
                     pink,
                     blue,
                 ],

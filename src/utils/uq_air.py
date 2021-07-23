@@ -184,17 +184,17 @@ class UQ_Icestupa(un.Model, Icestupa):
             last_hour = 0
 
         return (
-            # None,
-            self.df.index.values,
-            self.df["iceV"].values,
-            # se,
-            parameters,
-            self.y_true,
-            y_pred,
-            self.z_true,
-            [round(num, 3) for num in z_pred],
-            self.total_hours,
-            last_hour,
+            None,
+            # self.df.index.values,
+            # self.df["iceV"].values,
+            se,
+            # parameters,
+            # self.y_true,
+            # y_pred,
+            # self.z_true,
+            # [round(num, 3) for num in z_pred],
+            # self.total_hours,
+            # last_hour,
         )
 
 
