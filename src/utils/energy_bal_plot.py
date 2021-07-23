@@ -13,6 +13,7 @@ from matplotlib.offsetbox import AnchoredText
 from mpl_toolkits.axisartist.axislines import Axes
 from mpl_toolkits import axisartist
 import matplotlib.ticker as ticker
+from matplotlib.lines import Line2D
 
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -22,13 +23,14 @@ from src.utils.settings import config
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.icestupaClass import Icestupa
 
-def add_patch(legend, title = "Energy fluxes"):
+def add_patch(legend, title = "Energy fluxes", label="$q_{surf}$", color = 'k'):
     from matplotlib.patches import Patch
     ax = legend.axes
 
     handles, labels = ax.get_legend_handles_labels()
-    handles.append(Patch(facecolor='k'))
-    labels.append("$q_{surf}$")
+    # handles.append(Patch(facecolor='k'))
+    handles.append(Line2D([0], [0], color=color, linestyle='--'))
+    labels.append(label)
 
     legend._legend_box = None
     legend._init_legend_box(handles, labels)
@@ -184,7 +186,7 @@ if __name__ == "__main__":
                 ax=ax[0, j],
             )
             if j == 0:
-                ax[0, j].plot(dfds["Discharge"],'--k.')
+                ax[0, j].plot(dfds["Discharge"],'--.', color = CB91_Violet)
             z.plot.bar(
                 stacked=True,
                 edgecolor="black",
@@ -261,13 +263,14 @@ if __name__ == "__main__":
             fontsize="x-large",
         )
         subfigs[ctr].subplots_adjust(hspace=0.05, wspace=0.025)
-    ax[0, 0].legend(
+    lgd1 = ax[0, 0].legend(
         loc="upper center", bbox_to_anchor=(1, 4), ncol=5, title="Mass fluxes"
     )
-    lgd = ax[1, 0].legend(
+    lgd2 = ax[1, 0].legend(
         loc="upper center", bbox_to_anchor=(1, 2.4), ncol=10
     )
-    add_patch(lgd)
+    add_patch(lgd1, title="Mass fluxes", label = 'Runtime', color=CB91_Violet)
+    add_patch(lgd2)
     plt.savefig(
         "data/paper/mass_energy_bal.jpg",
         dpi=300,

@@ -24,7 +24,7 @@ from src.models.methods.metadata import get_parameter_metadata
 from src.models.icestupaClass import Icestupa
 
 if __name__ == "__main__":
-    locations = ["gangles21", "guttannen21", "guttannen20"]
+    locations = ["gangles21", "guttannen21"]
     # locations = ['guttannen21',  'gangles21']
     # locations = ['guttannen21']
 
@@ -34,6 +34,9 @@ if __name__ == "__main__":
         icestupa.read_output()
         icestupa.df.loc[icestupa.df.Qfreeze == 0, 'Qfreeze'] = np.nan
         icestupa.df.loc[icestupa.df.Qmelt == 0, 'Qmelt'] = np.nan
+        icestupa.df.loc[icestupa.df.Discharge== 0, 'fountain_froze'] = np.nan
+        icestupa.df['melted'] *= 60/1000
+        icestupa.df['fountain_froze'] *= 60/1000
         icestupa.df = icestupa.df.rename(
             {
                 "SW": "$q_{SW}$",
@@ -49,7 +52,8 @@ if __name__ == "__main__":
             },
             axis=1,
         )
-        cols = ["$q_{SW}$", "$q_{LW}$","$q_S$","$q_L$","$q_{F}$","$q_{G}$", "$q_{freeze}$", "$q_{melt}$", "$q_{T}$"]
+        cols = ["$q_{SW}$", "$q_{LW}$","$q_S$","$q_L$","$q_{F}$","$q_{G}$", "$q_{freeze}$", "$q_{melt}$",
+            "$q_{T}$", "SA", "fountain_froze", "melted"]
         df_e = icestupa.df[cols].describe().T[['mean', 'std']]
         # df_e = df_e.astype('int32')
         print(df_e)
