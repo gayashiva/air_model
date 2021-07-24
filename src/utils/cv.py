@@ -145,7 +145,7 @@ class CV_Icestupa(BaseEstimator,Icestupa):
                 else:
                     # y_pred.append((1 - (self.total_hours - self.duration)/self.total_hours) * self.V_dome)
                     y_pred.append(self.V_dome)
-                    x_pred.append(math.pi * self.r_2**2)
+                    x_pred.append(math.pi * self.r_F**2)
             if self.kind == 'temp':
                 if (self.df[self.df.When == x[1]].shape[0]): 
                     y_pred.append(self.df.loc[self.df.When == x[1], "T_s"].values[0])
