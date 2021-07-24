@@ -79,6 +79,7 @@ def config(location="guttannen21"):
             name="gangles21",
             start_date=datetime(2021, 1, 18),
             end_date=datetime(2021, 7, 8),
+            # end_date=datetime(2021, 6, 20), # Norboo observed
             fountain_off_date=datetime(2021, 3, 10, 18),
             D_F=60,  # FOUNTAIN min discharge
             T_F=1,  # FOUNTAIN min discharge
