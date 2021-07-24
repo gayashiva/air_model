@@ -45,7 +45,8 @@ if __name__ == "__main__":
     # locations = ["guttannen21"]
     # location = "guttannen21"
 
-    params = ['DX', 'SA_corr', 'Z']
+    params = ['IE', 'A_I', 'Z', 'SA_corr', 'DX']
+    # params = ['DX', 'SA_corr', 'Z']
     # params = ['DX', 'SA_corr']
 
     # Creating an empty Dataframe with column names only
@@ -55,7 +56,6 @@ if __name__ == "__main__":
         SITE, FOLDER = config(location)
         icestupa.read_output()
 
-        # params = ['IE', 'A_I', 'Z', 'DX']
         tuned_params = setup_params(params)
 
         # kind = 'temp'
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         df['params'] = df['params'].apply(literal_eval)
 
         num_selected = int(0.1 * df.shape[0])
-        # num_selected = 10
+        # num_selected = 100
         num_total = df.shape[0]
         print()
         print("\tSelected %s out of %s" % (num_selected, num_total))
@@ -98,9 +98,8 @@ if __name__ == "__main__":
     sns.set(style="darkgrid")
 
     fig, ax = plt.subplots(
-        nrows=1, ncols=4, sharey="row", figsize=(18, 4)
+        nrows=1, ncols=len(params), sharey="row", figsize=(18, 4)
     )
-
 
     for i,param_name in enumerate(tuned_params):
         sns.countplot( x=param_name, hue ='AIR', palette="Set1", data=dfx,
@@ -116,6 +115,8 @@ if __name__ == "__main__":
             ax[i].get_legend().remove()
         else:
             ax[i].legend(loc='upper right', title = 'AIR')
+        ax[i].set_ylabel("")
+        ax[i].yaxis.set_major_formatter(mtick.PercentFormatter(num_selected))
 
 
     plt.savefig(
