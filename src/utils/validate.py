@@ -122,8 +122,8 @@ if __name__ == "__main__":
     # else:
     #     params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX']
     # params = ['DX']
-    # params = ['IE', 'A_I', 'Z', 'DX']
-    params = ['DX', 'SA_corr', 'Z']
+    params = ['IE', 'A_I', 'Z', 'SA_corr', 'DX']
+    # params = ['DX', 'SA_corr', 'Z']
     tuned_params = setup_params(params)
 
     file_path = 'cv-'+kind+'-'
