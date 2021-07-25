@@ -139,19 +139,13 @@ class CV_Icestupa(BaseEstimator,Icestupa):
         x_pred = []
         ctr = 0
         for x in X:
-            if self.kind == 'volume':
-                if (self.df[self.df.When == x[1]].shape[0]): 
-                    y_pred.append(self.df.loc[self.df.When == x[1], "iceV"].values[0])
-                    x_pred.append(self.df.loc[self.df.When == x[1], "SA"].values[0])
-                else:
-                    # y_pred.append((1 - (self.total_hours - self.duration)/self.total_hours) * self.V_dome)
-                    y_pred.append(self.V_dome)
-                    x_pred.append(math.pi * self.r_F**2)
-            if self.kind == 'temp':
-                if (self.df[self.df.When == x[1]].shape[0]): 
-                    y_pred.append(self.df.loc[self.df.When == x[1], "T_s"].values[0])
-                else:
-                    y_pred.append((1 - (self.total_hours - self.duration)/self.total_hours))
+            if (self.df[self.df.When == x[1]].shape[0]): 
+                y_pred.append(self.df.loc[self.df.When == x[1], "iceV"].values[0])
+                x_pred.append(self.df.loc[self.df.When == x[1], "SA"].values[0])
+            else:
+                # y_pred.append((1 - (self.total_hours - self.duration)/self.total_hours) * self.V_dome)
+                y_pred.append(self.V_dome)
+                x_pred.append(math.pi * self.r_F**2)
             ctr +=1
 
         return y_pred, x_pred
@@ -159,11 +153,10 @@ class CV_Icestupa(BaseEstimator,Icestupa):
         x_pred = []
         ctr = 0
         for x in X:
-            if self.kind == 'volume':
-                if (self.df[self.df.When == x[1]].shape[0]): 
-                    x_pred.append(self.df.loc[self.df.When == x[1], "SA"].values[0])
-                else:
-                    x_pred.append(math.pi * self.r_F**2)
+            if (self.df[self.df.When == x[1]].shape[0]): 
+                x_pred.append(self.df.loc[self.df.When == x[1], "SA"].values[0])
+            else:
+                x_pred.append(math.pi * self.r_F**2)
             ctr +=1
 
         return x_pred
