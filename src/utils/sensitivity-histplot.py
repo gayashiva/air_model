@@ -76,7 +76,7 @@ if __name__ == "__main__":
             df = df[:num_selected]
 
             df = pd.concat([df.drop(['params'], axis=1), df['params'].apply(pd.Series)], axis=1)
-            df = df.round(4)
+            # df = df.round(4)
             #df = df.loc[df.DX==0.02]
             # df = df.loc[df.SA_corr >= 1.2]
 

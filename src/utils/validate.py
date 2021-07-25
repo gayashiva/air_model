@@ -54,11 +54,6 @@ def calculate(process_name,location, tasks, X, y, results, results_list, kind):
             if kind == 'area':
                 x_pred = clf.predict_sa(X)
                 rmse = mean_squared_error(x_pred,x, squared=False)
-            # else:
-            #     y_pred, x_pred = clf.predict_sa_v(X)
-            #     rmse1 = mean_squared_error(y_pred,y, squared=False)
-            #     rmse2 = mean_squared_error(x_pred,x, squared=False)
-            #     rmse = np.sqrt(rmse1**2+rmse2**2)
 
             # Compute result and mimic a long-running task
             compute = rmse
@@ -190,7 +185,6 @@ if __name__ == "__main__":
                 df = df.set_index('rmse').sort_index().reset_index()
                 print(df.head())
                 df.to_csv(FOLDER['sim'] + file_path, index=False)
-                # save_obj(FOLDER['sim'], file_path, results_list)
                 break
         else:
             # Print percentage of completed tasks
