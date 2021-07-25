@@ -46,7 +46,7 @@ if __name__ == "__main__":
     # location = "guttannen21"
 
     # params = ['IE', 'A_I', 'Z', 'SA_corr', 'DX']
-    params = ['DX', 'SA_corr', 'Z']
+    params = ['Z', 'SA_corr', 'DX']
     # params = ['DX', 'SA_corr']
 
     # Creating an empty Dataframe with column names only
@@ -78,6 +78,7 @@ if __name__ == "__main__":
 
         df = pd.concat([df.drop(['params'], axis=1), df['params'].apply(pd.Series)], axis=1)
         df = df.round(4)
+        #df = df.loc[df.DX==0.02]
 
         print()
         for col in params:
