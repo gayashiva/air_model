@@ -45,8 +45,8 @@ if __name__ == "__main__":
     # locations = ["guttannen21"]
     # location = "guttannen21"
 
-    params = ['IE', 'A_I', 'Z', 'SA_corr', 'DX']
-    # params = ['DX', 'SA_corr', 'Z']
+    # params = ['IE', 'A_I', 'Z', 'SA_corr', 'DX']
+    params = ['DX', 'SA_corr', 'Z']
     # params = ['DX', 'SA_corr']
 
     # Creating an empty Dataframe with column names only
