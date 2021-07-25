@@ -59,7 +59,8 @@ if __name__ == "__main__":
         tuned_params = setup_params(params)
 
         # kind = 'temp'
-        kind = 'volume'
+        # kind = 'volume'
+        kind = 'area'
         file_path = 'cv-'+kind+'-'
         # file_path = 'cv-'
         file_path += '-'.join('{}'.format(key) for key, value in tuned_params.items())

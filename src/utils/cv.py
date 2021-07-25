@@ -157,6 +157,7 @@ class CV_Icestupa(BaseEstimator,Icestupa):
                 x_pred.append(self.df.loc[self.df.When == x[1], "SA"].values[0])
             else:
                 x_pred.append(math.pi * self.r_F**2)
+                # x_pred.append(0)
             ctr +=1
 
         return x_pred
