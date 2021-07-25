@@ -15,7 +15,7 @@ def get_parameter_metadata(
             "name": "Surface layer thickness",
             "latex": "$\\Delta x$",
             "ylim": [10e-03, 50e-03],
-            "step": 10e-03,
+            "step": 5e-03,
             "kind": "parameter",
             "units": "($mm$)",
         },
