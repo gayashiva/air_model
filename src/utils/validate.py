@@ -48,16 +48,20 @@ def calculate(process_name,location, tasks, X, y, results, results_list, kind):
             # Fit new parameter
             clf.fit(X,y)
             # diff = clf.predict_survival()
-            y_pred = clf.predict(X)
-            # y_pred, x_pred = clf.predict_sa_v(X)
-            rmse = mean_squared_error(y_pred,y, squared=False)
-            # rmse1 = mean_squared_error(y_pred,y, squared=False)
-            # rmse2 = mean_squared_error(x_pred,x, squared=False)
-            # rmse = np.sqrt(rmse1**2+rmse2**2)
+            if kind == 'volume':
+                y_pred = clf.predict(X)
+                rmse = mean_squared_error(y_pred,y, squared=False)
+            if kind == 'area':
+                x_pred = clf.predict(X)
+                rmse = mean_squared_error(x_pred,x, squared=False)
+            else:
+                y_pred, x_pred = clf.predict_sa_v(X)
+                rmse1 = mean_squared_error(y_pred,y, squared=False)
+                rmse2 = mean_squared_error(x_pred,x, squared=False)
+                rmse = np.sqrt(rmse1**2+rmse2**2)
 
             # Compute result and mimic a long-running task
             compute = rmse
-            # compute = diff
 
             # Output which process received the value
             print('[%s] received value: %s' % (process_name, new_value))
@@ -77,8 +81,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    # location = "gangles21"
-    location = "guttannen21"
+    location = "gangles21"
+    # location = "guttannen21"
     # location = "schwarzsee19"
 
     icestupa = Icestupa(location)
@@ -90,7 +94,8 @@ if __name__ == "__main__":
 
     # Loading measurements
     obs = list()
-    kind = 'volume'
+    # kind = 'volume'
+    kind = 'area'
     # kind = 'temp'
 
     if kind == 'volume':

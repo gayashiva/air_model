@@ -91,7 +91,7 @@ class CV_Icestupa(BaseEstimator,Icestupa):
         self.diff = self.total_hours
            
     @Timer(text="Simulation executed in {:.2f} seconds")
-    def fit(self, X,y,groups=None):
+    def fit(self, X,y):
 
         if self.A_DECAY !=17.5 or self.A_I != 0.25 or self.A_S != 0.85 or self.T_PPT!= 1: 
             """Albedo Decay parameters initialized"""
@@ -155,6 +155,18 @@ class CV_Icestupa(BaseEstimator,Icestupa):
             ctr +=1
 
         return y_pred, x_pred
+    def predict_sa(self, X):
+        x_pred = []
+        ctr = 0
+        for x in X:
+            if self.kind == 'volume':
+                if (self.df[self.df.When == x[1]].shape[0]): 
+                    x_pred.append(self.df.loc[self.df.When == x[1], "SA"].values[0])
+                else:
+                    x_pred.append(math.pi * self.r_F**2)
+            ctr +=1
+
+        return x_pred
 
 
 if __name__ == "__main__":
