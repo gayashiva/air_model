@@ -87,8 +87,8 @@ if __name__ == "__main__":
 
             df['AIR'] = get_parameter_metadata(location)['shortname']
             df[['Z', 'DX']] *= 1000
-            df['Z'] = pd.to_numeric(df['Z'], downcast='integer')
-            df['DX'] = pd.to_numeric(df['DX'], downcast='integer')
+            # df['Z'] = pd.to_numeric(df['Z'], downcast='integer')
+            # df['DX'] = pd.to_numeric(df['DX'], downcast='integer')
             dfx = dfx.append(df, ignore_index = True)
 
         print(dfx.head())
