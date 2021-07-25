@@ -98,37 +98,21 @@ if __name__ == "__main__":
     kind = 'area'
     # kind = 'temp'
 
-    if kind == 'volume':
-        df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
+    df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
 
-        # Remove dome volume
-        df_c = df_c[1:]
+    # Remove dome volume
+    df_c = df_c[1:]
+    print(df_c)
 
-        df_c["Where"] = location
+    df_c["Where"] = location
 
-        # print(df_c.loc[df_c.Area=='NaN', 'Area'])
-        # df_c.loc[-1, 'Area']= math.pi * icestupa.r_F **2
-        obs.extend(df_c.reset_index()[["Where", 'When', 'DroneV', 'Area']].values.tolist())
-
-    else:
-        if location != 'gangles21':
-            df_cam = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_cam")
-            df_cam = df_cam.reset_index()
-            df_cam["Where"] = location
-            obs.extend(df_cam.reset_index()[["Where", 'When', 'cam_temp']].values.tolist())
-        else:
-            logger.error("%s doesnt have cam temp" %location)
+    obs.extend(df_c.reset_index()[["Where", 'When', 'DroneV', 'Area']].values.tolist())
 
     X = [[a[0], a[1]] for a in obs]
     y = [a[2] for a in obs]
     x = [a[3] for a in obs]
     print(x)
 
-    # if location == 'gangles21':
-    #     params = ['IE', 'A_I', 'Z', 'T_F', 'DX']
-    # else:
-    #     params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX']
-    # params = ['DX']
     params = [ 'Z', 'SA_corr', 'DX']
     # params = ['DX', 'SA_corr', 'Z']
     tuned_params = setup_params(params)
