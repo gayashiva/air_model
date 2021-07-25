@@ -70,6 +70,7 @@ if __name__ == "__main__":
             "v_a",
             "SW_direct",
             "SW_diffuse",
+            "LW_in",
             "Prec",
             "p_a",
         ]

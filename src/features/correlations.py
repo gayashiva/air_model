@@ -31,7 +31,7 @@ if __name__ == "__main__":
     icestupa = Icestupa(location)
     icestupa.self_attributes()
     icestupa.read_output()
-    column_1 = "r_ice"
-    column_2 = "SA"
+    column_1 = "Qs"
+    column_2 = "T_a"
     correlation = icestupa.df[column_1].corr(icestupa.df[column_2])
     print("Correlation between %s and %s is %0.2f"%(column_1, column_2, correlation))
