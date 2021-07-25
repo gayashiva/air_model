@@ -40,7 +40,7 @@ def calculate(process_name,location, tasks, X, y, results, results_list, kind):
             break
         else:
             # Initialise icestupa object
-            clf = CV_Icestupa(name = location, kind = kind)
+            clf = CV_Icestupa(name = location)
 
             # Set new parameter
             clf.set_params(**new_value)

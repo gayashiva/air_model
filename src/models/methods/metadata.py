@@ -22,7 +22,8 @@ def get_parameter_metadata(
         "SA_corr": {
             "name": "Surface area correction factor",
             "latex": "$SA_{corr}$",
-            "ylim": [1.2, 1.4],
+            "ylim": [1, 2],
+            # "ylim": [1.2, 1.4],
             "step": 0.1,
             "kind": "parameter",
             "units": "( )",
@@ -30,7 +31,8 @@ def get_parameter_metadata(
         "Z": {
             "name": "Surface roughness",
             "latex": "$z_{0}$",
-            "ylim": [1e-03, 3e-03],
+            "ylim": [1e-03, 5e-03],
+            # "ylim": [1e-03, 3e-03],
             "step": 1e-03,
             "kind": "parameter",
             "units": "($mm$)",
