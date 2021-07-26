@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
         # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z']
         # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'DX', 'SA_corr']
-        params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z']
+        params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT']
 
         parameters = un.Parameters(setup_params_dist(params))
 
