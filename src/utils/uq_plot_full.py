@@ -22,8 +22,8 @@ from src.models.methods.metadata import get_parameter_metadata
 
 if __name__ == "__main__":
 
-    # locations = ['gangles21', 'guttannen21', 'guttannen20']
-    locations = [ 'guttannen21']
+    locations = ['gangles21', 'guttannen21', 'guttannen20']
+    # locations = [ 'guttannen21']
 
     blue = "#0a4a97"
     red = "#e23028"
@@ -58,22 +58,25 @@ if __name__ == "__main__":
         evaluations = []
 
         data = un.Data()
-        filename1 = FOLDER['sim']+ "SE_full.h5"
-        # filename1 = FOLDER['sim']+ "full.h5"
+        # filename1 = FOLDER['sim']+ "SE_full.h5"
+        filename1 = FOLDER['sim']+ "full.h5"
         # filename1 = FOLDER['sim']+ "input.h5"
         # filename1 = FOLDER['sim']+ "efficiency.h5"
         data.load(filename1)
-        print(data)
+        # print(data)
 
-        # survived_days = icestupa.total_hours / (24)
         if location == 'schwarzsee19':
             SITE["start_date"] +=pd.offsets.DateOffset(year=2023)
+            SITE["end_date"] +=pd.offsets.DateOffset(year=2023)
         if location == 'guttannen20':
             SITE["start_date"] +=pd.offsets.DateOffset(year=2023)
+            SITE["end_date"] +=pd.offsets.DateOffset(year=2023)
         if location == 'guttannen21':
             SITE["start_date"] +=pd.offsets.DateOffset(year=2022)
+            SITE["end_date"] +=pd.offsets.DateOffset(year=2023)
         if location == 'gangles21':
             SITE["start_date"] +=pd.offsets.DateOffset(year=2023)
+            SITE["end_date"] =datetime(2021, 6, 20) + pd.offsets.DateOffset(year=2023)
 
         days = pd.date_range(
             start=SITE["start_date"],
@@ -127,10 +130,11 @@ if __name__ == "__main__":
         y1 = df.iceV[1:]
         x2 = dfv.When
         y2 = dfv.DroneV
+        yerr = dfv.DroneVError
         ax[i].plot(
             x,
             y1,
-            label="Modelled Volume",
+            label="Calibrated Volume",
             linewidth=1,
             color=CB91_Blue,
             zorder=1,
@@ -143,9 +147,11 @@ if __name__ == "__main__":
             alpha=0.3,
             label="90% prediction interval",
         )
-        ax[i].scatter(x2, y2, color=CB91_Green, s=5, label="Measured Volume", zorder=2)
-        # ax[i].fill_between(x, y1=icestupa.V_dome, y2=0, color=grey, label = "Dome Volume", zorder=0)
-        ax[i].set_ylim(round(icestupa.V_dome,0), round(data.percentile_95.max(),0))
+        ax[i].errorbar(x2, y2, yerr=df_c.DroneVError, color=CB91_Green, lw=1,  label="UAV Volume", zorder=3)
+        ax[i].scatter(x2, y2, s = 5, color=CB91_Green, zorder=2)
+        # ax[i].scatter(SITE['end_date'], round(icestupa.V_dome,0) + 1,  color=CB91_Amber,marker = "x", zorder=2)
+        ax[i].axvline(SITE['end_date'],  color=CB91_Amber,linestyle = '--', zorder=4, label="Survival Duration",)
+        ax[i].set_ylim(round(icestupa.V_dome,0) - 1, round(data.percentile_95.max(),0))
         v = get_parameter_metadata(location)
         at = AnchoredText( v['shortname'], prop=dict(size=10), frameon=True, loc="upper left")
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
@@ -161,8 +167,6 @@ if __name__ == "__main__":
         ax[i].spines['bottom'].set_color('grey')
         [t.set_color('grey') for t in ax[i].xaxis.get_ticklines()]
         [t.set_color('grey') for t in ax[i].yaxis.get_ticklines()]
-        # ax[i].tick_params(axis='x', colors='grey')
-        # ax[i].axes.get_yaxis().label.set_color('red')
         # Only show ticks on the left and bottom spines
         ax[i].yaxis.set_ticks_position('left')
         ax[i].xaxis.set_ticks_position('bottom')
@@ -173,8 +177,6 @@ if __name__ == "__main__":
 
     fig.text(0.04, 0.5, 'Ice Volume[$m^3$]', va='center', rotation='vertical')
     handles, labels = ax[1].get_legend_handles_labels()
-    fig.legend(handles, labels, loc='upper right')
-    # fig.suptitle('Artificial Ice Reservoirs', fontsize=16)
-    # plt.legend()
+    fig.legend(handles, labels, loc='upper right', prop={'size': 8})
     plt.savefig("data/paper/icev_results.jpg", bbox_inches="tight", dpi=300)
 
