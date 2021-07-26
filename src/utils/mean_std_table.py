@@ -34,13 +34,14 @@ if __name__ == "__main__":
         icestupa.read_output()
 
         print(icestupa.df.loc[icestupa.df.Discharge> 0, 'Discharge'].count())
-        print(icestupa.df.loc[icestupa.df.fountain_froze == SITE['D_F'] * 60, 'fountain_runoff'].count())
+        print(icestupa.df.loc[icestupa.df.fountain_froze >= SITE['D_F'] * 60, 'fountain_runoff'].count())
 
         icestupa.df.loc[icestupa.df.Qfreeze == 0, 'Qfreeze'] = np.nan
         icestupa.df.loc[icestupa.df.Qmelt == 0, 'Qmelt'] = np.nan
         icestupa.df.loc[icestupa.df.Discharge== 0, 'fountain_froze'] = np.nan
-        icestupa.df['melted'] *= 60/1000
-        icestupa.df['fountain_froze'] *= 60/1000
+        icestupa.df['melted'] /= 60
+        icestupa.df['fountain_froze'] /= 60
+        print(icestupa.df.fountain_froze.max())
 
 
         icestupa.df = icestupa.df.rename(

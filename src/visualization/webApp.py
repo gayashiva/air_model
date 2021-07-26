@@ -223,27 +223,24 @@ if __name__ == "__main__":
         )
 
     with row3_1:
-        # f_mean = icestupa.df.Discharge.replace(0, np.nan).mean()
-        # Duration = icestupa.df.index[-1] * icestupa.DT / (60 * 60 * 24)
         mean_freeze_rate = icestupa.df[
-            icestupa.df.fountain_froze != 0
+            icestupa.df.Discharge != 0
         ].fountain_froze.mean() / (icestupa.DT / 60)
         fountain_duration = icestupa.df[icestupa.df.Discharge != 0].shape[0]
-        mean_melt_rate = icestupa.df[icestupa.df.melted != 0].melted.mean() / (
+        mean_melt_rate = icestupa.df.melted.mean() / (
             icestupa.DT / 60
         )
         st.markdown(
             """
         | Fountain | Estimation |
         | --- | --- |
-        | Spray Radius | %.1f $m$|
-        | Water sprayed| %.0f $m^3$ |
-        | Mean freeze rate | %.2f $l/min$ |
-        | Mean melt rate | %.2f $l/min$ |
-        | Duration | %s $hours$ |
+        | Spray Radius | %i $m$|
+        | Water sprayed| %i $m^3$ |
+        | Mean freeze rate | %i $l/min$ |
+        | Mean melt rate | %i $l/min$ |
+        | Runtime | %s $hours$ |
         """
             % (
-                # f_mean,
                 icestupa.r_F,
                 icestupa.M_F / 1000,
                 mean_freeze_rate,
@@ -257,10 +254,10 @@ if __name__ == "__main__":
             """
         | Icestupa| Estimation |
         | --- | --- |
-        | Max Ice Volume | %.1f $m^{3}$|
-        | Meltwater released | %.0f $kg$ |
-        | Vapour loss | %.0f $kg$ |
-        | Storage Efficiency | %.0f $percent$ |
+        | Max Ice Volume | %i $m^{3}$|
+        | Meltwater released | %i $kg$ |
+        | Vapour loss | %i $kg$ |
+        | Storage Efficiency | %i $percent$ |
         """
             % (
                 icestupa.df["iceV"].max(),
@@ -276,8 +273,6 @@ if __name__ == "__main__":
     else:
         if "Validation" in display:
             df_c = pd.read_hdf(icestupa.input + "model_input.h5", "df_c")
-
-            # df_c = pd.read_hdf(icestupa.input + "model_input.h5", "df_c")
             df_c = df_c.set_index("When")
             icestupa.df = icestupa.df.set_index("When")
             tol = pd.Timedelta("1T")
