@@ -32,13 +32,11 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    locations = ['gangles21', 'guttannen21', 'guttannen20']
+    # locations = ['gangles21', 'guttannen21', 'guttannen20']
+    locations = ['gangles21', 'guttannen21']
 
     fig, ax = plt.subplots()
     custom_colors = sns.color_palette("Set1", len(locations))
-    custom_lines = [Line2D([0], [0], color=custom_colors[0], lw=4),
-                    Line2D([0], [0], color=custom_colors[1], lw=4),
-                    Line2D([0], [0], color=custom_colors[2], lw=4)]
 
     for i,location in enumerate(locations):
         SITE, FOLDER = config(location)
@@ -57,20 +55,20 @@ if __name__ == "__main__":
             parse_dates=["When"],
         )
 
-        a_pred = []
-        a_true = df_c.Area.values
-        for date in df_c.When.values:
-            if icestupa.df[icestupa.df.When == date].shape[0]:
-                a_pred.append(icestupa.df.loc[icestupa.df.When == date, "SA"].values[0])
-            else:
-                a_pred.append(np.nan)
-
-        res = list(map(truediv, a_true, a_pred))
-# printing original lists 
-        print ("The original list 1 is : " + str(a_true))
-        print ("The original list 2 is : " + str(a_pred))
-# printing result
-        print ("The division list is : " + str(res))
+#         a_pred = []
+#         a_true = df_c.Area.values
+#         for date in df_c.When.values:
+#             if icestupa.df[icestupa.df.When == date].shape[0]:
+#                 a_pred.append(icestupa.df.loc[icestupa.df.When == date, "SA"].values[0])
+#             else:
+#                 a_pred.append(np.nan)
+# 
+#         res = list(map(truediv, a_true, a_pred))
+# # printing original lists 
+#         print ("The original list 1 is : " + str(a_true))
+#         print ("The original list 2 is : " + str(a_pred))
+# # printing result
+#         print ("The division list is : " + str(res))
 
         if location == 'guttannen20':
             SITE["start_date"] +=pd.offsets.DateOffset(year=2023)
@@ -90,7 +88,7 @@ if __name__ == "__main__":
             freq="1H",
         )
 
-        df = icestupa.df[["When","SA"]]
+        df = icestupa.df[["When","SA", "ice", "fountain_froze", "melted"]]
         dfv = df_c[["When", "Area"]]
         if location == 'guttannen20':
             df['When'] = df['When'].mask(icestupa.df['When'].dt.year == 2019, 
@@ -137,6 +135,31 @@ if __name__ == "__main__":
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
         ax.legend()
         fig.autofmt_xdate()
+
+#         df = df.set_index("When").resample("D").mean().reset_index()
+#         x = df.When[1:]
+#         # y1 = df.fountain_froze[1:] *60/1000 - df.melted[1:] *60/1000
+#         y1 = df.ice[1:].diff()/1000
+# 
+#         v = get_parameter_metadata(location)
+#         ax.plot(
+#             x,
+#             y1,
+#             linewidth=1,
+#             color=custom_colors[i],
+#             zorder=1,
+#             label = v['shortname']
+#         )
+#         # Hide the right and top spines
+#         ax.spines['right'].set_visible(False)
+#         ax.spines['top'].set_visible(False)
+#         ax.spines['left'].set_color('grey')
+#         ax.spines['bottom'].set_color('grey')
+#         # Only show ticks on the left and bottom spines
+#         ax.xaxis.set_major_locator(mdates.MonthLocator())
+#         ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
+#         ax.legend()
+#         fig.autofmt_xdate()
 
     plt.savefig(
         "data/paper/area.jpg",

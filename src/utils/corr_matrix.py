@@ -25,7 +25,7 @@ from src.models.icestupaClass import Icestupa
 
 if __name__ == "__main__":
     # locations = ["gangles21", "guttannen21"]
-    locations = [ "guttannen21"]
+    locations = [ "gangles21"]
 
     fig, ax = plt.subplots()
     for ctr, location in enumerate(locations):
