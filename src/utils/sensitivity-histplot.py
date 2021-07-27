@@ -71,6 +71,7 @@ if __name__ == "__main__":
             num_selected = int(0.1 * df.shape[0])
             num_total = df.shape[0]
             print()
+            print("\tObjective %s Site %s" % (obj, location))
             print("\tSelected %s out of %s" % (num_selected, num_total))
             print("\tRMSE %s upto %s" % (df.rmse[0], df.rmse[num_selected]))
             df = df[:num_selected]
