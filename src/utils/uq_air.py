@@ -21,13 +21,16 @@ from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
 from src.models.methods.droplet import get_droplet_projectile
 
-def setup_params_dist(params):
+def setup_params_dist(icestupa, params):
     params_range = []
     for param in params:
-        y_lim=get_parameter_metadata(param)['ylim']
-        param_range = cp.Uniform(y_lim[0], y_lim[1])
+        y_lim = get_parameter_metadata(param)['ylim']
+        if param in ['r_F', 'D_F']:
+            param_range = cp.Uniform(getattr(icestupa, param) * y_lim[0],getattr(icestupa, param) * y_lim[1])
+        else:
+            param_range = cp.Uniform(y_lim[0], y_lim[1])
         params_range.append(param_range)
-        print(param, param_range)
+        print("\t%s : %s\n" %(param, param_range))
 
     tuned_params = {params[i]: params_range[i] for i in range(len(params))}
     return tuned_params

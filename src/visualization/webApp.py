@@ -250,6 +250,12 @@ if __name__ == "__main__":
         )
 
     with row3_2:
+        if icestupa.name == 'gangles21':
+            SITE["end_date"] =datetime(2021, 6, 30)
+            diff = SITE["end_date"] - SITE["start_date"]
+            days, seconds = diff.days, diff.seconds
+            icestupa.total_hours = days * 24 + seconds // 3600
+        perf = (icestupa.total_hours - icestupa.last_hour)/24
         st.markdown(
             """
         | Icestupa| Estimation |
@@ -258,12 +264,14 @@ if __name__ == "__main__":
         | Meltwater released | %i $kg$ |
         | Vapour loss | %i $kg$ |
         | Storage Efficiency | %i $percent$ |
+        | Model performance | %i $days$ |
         """
             % (
                 icestupa.df["iceV"].max(),
                 icestupa.M_water,
                 icestupa.M_sub,
                 (icestupa.M_water + icestupa.M_ice) / icestupa.M_input * 100,
+                perf,
             )
         )
 

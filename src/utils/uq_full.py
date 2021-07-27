@@ -44,16 +44,10 @@ if __name__ == "__main__":
 
         # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z']
         # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'DX', 'SA_corr']
-        params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT']
+        # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT']
+        params = ['D_F', 'T_F', 'r_F']
 
-        parameters = un.Parameters(setup_params_dist(params))
-
-#         list_of_feature_functions = [rmse_V]
-# 
-#         features = un.Features(
-#             new_features=list_of_feature_functions,
-#             features_to_run=["rmse_V"],
-#         )
+        parameters = un.Parameters(setup_params_dist(icestupa, params))
 
         # Initialize the model
         model = UQ_Icestupa(location)
@@ -62,7 +56,6 @@ if __name__ == "__main__":
         UQ = un.UncertaintyQuantification(
             model=model,
             parameters=parameters,
-            # features=features,
             # CPUs=2,
         )
 
@@ -73,7 +66,8 @@ if __name__ == "__main__":
             data_folder=FOLDER["sim"],
             figure_folder=FOLDER["sim"],
             # filename="SE_full",
-            filename="full",
+            # filename="full",
+            filename="fountain",
             method="pc",
             # pc_method="spectral",
             rosenblatt=True           

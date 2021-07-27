@@ -76,7 +76,7 @@ if __name__ == "__main__":
             SITE["end_date"] +=pd.offsets.DateOffset(year=2023)
         if location == 'gangles21':
             SITE["start_date"] +=pd.offsets.DateOffset(year=2023)
-            SITE["end_date"] =datetime(2021, 6, 20) + pd.offsets.DateOffset(year=2023)
+            SITE["end_date"] =datetime(2021, 6, 30) + pd.offsets.DateOffset(year=2023)
 
         days = pd.date_range(
             start=SITE["start_date"],
