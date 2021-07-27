@@ -60,9 +60,8 @@ if __name__ == "__main__":
         data = un.Data()
         # filename1 = FOLDER['sim']+ "SE_full.h5"
         filename1 = FOLDER['sim']+ "full.h5"
-        # filename1 = FOLDER['sim']+ "input.h5"
+        filename2 = FOLDER['sim']+ "fountain.h5"
         # filename1 = FOLDER['sim']+ "efficiency.h5"
-        data.load(filename1)
         # print(data)
 
         if location == 'schwarzsee19':
@@ -89,10 +88,17 @@ if __name__ == "__main__":
             freq="1H",
         )
 
-        data = data[location]
-        data['percentile_5'] = data['percentile_5'][1:len(days2)+1]
-        data['percentile_95'] = data['percentile_95'][1:len(days2)+1]
-        data["When"] = days2
+        data.load(filename1)
+        data1 = data[location]
+        data1['percentile_5'] = data1['percentile_5'][1:len(days2)+1]
+        data1['percentile_95'] = data1['percentile_95'][1:len(days2)+1]
+        data1["When"] = days2
+
+        data.load(filename2)
+        data2 = data[location]
+        data2['percentile_5'] = data2['percentile_5'][1:len(days2)+1]
+        data2['percentile_95'] = data2['percentile_95'][1:len(days2)+1]
+        data2["When"] = days2
 
         df = icestupa.df[["When","iceV"]]
         df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
@@ -140,18 +146,28 @@ if __name__ == "__main__":
             zorder=1,
         )
         ax[i].fill_between(
-            data["When"],
-            data.percentile_5,
-            data.percentile_95,
+            data1["When"],
+            data1.percentile_5,
+            data1.percentile_95,
             color="skyblue",
             alpha=0.3,
-            label="90% prediction interval",
+            label="Weather uncertainty",
+            zorder = 6,
+        )
+        ax[i].fill_between(
+            data2["When"],
+            data2.percentile_5,
+            data2.percentile_95,
+            color="orange",
+            alpha=0.3,
+            label="Fountain uncertainty",
+            zorder = 5,
         )
         ax[i].errorbar(x2, y2, yerr=df_c.DroneVError, color=CB91_Green, lw=1,  label="UAV Volume", zorder=3)
         ax[i].scatter(x2, y2, s = 5, color=CB91_Green, zorder=2)
         # ax[i].scatter(SITE['end_date'], round(icestupa.V_dome,0) + 1,  color=CB91_Amber,marker = "x", zorder=2)
-        ax[i].axvline(SITE['end_date'],  color=CB91_Amber,linestyle = '--', zorder=4, label="Survival Duration",)
-        ax[i].set_ylim(round(icestupa.V_dome,0) - 1, round(data.percentile_95.max(),0))
+        ax[i].axvline(SITE['end_date'],  color=CB91_Violet,linestyle = '--', zorder=4, label="Survival Duration",)
+        ax[i].set_ylim(round(icestupa.V_dome,0) - 1, round(data2.percentile_95.max(),0))
         v = get_parameter_metadata(location)
         at = AnchoredText( v['shortname'], prop=dict(size=10), frameon=True, loc="upper left")
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
