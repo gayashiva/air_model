@@ -150,6 +150,7 @@ class Icestupa:
 
             """ Vapour Pressure"""
             if "vp_a" in unknown:
+                f = 1.0016+3.15*math.pow(10,-6)*self.df.loc[i, "p_a"]-0.074*math.pow(self.df.loc[i, "p_a"],-1)
                 self.df.loc[i, "vp_a"] = (
                     6.107
                     * math.pow(
