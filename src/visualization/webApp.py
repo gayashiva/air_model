@@ -255,7 +255,7 @@ if __name__ == "__main__":
             diff = SITE["end_date"] - SITE["start_date"]
             days, seconds = diff.days, diff.seconds
             icestupa.total_hours = days * 24 + seconds // 3600
-        perf = (icestupa.total_hours - icestupa.last_hour)/24
+        # perf = (icestupa.total_hours - icestupa.last_hour)/24
         df_c = pd.read_hdf(icestupa.input + "model_input.h5", "df_c")
         df_c = df_c.set_index("When")
         icestupa.df = icestupa.df.set_index("When")
@@ -296,15 +296,17 @@ if __name__ == "__main__":
         | Max Ice Volume | %i $m^{3}$|
         | Meltwater released | %i $tons$ |
         | Vapour loss | %i $tons$ |
-        | Storage Efficiency | %i $percent$ |
+        | Net Water loss | %i $percent$ |
         | Melt-out date | %s |
+        | Model performance | %i $percent$ |
         """
             % (
                 icestupa.df["iceV"].max(),
                 icestupa.M_water/1000,
                 icestupa.M_sub/1000,
-                (icestupa.M_water + icestupa.M_ice) / icestupa.M_input * 100,
+                (icestupa.M_runoff + icestupa.M_sub) / icestupa.M_input * 100,
                 SITE['melt_out'].strftime("%b %d"),
+                rmse_V/icestupa.df["iceV"].max() * 100,
             )
         )
 
