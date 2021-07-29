@@ -294,21 +294,17 @@ if __name__ == "__main__":
         | Icestupa| Estimation |
         | --- | --- |
         | Max Ice Volume | %i $m^{3}$|
-        | Meltwater released | %i $kg$ |
-        | Vapour loss | %i $kg$ |
+        | Meltwater released | %i $tons$ |
+        | Vapour loss | %i $tons$ |
         | Storage Efficiency | %i $percent$ |
-        | Model performance | %i $days$ |
-        | Relative Error | %i $percent$ |
-        | Sublimation | %.2f $percent$ |
+        | Melt-out date | %s |
         """
             % (
                 icestupa.df["iceV"].max(),
-                icestupa.M_water,
-                icestupa.M_sub,
+                icestupa.M_water/1000,
+                icestupa.M_sub/1000,
                 (icestupa.M_water + icestupa.M_ice) / icestupa.M_input * 100,
-                perf,
-                rmse_V/icestupa.df["iceV"].max() * 100,
-                icestupa.M_sub / icestupa.M_input * 100 ,
+                SITE['melt_out'].strftime("%b %d"),
             )
         )
 
