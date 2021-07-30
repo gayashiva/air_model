@@ -264,12 +264,12 @@ if __name__ == "__main__":
         )
         subfigs[ctr].subplots_adjust(hspace=0.05, wspace=0.025)
     lgd1 = ax[0, 0].legend(
-        loc="upper center", bbox_to_anchor=(1, 4), ncol=5, title="Mass fluxes"
+        loc="upper center", bbox_to_anchor=(1, 4), ncol=5, 
     )
     lgd2 = ax[1, 0].legend(
         loc="upper center", bbox_to_anchor=(1, 2.4), ncol=10
     )
-    add_patch(lgd1, title="Mass fluxes", label = 'Runtime', color=CB91_Violet)
+    add_patch(lgd1, title="Surface normal thickness change", label = 'Runtime', color=CB91_Violet)
     add_patch(lgd2)
     plt.savefig(
         "data/paper/mass_energy_bal.jpg",

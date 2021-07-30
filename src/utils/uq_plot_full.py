@@ -62,7 +62,6 @@ if __name__ == "__main__":
         filename1 = FOLDER['sim']+ "full.h5"
         filename2 = FOLDER['sim']+ "fountain.h5"
         # filename1 = FOLDER['sim']+ "efficiency.h5"
-        # print(data)
 
         if location == 'schwarzsee19':
             SITE["start_date"] +=pd.offsets.DateOffset(year=2023)
@@ -75,7 +74,7 @@ if __name__ == "__main__":
             SITE["end_date"] +=pd.offsets.DateOffset(year=2023)
         if location == 'gangles21':
             SITE["start_date"] +=pd.offsets.DateOffset(year=2023)
-            SITE["end_date"] =datetime(2021, 6, 30) + pd.offsets.DateOffset(year=2023)
+            # SITE["end_date"] =SITE['melt_out'] + pd.offsets.DateOffset(year=2023)
 
         days = pd.date_range(
             start=SITE["start_date"],
@@ -89,12 +88,14 @@ if __name__ == "__main__":
         )
 
         data.load(filename1)
+        print(data)
         data1 = data[location]
         data1['percentile_5'] = data1['percentile_5'][1:len(days2)+1]
         data1['percentile_95'] = data1['percentile_95'][1:len(days2)+1]
         data1["When"] = days2
 
         data.load(filename2)
+        print(data)
         data2 = data[location]
         data2['percentile_5'] = data2['percentile_5'][1:len(days2)+1]
         data2['percentile_95'] = data2['percentile_95'][1:len(days2)+1]
@@ -166,7 +167,8 @@ if __name__ == "__main__":
         ax[i].errorbar(x2, y2, yerr=df_c.DroneVError, color=CB91_Green, lw=1,  label="UAV Volume", zorder=3)
         ax[i].scatter(x2, y2, s = 5, color=CB91_Green, zorder=2)
         # ax[i].scatter(SITE['end_date'], round(icestupa.V_dome,0) + 1,  color=CB91_Amber,marker = "x", zorder=2)
-        ax[i].axvline(SITE['end_date'],  color=CB91_Violet,linestyle = '--', zorder=4, label="Survival Duration",)
+        if location != 'gangles21':
+            ax[i].axvline(SITE['end_date'],  color=CB91_Violet,linestyle = '--', zorder=4, label="Melt-out date",)
         ax[i].set_ylim(round(icestupa.V_dome,0) - 1, round(data2.percentile_95.max(),0))
         v = get_parameter_metadata(location)
         at = AnchoredText( v['shortname'], prop=dict(size=10), frameon=True, loc="upper left")
