@@ -94,7 +94,7 @@ def config(location="guttannen21"):
             H_AWS = 2,
             diffuse_fraction = 0,
 
-            SA_corr= 1.5,
+            # SA_corr= 1.5,
             # perimeter=82.3, # On 3 Mar
         )
 
