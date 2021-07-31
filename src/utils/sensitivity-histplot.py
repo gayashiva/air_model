@@ -40,13 +40,15 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    locations = ["gangles21", "guttannen21"]
+    # locations = ["gangles21", "guttannen21"]
+    locations = ["guttannen21"]
     # location = "guttannen21"
 
     # params = ['IE', 'A_I', 'Z', 'SA_corr', 'DX']
     # params = ['DX', 'SA_corr']
     params = ['Z', 'SA_corr', 'DX']
-    kind = ['volume', 'area']
+    # kind = ['volume', 'area']
+    kind = ['volume']
 
     sns.set(style="darkgrid")
     fig, ax = plt.subplots(
@@ -61,7 +63,8 @@ if __name__ == "__main__":
             SITE, FOLDER = config(location)
             icestupa.read_output()
 
-            file_path = 'cv-'+obj+'-'
+            file_path = 'loo-cv-'+obj+'-'
+            # file_path = 'cv-'+obj+'-'
             file_path += '-'.join('{}'.format(key) for key in params)
 
             df = pd.read_csv(FOLDER['sim'] + file_path)
