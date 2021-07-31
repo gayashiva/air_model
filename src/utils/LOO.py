@@ -93,7 +93,7 @@ if __name__ == "__main__":
     df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
 
     # Remove dome volume
-    df_c = df_c[5:]
+    df_c = df_c[1:]
     print(df_c)
 
     df_c["Where"] = location
@@ -105,8 +105,8 @@ if __name__ == "__main__":
     print(X.shape, y.shape)
 
 
-    # params = [ 'Z', 'SA_corr', 'DX']
-    params = ['SA_corr']
+    params = [ 'Z', 'SA_corr', 'DX']
+    # params = ['SA_corr']
     tuned_params = setup_params(params)
 
     file_path = 'loo-cv-'+kind+'-'
@@ -122,7 +122,6 @@ if __name__ == "__main__":
 
     # Create process pool with four processes
     num_processes = multiprocessing.cpu_count()
-    # num_processes = 2
     pool = multiprocessing.Pool(processes=num_processes)
     processes = []
 
