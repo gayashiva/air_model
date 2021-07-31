@@ -27,7 +27,7 @@ def config(location="guttannen21"):
         SITE = dict(
             name="guttannen21",
             start_date=datetime(2020, 11, 22,15),
-            end_date=datetime(2021, 5, 10, 1),
+            # end_date=datetime(2021, 5, 10, 1),
             melt_out=datetime(2021, 5, 10, 1),
             fountain_off_date=datetime(2021, 2, 20,10),
             D_F=7.5,  # FOUNTAIN min discharge
@@ -37,8 +37,8 @@ def config(location="guttannen21"):
             longitude=8.283333,
             H_AWS = 2,
 
-            # SA_corr= 1.2,
-            # Z= 0.001,
+            SA_corr= 1.2,
+            Z= 0.001,
 
             # perimeter=45, # on Feb 11
             # DX= 50e-03,
@@ -57,7 +57,7 @@ def config(location="guttannen21"):
         SITE = dict(
             name="guttannen20",
             start_date=datetime(2020, 1, 3, 16),
-            end_date=datetime(2020, 4, 6, 12),
+            # end_date=datetime(2020, 4, 6, 12),
             melt_out=datetime(2020, 4, 6, 12),
             fountain_off_date=datetime(2020, 3, 8,9), # Image shows Dani switched off at 8th Mar 10 am
             D_F=7.5,  # FOUNTAIN min discharge
@@ -83,7 +83,7 @@ def config(location="guttannen21"):
         SITE = dict(
             name="gangles21",
             start_date=datetime(2021, 1, 18),
-            end_date=datetime(2021, 7, 8),
+            # end_date=datetime(2021, 7, 8),
             melt_out=datetime(2021, 6, 20), # Norboo observed
             fountain_off_date=datetime(2021, 3, 10, 18),
             D_F=60,  # FOUNTAIN min discharge
@@ -108,7 +108,7 @@ def config(location="guttannen21"):
             name="schwarzsee19",
             start_date=datetime(2019, 1, 30, 17),
             # end_date=datetime(2019, 3, 17),
-            end_date=datetime(2019, 3, 10, 19),
+            melt_out=datetime(2019, 3, 10, 19),
             fountain_off_date=datetime(2019, 2, 16, 10),
             T_F=1,  # FOUNTAIN min discharge
             utc_offset=1,
@@ -138,16 +138,3 @@ def config(location="guttannen21"):
 
 
     return SITE, FOLDER
-
-
-if __name__ == "__main__":
-    
-    SITE, FOLDER = config()
-
-    diff = SITE["end_date"] - SITE["start_date"]
-    days, seconds = diff.days, diff.seconds
-    hours = days * 24 + seconds // 3600
-    minutes = (seconds % 3600) // 60
-    seconds = seconds % 60
-
-    print( hours,minutes,seconds)

@@ -65,7 +65,7 @@ class Icestupa:
     def __init__(self, location="Guttannen 2021", params="default"):
 
         SITE, FOLDER = config(location)
-        diff = SITE["end_date"] - SITE["start_date"]
+        diff = SITE["melt_out"] - SITE["start_date"]
         days, seconds = diff.days, diff.seconds
         self.total_hours = days * 24 + seconds // 3600
 
@@ -91,7 +91,7 @@ class Icestupa:
 
         # Reset date range
         self.df = self.df.set_index("When")
-        self.df = self.df[SITE["start_date"] : SITE["end_date"]]
+        self.df = self.df[SITE["start_date"] : SITE["melt_out"]]
         self.df = self.df.reset_index()
 
         logger.debug(self.df.head())
@@ -270,8 +270,6 @@ class Icestupa:
     def read_input(self):  # Use processed input dataset
 
         self.df = pd.read_hdf(self.input + "model_input.h5", "df")
-
-        # self.change_freq()
 
         if self.df.isnull().values.any():
             logger.warning("\n Null values present\n")

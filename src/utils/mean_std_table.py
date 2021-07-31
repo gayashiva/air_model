@@ -24,24 +24,42 @@ from src.models.methods.metadata import get_parameter_metadata
 from src.models.icestupaClass import Icestupa
 
 if __name__ == "__main__":
-    locations = ["gangles21", "guttannen21"]
+    locations = ["gangles21", "guttannen21", "guttannen20"]
     # locations = ['guttannen21',  'gangles21']
     # locations = ['guttannen21']
 
     for ctr, location in enumerate(locations):
         SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
+        icestupa.read_input()
+        pd.options.display.float_format = '{:,.1f}'.format
+
+        cols = [
+            "T_a",
+            "RH",
+            "v_a",
+            "SW_direct",
+            "SW_diffuse",
+            "LW_in",
+            "Prec",
+            "p_a",
+        ]
+        icestupa.df['Prec'] *= 1000
+        df_i = icestupa.df[cols].describe().T[['mean', 'std']]
+        print(df_i)
+        print()
+
         icestupa.read_output()
 
-        print(icestupa.df.loc[icestupa.df.Discharge> 0, 'Discharge'].count())
-        print(icestupa.df.loc[icestupa.df.fountain_froze >= SITE['D_F'] * 60, 'fountain_runoff'].count())
+        # print(icestupa.df.loc[icestupa.df.Discharge> 0, 'Discharge'].count())
+        # print(icestupa.df.loc[icestupa.df.fountain_froze >= SITE['D_F'] * 60, 'fountain_runoff'].count())
 
         icestupa.df.loc[icestupa.df.Qfreeze == 0, 'Qfreeze'] = np.nan
         icestupa.df.loc[icestupa.df.Qmelt == 0, 'Qmelt'] = np.nan
         icestupa.df.loc[icestupa.df.Discharge== 0, 'fountain_froze'] = np.nan
         icestupa.df['melted'] /= 60
         icestupa.df['fountain_froze'] /= 60
-        print(icestupa.df.fountain_froze.max())
+        # print(icestupa.df.fountain_froze.max())
 
 
         icestupa.df = icestupa.df.rename(
@@ -62,31 +80,7 @@ if __name__ == "__main__":
         cols = ["$q_{SW}$", "$q_{LW}$","$q_S$","$q_L$","$q_{F}$","$q_{G}$", "$q_{freeze}$", "$q_{melt}$",
             "$q_{T}$", "SA", "fountain_froze", "melted"]
         df_e = icestupa.df[cols].describe().T[['mean', 'std']]
-        # df_e = df_e.astype('int32')
         print(df_e)
-        # df_e['table'] = '$' + df_e['mean'].astype(str) + ' \pm '+ df_e['std'].astype(str) + '$'
-        # df_e = df_e['table']
-        # print(df_e.to_latex())
+        print()
 
-        # print(df_e.describe().loc[["mean", "std"]].T)
-        # print(df_e.describe().loc[["mean", "std"]].T)
-
-        cols = [
-            "T_a",
-            "RH",
-            "v_a",
-            "SW_direct",
-            "SW_diffuse",
-            "LW_in",
-            "Prec",
-            "p_a",
-        ]
-        icestupa.df['Prec'] *= 1000
-        df_i = icestupa.df[cols].describe().T[['mean', 'std']]
-        # df_i = df_i.astype('int32')
-        print(df_i)
-        # df_i = df_i.astype('int32')
-        # df_i['table'] = '$' + df_i['mean'].astype(str) + ' \pm '+ df_i['std'].astype(str) + '$'
-        # df_i = df_i['table']
-        # print(df_i.to_latex())
 
