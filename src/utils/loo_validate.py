@@ -1,8 +1,6 @@
 
 """Icestupa leave one out cv
 """
-import pickle
-pickle.HIGHEST_PROTOCOL = 4 # For python version 2.7
 from sklearn.model_selection import train_test_split, cross_val_score, ParameterGrid, LeaveOneOut, GridSearchCV
 from sklearn.metrics import mean_squared_error
 from sklearn.utils import parallel_backend
@@ -21,6 +19,8 @@ from codetiming import Timer
 from datetime import datetime
 import inspect
 import json
+import pickle
+pickle.HIGHEST_PROTOCOL = 4 # For python version 2.7
 
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -50,25 +50,22 @@ def calculate(process_name, tasks, results, results_list):
             df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
             # Remove dome volume
             df_c = df_c[1:]
-            print(df_c)
             df_c["Where"] = new_value
             obs.extend(df_c.reset_index()[["Where", 'When', 'DroneV', 'Area']].values.tolist())
             X = np.array([[a[0], a[1]] for a in obs])
             y = np.array([[a[2]] for a in obs])
 
-            # Initialise icestupa object
+            # Initialise rcestupa object
             clf = CV_Icestupa(name = new_value)
-            # Fit new parameter
-            clf.fit(X,y)
             # Compute result and mimic a long-running task
-            compute = -1 * cross_val_score(clf, X, y, cv=y.shape[0], verbose = 4, scoring='neg_root_mean_squared_error').mean()
+            compute = -1 * cross_val_score(clf, X, y, cv=y.shape[0], verbose = 4, scoring='neg_root_mean_squared_error')
 
             # Output which process received the value
             print('[%s] received value: %s' % (process_name, new_value))
-            print('[%s] calculated rmse: %.1f' % (process_name, compute))
+            print('[%s] calculated rmse: %s' % (process_name, compute))
 
             # Add result to the queue
-            results.put(compute)
+            results.put(compute.mean())
             results_list.append([new_value, compute])
 
     return
@@ -83,14 +80,6 @@ if __name__ == "__main__":
     )
 
     locations = ["gangles21", "guttannen21"]
-
-    # icestupa = Icestupa(location)
-
-    # icestupa.read_input()
-    # icestupa.self_attributes()
-
-    kind = 'volume'
-    file_path = 'validate-'+kind
 
     # Define IPC manager
     manager = multiprocessing.Manager()
@@ -157,12 +146,30 @@ if __name__ == "__main__":
 
             if num_finished_processes == num_processes:
                 df = pd.DataFrame.from_records(results_list, columns=["params", "rmse"])
-                df = df.set_index('rmse').sort_index().reset_index()
+                # df = df.set_index('rmse').sort_index().reset_index()
                 print(df.head())
-                df.to_csv(FOLDER['sim'] + file_path, index=False)
+                df.to_csv("data/paper/validation", index=False)
                 break
         else:
             # Print percentage of completed tasks
             print()
             print(print("\tCompleted : %0.1f" % (num_finished_tasks/len(task_list) * 100)))
 
+#     for new_value in locations:
+# 
+#         with parallel_backend('threading', n_jobs=1):
+#             # Loading measurements
+#             SITE, FOLDER = config(new_value)
+#             obs = list()
+#             kind = 'volume'
+#             df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
+#             # Remove dome volume
+#             df_c = df_c[4:]
+#             df_c["Where"] = new_value
+#             obs.extend(df_c.reset_index()[["Where", 'When', 'DroneV', 'Area']].values.tolist())
+#             X = np.array([[a[0], a[1]] for a in obs])
+#             y = np.array([[a[2]] for a in obs])
+# 
+#             # Initialise rcestupa object
+#             clf = CV_Icestupa(name = new_value)
+#             compute = -1 * cross_val_score(clf, X, y, cv=y.shape[0],  verbose = 4, scoring='neg_root_mean_squared_error')
