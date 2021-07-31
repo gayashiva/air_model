@@ -40,8 +40,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    # locations = ["gangles21", "guttannen21"]
-    locations = ["guttannen21"]
+    locations = ["gangles21", "guttannen21"]
+    # locations = ["guttannen21"]
     # location = "guttannen21"
 
     # params = ['IE', 'A_I', 'Z', 'SA_corr', 'DX']
