@@ -65,13 +65,13 @@ if __name__ == "__main__":
 
         if location == 'schwarzsee19':
             SITE["start_date"] +=pd.offsets.DateOffset(year=2023)
-            SITE["end_date"] +=pd.offsets.DateOffset(year=2023)
+            SITE["melt_out"] +=pd.offsets.DateOffset(year=2023)
         if location == 'guttannen20':
             SITE["start_date"] +=pd.offsets.DateOffset(year=2023)
-            SITE["end_date"] +=pd.offsets.DateOffset(year=2023)
+            SITE["melt_out"] +=pd.offsets.DateOffset(year=2023)
         if location == 'guttannen21':
             SITE["start_date"] +=pd.offsets.DateOffset(year=2022)
-            SITE["end_date"] +=pd.offsets.DateOffset(year=2023)
+            SITE["melt_out"] +=pd.offsets.DateOffset(year=2023)
         if location == 'gangles21':
             SITE["start_date"] +=pd.offsets.DateOffset(year=2023)
             # SITE["end_date"] =SITE['melt_out'] + pd.offsets.DateOffset(year=2023)
@@ -168,7 +168,7 @@ if __name__ == "__main__":
         ax[i].scatter(x2, y2, s = 5, color=CB91_Green, zorder=2)
         # ax[i].scatter(SITE['end_date'], round(icestupa.V_dome,0) + 1,  color=CB91_Amber,marker = "x", zorder=2)
         if location != 'gangles21':
-            ax[i].axvline(SITE['end_date'],  color=CB91_Violet,linestyle = '--', zorder=4, label="Melt-out date",)
+            ax[i].axvline(SITE['melt_out'],  color=CB91_Violet,linestyle = '--', zorder=4, label="Melt-out date",)
         ax[i].set_ylim(round(icestupa.V_dome,0) - 1, round(data2.percentile_95.max(),0))
         v = get_parameter_metadata(location)
         at = AnchoredText( v['shortname'], prop=dict(size=10), frameon=True, loc="upper left")
