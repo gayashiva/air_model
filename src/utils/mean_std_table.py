@@ -83,4 +83,8 @@ if __name__ == "__main__":
         print(df_e)
         print()
 
+        df_e = icestupa.df['mb'].describe().T[['mean', 'std']]
+        print(df_e)
+        print()
+
 

@@ -317,7 +317,7 @@ class Icestupa:
             "r_ice",
             "ppt",
             "dep",
-            "thickness",
+            "mb",
             "fountain_runoff",
             "fountain_froze",
             "Qt",
@@ -452,7 +452,7 @@ class Icestupa:
                 + self.df.loc[i, "dep"]
                 + self.df.loc[i, "Discharge"] * self.DT / 60
             )
-            self.df.loc[i + 1, "thickness"] = (
+            self.df.loc[i + 1, "mb"] = (
                 self.df.loc[i + 1, "iceV"] - self.df.loc[i, "iceV"]
             ) / (self.df.loc[i, "SA"])
 
@@ -510,5 +510,5 @@ class Icestupa:
                     sys.exit()
 
                 logger.info(
-                    f" When {self.df.When[i]},iceV {self.df.iceV[i+1]}, thickness  {self.df.thickness[i]}"
+                    f" When {self.df.When[i]},iceV {self.df.iceV[i+1]}, mass balance {self.df.mb[i]}"
                 )

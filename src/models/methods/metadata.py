@@ -207,8 +207,8 @@ def get_parameter_metadata(
             "kind": "Derived",
             "units": "($kg$)",
         },
-        "thickness": {
-            "name": "Ice thickness",
+        "mb": {
+            "name": "Mass balance",
             "kind": "Derived",
             "units": "($m$)",
         },

@@ -23,7 +23,7 @@ from src.utils.settings import config
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.icestupaClass import Icestupa
 
-def add_patch(legend, title = "Energy fluxes", label="$q_{surf}$", color = 'k'):
+def add_patch(legend, title = "Energy Balance Components", label="$q_{surf}$", color = 'k'):
     from matplotlib.patches import Patch
     ax = legend.axes
 
@@ -96,6 +96,7 @@ if __name__ == "__main__":
                 "fountain_froze",
                 "fountain_runoff",
                 "Discharge",
+                "mb",
             ]
         ]
 
@@ -148,6 +149,7 @@ if __name__ == "__main__":
             ]
         ]
         y2 = y2.mul(1000)
+        dfds["mb"] *= (1000)
 
         dfd = icestupa.df.set_index("When").resample("D").mean().reset_index()
         # dfd["When"] = dfd["When"].dt.strftime("%b %d")
@@ -185,8 +187,7 @@ if __name__ == "__main__":
                 color=["xkcd:azure", "#0C70DE", skyblue, "xkcd:yellowgreen", pink],
                 ax=ax[0, j],
             )
-            if j == 0:
-                ax[0, j].plot(dfds["Discharge"],'--.', color = CB91_Violet)
+            ax[0, j].plot(dfds["mb"],'--k.')
             z.plot.bar(
                 stacked=True,
                 edgecolor="black",
@@ -219,7 +220,7 @@ if __name__ == "__main__":
 
                 if i == 1:
                     ax[i, j].set_ylim(-310, 310)
-                    ax[i, j].set_ylabel("Energy Flux [$W\\,m^{-2}$]")
+                    ax[i, j].set_ylabel("Energy [$W\\,m^{-2}$]")
 
                     d = 0.015  # how big to make the diagonal lines in axes coordinates
                     kwargs = dict(
@@ -233,7 +234,7 @@ if __name__ == "__main__":
                         ax[i, j].plot((-d, d), (-d, +d), **kwargs)  # top-right diagonal
                 else:
                     ax[i, j].set_ylim(-95, 95)
-                    ax[i, j].set_ylabel("Thickness [$mm$ w. e.]")
+                    ax[i, j].set_ylabel("Mass [$mm$ w. e.]")
                     ax[i, j].spines["bottom"].set_visible(False)
                     ax[i, j].tick_params(bottom=False)
                     ax[i, j].tick_params(labelbottom=False)
@@ -269,7 +270,7 @@ if __name__ == "__main__":
     lgd2 = ax[1, 0].legend(
         loc="upper center", bbox_to_anchor=(1, 2.4), ncol=10
     )
-    add_patch(lgd1, title="Surface normal thickness change", label = 'Runtime', color=CB91_Violet)
+    add_patch(lgd1, title="Mass Balance Components", label = 'Net Mass Balance', color='k')
     add_patch(lgd2)
     plt.savefig(
         "data/paper/mass_energy_bal.jpg",
