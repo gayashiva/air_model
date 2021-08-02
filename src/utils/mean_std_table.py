@@ -77,13 +77,15 @@ if __name__ == "__main__":
             },
             axis=1,
         )
-        cols = ["$q_{SW}$", "$q_{LW}$","$q_S$","$q_L$","$q_{F}$","$q_{G}$", "$q_{freeze}$", "$q_{melt}$",
+        cols = ["$q_{SW}$", "$q_{LW}$","$q_S$","$q_L$","$q_{F}$","$q_{G}$","$q_{surf}$", "$q_{freeze}$", "$q_{melt}$",
             "$q_{T}$", "SA", "fountain_froze", "melted"]
         df_e = icestupa.df[cols].describe().T[['mean', 'std']]
         print(df_e)
         print()
 
-        df_e = icestupa.df['mb'].describe().T[['mean', 'std']]
+        dfds = icestupa.df.set_index("When").resample("D").sum().reset_index()
+        dfds['mb'] *=1000
+        df_e = dfds['mb'].describe().T
         print(df_e)
         print()
 

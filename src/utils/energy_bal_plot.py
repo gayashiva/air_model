@@ -23,7 +23,7 @@ from src.utils.settings import config
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.icestupaClass import Icestupa
 
-def add_patch(legend, title = "Energy Balance Components", label="$q_{surf}$", color = 'k'):
+def add_patch(legend, title = "Energy Balance Components", label="-$q_{surf}$", color = 'k'):
     from matplotlib.patches import Patch
     ax = legend.axes
 
@@ -40,9 +40,6 @@ def add_patch(legend, title = "Energy Balance Components", label="$q_{surf}$", c
 
 if __name__ == "__main__":
     locations = ["gangles21", "guttannen21"]
-    # locations = ["gangles21", "guttannen21", "guttannen20"]
-    # locations = ['guttannen21',  'gangles21']
-    # locations = ['guttannen21']
 
     blue = "#0a4a97"
     red = "#e23028"
@@ -75,7 +72,7 @@ if __name__ == "__main__":
                 "Ql": "$q_L$",
                 "Qf": "$q_{F}$",
                 "Qg": "$q_{G}$",
-                "Qsurf": "$q_{surf}$",
+                "Qsurf": "$-q_{surf}$",
                 "Qmelt": "$-q_{melt}$",
                 "Qfreeze": "$-q_{freeze}$",
                 "Qt": "$-q_{T}$",
@@ -156,17 +153,17 @@ if __name__ == "__main__":
         # dfd = dfd.set_index('When')
 
 
-        dfd[["$-q_{freeze}$", "$-q_{melt}$", "$-q_{T}$"]] *= -1
+        dfd[["$-q_{freeze}$", "$-q_{melt}$", "$-q_{T}$", "$-q_{surf}$"]] *= -1
         z = dfd[
             [
                 "$-q_{freeze}$",
                 "$-q_{melt}$",
+                "$-q_{T}$",
                 "$q_{SW}$",
                 "$q_{LW}$",
                 "$q_S$",
                 "$q_L$",
                 "$q_{F}$",
-                "$-q_{T}$",
                 "$q_{G}$",
             ]
         ]
@@ -195,18 +192,18 @@ if __name__ == "__main__":
                 color=[
                     "xkcd:azure",
                     "#0C70DE",
+                    CB91_Violet,
                     red,
                     orange,
                     green,
                     "xkcd:yellowgreen",
                     # purple,
-                    CB91_Violet,
                     pink,
                     blue,
                 ],
                 ax=ax[1, j],
             )
-            ax[1, j].plot(dfd["$q_{surf}$"],'--k.')
+            ax[1, j].plot(dfd["$-q_{surf}$"],'--k.')
 
         for i in range(2):
             if ctr == 0:
