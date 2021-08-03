@@ -231,7 +231,7 @@ if __name__ == "__main__":
                         ax[i, j].plot((-d, d), (-d, +d), **kwargs)  # top-right diagonal
                 else:
                     ax[i, j].set_ylim(-95, 95)
-                    ax[i, j].set_ylabel("Mass [$mm$ w. e.]")
+                    ax[i, j].set_ylabel("Thickness [$mm$ w. e.]")
                     ax[i, j].spines["bottom"].set_visible(False)
                     ax[i, j].tick_params(bottom=False)
                     ax[i, j].tick_params(labelbottom=False)
@@ -267,7 +267,7 @@ if __name__ == "__main__":
     lgd2 = ax[1, 0].legend(
         loc="upper center", bbox_to_anchor=(1, 2.4), ncol=10
     )
-    add_patch(lgd1, title="Mass Balance Components", label = 'Net Mass Balance', color='k')
+    add_patch(lgd1, title="Thickness Balance Components", label = 'Thickness Balance', color='k')
     add_patch(lgd2)
     plt.savefig(
         "data/paper/mass_energy_bal.jpg",

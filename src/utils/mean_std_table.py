@@ -24,7 +24,7 @@ from src.models.methods.metadata import get_parameter_metadata
 from src.models.icestupaClass import Icestupa
 
 if __name__ == "__main__":
-    locations = ["gangles21", "guttannen21", "guttannen20"]
+    locations = ["gangles21", "guttannen21", "guttannen20", "schwarzsee19"]
     # locations = ['guttannen21',  'gangles21']
     # locations = ['guttannen21']
 
@@ -86,6 +86,33 @@ if __name__ == "__main__":
         dfds = icestupa.df.set_index("When").resample("D").sum().reset_index()
         dfds['mb'] *=1000
         df_e = dfds['mb'].describe().T
+        print(df_e)
+        print()
+
+        df = dfds['mb'].reset_index()
+
+        # normalized_df=(df-df.mean())/df.std()
+        # normalized_df=(df-df.min())/(df.max()-df.min()) * 100
+# assign as variable because I'm going to use it more than once.
+        # s = (df.index.to_series() / 5).astype(int)
+        # s = (df.index-df.index.min())/(df.index.max()-df.index.min()) * 100
+        # s = s.astype(int)
+        # df.groupby(s).mean().set_index(s)
+        df['index']=(df.index-df.index.min())/(df.index.max()-df.index.min()) * 100
+        df['index']=df['index'].astype(int)
+        # df.groupby(df['index']).mean().set_index(df['index'])
+        print(df.tail())
+        print(df.index[-1])
+        print()
+        if df.index[-1] > 100:
+            df = (df.groupby(df['index']).mean())
+        else:
+            df = df.set_index('index')
+            df = df.reindex(np.arange(df.index.min(),df.index.max()+1))
+            df.loc[:, 'mb'] = df['mb'].interpolate(method = 'ffill')
+
+        # df['mb'] *=1000
+        df_e = df['mb'].describe().T
         print(df_e)
         print()
 

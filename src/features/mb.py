@@ -32,8 +32,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    # locations = ['gangles21', 'guttannen21', 'guttannen20']
-    locations = ['gangles21', 'guttannen21']
+    locations = ['gangles21', 'guttannen21', 'guttannen20']
+    # locations = ['gangles21', 'guttannen21']
     # locations = ['guttannen20', 'guttannen21']
 
     fig, ax = plt.subplots()
@@ -79,7 +79,7 @@ if __name__ == "__main__":
 
 
         df['mb'] *= 1000
-        df['mb'] = df['mb'].cumsum(axis=0)
+        # df['mb'] = df['mb'].cumsum(axis=0)
         df = df.set_index("When").resample("D").mean().reset_index()
         x = df.When[1:-1]
         y1 = df.mb[1:-1]
