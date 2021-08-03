@@ -207,8 +207,8 @@ if __name__ == "__main__":
 
         for i in range(2):
             if ctr == 0:
-                ax[0, 0].title.set_text("Freezing period")
-                ax[0, 1].title.set_text("Melting Period")
+                ax[0, 0].title.set_text("Accumulation period")
+                ax[0, 1].title.set_text("Ablation Period")
                 ax[0, 0].title.set_size("x-large")
                 ax[0, 1].title.set_size("x-large")
             for j in range(2):
@@ -267,7 +267,7 @@ if __name__ == "__main__":
     lgd2 = ax[1, 0].legend(
         loc="upper center", bbox_to_anchor=(1, 2.4), ncol=10
     )
-    add_patch(lgd1, title="Thickness Balance Components", label = 'Thickness Balance', color='k')
+    add_patch(lgd1, title="Thickness Components", label = 'Net Thickness', color='k')
     add_patch(lgd2)
     plt.savefig(
         "data/paper/mass_energy_bal.jpg",
