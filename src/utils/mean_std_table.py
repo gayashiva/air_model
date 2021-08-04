@@ -51,7 +51,8 @@ if __name__ == "__main__":
 
         icestupa.read_output()
 
-        # print(icestupa.df.loc[icestupa.df.Discharge> 0, 'Discharge'].count())
+        # print(icestupa.df.loc[icestupa.df.Discharge> 0, 'Discharge'].tail())
+        # print(icestupa.df.loc[icestupa.df.index>separate_periods_index, 'Discharge'].head())
         # print(icestupa.df.loc[icestupa.df.fountain_froze >= SITE['D_F'] * 60, 'fountain_runoff'].count())
 
         icestupa.df.loc[icestupa.df.Qfreeze == 0, 'Qfreeze'] = np.nan
@@ -77,43 +78,72 @@ if __name__ == "__main__":
             },
             axis=1,
         )
+
+        separate_periods_index = icestupa.df.loc[icestupa.df.Discharge> 0].index[-1]
+        df_ac = icestupa.df[icestupa.df.index<=separate_periods_index]
+        df_ab = icestupa.df[icestupa.df.index>separate_periods_index]
+
         cols = ["$q_{SW}$", "$q_{LW}$","$q_S$","$q_L$","$q_{F}$","$q_{G}$","$q_{surf}$", "$q_{freeze}$", "$q_{melt}$",
             "$q_{T}$", "SA", "fountain_froze", "melted"]
         df_e = icestupa.df[cols].describe().T[['mean', 'std']]
         print(df_e)
         print()
 
+        print("Accumulation")
+        df_e = df_ac[cols].describe().T[['mean', 'std']]
+        print(df_e)
+        print()
+        print("Ablation")
+        df_e = df_ab[cols].describe().T[['mean', 'std']]
+        print(df_e)
+        print()
+
+        # pd.options.display.float_format = '{:,.3f}'.format
         dfds = icestupa.df.set_index("When").resample("D").sum().reset_index()
         dfds['mb'] *=1000
-        df_e = dfds['mb'].describe().T
+        separate_periods_index = dfds.loc[dfds.Discharge> 0].index[-1]
+        df_ac = dfds[dfds.index<=separate_periods_index]
+        df_ab = dfds[dfds.index>separate_periods_index]
+        df_e = dfds['mb'].describe().T[['mean', 'std']]
         print(df_e)
         print()
 
-        df = dfds['mb'].reset_index()
-
-        # normalized_df=(df-df.mean())/df.std()
-        # normalized_df=(df-df.min())/(df.max()-df.min()) * 100
-# assign as variable because I'm going to use it more than once.
-        # s = (df.index.to_series() / 5).astype(int)
-        # s = (df.index-df.index.min())/(df.index.max()-df.index.min()) * 100
-        # s = s.astype(int)
-        # df.groupby(s).mean().set_index(s)
-        df['index']=(df.index-df.index.min())/(df.index.max()-df.index.min()) * 100
-        df['index']=df['index'].astype(int)
-        # df.groupby(df['index']).mean().set_index(df['index'])
-        print(df.tail())
-        print(df.index[-1])
-        print()
-        if df.index[-1] > 100:
-            df = (df.groupby(df['index']).mean())
-        else:
-            df = df.set_index('index')
-            df = df.reindex(np.arange(df.index.min(),df.index.max()+1))
-            df.loc[:, 'mb'] = df['mb'].interpolate(method = 'ffill')
-
-        # df['mb'] *=1000
-        df_e = df['mb'].describe().T
+        print("Accumulation")
+        print(df_ac.shape[0])
+        df_e = df_ac['mb'].describe().T[['mean', 'std']]
         print(df_e)
         print()
+        print("Ablation")
+        print(df_ab.shape[0])
+        df_e = df_ab['mb'].describe().T[['mean', 'std']]
+        print(df_e)
+        print()
+
+#         df = dfds['mb'].reset_index()
+# 
+#         # normalized_df=(df-df.mean())/df.std()
+#         # normalized_df=(df-df.min())/(df.max()-df.min()) * 100
+# # assign as variable because I'm going to use it more than once.
+#         # s = (df.index.to_series() / 5).astype(int)
+#         # s = (df.index-df.index.min())/(df.index.max()-df.index.min()) * 100
+#         # s = s.astype(int)
+#         # df.groupby(s).mean().set_index(s)
+#         df['index']=(df.index-df.index.min())/(df.index.max()-df.index.min()) * 100
+#         df['index']=df['index'].astype(int)
+#         # df.groupby(df['index']).mean().set_index(df['index'])
+#         print(df.tail())
+#         print(df.index[-1])
+#         print()
+#         if df.index[-1] > 100:
+#             df = (df.groupby(df['index']).mean())
+#         else:
+#             df = df.set_index('index')
+#             df = df.reindex(np.arange(df.index.min(),df.index.max()+1))
+#             df.loc[:, 'mb'] = df['mb'].interpolate(method = 'ffill')
+# 
+#         # df['mb'] *=1000
+#         df_e = df['mb'].describe().T
+#         print(df_e)
+#         print()
 
 
