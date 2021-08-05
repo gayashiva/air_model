@@ -267,7 +267,7 @@ if __name__ == "__main__":
     lgd2 = ax[1, 0].legend(
         loc="upper center", bbox_to_anchor=(1, 2.4), ncol=10
     )
-    add_patch(lgd1, title="Thickness Components", label = 'Net Thickness', color='k')
+    add_patch(lgd1, title="Thickness Components", label = '$t_{cone}$', color='k')
     add_patch(lgd2)
     plt.savefig(
         "data/paper/mass_energy_bal.jpg",
