@@ -333,7 +333,7 @@ if __name__ == "__main__":
                 corr_T = 0
 
             st.write("## Validation")
-            path = output_folder + "paper_figures/Vol_Validation.jpg"
+            path = output_folder + "jpg/Vol_Validation.jpg"
             st.image(path)
             st.write(
                 """
@@ -345,7 +345,7 @@ if __name__ == "__main__":
             if SITE["name"] in ["guttannen21", "guttannen20"]:
                 path = (
                     output_folder
-                    + "paper_figures/Temp_Validation.jpg"
+                    + "jpg/Temp_Validation.jpg"
                 )
                 st.image(path)
                 st.write(
@@ -371,7 +371,7 @@ if __name__ == "__main__":
 
         if "Data Overview" in display:
             st.write("## Input variables")
-            st.image(output_folder + "paper_figures/Model_Input.jpg")
+            st.image(output_folder + "jpg/Model_Input.jpg")
             st.write(
                 """
             Measurements at the AWS of %s were used as main model input
@@ -382,7 +382,7 @@ if __name__ == "__main__":
                 % (icestupa.name)
             )
             st.write("## Output variables")
-            st.image(output_folder + "paper_figures/Model_Output.jpg")
+            st.image(output_folder + "jpg/Model_Output.jpg")
             st.write(
                 """
             (a) Fountain discharge (b) energy flux components, (c) mass flux components (d)

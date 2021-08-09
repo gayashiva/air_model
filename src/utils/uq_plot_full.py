@@ -141,7 +141,7 @@ if __name__ == "__main__":
         ax[i].plot(
             x,
             y1,
-            label="Calibrated Volume",
+            label="Simulated Volume",
             linewidth=1,
             color=CB91_Blue,
             zorder=1,
