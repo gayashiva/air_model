@@ -317,7 +317,7 @@ class Icestupa:
             "r_ice",
             "ppt",
             "dep",
-            "mb",
+            "t_cone",
             "fountain_runoff",
             "fountain_froze",
             "Qt",
@@ -387,7 +387,6 @@ class Icestupa:
                     self.df = self.df[1:i]
                     self.df = self.df.reset_index(drop=True)
                 break
-                # self.stop_model(i,all_cols)
 
             self.get_area(i)
 
@@ -438,6 +437,7 @@ class Icestupa:
                 - self.df.loc[i, "sub"]
                 - self.df.loc[i, "melted"]
             )
+
             self.df.loc[i + 1, "vapour"] = (
                 self.df.loc[i, "vapour"] + self.df.loc[i, "sub"]
             )
@@ -452,7 +452,7 @@ class Icestupa:
                 + self.df.loc[i, "dep"]
                 + self.df.loc[i, "Discharge"] * self.DT / 60
             )
-            self.df.loc[i + 1, "mb"] = (
+            self.df.loc[i + 1, "t_cone"] = (
                 self.df.loc[i + 1, "iceV"] - self.df.loc[i, "iceV"]
             ) / (self.df.loc[i, "SA"])
 
@@ -471,44 +471,8 @@ class Icestupa:
                     + self.df["ppt"].sum()
                 )
 
-                # Check mass conservation
-                if round(input2, 2) != round(input, 2):
-                    logger.error(
-                        "Not equal When %s input %.1f input2 %.1f"
-                        % (self.df.loc[i, "When"], input, input2)
-                    )
-                    logger.error(
-                        "input default%.1f Discharge %.1f"
-                        % (
-                            self.df.loc[1, "input"],
-                            self.df.Discharge[1 : i + 1].sum() * self.DT / 60,
-                        )
-                    )
-                    sys.exit()
-                if round(input, 2) != round(output, 2):
-                    logger.error(
-                        "Not equal When %s input %.1f output %.1f"
-                        % (self.df.loc[i, "When"], input, output)
-                    )
-                    logger.error(
-                        "fountain froze %.1f Discharge %.1f fountain_runoff%.1f"
-                        % (
-                            self.df.loc[i, "fountain_froze"],
-                            self.df.loc[i, "Discharge"] * self.DT / 60,
-                            self.df.loc[i, "fountain_runoff"],
-                        )
-                    )
-                    logger.error(
-                        "ppt %.1f dep %.1f sub %.1f melted %.1f"
-                        % (
-                            self.df.loc[i, "ppt"],
-                            self.df.loc[i, "dep"],
-                            self.df.loc[i, "sub"],
-                            self.df.loc[i, "melted"],
-                        )
-                    )
-                    sys.exit()
-
-                logger.info(
-                    f" When {self.df.When[i]},iceV {self.df.iceV[i+1]}, mass balance {self.df.mb[i]}"
+                logger.error(
+                    f" When {self.df.When[i]},iceV {self.df.iceV[i+1]}, mass balance {self.df.t_cone[i]}"
                 )
+        # else:
+        #     print(self.df.loc[i, "When"], self.df.loc[i, "iceV"])

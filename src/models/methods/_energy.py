@@ -15,16 +15,6 @@ logger = logging.getLogger(__name__)
 
 def get_energy(self, i):
 
-    # self.df.loc[i, "vp_ice"] = (
-    #     (
-    #         1.0016
-    #         + 3.15 * math.pow(10, -6) * self.df.loc[i, "p_a"]
-    #         - 0.074 * math.pow(self.df.loc[i, "p_a"], -1)
-    #     )
-    #     * 6.112
-    #     * np.exp(22.46 * (self.df.loc[i, "T_s"]) / ((self.df.loc[i, "T_s"]) + 272.62))
-    # )
-
     self.df.loc[i, "vp_ice"] = (
         np.exp(43.494- 6545.8 / (self.df.loc[i, "T_s"]+ 278))
         / ((self.df.loc[i, "T_s"]+ 868)**2 * 100)
@@ -119,7 +109,7 @@ def test_get_energy(self, i):
         logger.error(
             f"When {self.df.When[i]}, r_ice{self.df.r_ice[i]}, SA {self.df.SA[i]}, h_ice{self.df.h_ice[i]}"
         )
-        sys.exit("SW nan")
+        sys.exit("scone nan")
 
     if np.isnan(self.df.loc[i, "SW"]):
         logger.error(
