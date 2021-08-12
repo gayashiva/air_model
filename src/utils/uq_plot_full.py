@@ -144,13 +144,16 @@ if __name__ == "__main__":
             label="Calibrated Volume",
             linewidth=1,
             color=CB91_Blue,
-            zorder=1,
+            # color=CB91_Green,
+            zorder=10,
         )
         ax[i].fill_between(
             data1["When"],
             data1.percentile_5,
             data1.percentile_95,
             color="skyblue",
+            # color=CB91_Green,
+            # color=CB91_Blue,
             alpha=0.3,
             label="Weather uncertainty",
             zorder = 6,
@@ -164,11 +167,11 @@ if __name__ == "__main__":
             label="Fountain uncertainty",
             zorder = 5,
         )
-        ax[i].errorbar(x2, y2, yerr=df_c.DroneVError, color=CB91_Green, lw=1,  label="UAV Volume", zorder=3)
-        ax[i].scatter(x2, y2, s = 5, color=CB91_Green, zorder=2)
+        ax[i].errorbar(x2, y2, yerr=df_c.DroneVError, color=CB91_Violet, lw=1, alpha = 0.5, zorder=8)
+        ax[i].scatter(x2, y2, s = 5, color=CB91_Violet, zorder=7,  label="UAV Volume")
         # ax[i].scatter(SITE['end_date'], round(icestupa.V_dome,0) + 1,  color=CB91_Amber,marker = "x", zorder=2)
         if location != 'gangles21':
-            ax[i].axvline(SITE['melt_out'],  color=CB91_Violet,linestyle = '--', zorder=4, label="Melt-out date",)
+            ax[i].axvline(SITE['melt_out'],  color='black', alpha=0.5, linestyle = '--', zorder=2, label="Melt-out date",)
         ax[i].set_ylim(round(icestupa.V_dome,0) - 1, round(data2.percentile_95.max(),0))
         v = get_parameter_metadata(location)
         at = AnchoredText( v['shortname'], prop=dict(size=10), frameon=True, loc="upper left")
