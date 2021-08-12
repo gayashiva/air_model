@@ -207,8 +207,8 @@ def get_parameter_metadata(
             "kind": "Derived",
             "units": "($kg$)",
         },
-        "mb": {
-            "name": "Mass balance",
+        "t_cone": {
+            "name": "Thickness",
             "kind": "Derived",
             "units": "($m$)",
         },

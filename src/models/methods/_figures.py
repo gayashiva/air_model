@@ -227,8 +227,7 @@ def summary_figures(self):
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
     fig.autofmt_xdate()
     plt.savefig(
-        output + "paper_figures/Model_Input.jpg",
-        dpi=300,
+        output + "jpg/Model_Input.jpg",
         bbox_inches="tight",
     )
     plt.clf()
@@ -389,58 +388,8 @@ def summary_figures(self):
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.savefig(
-        output + "paper_figures/Model_Output.jpg",
-        dpi=300,
+        output + "jpg/Model_Output.jpg",
         bbox_inches="tight",
-    )
-    plt.clf()
-
-    fig, (ax1, ax2) = plt.subplots(
-        nrows=2, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
-    )
-
-    x = self.df.When
-    y1 = self.df.a
-    y2 = self.df.f_cone
-    ax1.plot(x, y1)
-    ax1.set_ylabel("Albedo")
-    ax1t = ax1.twinx()
-    ax1t.plot(x, y2, color=red, linewidth=0.5)
-    ax1t.set_ylabel("$f_{cone}$", color=red)
-    for tl in ax1t.get_yticklabels():
-        tl.set_color(red)
-    ax1.set_ylim([0, 1])
-    ax1t.set_ylim([0, 1])
-
-    y1 = self.df.T_s
-
-    ax2.plot(
-        x,
-        y1,
-        label="Modelled",
-        linewidth=1,
-        color=CB91_Amber,
-        zorder=0,
-    )
-    if self.name in ["guttannen21", "guttannen20"]:
-        y2 = df_cam.cam_temp
-        ax2.scatter(
-            x,
-            y2,
-            color=CB91_Violet,
-            s=1,
-            label="Measured",
-            zorder=1,
-        )
-    ax2.set_ylabel("Surface Temperature [$\\degree C$]")
-    ax2.legend()
-
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    fig.autofmt_xdate()
-    plt.savefig(
-        output + "paper_figures/albedo_temperature.jpg", dpi=300, bbox_inches="tight"
     )
     plt.clf()
 
@@ -468,8 +417,7 @@ def summary_figures(self):
     ax.xaxis.set_minor_locator(mdates.DayLocator())
     fig.autofmt_xdate()
     plt.savefig(
-        output + "paper_figures/Vol_Validation.jpg",
-        dpi=300,
+        output + "jpg/Vol_Validation.jpg",
         bbox_inches="tight",
     )
     plt.clf()
@@ -504,8 +452,7 @@ def summary_figures(self):
         ax.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
         plt.savefig(
-            output + "paper_figures/Temp_Validation.jpg",
-            dpi=300,
+            output + "jpg/Temp_Validation.jpg",
             bbox_inches="tight",
         )
     plt.close("all")

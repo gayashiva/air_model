@@ -103,7 +103,7 @@ if __name__ == "__main__":
     # df = df_in
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
     output_folder = os.path.join(dirname, "data/" + SITE["name"] + "/processed/")
-    row1_1, row1_2 = st.beta_columns((2, 5))
+    row1_1, row1_2 = st.columns((2, 5))
 
     with row1_1:
         st.image(air_logo, width=160)
@@ -166,8 +166,8 @@ if __name__ == "__main__":
         ### Partners
         """
     )
-    row2_1, row2_2, row2_3 = st.sidebar.beta_columns((1, 1, 1))
-    row3_1, row3_2 = st.beta_columns((1, 1))
+    row2_1, row2_2, row2_3 = st.sidebar.columns((1, 1, 1))
+    row3_1, row3_2 = st.columns((1, 1))
     with row2_1:
         st.image(
             "src/visualization/logos/unifr.png",
@@ -333,7 +333,7 @@ if __name__ == "__main__":
                 corr_T = 0
 
             st.write("## Validation")
-            path = output_folder + "paper_figures/Vol_Validation.jpg"
+            path = output_folder + "jpg/Vol_Validation.jpg"
             st.image(path)
             st.write(
                 """
@@ -345,7 +345,7 @@ if __name__ == "__main__":
             if SITE["name"] in ["guttannen21", "guttannen20"]:
                 path = (
                     output_folder
-                    + "paper_figures/Temp_Validation.jpg"
+                    + "jpg/Temp_Validation.jpg"
                 )
                 st.image(path)
                 st.write(
@@ -371,7 +371,7 @@ if __name__ == "__main__":
 
         if "Data Overview" in display:
             st.write("## Input variables")
-            st.image(output_folder + "paper_figures/Model_Input.jpg")
+            st.image(output_folder + "jpg/Model_Input.jpg")
             st.write(
                 """
             Measurements at the AWS of %s were used as main model input
@@ -382,7 +382,7 @@ if __name__ == "__main__":
                 % (icestupa.name)
             )
             st.write("## Output variables")
-            st.image(output_folder + "paper_figures/Model_Output.jpg")
+            st.image(output_folder + "jpg/Model_Output.jpg")
             st.write(
                 """
             (a) Fountain discharge (b) energy flux components, (c) mass flux components (d)
@@ -411,7 +411,7 @@ if __name__ == "__main__":
 
                     meta = get_parameter_metadata(v)
                     st.header("%s" % (meta["name"] + " " + meta["units"]))
-                    row4_1, row4_2 = st.beta_columns((2, 5))
+                    row4_1, row4_2 = st.columns((2, 5))
                     with row4_1:
                         st.write(icestupa.df[v].describe())
                     with row4_2:
@@ -435,7 +435,7 @@ if __name__ == "__main__":
                 for v in variable:
                     meta = get_parameter_metadata(v)
                     st.header("%s" % (meta["name"] + " " + meta["units"]))
-                    row5_1, row5_2 = st.beta_columns((2, 5))
+                    row5_1, row5_2 = st.columns((2, 5))
                     with row5_1:
                         st.write(icestupa.df[v].describe())
                     with row5_2:
@@ -459,7 +459,7 @@ if __name__ == "__main__":
                 for v in variable:
                     meta = get_parameter_metadata(v)
                     st.header("%s" % (meta["name"] + " " + meta["units"]))
-                    row6_1, row6_2 = st.beta_columns((2, 5))
+                    row6_1, row6_2 = st.columns((2, 5))
                     with row6_1:
                         st.write(icestupa.df[v].describe())
                     with row6_2:

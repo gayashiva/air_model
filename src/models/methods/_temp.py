@@ -27,6 +27,7 @@ def get_temp(self, i):
 
     if self.df.loc[i, "event"]:
         self.df.loc[i, "Qfreeze"] = freezing_energy
+        self.df.loc[i, "Qmelt"] = np.nan
 
         # Force surface temperature zero
         self.df.loc[i, "Qfreeze"] += (
@@ -37,6 +38,7 @@ def get_temp(self, i):
         )
     else:
         self.df.loc[i, "Qt"] += freezing_energy
+        self.df.loc[i, "Qfreeze"] = np.nan
 
     self.df.loc[i, "delta_T_s"] = (
         self.df.loc[i, "Qt"] * self.DT / (self.RHO_I * self.DX * self.C_I)
@@ -88,7 +90,9 @@ def get_temp(self, i):
         self.df.loc[i, "fountain_runoff"] = self.df.Discharge.loc[i] * self.DT / 60
         self.df.loc[i, "fountain_froze"] = 0
 
-    if self.df.loc[i, "Qmelt"]:
+    if np.isnan(self.df.loc[i, "Qmelt"]):
+        self.df.loc[i, "melted"] = 0
+    else:
         self.df.loc[i, "melted"] = (
             self.df.loc[i, "Qmelt"] * self.DT * self.df.loc[i, "SA"] / (self.L_F)
         )
@@ -96,6 +100,9 @@ def get_temp(self, i):
 
 def test_get_temp(self, i):
     self.get_temp(i)
+
+    if not np.isnan(self.df.loc[i, "Qmelt"]*self.df.loc[i, "Qfreeze"]):
+        sys.exit("Qmelt nonzero in freezing event")
 
     if self.df.loc[i, "delta_T_s"] > 1 * self.DT / 60:
         logger.warning(

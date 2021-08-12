@@ -51,40 +51,38 @@ if __name__ == "__main__":
 
         icestupa.read_output()
 
-        # print(icestupa.df.loc[icestupa.df.Discharge> 0, 'Discharge'].tail())
-        # print(icestupa.df.loc[icestupa.df.index>separate_periods_index, 'Discharge'].head())
-        # print(icestupa.df.loc[icestupa.df.fountain_froze >= SITE['D_F'] * 60, 'fountain_runoff'].count())
 
-        icestupa.df.loc[icestupa.df.Qfreeze == 0, 'Qfreeze'] = np.nan
-        icestupa.df.loc[icestupa.df.Qmelt == 0, 'Qmelt'] = np.nan
+        # icestupa.df.loc[icestupa.df.event == 0, 'Qfreeze'] = np.nan
+        # icestupa.df.loc[icestupa.df.event == 1, 'Qmelt'] = np.nan
         icestupa.df.loc[icestupa.df.Discharge== 0, 'fountain_froze'] = np.nan
         icestupa.df['melted'] /= 60
         icestupa.df['fountain_froze'] /= 60
         # print(icestupa.df.fountain_froze.max())
 
 
-        icestupa.df = icestupa.df.rename(
-            {
-                "SW": "$q_{SW}$",
-                "LW": "$q_{LW}$",
-                "Qs": "$q_S$",
-                "Ql": "$q_L$",
-                "Qf": "$q_{F}$",
-                "Qg": "$q_{G}$",
-                "Qsurf": "$q_{surf}$",
-                "Qmelt": "$q_{melt}$",
-                "Qfreeze": "$q_{freeze}$",
-                "Qt": "$q_{T}$",
-            },
-            axis=1,
-        )
+        # icestupa.df = icestupa.df.rename(
+        #     {
+        #         "SW": "$q_{SW}$",
+        #         "LW": "$q_{LW}$",
+        #         "Qs": "$q_S$",
+        #         "Ql": "$q_L$",
+        #         "Qf": "$q_{F}$",
+        #         "Qg": "$q_{G}$",
+        #         "Qsurf": "$q_{surf}$",
+        #         "Qmelt": "$q_{melt}$",
+        #         "Qfreeze": "$q_{freeze}$",
+        #         "Qt": "$q_{T}$",
+        #     },
+        #     axis=1,
+        # )
 
         separate_periods_index = icestupa.df.loc[icestupa.df.Discharge> 0].index[-1]
         df_ac = icestupa.df[icestupa.df.index<=separate_periods_index]
         df_ab = icestupa.df[icestupa.df.index>separate_periods_index]
 
-        cols = ["$q_{SW}$", "$q_{LW}$","$q_S$","$q_L$","$q_{F}$","$q_{G}$","$q_{surf}$", "$q_{freeze}$", "$q_{melt}$",
-            "$q_{T}$", "SA", "fountain_froze", "melted"]
+        # cols = ["$q_{SW}$", "$q_{LW}$","$q_S$","$q_L$","$q_{F}$","$q_{G}$","$q_{surf}$", "$q_{freeze}$", "$q_{melt}$",
+        #     "$q_{T}$", "SA", "fountain_froze", "melted"]
+        cols = ["SW", "LW","Qs","Ql","Qf","Qg","Qsurf", "Qfreeze", "Qmelt","Qt", "SA", "fountain_froze", "melted"]
         df_e = icestupa.df[cols].describe().T[['mean', 'std']]
         print(df_e)
         print()
@@ -100,50 +98,60 @@ if __name__ == "__main__":
 
         # pd.options.display.float_format = '{:,.3f}'.format
         dfds = icestupa.df.set_index("When").resample("D").sum().reset_index()
-        dfds['mb'] *=1000
+        dfds['t_cone'] *=1000
         separate_periods_index = dfds.loc[dfds.Discharge> 0].index[-1]
         df_ac = dfds[dfds.index<=separate_periods_index]
         df_ab = dfds[dfds.index>separate_periods_index]
-        df_e = dfds['mb'].describe().T[['mean', 'std']]
+        df_e = dfds['t_cone'].describe().T[['mean', 'std']]
         print(df_e)
         print()
 
         print("Accumulation")
         print(df_ac.shape[0])
-        df_e = df_ac['mb'].describe().T[['mean', 'std']]
+        df_e = df_ac['t_cone'].describe().T[['mean', 'std']]
         print(df_e)
         print()
         print("Ablation")
         print(df_ab.shape[0])
-        df_e = df_ab['mb'].describe().T[['mean', 'std']]
+        df_e = df_ab['t_cone'].describe().T[['mean', 'std']]
         print(df_e)
         print()
-
-#         df = dfds['mb'].reset_index()
-# 
-#         # normalized_df=(df-df.mean())/df.std()
-#         # normalized_df=(df-df.min())/(df.max()-df.min()) * 100
-# # assign as variable because I'm going to use it more than once.
-#         # s = (df.index.to_series() / 5).astype(int)
-#         # s = (df.index-df.index.min())/(df.index.max()-df.index.min()) * 100
-#         # s = s.astype(int)
-#         # df.groupby(s).mean().set_index(s)
-#         df['index']=(df.index-df.index.min())/(df.index.max()-df.index.min()) * 100
-#         df['index']=df['index'].astype(int)
-#         # df.groupby(df['index']).mean().set_index(df['index'])
-#         print(df.tail())
-#         print(df.index[-1])
-#         print()
-#         if df.index[-1] > 100:
-#             df = (df.groupby(df['index']).mean())
-#         else:
-#             df = df.set_index('index')
-#             df = df.reindex(np.arange(df.index.min(),df.index.max()+1))
-#             df.loc[:, 'mb'] = df['mb'].interpolate(method = 'ffill')
-# 
-#         # df['mb'] *=1000
-#         df_e = df['mb'].describe().T
-#         print(df_e)
-#         print()
-
-
+        print("Absolute Energies")
+        dfd = icestupa.df.set_index("When").resample("D").mean().reset_index()
+        # Total = dfd.Qsurf.abs().sum()
+        Total1 = (
+            dfd.Qmelt.abs().sum()
+            + dfd.Qfreeze.abs().sum()
+            + dfd.Qt.abs().sum()
+        )
+        Total2 = (
+            dfd.SW.abs().sum()
+            + dfd.LW.abs().sum()
+            + dfd.Qs.abs().sum()
+            + dfd.Ql.abs().sum()
+            + dfd.Qf.abs().sum()
+            + dfd.Qg.abs().sum()
+        )
+        print(
+            "Percent of Qmelt: %.1f \n Qfreeze: %.1f \n Qt: %.1f"
+            % (
+                dfd.Qmelt.abs().sum() / Total1*100,
+                dfd.Qfreeze.abs().sum() / Total1*100,
+                dfd.Qt.abs().sum() / Total1*100,
+            )
+        )
+        print(
+            "Percent of SW: %.1f \n LW: %.1f \n Qs: %.1f \n Ql: %.1f \n Qf: %.1f\n Qg: %.1f"
+            % (
+                dfd.SW.abs().sum() / Total2*100,
+                dfd.LW.abs().sum() / Total2*100,
+                dfd.Qs.abs().sum() / Total2*100,
+                dfd.Ql.abs().sum() / Total2*100,
+                dfd.Qf.abs().sum() / Total2*100,
+                dfd.Qg.abs().sum() / Total2*100,
+            )
+        )
+        # print(
+        #     f"% of SW {dfd.SW.abs().sum()/Total*100}, LW {dfd.LW.abs().sum()/Total*100},
+        #     Qs{dfd.Qs.abs().sum()/Total*100}, Ql {dfd.Ql.abs().sum()/Total*100}, Qf{dfd.Qf.abs().sum()/Total*100}, Qg {dfd.Qg.abs().sum()/Total*100}"
+        # )
