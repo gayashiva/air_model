@@ -118,19 +118,14 @@ if __name__ == "__main__":
         print()
         print("Absolute Energies")
         dfd = icestupa.df.set_index("When").resample("D").mean().reset_index()
+        separate_periods_index = dfd.loc[dfd.Discharge> 0].index[-1]
+        dfd_ac = dfd[dfd.index<=separate_periods_index]
+        dfd_ab = dfd[dfd.index>separate_periods_index]
         # Total = dfd.Qsurf.abs().sum()
         Total1 = (
             dfd.Qmelt.abs().sum()
             + dfd.Qfreeze.abs().sum()
             + dfd.Qt.abs().sum()
-        )
-        Total2 = (
-            dfd.SW.abs().sum()
-            + dfd.LW.abs().sum()
-            + dfd.Qs.abs().sum()
-            + dfd.Ql.abs().sum()
-            + dfd.Qf.abs().sum()
-            + dfd.Qg.abs().sum()
         )
         print(
             "Percent of Qmelt: %.1f \n Qfreeze: %.1f \n Qt: %.1f"
@@ -139,6 +134,55 @@ if __name__ == "__main__":
                 dfd.Qfreeze.abs().sum() / Total1*100,
                 dfd.Qt.abs().sum() / Total1*100,
             )
+        )
+        print("Accumulation Energies")
+        Total2 = (
+            dfd_ac.SW.abs().sum()
+            + dfd_ac.LW.abs().sum()
+            + dfd_ac.Qs.abs().sum()
+            + dfd_ac.Ql.abs().sum()
+            + dfd_ac.Qf.abs().sum()
+            + dfd_ac.Qg.abs().sum()
+        )
+        print(
+            "Percent of SW: %.1f \n LW: %.1f \n Qs: %.1f \n Ql: %.1f \n Qf: %.1f\n Qg: %.1f"
+            % (
+                dfd_ac.SW.abs().sum() / Total2*100,
+                dfd_ac.LW.abs().sum() / Total2*100,
+                dfd_ac.Qs.abs().sum() / Total2*100,
+                dfd_ac.Ql.abs().sum() / Total2*100,
+                dfd_ac.Qf.abs().sum() / Total2*100,
+                dfd_ac.Qg.abs().sum() / Total2*100,
+            )
+        )
+        print("Ablation Energies")
+        Total2 = (
+            dfd_ab.SW.abs().sum()
+            + dfd_ab.LW.abs().sum()
+            + dfd_ab.Qs.abs().sum()
+            + dfd_ab.Ql.abs().sum()
+            + dfd_ab.Qf.abs().sum()
+            + dfd_ab.Qg.abs().sum()
+        )
+        print(
+            "Percent of SW: %.1f \n LW: %.1f \n Qs: %.1f \n Ql: %.1f \n Qf: %.1f\n Qg: %.1f"
+            % (
+                dfd_ab.SW.abs().sum() / Total2*100,
+                dfd_ab.LW.abs().sum() / Total2*100,
+                dfd_ab.Qs.abs().sum() / Total2*100,
+                dfd_ab.Ql.abs().sum() / Total2*100,
+                dfd_ab.Qf.abs().sum() / Total2*100,
+                dfd_ab.Qg.abs().sum() / Total2*100,
+            )
+        )
+        print("Full Energies")
+        Total2 = (
+            dfd.SW.abs().sum()
+            + dfd.LW.abs().sum()
+            + dfd.Qs.abs().sum()
+            + dfd.Ql.abs().sum()
+            + dfd.Qf.abs().sum()
+            + dfd.Qg.abs().sum()
         )
         print(
             "Percent of SW: %.1f \n LW: %.1f \n Qs: %.1f \n Ql: %.1f \n Qf: %.1f\n Qg: %.1f"
