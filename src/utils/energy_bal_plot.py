@@ -23,7 +23,7 @@ from src.utils.settings import config
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.icestupaClass import Icestupa
 
-def add_patch(legend, title = "Energy Balance Components", label="-$q_{surf}$", color = 'k'):
+def add_patch(legend, title = "Energy Balance Components", label="-$q_{total}$", color = 'k'):
     from matplotlib.patches import Patch
     ax = legend.axes
 
@@ -267,7 +267,7 @@ if __name__ == "__main__":
     lgd2 = ax[1, 0].legend(
         loc="upper center", bbox_to_anchor=(1, 2.4), ncol=10
     )
-    add_patch(lgd1, title="Thickness Components", label = '$t_{cone}$', color='k')
+    add_patch(lgd1, title="Thickness Components", label = '$j_{cone}$', color='k')
     add_patch(lgd2)
     plt.savefig(
         "data/paper/mass_energy_bal.jpg",
