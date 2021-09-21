@@ -5,14 +5,11 @@
 import streamlit as st
 import pandas as pd
 import sys
-from datetime import datetime, timedelta
 import os
-import numpy as np
-import re
-import base64
 import logging
 import coloredlogs
 from pathlib import Path
+from datetime import datetime, timedelta
 
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -20,7 +17,6 @@ sys.path.append(dirname)
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.icestupaClass import Icestupa
 from src.utils.settings import config
-from src.utils import setup_logger
 
 
 # SETTING PAGE CONFIG TO WIDE MODE
@@ -236,6 +232,7 @@ if __name__ == "__main__":
         | --- | --- |
         | Spray Radius | %i $m$|
         | Water sprayed| %i $m^3$ |
+        | Mean discharge rate | %i $l/min$ |
         | Mean freeze rate | %i $l/min$ |
         | Mean melt rate | %i $l/min$ |
         | Runtime | %s $hours$ |
@@ -243,6 +240,7 @@ if __name__ == "__main__":
             % (
                 icestupa.r_F,
                 icestupa.M_F / 1000,
+                icestupa.D_F,
                 mean_freeze_rate,
                 mean_melt_rate,
                 fountain_duration,
@@ -342,18 +340,18 @@ if __name__ == "__main__":
                 % (corr_V, rmse_V)
             )
 
-            if SITE["name"] in ["guttannen21", "guttannen20"]:
-                path = (
-                    output_folder
-                    + "jpg/Temp_Validation.jpg"
-                )
-                st.image(path)
-                st.write(
-                    """
-                Correlation of modelled with measured surface temperature was **%.2f** and RMSE was **%.2f** C
-                """
-                    % (corr_T, rmse_T)
-                )
+            # if SITE["name"] in ["guttannen21", "guttannen20"]:
+            #     path = (
+            #         output_folder
+            #         + "jpg/Temp_Validation.jpg"
+            #     )
+            #     st.image(path)
+            #     st.write(
+            #         """
+            #     Correlation of modelled with measured surface temperature was **%.2f** and RMSE was **%.2f** C
+            #     """
+            #         % (corr_T, rmse_T)
+            #     )
 
         if "Timelapse" in display:
             st.write("## Timelapse")
