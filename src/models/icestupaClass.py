@@ -22,11 +22,6 @@ from src.utils.settings import config
 logger = logging.getLogger(__name__)
 logger.propagate = False
 
-# def load_obj(path, name ):
-#     with open(path + name + '.pkl', 'rb') as f:
-#         return pickle.load(f)
-
-
 class Icestupa:
 
     """Model hyperparameter"""
