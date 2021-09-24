@@ -127,6 +127,29 @@ def config(location="guttannen21"):
             {"When": SITE["start_date"], "h_f": 1.35},
         ]
 
+    if location == "Phortse 2020" or location == "phortse20":
+
+        SITE = dict(
+            name="phortse20",
+            start_date=datetime(2019, 12, 1),
+            # melt_out=datetime(2021, 5, 10, 1),
+            fountain_off_date=datetime(2020, 2, 1),
+            D_F=7.5,
+            T_F=3,  
+            utc_offset=1,
+            latitude=46.649999,
+            longitude=8.283333,
+            H_AWS = 2,
+
+            SA_corr= 1.2,
+            Z= 0.001,
+        )
+
+        data_h = [
+            {"When": SITE["start_date"], "h_f": 5},
+        ]
+
+
     # Define directory structure
     FOLDER = dict(
         raw="data/" + SITE["name"] + "/raw/",
