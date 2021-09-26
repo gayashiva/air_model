@@ -114,7 +114,7 @@ def config(location="guttannen21"):
             utc_offset=1,
             longitude=7.297543,
             latitude=46.693723,
-            r_F= 1.233,
+            R_F= 1.233,
             H_AWS = 2,
 
             # discharge=3.58,  # FOUNTAIN on mean discharge from field

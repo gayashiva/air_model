@@ -95,7 +95,7 @@ if __name__ == "__main__":
     ) = vars(df_in)
 
     # df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
-    # df_in = df_in.set_index("When")
+    # df_in = df_in.set_index("TIMESTAMP")
     # df = df_in
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
     output_folder = os.path.join(dirname, "data/" + SITE["name"] + "/processed/")
@@ -238,7 +238,7 @@ if __name__ == "__main__":
         | Runtime | %s $hours$ |
         """
             % (
-                icestupa.r_F,
+                icestupa.R_F,
                 icestupa.M_F / 1000,
                 icestupa.D_F,
                 mean_freeze_rate,
@@ -255,8 +255,8 @@ if __name__ == "__main__":
             icestupa.total_hours = days * 24 + seconds // 3600
         # perf = (icestupa.total_hours - icestupa.last_hour)/24
         df_c = pd.read_hdf(icestupa.input + "model_input.h5", "df_c")
-        df_c = df_c.set_index("When")
-        icestupa.df = icestupa.df.set_index("When")
+        df_c = df_c.set_index("TIMESTAMP")
+        icestupa.df = icestupa.df.set_index("TIMESTAMP")
         tol = pd.Timedelta("1T")
         df = pd.merge_asof(
             left=icestupa.df,

@@ -35,6 +35,6 @@ def get_solar(
         }
     )
     solar_df.loc[solar_df["sea"] < 0, "sea"] = 0
-    solar_df.index = solar_df.index.set_names(["When"])
+    solar_df.index = solar_df.index.set_names(["TIMESTAMP"])
     solar_df = solar_df.reset_index()
     return solar_df

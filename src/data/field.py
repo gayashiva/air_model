@@ -31,7 +31,7 @@ def get_field(location="schwarzsee19"):
             "RH",
             "WS",
         ]
-        cols = ["T_a", "RH", "v_a"]
+        cols = ["T_A", "RH", "WS"]
 
         df_in = pd.read_csv(
             FOLDER["raw"] + "/Gangles_Table15Min.dat",
@@ -43,10 +43,10 @@ def get_field(location="schwarzsee19"):
 
         df_in.rename(
             columns={
-                "TIMESTAMP": "When",
-                "AirTC_Avg": "T_a",
+                # "TIMESTAMP": "When",
+                "AirTC_Avg": "T_A",
                 "RH_probe_Avg": "RH",
-                "WS": "v_a",
+                # "WS": "WS",
             },
             inplace=True,
         )
@@ -59,18 +59,18 @@ def get_field(location="schwarzsee19"):
         )
         df_in1.rename(
             columns={
-                "TIMESTAMP": "When",
-                "BP_mbar": "p_a",  # mbar same as hPa
+                # "TIMESTAMP": "When",
+                "BP_mbar": "PRESS",  # mbar same as hPa
             },
             inplace=True,
         )
 
         for col in df_in1:
-            if col != "When":
+            if col != "TIMESTAMP":
                 df_in1[col] = pd.to_numeric(df_in1[col], errors="coerce")
 
-        df_in = df_in.set_index("When")
-        df_in1 = df_in1.set_index("When")
+        df_in = df_in.set_index("TIMESTAMP")
+        df_in1 = df_in1.set_index("TIMESTAMP")
 
         df_in1 = df_in1.reindex(
             pd.date_range(df_in1.index[0], df_in1.index[-1], freq="15Min"),
@@ -80,7 +80,7 @@ def get_field(location="schwarzsee19"):
         df_in = df_in.replace("NAN", np.NaN)
         df_in1 = df_in1.replace("NAN", np.NaN)
         df_in1 = df_in1.resample("15Min").interpolate("linear")
-        df_in.loc[:, "p_a"] = df_in1["p_a"]
+        df_in.loc[:, "PRESS"] = df_in1["PRESS"]
 
         df_in = df_in.replace("NAN", np.NaN)
         if df_in.isnull().values.any():
@@ -90,13 +90,13 @@ def get_field(location="schwarzsee19"):
         df_in = df_in.reset_index()
         df_in.rename(
             columns={
-                "index": "When",
+                "index": "TIMESTAMP",
             },
             inplace=True,
         )
 
         start_date = datetime(2020, 12, 14)
-        df_in = df_in.set_index("When")
+        df_in = df_in.set_index("TIMESTAMP")
         df_in = df_in[start_date:]
 
         df1 = pd.read_csv(
@@ -104,9 +104,10 @@ def get_field(location="schwarzsee19"):
             sep=",",
             parse_dates=["When"],
         )
+        df1 = df1.rename(columns={"When": "TIMESTAMP"})
 
         df = df_in
-        df1 = df1.set_index("When")
+        df1 = df1.set_index("TIMESTAMP")
         cols = ["SW_global"]
         for col in cols:
             df.loc[:, col] = df1[col]
@@ -123,20 +124,17 @@ def get_field(location="schwarzsee19"):
         # df["SW_diffuse"] = diffuse_fraction * df.SW_global
         # df["SW_direct"] = (1-diffuse_fraction)* df.SW_global
         df = (
-            df.set_index("When")
+            df.set_index("TIMESTAMP")
             .resample("H")
             .mean()
             .reset_index()
         )
 
-        df["Prec"] = 0
+        df["PRECIP"] = 0
         df["missing_type"] ='-'
         df["cld"] = 0
 
         df.to_csv(
-            # "/home/suryab/work/air_model/data/"
-            # + location
-            # + "/interim/"
             FOLDER["input"]
             + location
             + "_input_model.csv"
@@ -177,23 +175,23 @@ def get_field(location="schwarzsee19"):
         }
         for col, col_type in types_dict.items():
             df_in[col] = df_in[col].astype(col_type)
-        df_in["When"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
-        df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+        df_in["TIMESTAMP"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
+        df_in["TIMESTAMP"] = pd.to_datetime(df_in["TIMESTAMP"], format="%Y.%m.%d %H:%M:%S")
         df_in = df_in.drop(["Pluviometer", "Date", "Time"], axis=1)
-        df_in = df_in.set_index("When").resample("H").mean().reset_index()
+        df_in = df_in.set_index("TIMESTAMP").resample("H").mean().reset_index()
 
-        mask = (df_in["When"] >= SITE["start_date"]) & (
-            df_in["When"] <= SITE["end_date"]
+        mask = (df_in["TIMESTAMP"] >= SITE["start_date"]) & (
+            df_in["TIMESTAMP"] <= SITE["end_date"]
         )
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
         days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="H")
-        days = pd.DataFrame({"When": days})
+        days = pd.DataFrame({"TIMESTAMP": days})
 
         df = pd.merge(
             df_in[
                 [
-                    "When",
+                    "TIMESTAMP",
                     "Discharge",
                     "Wind Speed",
                     "Temperature",
@@ -202,17 +200,17 @@ def get_field(location="schwarzsee19"):
                 ]
             ],
             days,
-            on="When",
+            on="TIMESTAMP",
         )
 
         df = df.round(3)
         # CSV output
         df.rename(
             columns={
-                "Wind Speed": "v_a",
-                "Temperature": "T_a",
+                "Wind Speed": "WS",
+                "Temperature": "T_A",
                 "Humidity": "RH",
-                "Pressure": "p_a",
+                "Pressure": "PRESS",
             },
             inplace=True,
         )
@@ -252,25 +250,25 @@ def get_field(location="schwarzsee19"):
         }
         for col, col_type in types_dict.items():
             df_in[col] = df_in[col].astype(col_type)
-        df_in["When"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
-        df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+        df_in["TIMESTAMP"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
+        df_in["TIMESTAMP"] = pd.to_datetime(df_in["TIMESTAMP"], format="%Y.%m.%d %H:%M:%S")
         df_in = df_in.drop(["Pluviometer", "Date", "Time"], axis=1)
         logger.debug(df_in.head())
         logger.debug(df_in.tail())
-        df_in = df_in.set_index("When").resample("H").mean().reset_index()
+        df_in = df_in.set_index("TIMESTAMP").resample("H").mean().reset_index()
 
-        mask = (df_in["When"] >= SITE["start_date"]) & (
-            df_in["When"] <= SITE["end_date"]
+        mask = (df_in["TIMESTAMP"] >= SITE["start_date"]) & (
+            df_in["TIMESTAMP"] <= SITE["end_date"]
         )
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
         days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="H")
-        days = pd.DataFrame({"When": days})
+        days = pd.DataFrame({"TIMESTAMP": days})
 
         df = pd.merge(
             df_in[
                 [
-                    "When",
+                    "TIMESTAMP",
                     "Wind Speed",
                     "Temperature",
                     "Humidity",
@@ -278,17 +276,17 @@ def get_field(location="schwarzsee19"):
                 ]
             ],
             days,
-            on="When",
+            on="TIMESTAMP",
         )
 
         df = df.round(3)
         # CSV output
         df.rename(
             columns={
-                "Wind Speed": "v_a",
-                "Temperature": "T_a",
+                "Wind Speed": "WS",
+                "Temperature": "T_A",
                 "Humidity": "RH",
-                "Pressure": "p_a",
+                "Pressure": "PRESS",
             },
             inplace=True,
         )
@@ -317,32 +315,32 @@ def get_field(location="schwarzsee19"):
 
         df_in = df_in.drop(["Pluviometer"], axis=1)
 
-        df_in["When"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
-        df_in["When"] = pd.to_datetime(df_in["When"], format="%Y.%m.%d %H:%M:%S")
+        df_in["TIMESTAMP"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
+        df_in["TIMESTAMP"] = pd.to_datetime(df_in["TIMESTAMP"], format="%Y.%m.%d %H:%M:%S")
 
         # Correct datetime errors
         for i in tqdm(range(1, df_in.shape[0])):
-            if str(df_in.loc[i, "When"].year) != "2019":
-                df_in.loc[i, "When"] = df_in.loc[i - 1, "When"] + pd.Timedelta(
+            if str(df_in.loc[i, "TIMESTAMP"].year) != "2019":
+                df_in.loc[i, "TIMESTAMP"] = df_in.loc[i - 1, "TIMESTAMP"] + pd.Timedelta(
                     minutes=5
                 )
 
-        df_in = df_in.set_index("When").resample("H").last().reset_index()
+        df_in = df_in.set_index("TIMESTAMP").resample("H").last().reset_index()
 
-        mask = (df_in["When"] >= SITE["start_date"]) & (
-            df_in["When"] <= SITE["end_date"]
+        mask = (df_in["TIMESTAMP"] >= SITE["start_date"]) & (
+            df_in["TIMESTAMP"] <= SITE["end_date"]
         )
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
 
         days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="H")
-        days = pd.DataFrame({"When": days})
+        days = pd.DataFrame({"TIMESTAMP": days})
 
         df = pd.merge(
             days,
             df_in[
                 [
-                    "When",
+                    "TIMESTAMP",
                     "Discharge",
                     "Wind Speed",
                     "Maximum Wind Speed",
@@ -352,7 +350,7 @@ def get_field(location="schwarzsee19"):
                     "Pressure",
                 ]
             ],
-            on="When",
+            on="TIMESTAMP",
         )
 
         # Include Spray time
@@ -377,25 +375,25 @@ def get_field(location="schwarzsee19"):
         for i in range(0, df_nights.shape[0]):
             df_nights.loc[i, "Start"] = df_nights.loc[i, "Start"] - pd.Timedelta(days=1)
             df.loc[
-                (df["When"] >= df_nights.loc[i, "Start"])
-                & (df["When"] <= df_nights.loc[i, "End"]),
+                (df["TIMESTAMP"] >= df_nights.loc[i, "Start"])
+                & (df["TIMESTAMP"] <= df_nights.loc[i, "End"]),
                 "Fountain",
             ] = 1
 
         # CSV output
         df.rename(
             columns={
-                "Wind Speed": "v_a",
-                "Temperature": "T_a",
+                "Wind Speed": "WS",
+                "Temperature": "T_A",
                 "Humidity": "RH",
-                "Pressure": "p_a",
+                "Pressure": "PRESS",
             },
             inplace=True,
         )
 
         df.Discharge = df.Fountain * df.Discharge
         df.to_csv(FOLDER["input"] + SITE["name"] + "_input_field.csv")
-    df = df.set_index("When").resample("H").mean().reset_index()
+    df = df.set_index("TIMESTAMP").resample("H").mean().reset_index()
     return df
 
 

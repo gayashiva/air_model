@@ -110,14 +110,14 @@ def test_get_temp(self, i):
             % (
                 self.df.loc[i, "Qf"],
                 self.df.loc[i, "delta_T_s"],
-                self.df.loc[i, "When"],
+                self.df.loc[i, "TIMESTAMP"],
             )
         )
         if math.fabs(self.df.delta_T_s[i]) > 50:
             logger.error(
                 "%s,Surface Temperature %s,Mass %s"
                 % (
-                    self.df.loc[i, "When"],
+                    self.df.loc[i, "TIMESTAMP"],
                     self.df.loc[i, "T_s"],
                     self.df.loc[i, "ice"],
                 )
@@ -125,20 +125,20 @@ def test_get_temp(self, i):
 
     if np.isnan(self.df.loc[i, "delta_T_s"]):
         logger.error(
-            f"When {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+            f"TIMESTAMP {self.df.TIMESTAMP[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
         )
         sys.exit("Ice Temperature nan")
 
     if self.df.loc[i, "fountain_runoff"] < 0:
         logger.error(
-            f"When {self.df.When[i]},fountain_runoff {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+            f"TIMESTAMP {self.df.TIMESTAMP[i]},fountain_runoff {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
         )
         logger.error("All discharge froze!")
         # sys.exit("All discharge froze!")
 
     if np.isnan(self.df.loc[i, "fountain_runoff"]):
         logger.error(
-            f"When {self.df.When[i]},fountain_runoff {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+            f"TIMESTAMP {self.df.TIMESTAMP[i]},fountain_runoff {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
         )
         sys.exit("fountain runoff nan")
 
@@ -148,14 +148,14 @@ def test_get_temp(self, i):
     ):
 
         logger.error(
-            f"Discharge exceeded When {self.df.When[i]}, Fountain in {self.df.fountain_runoff[i]}, Discharge in {self.df.Discharge[i]* self.DT / 60}"
+            f"Discharge exceeded TIMESTAMP {self.df.TIMESTAMP[i]}, Fountain in {self.df.fountain_runoff[i]}, Discharge in {self.df.Discharge[i]* self.DT / 60}"
         )
 
     if math.fabs(self.df.loc[i, "delta_T_s"]) > 20:
         logger.warning(
             "Temperature change above 20C %s,Surface temp %i,Bulk temp %i"
             % (
-                self.df.loc[i, "When"],
+                self.df.loc[i, "TIMESTAMP"],
                 self.df.loc[i, "T_s"],
                 self.df.loc[i, "T_bulk"],
             )

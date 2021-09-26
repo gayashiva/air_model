@@ -18,7 +18,7 @@ def get_albedo(
         f = 1
     else:
         # Snow event
-        if self.df.T_a[i] < self.T_PPT and self.df.Prec[i] > 0: 
+        if self.df.T_A[i] < self.T_PPT and self.df.PRECIP[i] > 0: 
             f = 0
             s = 0
 

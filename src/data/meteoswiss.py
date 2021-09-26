@@ -42,33 +42,33 @@ def get_meteoswiss(location="schwarzsee19"):
             # logger.info("%s from meteoswiss" % meteoswiss_parameter(col)["name"])
         else:
             df = df.drop(columns=col)
-    df["When"] = pd.to_datetime(df["When"], format="%Y%m%d%H%M")
+    df["TIMESTAMP"] = pd.to_datetime(df["TIMESTAMP"], format="%Y%m%d%H%M")
 
-    # df["Prec"] = df["Prec"] / (10 * 60)  # ppt rate mm/s
+    # df["PRECIP"] = df["PRECIP"] / (10 * 60)  # ppt rate mm/s
     df_out = (
-        df.set_index("When")
+        df.set_index("TIMESTAMP")
         .resample("H")
         .mean()
         .reset_index()
     )
-    df_out["Prec"] = (
-        df.set_index("When")
+    df_out["PRECIP"] = (
+        df.set_index("TIMESTAMP")
         .resample("H")
         .sum()
-        .reset_index()["Prec"]
+        .reset_index()["PRECIP"]
     )
-    # mask = (df["When"] >= SITE["start_date"]) & (df["When"] <= SITE["end_date"])
+    # mask = (df["TIMESTAMP"] >= SITE["start_date"]) & (df["TIMESTAMP"] <= SITE["end_date"])
     # df = df.loc[mask]
     return df_out
 
 def meteoswiss_parameter(parameter):
     d = {
         "time": {
-            "name": "When",
+            "name": "TIMESTAMP",
             "units": "(  )",
         },
         "rre150z0": {
-            "name": "Prec",
+            "name": "PRECIP",
             "units": "($mm$)",
         },
         "dkl010z0": {
@@ -76,7 +76,7 @@ def meteoswiss_parameter(parameter):
             "units": "($\\degree$)",
         },
         "fkl010z0": {
-            "name": "v_a",
+            "name": "WS",
             "units": "($ms^{-1}$)",
         },
         "ure200s0": {
@@ -84,7 +84,7 @@ def meteoswiss_parameter(parameter):
             "units": "($%$)",
         },
         "prestas0": {
-            "name": "p_a",
+            "name": "PRESS",
             "units": "($hPa$)",
         },
         "pva200s0": {
@@ -96,7 +96,7 @@ def meteoswiss_parameter(parameter):
             "units": "($\\degree C$)",
         },
         "tre200s0": {
-            "name": "T_a",
+            "name": "T_A",
             "units": "($\\degree C$)",
         },
         "gre000z0": {

@@ -23,7 +23,6 @@ def get_parameter_metadata(
             "name": "Surface area correction factor",
             "latex": "$A_{corr}$",
             "ylim": [1, 2],
-            # "ylim": [1.2, 1.4],
             "step": 0.1,
             "kind": "parameter",
             "units": "( )",
@@ -32,12 +31,11 @@ def get_parameter_metadata(
             "name": "Surface roughness",
             "latex": "$z_{0}$",
             "ylim": [1e-03, 5e-03],
-            # "ylim": [1e-03, 3e-03],
             "step": 1e-03,
             "kind": "parameter",
             "units": "($mm$)",
         },
-        "r_F": {
+        "R_F": {
             "name": "Spray radius",
             "latex": "$r_{F}$",
             "ylim": [0.9, 1.1],
@@ -127,7 +125,7 @@ def get_parameter_metadata(
             "kind": "site",
             "units": "()",
         },
-        "When": {
+        "TIMESTAMP": {
             "name": "Timestamp",
             "kind": "Misc",
             "units": "()",
@@ -222,7 +220,7 @@ def get_parameter_metadata(
             "kind": "Output",
             "units": "($kg\\, s^{-1}$)",
         },
-        "T_a": {
+        "T_A": {
             "name": "Temperature",
             "kind": "Input",
             "units": "($\\degree C$)",
@@ -237,7 +235,7 @@ def get_parameter_metadata(
             "kind": "Input",
             "units": "($\\%$)",
         },
-        "p_a": {
+        "PRESS": {
             "name": "Pressure",
             "kind": "Input",
             "units": "($hPa$)",
@@ -307,12 +305,12 @@ def get_parameter_metadata(
             "kind": "Output",
             "units": "($W\\,m^{-2}$)",
         },
-        "Prec": {
+        "PRECIP": {
             "name": "Precipitation",
             "kind": "Input",
             "units": "($mm$)",
         },
-        "v_a": {
+        "WS": {
             "name": "Wind Speed",
             "kind": "Input",
             "units": "($m\\,s^{-1}$)",

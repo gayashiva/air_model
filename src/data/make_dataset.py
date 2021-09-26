@@ -40,19 +40,19 @@ if __name__ == "__main__":
         level=logging.INFO,
         logger=logger,
     )
-    location = "guttannen21"
+    # location = "guttannen21"
     # location = "schwarzsee19"
     # location = "gangles21"
     # locations = ["gangles21", "guttannen20", "guttannen21"]
-    locations = ["gangles21"]
+    locations = ["guttannen21"]
 
     for location in locations:
         SITE, FOLDER = config(location)
 
         if location in ["gangles21"]:
             df = get_field(location)
-            df = df.set_index("When")
-            df = df[SITE['start_date']:SITE["end_date"]]
+            df = df.set_index("TIMESTAMP")
+            df = df[SITE['start_date']:SITE["melt_out"]]
             print(df.tail())
             # # Replace temp and Humidity from Hobo
             # df_hobo = pd.read_csv(
@@ -61,8 +61,8 @@ if __name__ == "__main__":
             #     parse_dates = ['When'],
             # )
             # df_hobo = df_hobo.set_index("When")
-            # df_hobo = df_hobo[SITE['start_date']:SITE["end_date"]]
-            # df['T_a'] = df_hobo['T_a']
+            # df_hobo = df_hobo[SITE['start_date']:SITE["melt_out"]]
+            # df['T_A'] = df_hobo['T_A']
             # df['RH'] = df_hobo['RH']
 
             df = df.reset_index()
@@ -77,28 +77,27 @@ if __name__ == "__main__":
             if location in ["guttannen21", "guttannen20"]:
                 df = get_meteoswiss(location)
 
-            df = df.set_index("When")
-            df = df[SITE['start_date']:SITE["end_date"]]
+            df = df.set_index("TIMESTAMP")
+            df = df[SITE['start_date']:SITE["melt_out"]]
             df = df.reset_index()
 
             # Replace Wind zero values for 3 hours
-            mask = df.v_a.shift().eq(df.v_a)
+            mask = df.WS.shift().eq(df.WS)
             for i in range(1,3*4):
-                mask &= df.v_a.shift(-1 * i).eq(df.v_a)
-            mask &= (df.v_a ==0)
-            df.v_a = df.v_a.mask(mask)
+                mask &= df.WS.shift(-1 * i).eq(df.WS)
+            mask &= (df.WS ==0)
+            df.WS = df.WS.mask(mask)
 
             if location in ["schwarzsee19"]:
                 df_swiss = get_meteoswiss(location)
-                df_swiss = df_swiss.set_index("When")
-                df_swiss = df_swiss[SITE['start_date']:SITE["end_date"]]
+                df_swiss = df_swiss.set_index("TIMESTAMP")
+                df_swiss = df_swiss[SITE['start_date']:SITE["melt_out"]]
                 df_swiss = df_swiss.reset_index()
-                print(df_swiss.shape[0])
 
-                df_swiss = df_swiss.set_index("When")
-                df= df.set_index("When")
+                df_swiss = df_swiss.set_index("TIMESTAMP")
+                df= df.set_index("TIMESTAMP")
 
-                for col in ["Prec"]:
+                for col in ["PRECIP"]:
                     logger.info("%s from meteoswiss" % col)
                     df[col] = df_swiss[col]
                 df_swiss = df_swiss.reset_index()
@@ -107,19 +106,19 @@ if __name__ == "__main__":
 
             df_ERA5_full = get_era5(SITE["name"])
 
-            df = df.set_index("When")
-            df_ERA5_full = df_ERA5_full.set_index("When")
-            df_ERA5 = df_ERA5_full[SITE['start_date']:SITE["end_date"]]
+            df = df.set_index("TIMESTAMP")
+            
+            df_ERA5_full = df_ERA5_full.set_index("TIMESTAMP")
+            df_ERA5 = df_ERA5_full[SITE['start_date']:SITE["melt_out"]]
             df_ERA5 = df_ERA5.reset_index()
             df_ERA5_full = df_ERA5_full.reset_index()
-            print(df_ERA5.shape[0])
 
             # Fit ERA5 to field data
             if SITE["name"] in ["guttannen21", "guttannen20"]:
-                fit_list = ["T_a", "RH", "v_a"]
+                fit_list = ["T_A", "RH", "WS"]
 
             if SITE["name"] in ["schwarzsee19"]:
-                fit_list = ["T_a", "RH", "v_a", "p_a"]
+                fit_list = ["T_A", "RH", "WS", "PRESS"]
 
             for column in fit_list:
                 Y = df[column].values.reshape(-1, 1)
@@ -127,16 +126,16 @@ if __name__ == "__main__":
                 slope, intercept = linreg(X, Y)
                 df_ERA5[column] = slope * df_ERA5[column] + intercept
                 df_ERA5_full[column] = slope * df_ERA5_full[column] + intercept
-                if column in ["v_a"]:
+                if column in ["WS"]:
                     # Correct negative wind
-                    df_ERA5.v_a.loc[df_ERA5.v_a<0] = 0
-                    df_ERA5_full.v_a.loc[df_ERA5_full.v_a<0] = 0
+                    df_ERA5.WS.loc[df_ERA5.WS<0] = 0
+                    df_ERA5_full.WS.loc[df_ERA5_full.WS<0] = 0
 
-            df_ERA5 = df_ERA5.set_index("When")
+            df_ERA5 = df_ERA5.set_index("TIMESTAMP")
 
             # Fill from ERA5
             df['missing_type'] = ''
-            for col in ["T_a", "RH", "v_a", "Prec", "p_a", "SW_direct", "SW_diffuse", "LW_in"]:
+            for col in ["T_A", "RH", "WS", "PRECIP", "PRESS", "SW_direct", "SW_diffuse", "LW_in"]:
                 try:
                     mask = df[col].isna()
                     percent_nan = df[col].isna().sum()/df.shape[0] * 100
@@ -159,17 +158,17 @@ if __name__ == "__main__":
 
         if SITE["name"] in ["gangles21"]:
             cols = [
-                "When",
+                "TIMESTAMP",
                 # "Discharge",
-                "T_a",
+                "T_A",
                 "RH",
-                "v_a",
+                "WS",
                 # "SW_direct",
                 # "SW_diffuse",
                 "SW_global",
-                "Prec",
+                "PRECIP",
                 # "vp_a",
-                "p_a",
+                "PRESS",
                 "missing_type",
                 # "LW_in",
                 "cld",
@@ -177,31 +176,31 @@ if __name__ == "__main__":
 
         if SITE["name"] in ["schwarzsee19"]:
             cols = [
-                "When",
+                "TIMESTAMP",
                 # "Discharge",
-                "T_a",
+                "T_A",
                 "RH",
-                "v_a",
+                "WS",
                 "SW_direct",
                 "SW_diffuse",
-                "Prec",
+                "PRECIP",
                 # "vp_a",
-                "p_a",
+                "PRESS",
                 "missing_type",
                 "LW_in",
             ]
         if SITE["name"] in ["guttannen20", "guttannen21"]:
             cols = [
-                "When",
+                "TIMESTAMP",
                 # "Discharge",
-                "T_a",
+                "T_A",
                 "RH",
-                "v_a",
+                "WS",
                 "SW_direct",
                 "SW_diffuse",
-                "Prec",
+                "PRECIP",
                 "vp_a",
-                "p_a",
+                "PRESS",
                 "missing_type",
                 "LW_in",
             ]
@@ -224,31 +223,31 @@ if __name__ == "__main__":
         df_out.to_csv(FOLDER["input"] + SITE["name"] + "_input_model.csv", index=False)
 
         fig = plt.figure()
-        plt.plot(df_out.p_a)
+        plt.plot(df_out.PRESS)
         plt.ylabel('some numbers')
         plt.savefig(FOLDER["input"] + SITE["name"] + "test.png")
 
         # Extend field data with ERA5
         if SITE["name"] in ['schwarzsee19']:
-            df_ERA5_full["Prec"] = 0
+            df_ERA5_full["PRECIP"] = 0
             df_ERA5_full["Discharge"] = 0
             df_ERA5_full["missing_type"] = "-".join(df_out.columns)
-            mask = (df_ERA5_full["When"] > df_out["When"].iloc[-1]) & (
-                df_ERA5_full["When"] <= datetime(2019, 4, 30)
+            mask = (df_ERA5_full["TIMESTAMP"] > df_out["TIMESTAMP"].iloc[-1]) & (
+                df_ERA5_full["TIMESTAMP"] <= datetime(2019, 4, 30)
             )
             df_ERA5_full = df_ERA5_full.loc[mask]
 
-            df_out = df_out.set_index("When")
-            df_ERA5_full = df_ERA5_full.set_index("When")
+            df_out = df_out.set_index("TIMESTAMP")
+            df_ERA5_full = df_ERA5_full.set_index("TIMESTAMP")
 
             df_swiss = get_meteoswiss(SITE["name"])
-            df_swiss = df_swiss.set_index("When")
+            df_swiss = df_swiss.set_index("TIMESTAMP")
             df_swiss = df_swiss[SITE['start_date']:datetime(2019, 4, 30)]
             df_swiss = df_swiss.reset_index()
 
-            df_swiss = df_swiss.set_index("When")
+            df_swiss = df_swiss.set_index("TIMESTAMP")
 
-            df_ERA5_full["Prec"] = df_swiss["Prec"]
+            df_ERA5_full["PRECIP"] = df_swiss["PRECIP"]
             concat = pd.concat([df_out, df_ERA5_full])
             if len(concat[concat.index.duplicated()]):
                 logger.error("Duplicate indexes")

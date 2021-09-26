@@ -33,37 +33,41 @@ def get_era5(location="schwarzsee19"):
 
     if location in ["guttannen20"]:
         df_in3 = pd.read_csv(
-            "/home/suryab/work/ERA5/outputs/" + location[:-2] + "_2019.csv",
+            "../ERA5/outputs/" + location[:-2] + "_2019.csv",
             sep=",",
             header=0,
             parse_dates=["When"],
         )
         df_in2 = pd.read_csv(
-            "/home/suryab/work/ERA5/outputs/" + location[:-2] + "_2020.csv",
+            "../ERA5/outputs/" + location[:-2] + "_2020.csv",
             sep=",",
             header=0,
             parse_dates=["When"],
         )
-        df_in3 = df_in3.set_index("When")
-        df_in2 = df_in2.set_index("When")
+        df_in2 = df_in2.rename(columns = {"When":"TIMESTAMP"})
+        df_in3 = df_in3.rename(columns = {"When":"TIMESTAMP"})
+        df_in3 = df_in3.set_index("TIMESTAMP")
+        df_in2 = df_in2.set_index("TIMESTAMP")
         df_in3 = pd.concat([df_in2, df_in3])
         df_in3 = df_in3.reset_index()
 
     if location in ["guttannen21"]:
         df_in3 = pd.read_csv(
-            "/home/suryab/work/ERA5/outputs/" + location[:-2] + "_2021.csv",
+            "../ERA5/outputs/" + location[:-2] + "_2021.csv",
             sep=",",
             header=0,
             parse_dates=["When"],
         )
         df_in2 = pd.read_csv(
-            "/home/suryab/work/ERA5/outputs/" + location[:-2] + "_2020.csv",
+            "../ERA5/outputs/" + location[:-2] + "_2020.csv",
             sep=",",
             header=0,
             parse_dates=["When"],
         )
-        df_in3 = df_in3.set_index("When")
-        df_in2 = df_in2.set_index("When")
+        df_in2 = df_in2.rename(columns = {"When":"TIMESTAMP"})
+        df_in3 = df_in3.rename(columns = {"When":"TIMESTAMP"})
+        df_in3 = df_in3.set_index("TIMESTAMP")
+        df_in2 = df_in2.set_index("TIMESTAMP")
         df_in3 = pd.concat([df_in2, df_in3])
         df_in3 = df_in3.reset_index()
 
@@ -74,7 +78,8 @@ def get_era5(location="schwarzsee19"):
             header=0,
             parse_dates=["When"],
         )
-        df_in3 = df_in3.set_index("When")
+        df_in3 = df_in3.rename({"When":"TIMESTAMP"})
+        df_in3 = df_in3.set_index("TIMESTAMP")
         df_in3 = df_in3.reset_index()
 
     if location in ["ravat20"]:
@@ -84,7 +89,8 @@ def get_era5(location="schwarzsee19"):
             header=0,
             parse_dates=["When"],
         )
-        df_in3 = df_in3.set_index("When")
+        df_in3 = df_in3.rename({"When":"TIMESTAMP"})
+        df_in3 = df_in3.set_index("TIMESTAMP")
         df_in3 = df_in3.reset_index()
 
     SITE, FOLDER= config(location)
@@ -97,7 +103,7 @@ def get_era5(location="schwarzsee19"):
     df_in3["ssrd"] /= time_steps
     df_in3["strd"] /= time_steps
     df_in3["fdir"] /= time_steps
-    df_in3["v_a"] = np.sqrt(df_in3["u10"] ** 2 + df_in3["v10"] ** 2)
+    df_in3["WS"] = np.sqrt(df_in3["u10"] ** 2 + df_in3["v10"] ** 2)
     # Derive RH
     df_in3["t2m"] -= 273.15
     df_in3["d2m"] -= 273.15
@@ -109,14 +115,14 @@ def get_era5(location="schwarzsee19"):
     df_in3["sp"] = df_in3["sp"] / 100
     # df_in3["tp"] = df_in3["tp"] * 1000  # mm
     df_in3["SW_diffuse"] = df_in3["ssrd"] - df_in3["fdir"]
-    df_in3 = df_in3.set_index("When")
+    df_in3 = df_in3.set_index("TIMESTAMP")
 
     # CSV output
     df_in3.rename(
         columns={
-            "t2m": "T_a",
-            "sp": "p_a",
-            # "tp": "Prec",
+            "t2m": "T_A",
+            "sp": "PRESS",
+            # "tp": "PRECIP",
             "fdir": "SW_direct",
             "strd": "LW_in",
         },
@@ -125,14 +131,14 @@ def get_era5(location="schwarzsee19"):
 
     df_in3 = df_in3[
         [
-            "T_a",
+            "T_A",
             "RH",
-            # "Prec",
-            "v_a",
+            # "PRECIP",
+            "WS",
             "SW_direct",
             "SW_diffuse",
             "LW_in",
-            "p_a",
+            "PRESS",
         ]
     ]
 
@@ -145,14 +151,14 @@ def get_era5(location="schwarzsee19"):
 #     df_in3 = interpolated[
 #         [
 #             "When",
-#             "T_a",
+#             "T_A",
 #             "RH",
-#             "v_a",
+#             "WS",
 #             "SW_direct",
 #             "SW_diffuse",
 #             "LW_in",
-#             "p_a",
-#             "Prec",
+#             "PRESS",
+#             "PRECIP",
 #         ]
 #     ]
 # 
@@ -167,14 +173,14 @@ def get_era5(location="schwarzsee19"):
     # df_ERA5 = interpolated[
     #     [
     #         "When",
-    #         "T_a",
-    #         "v_a",
+    #         "T_A",
+    #         "WS",
     #         "RH",
     #         "SW_direct",
     #         "SW_diffuse",
     #         "LW_in",
-    #         "p_a",
-    #         "Prec",
+    #         "PRESS",
+    #         "PRECIP",
     #     ]
     # ]
 
