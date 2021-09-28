@@ -5,6 +5,7 @@
 import sys, os
 import pandas as pd
 import numpy as np
+import xarray as xr
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -22,8 +23,9 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 sys.path.append(dirname)
 from src.utils.settings import config
 
-def get_field(location="schwarzsee19"):
-    SITE, FOLDER= config(location)
+
+def get_field(location="gangles21"):
+    SITE, FOLDER = config(location)
     if location == "gangles21":
         col_list = [
             "TIMESTAMP",
@@ -119,27 +121,17 @@ def get_field(location="schwarzsee19"):
 
         mask = df["SW_global"] < 0
         mask_index = df[mask].index
-        df.loc[mask_index, 'SW_global'] = 0
+        df.loc[mask_index, "SW_global"] = 0
         # diffuse_fraction = 0
         # df["SW_diffuse"] = diffuse_fraction * df.SW_global
         # df["SW_direct"] = (1-diffuse_fraction)* df.SW_global
-        df = (
-            df.set_index("TIMESTAMP")
-            .resample("H")
-            .mean()
-            .reset_index()
-        )
+        df = df.set_index("TIMESTAMP").resample("H").mean().reset_index()
 
         df["PRECIP"] = 0
-        df["missing_type"] ='-'
+        df["missing_type"] = "-"
         df["cld"] = 0
 
-        df.to_csv(
-            FOLDER["input"]
-            + location
-            + "_input_model.csv"
-        )
-        return df
+        df.to_csv(FOLDER["input"] + location + "_input_model.csv")
 
     if location == "guttannen20":
         df_in = pd.read_csv(
@@ -176,16 +168,18 @@ def get_field(location="schwarzsee19"):
         for col, col_type in types_dict.items():
             df_in[col] = df_in[col].astype(col_type)
         df_in["TIMESTAMP"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
-        df_in["TIMESTAMP"] = pd.to_datetime(df_in["TIMESTAMP"], format="%Y.%m.%d %H:%M:%S")
+        df_in["TIMESTAMP"] = pd.to_datetime(
+            df_in["TIMESTAMP"], format="%Y.%m.%d %H:%M:%S"
+        )
         df_in = df_in.drop(["Pluviometer", "Date", "Time"], axis=1)
         df_in = df_in.set_index("TIMESTAMP").resample("H").mean().reset_index()
 
         mask = (df_in["TIMESTAMP"] >= SITE["start_date"]) & (
-            df_in["TIMESTAMP"] <= SITE["end_date"]
+            df_in["TIMESTAMP"] <= SITE["melt_out"]
         )
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
-        days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="H")
+        days = pd.date_range(start=SITE["start_date"], end=SITE["melt_out"], freq="H")
         days = pd.DataFrame({"TIMESTAMP": days})
 
         df = pd.merge(
@@ -218,6 +212,11 @@ def get_field(location="schwarzsee19"):
         logger.info(df_in.tail())
         df.to_csv(FOLDER["input"] + SITE["name"] + "_input_field.csv")
 
+        ds = df.rename(columns={"TIMESTAMP": "time"})
+        ds = ds.set_index("time")
+        ds = ds.to_xarray()
+        ds.coords["locs"] = location
+        ds.to_netcdf(FOLDER["input"] + SITE["name"] + "_input_field.nc")
 
     if location == "guttannen21":
         df_in = pd.read_csv(
@@ -251,18 +250,20 @@ def get_field(location="schwarzsee19"):
         for col, col_type in types_dict.items():
             df_in[col] = df_in[col].astype(col_type)
         df_in["TIMESTAMP"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
-        df_in["TIMESTAMP"] = pd.to_datetime(df_in["TIMESTAMP"], format="%Y.%m.%d %H:%M:%S")
+        df_in["TIMESTAMP"] = pd.to_datetime(
+            df_in["TIMESTAMP"], format="%Y.%m.%d %H:%M:%S"
+        )
         df_in = df_in.drop(["Pluviometer", "Date", "Time"], axis=1)
         logger.debug(df_in.head())
         logger.debug(df_in.tail())
         df_in = df_in.set_index("TIMESTAMP").resample("H").mean().reset_index()
 
         mask = (df_in["TIMESTAMP"] >= SITE["start_date"]) & (
-            df_in["TIMESTAMP"] <= SITE["end_date"]
+            df_in["TIMESTAMP"] <= SITE["melt_out"]
         )
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
-        days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="H")
+        days = pd.date_range(start=SITE["start_date"], end=SITE["melt_out"], freq="H")
         days = pd.DataFrame({"TIMESTAMP": days})
 
         df = pd.merge(
@@ -316,24 +317,26 @@ def get_field(location="schwarzsee19"):
         df_in = df_in.drop(["Pluviometer"], axis=1)
 
         df_in["TIMESTAMP"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
-        df_in["TIMESTAMP"] = pd.to_datetime(df_in["TIMESTAMP"], format="%Y.%m.%d %H:%M:%S")
+        df_in["TIMESTAMP"] = pd.to_datetime(
+            df_in["TIMESTAMP"], format="%Y.%m.%d %H:%M:%S"
+        )
 
         # Correct datetime errors
         for i in tqdm(range(1, df_in.shape[0])):
             if str(df_in.loc[i, "TIMESTAMP"].year) != "2019":
-                df_in.loc[i, "TIMESTAMP"] = df_in.loc[i - 1, "TIMESTAMP"] + pd.Timedelta(
-                    minutes=5
-                )
+                df_in.loc[i, "TIMESTAMP"] = df_in.loc[
+                    i - 1, "TIMESTAMP"
+                ] + pd.Timedelta(minutes=5)
 
         df_in = df_in.set_index("TIMESTAMP").resample("H").last().reset_index()
 
         mask = (df_in["TIMESTAMP"] >= SITE["start_date"]) & (
-            df_in["TIMESTAMP"] <= SITE["end_date"]
+            df_in["TIMESTAMP"] <= SITE["melt_out"]
         )
         df_in = df_in.loc[mask]
         df_in = df_in.reset_index()
 
-        days = pd.date_range(start=SITE["start_date"], end=SITE["end_date"], freq="H")
+        days = pd.date_range(start=SITE["start_date"], end=SITE["melt_out"], freq="H")
         days = pd.DataFrame({"TIMESTAMP": days})
 
         df = pd.merge(
@@ -393,7 +396,31 @@ def get_field(location="schwarzsee19"):
 
         df.Discharge = df.Fountain * df.Discharge
         df.to_csv(FOLDER["input"] + SITE["name"] + "_input_field.csv")
-    df = df.set_index("TIMESTAMP").resample("H").mean().reset_index()
+        df = df.set_index("TIMESTAMP").resample("H").mean().reset_index()
+    print(SITE["name"])
+    ds = df.rename(columns={"TIMESTAMP": "time"})
+    ds = ds.set_index("time")
+    ds = ds.to_xarray()
+    ds.coords["locs"] = location
+    ds.to_netcdf(FOLDER["input"] + SITE["name"] + "_input_field.nc")
     return df
 
 
+if __name__ == "__main__":
+    # Main logger
+    logger = logging.getLogger(__name__)
+    coloredlogs.install(
+        fmt="%(funcName)s %(levelname)s %(message)s",
+        # level=logging.WARNING,
+        level=logging.INFO,
+        logger=logger,
+    )
+
+    df = get_field("guttannen21")
+    SITE, FOLDER = config("guttannen21")
+
+    ds_disk = xr.open_dataset(FOLDER["input"] + SITE["name"] + "_input_field.nc")
+    ds_disk["locs"] = ["gangles21", "guttannen21"]
+    ds_disk.T_A["units"] = "degree_C"
+    print(ds_disk.T_A)
+    print(ds_disk["locs"])

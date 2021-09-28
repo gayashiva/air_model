@@ -3,10 +3,12 @@
 
 # External modules
 import pickle
-pickle.HIGHEST_PROTOCOL = 4 # For python version 2.7
+
+pickle.HIGHEST_PROTOCOL = 4  # For python version 2.7
 import pandas as pd
 import sys, os, math, json
 import numpy as np
+import xarray as xr
 import logging
 from stqdm import stqdm
 from codetiming import Timer
@@ -22,9 +24,11 @@ from src.utils.settings import config
 logger = logging.getLogger(__name__)
 logger.propagate = False
 
+
 class Icestupa:
 
     """Model hyperparameter"""
+
     DT = 60 * 60  # Model time step
 
     """Physical Constants"""
@@ -46,7 +50,7 @@ class Icestupa:
     IE = 0.97  # Ice Emissivity IE
     A_I = 0.25  # Albedo of Ice A_I
     A_S = 0.85  # Albedo of Fresh Snow A_S
-    A_DECAY = 16 # Albedo decay rate decay_t_d
+    A_DECAY = 16  # Albedo decay rate decay_t_d
     Z = 0.003  # Ice Momentum and Scalar roughness length
     T_PPT = 1  # Temperature condition for liquid precipitation
     DX = 20e-03  # m Surface layer thickness growth rate
@@ -55,7 +59,6 @@ class Icestupa:
 
     # """Fountain constants"""
     # T_F = 1.5  # FOUNTAIN Water temperature
-
 
     def __init__(self, location="Guttannen 2021", params="default"):
 
@@ -78,16 +81,18 @@ class Icestupa:
                 logger.info(f"%s -> %s" % (key, str(dictionary[key])))
 
         # Initialize input dataset
-        input_file = self.input + self.name + "_input_model.csv"
-        self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["TIMESTAMP"])
+        # input_file = self.input + self.name + "_input_model.csv"
+        # self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["TIMESTAMP"])
+
+        self.df = xr.open_dataset("data/inputs.nc").sel(location=location)
 
         # Drops garbage columns
-        self.df = self.df[self.df.columns.drop(list(self.df.filter(regex="Unnamed")))]
+        # self.df = self.df[self.df.columns.drop(list(self.df.filter(regex="Unnamed")))]
 
         # Reset date range
-        self.df = self.df.set_index("TIMESTAMP")
-        self.df = self.df[SITE["start_date"] : SITE["melt_out"]]
-        self.df = self.df.reset_index()
+        # self.df = self.df.set_index("TIMESTAMP")
+        # self.df = self.df[SITE["start_date"] : SITE["melt_out"]]
+        # self.df = self.df.reset_index()
 
         logger.debug(self.df.head())
         logger.debug(self.df.tail())
@@ -101,6 +106,7 @@ class Icestupa:
     from src.models.methods._temp import get_temp, test_get_temp
     from src.models.methods._energy import get_energy, test_get_energy
     from src.models.methods._figures import summary_figures
+
     # from src.models.methods._stop import stop_model
 
     @Timer(text="Preprocessed data in {:.2f} seconds", logger=logging.warning)
@@ -109,7 +115,11 @@ class Icestupa:
     ):  # Derives additional parameters required for simulation
 
         # self.change_freq()
-
+        # for key, value in self.df.data_vars:
+        #     print(key, value)
+        # for varname in self.df.data_vars.keys():
+        # print(varname)
+        # print(self.df)
         unknown = [
             "a",
             "vp_a",
@@ -118,7 +128,8 @@ class Icestupa:
             "SW_diffuse",
         ]  # Possible unknown variables
         for i in range(len(unknown)):
-            if unknown[i] in list(self.df.columns):
+            # if unknown[i] in list(self.df.columns):
+            if unknown[i] in list(self.df.data_vars.keys()):
                 unknown[i] = np.NaN  # Removes known variable
             else:
                 logger.error(" %s is unknown\n" % (unknown[i]))
@@ -132,23 +143,28 @@ class Icestupa:
                 % self.diffuse_fraction
             )
 
-        for row in stqdm(
-            self.df[1:].itertuples(),
-            total=self.df.shape[0],
+        for i in stqdm(
+            range(1, self.df.sizes["time"]),
+            total=self.df.sizes["time"],
             desc="Creating AIR input...",
         ):
-            i = row.Index
 
             """ Vapour Pressure"""
             if "vp_a" in unknown:
-                f = 1.0016+3.15*math.pow(10,-6)*self.df.loc[i, "PRESS"]-0.074*math.pow(self.df.loc[i, "PRESS"],-1)
+                f = (
+                    1.0016
+                    + 3.15 * math.pow(10, -6) * self.df.loc[i, "PRESS"]
+                    - 0.074 * math.pow(self.df.loc[i, "PRESS"], -1)
+                )
                 self.df.loc[i, "vp_a"] = (
                     6.107
                     * math.pow(
                         10,
-                        7.5 * row.T_A / (row.T_A + 237.3),
+                        7.5
+                        * self.df.isel(time=i).T_A
+                        / (self.df.isel(time=i).T_A + 237.3),
                     )
-                    * row.RH
+                    * self.df.isel(time=i).RH
                     / 100
                 )
 
@@ -157,26 +173,37 @@ class Icestupa:
 
                 self.df.loc[i, "e_a"] = (
                     1.24
-                    * math.pow(abs(self.df.loc[i, "vp_a"] / (row.T_A + 273.15)), 1 / 7)
-                ) * (1 + 0.22 * math.pow(row.cld, 2))
+                    * math.pow(
+                        abs(
+                            self.df.loc[i, "vp_a"] / (self.df.isel(time=i).T_A + 273.15)
+                        ),
+                        1 / 7,
+                    )
+                ) * (1 + 0.22 * math.pow(self.df.isel(time=i).cld, 2))
 
                 self.df.loc[i, "LW_in"] = (
                     self.df.loc[i, "e_a"]
                     * self.STEFAN_BOLTZMAN
-                    * math.pow(row.T_A + 273.15, 4)
+                    * math.pow(self.df.isel(time=i).T_A + 273.15, 4)
                 )
+        # self.df["Discharge"] = (["time"], np.zeros(self.df.sizes["time"]))
+        self.df["Discharge"] = (["time"], np.zeros(self.df.sizes["time"]))
 
+        # print(self.df.Discharge)
         self.get_discharge()
         self.self_attributes(save=True)
 
-        solar_df = get_solar(
-            latitude=self.latitude,
-            longitude=self.longitude,
-            start=self.start_date,
-            end=self.df["TIMESTAMP"].iloc[-1],
-            DT=self.DT,
-        )
-        self.df = pd.merge(solar_df, self.df, on="TIMESTAMP")
+        # print(self.df.isel(time=-1)["time"].values)
+
+        # solar_df = get_solar(
+        #     latitude=self.latitude,
+        #     longitude=self.longitude,
+        #     start=self.start_date,
+        #     # end=self.df.isel(time=-1)["time"].valuesself.df["TIMESTAMP"].iloc[-1],
+        #     end=self.df.isel(time=-1)["time"].values,
+        #     DT=self.DT,
+        # )
+        # self.df = pd.merge(solar_df, self.df, on="time")
 
         """Albedo"""
         if "a" in unknown:
@@ -184,11 +211,11 @@ class Icestupa:
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
             s = 0
             f = 1
-            for row in self.df.itertuples():
-                i = row.Index
+            for i in range(0, self.df.sizes["time"]):
+                # i = row.Index
                 s, f = self.get_albedo(i, s, f)
 
-        self.df = self.df.round(3)
+        # self.df = self.df.round(3)
 
         if self.df.isnull().values.any():
             for column in self.df.columns:
@@ -224,22 +251,33 @@ class Icestupa:
         last_hour = self.df.shape[0]
 
         results_dict = {}
-        results = ["iceV_max", "last_hour", "M_input","M_F", "M_ppt", "M_dep", "M_water", "M_runoff", "M_sub", "M_ice"]
+        results = [
+            "iceV_max",
+            "last_hour",
+            "M_input",
+            "M_F",
+            "M_ppt",
+            "M_dep",
+            "M_water",
+            "M_runoff",
+            "M_sub",
+            "M_ice",
+        ]
 
         for variable in results:
             results_dict[variable] = int(eval(variable))
 
-        print("Summary of results for %s :"%self.name)
+        print("Summary of results for %s :" % self.name)
         print()
         for var in sorted(results_dict.keys()):
             print("\t%s: %r" % (var, results_dict[var]))
         print()
 
-        with open(self.output + 'results.json', 'w') as fp:
+        with open(self.output + "results.json", "w") as fp:
             json.dump(results_dict, fp, sort_keys=True, indent=4)
 
-        if last_hour > self.total_hours+1:
-            self.df = self.df[:self.total_hours]
+        if last_hour > self.total_hours + 1:
+            self.df = self.df[: self.total_hours]
         else:
             for j in range(last_hour, self.total_hours):
                 for col in self.df.columns:
@@ -247,9 +285,11 @@ class Icestupa:
                     if col in ["iceV"]:
                         self.df.loc[j, col] = self.V_dome
                     if col in ["TIMESTAMP"]:
-                        self.df.loc[j, col] = self.df.loc[j-1, col] + timedelta(hours=1)
+                        self.df.loc[j, col] = self.df.loc[j - 1, col] + timedelta(
+                            hours=1
+                        )
                     if col in ["missing_type"]:
-                        self.df.loc[j, col] = self.df.loc[j-1, col]
+                        self.df.loc[j, col] = self.df.loc[j - 1, col]
 
         self.df = self.df.reset_index(drop=True)
 
@@ -378,7 +418,7 @@ class Icestupa:
                     for column in col_list:
                         self.df.loc[i - 1, column] = 0
 
-                    last_hour = i-1
+                    last_hour = i - 1
                     self.df = self.df[1:i]
                     self.df = self.df.reset_index(drop=True)
                 break

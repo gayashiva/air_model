@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2021",
+        location="guttannen21",
         # location="Gangles 2021",
         run="yes",
         # run="no",
@@ -52,4 +52,12 @@ if __name__ == "__main__":
     else:
         # Use output parameters from cache
         icestupa.read_output()
-        icestupa.summary_figures()
+        # icestupa.summary_figures()
+
+    # for location in ["gangles21", "guttannen21", "guttannen20",
+    #     ds = icestupa.df.rename(columns={"TIMESTAMP": "time"})
+    #     ds = ds.set_index("time")
+    #     ds = ds.to_xarray()
+    #     ds.coords["locs"] = icestupa.name
+    #     # ds.to_netcdf(FOLDER["input"] + SITE["name"] + "_input_field.nc")
+    #     print(ds)
