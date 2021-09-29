@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 def get_discharge(self):  # Provides discharge info based on trigger setting
 
+    self.df["Discharge"] = (["time"], np.zeros(self.df.sizes["time"]))
     #     if self.name == "schwarzsee19":
     #         self.df["Discharge"] = 0
     #         logger.debug("Initialised discharge as zero")
@@ -81,7 +82,11 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         self.df.sel(time=df_f.index).Discharge = self.D_F * df_f["fountain"]
         # self.df = self.df.reset_index()
     if self.name in ["guttannen21", "guttannen20"]:
-        self.df["Discharge"] = self.D_F
+        self.df["Discharge"] = (
+            ["time"],
+            self.D_F * np.ones(self.df.sizes["time"]),
+        )
+        # self.df["Discharge"] = self.D_F
 
     # mask = self.df["time"] > self.fountain_off_date
     # mask_index = self.df[mask].index

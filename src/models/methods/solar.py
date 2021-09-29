@@ -6,13 +6,14 @@ import numpy as np
 import pandas as pd
 import logging
 from codetiming import Timer
+
 # from redis_cache import cache_it
 
 logger = logging.getLogger(__name__)
 
 # @cache_it(limit=1000, expire=None)
 def get_solar(
-    latitude, longitude, start, end, DT
+    name, latitude, longitude, start, end, DT
 ):  # Provides solar angle for each time step
 
     site_location = location.Location(latitude, longitude)
@@ -35,6 +36,10 @@ def get_solar(
         }
     )
     solar_df.loc[solar_df["sea"] < 0, "sea"] = 0
-    solar_df.index = solar_df.index.set_names(["TIMESTAMP"])
-    solar_df = solar_df.reset_index()
+    solar_df.index = solar_df.index.set_names(["time"])
+    # solar_df = solar_df.reset_index()
+    # solar_df["location"] = name
+    # solar_df = solar_df.set_index(["time", "location"])
+    solar_df = solar_df.to_xarray()
+    # solar_df = solar_df.reset_index()
     return solar_df

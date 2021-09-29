@@ -41,14 +41,14 @@ if __name__ == "__main__":
         icestupa.derive_parameters()
 
         # Generate results
-        icestupa.melt_freeze(test=True)
+        # icestupa.melt_freeze(test=True)
         # icestupa.melt_freeze()
 
         # Summarise and save model results
-        icestupa.save()
+        # icestupa.save()
 
         # Create figures for web interface
-        icestupa.summary_figures()
+        # icestupa.summary_figures()
     else:
         # Use output parameters from cache
         icestupa.read_output()

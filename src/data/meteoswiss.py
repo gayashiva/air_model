@@ -21,11 +21,12 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 sys.path.append(dirname)
 from src.utils.settings import config
 
-def get_meteoswiss(location="schwarzsee19"):
 
-    SITE, FOLDER= config(location)
-    if location == "schwarzsee19":
-        location = "plaffeien19"
+def get_meteoswiss(location="guttannen21"):
+
+    SITE, FOLDER = config(location)
+    # if location == "schwarzsee19":
+    #     location = "plaffeien19"
 
     location = location[:-2]
 
@@ -45,21 +46,14 @@ def get_meteoswiss(location="schwarzsee19"):
     df["TIMESTAMP"] = pd.to_datetime(df["TIMESTAMP"], format="%Y%m%d%H%M")
 
     # df["PRECIP"] = df["PRECIP"] / (10 * 60)  # ppt rate mm/s
-    df_out = (
-        df.set_index("TIMESTAMP")
-        .resample("H")
-        .mean()
-        .reset_index()
-    )
+    df_out = df.set_index("TIMESTAMP").resample("H").mean().reset_index()
     df_out["PRECIP"] = (
-        df.set_index("TIMESTAMP")
-        .resample("H")
-        .sum()
-        .reset_index()["PRECIP"]
+        df.set_index("TIMESTAMP").resample("H").sum().reset_index()["PRECIP"]
     )
     # mask = (df["TIMESTAMP"] >= SITE["start_date"]) & (df["TIMESTAMP"] <= SITE["end_date"])
     # df = df.loc[mask]
     return df_out
+
 
 def meteoswiss_parameter(parameter):
     d = {
@@ -112,5 +106,3 @@ def meteoswiss_parameter(parameter):
     value = d.get(parameter)
 
     return value
-
-

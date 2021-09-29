@@ -35,6 +35,150 @@ def linreg(X, Y):
     return slope, intercept
 
 
+def make_input(location):
+    SITE, FOLDER = config(location)
+
+    if location in ["gangles21"]:
+        df = get_field(location)
+        df = df.set_index("TIMESTAMP")
+        df = df[SITE["start_date"] : SITE["melt_out"]]
+
+        df = df.reset_index()
+
+        logger.info(df.missing_type.describe())
+        logger.info(df.missing_type.unique())
+    else:
+
+        if location in ["guttannen21", "guttannen20"]:
+            df = get_meteoswiss(location)
+
+        df = df.set_index("TIMESTAMP")
+        df = df[SITE["start_date"] : SITE["melt_out"]]
+        df = df.reset_index()
+
+        # Replace Wind zero values for 3 hours
+        mask = df.WS.shift().eq(df.WS)
+        for i in range(1, 3 * 4):
+            mask &= df.WS.shift(-1 * i).eq(df.WS)
+        mask &= df.WS == 0
+        df.WS = df.WS.mask(mask)
+
+        df_ERA5_full = get_era5(SITE["name"])
+
+        df = df.set_index("TIMESTAMP")
+
+        df_ERA5_full = df_ERA5_full.set_index("TIMESTAMP")
+        df_ERA5 = df_ERA5_full[SITE["start_date"] : SITE["melt_out"]]
+        df_ERA5 = df_ERA5.reset_index()
+        df_ERA5_full = df_ERA5_full.reset_index()
+
+        # Fit ERA5 to field data
+        if SITE["name"] in ["guttannen21", "guttannen20"]:
+            fit_list = ["T_A", "RH", "WS"]
+
+        if SITE["name"] in ["schwarzsee19"]:
+            fit_list = ["T_A", "RH", "WS", "PRESS"]
+
+        for column in fit_list:
+            Y = df[column].values.reshape(-1, 1)
+            X = df_ERA5[column].values.reshape(-1, 1)
+            slope, intercept = linreg(X, Y)
+            df_ERA5[column] = slope * df_ERA5[column] + intercept
+            df_ERA5_full[column] = slope * df_ERA5_full[column] + intercept
+            if column in ["WS"]:
+                # Correct negative wind
+                df_ERA5.WS.loc[df_ERA5.WS < 0] = 0
+                df_ERA5_full.WS.loc[df_ERA5_full.WS < 0] = 0
+
+        df_ERA5 = df_ERA5.set_index("TIMESTAMP")
+
+        # Fill from ERA5
+        df["missing_type"] = ""
+        for col in [
+            "T_A",
+            "RH",
+            "WS",
+            "PRECIP",
+            "PRESS",
+            "SW_direct",
+            "SW_diffuse",
+            "LW_in",
+        ]:
+            try:
+                mask = df[col].isna()
+                percent_nan = df[col].isna().sum() / df.shape[0] * 100
+                logger.info(" %s has %s percent NaN values" % (col, percent_nan))
+                if percent_nan > 1:
+                    logger.warning(" Null values filled with ERA5 in %s" % col)
+                    df.loc[df[col].isna(), "missing_type"] = (
+                        df.loc[df[col].isna(), "missing_type"] + col
+                    )
+                    df.loc[df[col].isna(), col] = df_ERA5[col]
+                else:
+                    logger.warning(" Null values interpolated in %s" % col)
+                    df.loc[:, col] = df[col].interpolate()
+            except KeyError:
+                logger.warning("%s from ERA5" % col)
+                df[col] = df_ERA5[col]
+                df["missing_type"] = df["missing_type"] + col
+        logger.info(df.missing_type.describe())
+        logger.info(df.missing_type.unique())
+
+        df = df.reset_index()
+    if location in ["gangles21"]:
+        cols = [
+            "TIMESTAMP",
+            # "Discharge",
+            "T_A",
+            "RH",
+            "WS",
+            # "SW_direct",
+            # "SW_diffuse",
+            "SW_global",
+            "PRECIP",
+            # "vp_a",
+            "PRESS",
+            "missing_type",
+            # "LW_in",
+            "cld",
+        ]
+
+    if location in ["guttannen20", "guttannen21"]:
+        cols = [
+            "TIMESTAMP",
+            # "Discharge",
+            "T_A",
+            "RH",
+            "WS",
+            "SW_direct",
+            "SW_diffuse",
+            "PRECIP",
+            "vp_a",
+            "PRESS",
+            "missing_type",
+            "LW_in",
+        ]
+
+    df_out = df[cols]
+
+    if df_out.isna().values.any():
+        print(df_out[cols].isna().sum())
+        for column in cols:
+            if df_out[column].isna().sum() > 0 and column not in ["missing_type"]:
+                logger.warning(" Null values interpolated in %s" % column)
+                df_out.loc[:, column] = df_out[column].interpolate()
+
+    df_out = df_out.round(3)
+    if len(df_out[df_out.index.duplicated()]):
+        logger.error("Duplicate indexes")
+
+    logger.info(df_out.tail())
+
+    df_out["location"] = location
+    df_out = df_out.rename(columns={"TIMESTAMP": "time"})
+    return df_out
+
+
 if __name__ == "__main__":
 
     logger = logging.getLogger(__name__)
@@ -51,204 +195,15 @@ if __name__ == "__main__":
 
     inputs = []
     for location in locations:
-        SITE, FOLDER = config(location)
-
-        if location in ["gangles21"]:
-            df = get_field(location)
-            df = df.set_index("TIMESTAMP")
-            df = df[SITE["start_date"] : SITE["melt_out"]]
-            print(df.tail())
-            # # Replace temp and Humidity from Hobo
-            # df_hobo = pd.read_csv(
-            #     FOLDER["input"] + SITE["name"] + "_input_hobo.csv",
-            #     sep=",",
-            #     parse_dates = ['When'],
-            # )
-            # df_hobo = df_hobo.set_index("When")
-            # df_hobo = df_hobo[SITE['start_date']:SITE["melt_out"]]
-            # df['T_A'] = df_hobo['T_A']
-            # df['RH'] = df_hobo['RH']
-
-            df = df.reset_index()
-
-            logger.info(df.missing_type.describe())
-            logger.info(df.missing_type.unique())
-        else:
-
-            if location in ["schwarzsee19"]:
-                df = get_field(location)
-
-            if location in ["guttannen21", "guttannen20"]:
-                df = get_meteoswiss(location)
-
-            df = df.set_index("TIMESTAMP")
-            df = df[SITE["start_date"] : SITE["melt_out"]]
-            df = df.reset_index()
-
-            # Replace Wind zero values for 3 hours
-            mask = df.WS.shift().eq(df.WS)
-            for i in range(1, 3 * 4):
-                mask &= df.WS.shift(-1 * i).eq(df.WS)
-            mask &= df.WS == 0
-            df.WS = df.WS.mask(mask)
-
-            if location in ["schwarzsee19"]:
-                df_swiss = get_meteoswiss(location)
-                df_swiss = df_swiss.set_index("TIMESTAMP")
-                df_swiss = df_swiss[SITE["start_date"] : SITE["melt_out"]]
-                df_swiss = df_swiss.reset_index()
-
-                df_swiss = df_swiss.set_index("TIMESTAMP")
-                df = df.set_index("TIMESTAMP")
-
-                for col in ["PRECIP"]:
-                    logger.info("%s from meteoswiss" % col)
-                    df[col] = df_swiss[col]
-                df_swiss = df_swiss.reset_index()
-                df = df.reset_index()
-
-            df_ERA5_full = get_era5(SITE["name"])
-
-            df = df.set_index("TIMESTAMP")
-
-            df_ERA5_full = df_ERA5_full.set_index("TIMESTAMP")
-            df_ERA5 = df_ERA5_full[SITE["start_date"] : SITE["melt_out"]]
-            df_ERA5 = df_ERA5.reset_index()
-            df_ERA5_full = df_ERA5_full.reset_index()
-
-            # Fit ERA5 to field data
-            if SITE["name"] in ["guttannen21", "guttannen20"]:
-                fit_list = ["T_A", "RH", "WS"]
-
-            if SITE["name"] in ["schwarzsee19"]:
-                fit_list = ["T_A", "RH", "WS", "PRESS"]
-
-            for column in fit_list:
-                Y = df[column].values.reshape(-1, 1)
-                X = df_ERA5[column].values.reshape(-1, 1)
-                slope, intercept = linreg(X, Y)
-                df_ERA5[column] = slope * df_ERA5[column] + intercept
-                df_ERA5_full[column] = slope * df_ERA5_full[column] + intercept
-                if column in ["WS"]:
-                    # Correct negative wind
-                    df_ERA5.WS.loc[df_ERA5.WS < 0] = 0
-                    df_ERA5_full.WS.loc[df_ERA5_full.WS < 0] = 0
-
-            df_ERA5 = df_ERA5.set_index("TIMESTAMP")
-
-            # Fill from ERA5
-            df["missing_type"] = ""
-            for col in [
-                "T_A",
-                "RH",
-                "WS",
-                "PRECIP",
-                "PRESS",
-                "SW_direct",
-                "SW_diffuse",
-                "LW_in",
-            ]:
-                try:
-                    mask = df[col].isna()
-                    percent_nan = df[col].isna().sum() / df.shape[0] * 100
-                    logger.info(" %s has %s percent NaN values" % (col, percent_nan))
-                    if percent_nan > 1:
-                        logger.warning(" Null values filled with ERA5 in %s" % col)
-                        df.loc[df[col].isna(), "missing_type"] = (
-                            df.loc[df[col].isna(), "missing_type"] + col
-                        )
-                        df.loc[df[col].isna(), col] = df_ERA5[col]
-                    else:
-                        logger.warning(" Null values interpolated in %s" % col)
-                        df.loc[:, col] = df[col].interpolate()
-                except KeyError:
-                    logger.warning("%s from ERA5" % col)
-                    df[col] = df_ERA5[col]
-                    df["missing_type"] = df["missing_type"] + col
-            logger.info(df.missing_type.describe())
-            logger.info(df.missing_type.unique())
-
-            df = df.reset_index()
-
-        if location in ["gangles21"]:
-            cols = [
-                "TIMESTAMP",
-                # "Discharge",
-                "T_A",
-                "RH",
-                "WS",
-                # "SW_direct",
-                # "SW_diffuse",
-                "SW_global",
-                "PRECIP",
-                # "vp_a",
-                "PRESS",
-                "missing_type",
-                # "LW_in",
-                "cld",
-            ]
-
-        if location in ["schwarzsee19"]:
-            cols = [
-                "TIMESTAMP",
-                # "Discharge",
-                "T_A",
-                "RH",
-                "WS",
-                "SW_direct",
-                "SW_diffuse",
-                "PRECIP",
-                # "vp_a",
-                "PRESS",
-                "missing_type",
-                "LW_in",
-            ]
-        if location in ["guttannen20", "guttannen21"]:
-            cols = [
-                "TIMESTAMP",
-                # "Discharge",
-                "T_A",
-                "RH",
-                "WS",
-                "SW_direct",
-                "SW_diffuse",
-                "PRECIP",
-                "vp_a",
-                "PRESS",
-                "missing_type",
-                "LW_in",
-            ]
-
-        df_out = df[cols]
-
-        if df_out.isna().values.any():
-            print(df_out[cols].isna().sum())
-            for column in cols:
-                if df_out[column].isna().sum() > 0 and column not in ["missing_type"]:
-                    logger.warning(" Null values interpolated in %s" % column)
-                    df_out.loc[:, column] = df_out[column].interpolate()
-
-        df_out = df_out.round(3)
-        if len(df_out[df_out.index.duplicated()]):
-            logger.error("Duplicate indexes")
-
-        logger.info(df_out.tail())
-        df_out.to_csv(FOLDER["input"] + SITE["name"] + "_input_model.csv", index=False)
-
-        # fig = plt.figure()
-        # plt.plot(df_out.PRESS)
-        # plt.ylabel('some numbers')
-        # plt.savefig(FOLDER["input"] + SITE["name"] + "test.png")
-
-        df_out["location"] = location
-        # ds = df_out.rename(columns={"TIMESTAMP": "time", "SW_global": "SW"})
-        ds = df_out.rename(columns={"TIMESTAMP": "time"})
-        ds = ds.set_index(["time", "location"])
-        ds = ds.to_xarray()
-        inputs.append(ds)
+        print(location)
+        df = make_input(location)
+        df["location"] = location
+        df = df.set_index(["time", "location"])
+        inputs.append(df.to_xarray())
+        print(df.T_A)
 
     all = xr.combine_by_coords(inputs)
-    print(all.sel(location="gangles21"))
+    print(all.sel(location="guttannen21").T_A)
     all.to_netcdf("data/inputs.nc")
 
     # Extend field data with ERA5

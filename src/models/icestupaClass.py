@@ -60,7 +60,7 @@ class Icestupa:
     # """Fountain constants"""
     # T_F = 1.5  # FOUNTAIN Water temperature
 
-    def __init__(self, location="Guttannen 2021", params="default"):
+    def __init__(self, location="guttannen21", params="default"):
 
         SITE, FOLDER = config(location)
         diff = SITE["melt_out"] - SITE["start_date"]
@@ -85,6 +85,7 @@ class Icestupa:
         # self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["TIMESTAMP"])
 
         self.df = xr.open_dataset("data/inputs.nc").sel(location=location)
+        print(self.df.T_A)
 
         # Drops garbage columns
         # self.df = self.df[self.df.columns.drop(list(self.df.filter(regex="Unnamed")))]
@@ -133,7 +134,8 @@ class Icestupa:
                 unknown[i] = np.NaN  # Removes known variable
             else:
                 logger.error(" %s is unknown\n" % (unknown[i]))
-                self.df[unknown[i]] = 0
+                self.df[unknown[i]] = (["time"], np.zeros(self.df.sizes["time"]))
+                # self.df[unknown[i]] = 0
 
         if "SW_diffuse" in unknown:
             self.df["SW_diffuse"] = self.diffuse_fraction * self.df.SW_global
@@ -186,8 +188,6 @@ class Icestupa:
                     * self.STEFAN_BOLTZMAN
                     * math.pow(self.df.isel(time=i).T_A + 273.15, 4)
                 )
-        # self.df["Discharge"] = (["time"], np.zeros(self.df.sizes["time"]))
-        self.df["Discharge"] = (["time"], np.zeros(self.df.sizes["time"]))
 
         # print(self.df.Discharge)
         self.get_discharge()
@@ -195,14 +195,18 @@ class Icestupa:
 
         # print(self.df.isel(time=-1)["time"].values)
 
-        # solar_df = get_solar(
-        #     latitude=self.latitude,
-        #     longitude=self.longitude,
-        #     start=self.start_date,
-        #     # end=self.df.isel(time=-1)["time"].valuesself.df["TIMESTAMP"].iloc[-1],
-        #     end=self.df.isel(time=-1)["time"].values,
-        #     DT=self.DT,
-        # )
+        solar_df = get_solar(
+            name=self.name,
+            latitude=self.latitude,
+            longitude=self.longitude,
+            start=self.start_date,
+            # end=self.df.isel(time=-1)["time"].valuesself.df["TIMESTAMP"].iloc[-1],
+            end=self.df.isel(time=-1)["time"].values,
+            DT=self.DT,
+        )
+        # print(solar_df.head())
+        self.df["sea"] = solar_df["sea"]
+        # self.df = xr.merge(self.df, solar_df)
         # self.df = pd.merge(solar_df, self.df, on="time")
 
         """Albedo"""
@@ -217,20 +221,26 @@ class Icestupa:
 
         # self.df = self.df.round(3)
 
-        if self.df.isnull().values.any():
-            for column in self.df.columns:
-                if self.df[column].isna().sum() > 0:
+        # if self.df.isnull().values.any():
+        if self.df.isnull().any():
+            for column in list(self.df.data_vars.keys()):
+                if self.df[column].isnull().sum() > 0:
                     logger.warning(" Null values interpolated in %s" % column)
-                    self.df.loc[:, column] = self.df[column].interpolate()
+                    # self.df.loc[:, column] = self.df[column].interpolate()
+                    self.df[column] = self.df[column].interpolate_na(dim="time")
 
-        self.df.to_hdf(
-            self.input + "model_input.h5",
-            key="df",
-            mode="a",
-        )
-        self.df.to_csv(self.input + "model_input.csv")
-        logger.debug(self.df.head())
-        logger.debug(self.df.tail())
+        # self.df.to_hdf(
+        #     self.input + "model_input.h5",
+        #     key="df",
+        #     mode="a",
+        # )
+        # self.df.to_csv(self.input + "model_input.csv")
+        print(self.df)
+        logger.warning(self.df)
+        logger.warning(self.df.data_vars.keys())
+        # logger.debug(self.df.tail())
+        # self.df.to_csv(self.input + "model_input.csv")
+        self.df.to_netcdf(self.input + "model_input.csv")
 
     def save(self):  # Use processed input dataset
 

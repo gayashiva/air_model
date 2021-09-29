@@ -293,116 +293,12 @@ def get_field(location="gangles21"):
         )
         df.to_csv(FOLDER["input"] + SITE["name"] + "_input_field.csv")
 
-    if location == "schwarzsee19":
-        df_in = pd.read_csv(
-            FOLDER["raw"] + SITE["name"][:-2] + "_aws.txt",
-            header=None,
-            encoding="latin-1",
-            skiprows=7,
-            sep="\\s+",
-            names=[
-                "Date",
-                "Time",
-                "Discharge",
-                "Wind Direction",
-                "Wind Speed",
-                "Maximum Wind Speed",
-                "Temperature",
-                "Humidity",
-                "Pressure",
-                "Pluviometer",
-            ],
-        )
-
-        df_in = df_in.drop(["Pluviometer"], axis=1)
-
-        df_in["TIMESTAMP"] = pd.to_datetime(df_in["Date"] + " " + df_in["Time"])
-        df_in["TIMESTAMP"] = pd.to_datetime(
-            df_in["TIMESTAMP"], format="%Y.%m.%d %H:%M:%S"
-        )
-
-        # Correct datetime errors
-        for i in tqdm(range(1, df_in.shape[0])):
-            if str(df_in.loc[i, "TIMESTAMP"].year) != "2019":
-                df_in.loc[i, "TIMESTAMP"] = df_in.loc[
-                    i - 1, "TIMESTAMP"
-                ] + pd.Timedelta(minutes=5)
-
-        df_in = df_in.set_index("TIMESTAMP").resample("H").last().reset_index()
-
-        mask = (df_in["TIMESTAMP"] >= SITE["start_date"]) & (
-            df_in["TIMESTAMP"] <= SITE["melt_out"]
-        )
-        df_in = df_in.loc[mask]
-        df_in = df_in.reset_index()
-
-        days = pd.date_range(start=SITE["start_date"], end=SITE["melt_out"], freq="H")
-        days = pd.DataFrame({"TIMESTAMP": days})
-
-        df = pd.merge(
-            days,
-            df_in[
-                [
-                    "TIMESTAMP",
-                    "Discharge",
-                    "Wind Speed",
-                    "Maximum Wind Speed",
-                    "Wind Direction",
-                    "Temperature",
-                    "Humidity",
-                    "Pressure",
-                ]
-            ],
-            on="TIMESTAMP",
-        )
-
-        # Include Spray time
-        df_nights = pd.read_csv(
-            FOLDER["raw"] + "schwarzsee_fountain_time.txt",
-            sep="\\s+",
-        )
-
-        df_nights["Start"] = pd.to_datetime(
-            df_nights["Date"] + " " + df_nights["start"]
-        )
-        df_nights["End"] = pd.to_datetime(df_nights["Date"] + " " + df_nights["end"])
-        df_nights["Start"] = pd.to_datetime(
-            df_nights["Start"], format="%Y-%m-%d %H:%M:%S"
-        )
-        df_nights["End"] = pd.to_datetime(df_nights["End"], format="%Y-%m-%d %H:%M:%S")
-
-        df_nights["Date"] = pd.to_datetime(df_nights["Date"], format="%Y-%m-%d")
-
-        df["Fountain"] = 0
-
-        for i in range(0, df_nights.shape[0]):
-            df_nights.loc[i, "Start"] = df_nights.loc[i, "Start"] - pd.Timedelta(days=1)
-            df.loc[
-                (df["TIMESTAMP"] >= df_nights.loc[i, "Start"])
-                & (df["TIMESTAMP"] <= df_nights.loc[i, "End"]),
-                "Fountain",
-            ] = 1
-
-        # CSV output
-        df.rename(
-            columns={
-                "Wind Speed": "WS",
-                "Temperature": "T_A",
-                "Humidity": "RH",
-                "Pressure": "PRESS",
-            },
-            inplace=True,
-        )
-
-        df.Discharge = df.Fountain * df.Discharge
-        df.to_csv(FOLDER["input"] + SITE["name"] + "_input_field.csv")
-        df = df.set_index("TIMESTAMP").resample("H").mean().reset_index()
-    print(SITE["name"])
-    ds = df.rename(columns={"TIMESTAMP": "time"})
-    ds = ds.set_index("time")
-    ds = ds.to_xarray()
-    ds.coords["locs"] = location
-    ds.to_netcdf(FOLDER["input"] + SITE["name"] + "_input_field.nc")
+    # print(SITE["name"])
+    # ds = df.rename(columns={"TIMESTAMP": "time"})
+    # ds = ds.set_index("time")
+    # ds = ds.to_xarray()
+    # ds.coords["locs"] = location
+    # ds.to_netcdf(FOLDER["input"] + SITE["name"] + "_input_field.nc")
     return df
 
 
