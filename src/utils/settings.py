@@ -18,6 +18,7 @@ logging.getLogger("numexpr").setLevel(logging.CRITICAL)
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 
+
 def config(location="guttannen21"):
 
     logger.info("Location is %s" % (location))
@@ -26,20 +27,19 @@ def config(location="guttannen21"):
 
         SITE = dict(
             name="guttannen21",
-            start_date=datetime(2020, 11, 22,15),
+            start_date=datetime(2020, 11, 22, 15),
             # end_date=datetime(2021, 5, 10, 1),
             melt_out=datetime(2021, 5, 10, 1),
-            fountain_off_date=datetime(2021, 2, 20,10),
+            fountain_off_date=datetime(2021, 2, 20, 10),
             D_F=7.5,  # FOUNTAIN min discharge
             T_F=3,  # FOUNTAIN min discharge
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
-            H_AWS = 2,
-
-            SA_corr= 1.2,
-            Z= 0.001,
-
+            H_AWS=2,
+            # R_F=10.2,
+            SA_corr=1.2,
+            Z=0.001,
             # perimeter=45, # on Feb 11
             # DX= 50e-03,
             # Z= 5e-03,
@@ -59,14 +59,15 @@ def config(location="guttannen21"):
             start_date=datetime(2020, 1, 3, 16),
             # end_date=datetime(2020, 4, 6, 12),
             melt_out=datetime(2020, 4, 6, 12),
-            fountain_off_date=datetime(2020, 3, 8,9), # Image shows Dani switched off at 8th Mar 10 am
+            fountain_off_date=datetime(
+                2020, 3, 8, 9
+            ),  # Image shows Dani switched off at 8th Mar 10 am
             D_F=7.5,  # FOUNTAIN min discharge
             T_F=3,  # FOUNTAIN min discharge
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
-            H_AWS = 2,
-
+            H_AWS=2,
             # perimeter=28, # on 24 Jan
             # DX= 50e-03,
             # Z= 5e-03,
@@ -84,17 +85,16 @@ def config(location="guttannen21"):
             name="gangles21",
             start_date=datetime(2021, 1, 18),
             # end_date=datetime(2021, 7, 8),
-            melt_out=datetime(2021, 6, 20), # Norboo observed
+            melt_out=datetime(2021, 6, 20),  # Norboo observed
             fountain_off_date=datetime(2021, 3, 10, 18),
             D_F=60,  # FOUNTAIN min discharge
             T_F=1,  # FOUNTAIN min discharge
             utc_offset=5.5,
             longitude=77.606949,
             latitude=34.216638,
-            H_AWS = 2,
-            diffuse_fraction = 0,
-
-            SA_corr= 1.5,
+            H_AWS=2,
+            diffuse_fraction=0,
+            SA_corr=1.5,
             # perimeter=82.3, # On 3 Mar
         )
 
@@ -114,9 +114,8 @@ def config(location="guttannen21"):
             utc_offset=1,
             longitude=7.297543,
             latitude=46.693723,
-            R_F= 1.233,
-            H_AWS = 2,
-
+            R_F=1.233,
+            H_AWS=2,
             # discharge=3.58,  # FOUNTAIN on mean discharge from field
             # dia_f=0.0056,  # FOUNTAIN aperture diameter
             # DX= 50e-03,
@@ -135,20 +134,18 @@ def config(location="guttannen21"):
             # melt_out=datetime(2021, 5, 10, 1),
             fountain_off_date=datetime(2020, 2, 1),
             D_F=7.5,
-            T_F=3,  
+            T_F=3,
             utc_offset=1,
             latitude=46.649999,
             longitude=8.283333,
-            H_AWS = 2,
-
-            SA_corr= 1.2,
-            Z= 0.001,
+            H_AWS=2,
+            SA_corr=1.2,
+            Z=0.001,
         )
 
         data_h = [
             {"When": SITE["start_date"], "h_f": 5},
         ]
-
 
     # Define directory structure
     FOLDER = dict(
@@ -158,6 +155,5 @@ def config(location="guttannen21"):
         sim="data/" + SITE["name"] + "/processed/simulations/",
     )
     df_h = pd.DataFrame(data_h)
-
 
     return SITE, FOLDER
