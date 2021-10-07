@@ -21,9 +21,10 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 sys.path.append(dirname)
 from src.utils.settings import config
 
-def get_meteoswiss(location="schwarzsee19"):
 
-    SITE, FOLDER= config(location)
+def get_meteoswiss(location="guttannen21"):
+
+    SITE, FOLDER = config(location)
     if location == "schwarzsee19":
         location = "plaffeien19"
 
@@ -42,33 +43,24 @@ def get_meteoswiss(location="schwarzsee19"):
             # logger.info("%s from meteoswiss" % meteoswiss_parameter(col)["name"])
         else:
             df = df.drop(columns=col)
-    df["TIMESTAMP"] = pd.to_datetime(df["TIMESTAMP"], format="%Y%m%d%H%M")
+    df["time"] = pd.to_datetime(df["time"], format="%Y%m%d%H%M")
 
-    # df["PRECIP"] = df["PRECIP"] / (10 * 60)  # ppt rate mm/s
-    df_out = (
-        df.set_index("TIMESTAMP")
-        .resample("H")
-        .mean()
-        .reset_index()
-    )
-    df_out["PRECIP"] = (
-        df.set_index("TIMESTAMP")
-        .resample("H")
-        .sum()
-        .reset_index()["PRECIP"]
-    )
-    # mask = (df["TIMESTAMP"] >= SITE["start_date"]) & (df["TIMESTAMP"] <= SITE["end_date"])
+    # df["ppt"] = df["ppt"] / (10 * 60)  # ppt rate mm/s
+    df_out = df.set_index("time").resample("H").mean().reset_index()
+    df_out["ppt"] = df.set_index("time").resample("H").sum().reset_index()["ppt"]
+    # mask = (df["time"] >= SITE["start_date"]) & (df["time"] <= SITE["end_date"])
     # df = df.loc[mask]
     return df_out
+
 
 def meteoswiss_parameter(parameter):
     d = {
         "time": {
-            "name": "TIMESTAMP",
+            "name": "time",
             "units": "(  )",
         },
         "rre150z0": {
-            "name": "PRECIP",
+            "name": "ppt",
             "units": "($mm$)",
         },
         "dkl010z0": {
@@ -76,7 +68,7 @@ def meteoswiss_parameter(parameter):
             "units": "($\\degree$)",
         },
         "fkl010z0": {
-            "name": "WS",
+            "name": "wind",
             "units": "($ms^{-1}$)",
         },
         "ure200s0": {
@@ -84,7 +76,7 @@ def meteoswiss_parameter(parameter):
             "units": "($%$)",
         },
         "prestas0": {
-            "name": "PRESS",
+            "name": "press",
             "units": "($hPa$)",
         },
         "pva200s0": {
@@ -96,7 +88,7 @@ def meteoswiss_parameter(parameter):
             "units": "($\\degree C$)",
         },
         "tre200s0": {
-            "name": "T_A",
+            "name": "temp",
             "units": "($\\degree C$)",
         },
         "gre000z0": {
@@ -112,5 +104,3 @@ def meteoswiss_parameter(parameter):
     value = d.get(parameter)
 
     return value
-
-

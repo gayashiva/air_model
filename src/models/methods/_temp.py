@@ -101,7 +101,7 @@ def get_temp(self, i):
 def test_get_temp(self, i):
     self.get_temp(i)
 
-    if not np.isnan(self.df.loc[i, "Qmelt"]*self.df.loc[i, "Qfreeze"]):
+    if not np.isnan(self.df.loc[i, "Qmelt"] * self.df.loc[i, "Qfreeze"]):
         sys.exit("Qmelt nonzero in freezing event")
 
     if self.df.loc[i, "delta_T_s"] > 1 * self.DT / 60:
@@ -110,14 +110,14 @@ def test_get_temp(self, i):
             % (
                 self.df.loc[i, "Qf"],
                 self.df.loc[i, "delta_T_s"],
-                self.df.loc[i, "TIMESTAMP"],
+                self.df.loc[i, "time"],
             )
         )
         if math.fabs(self.df.delta_T_s[i]) > 50:
             logger.error(
                 "%s,Surface Temperature %s,Mass %s"
                 % (
-                    self.df.loc[i, "TIMESTAMP"],
+                    self.df.loc[i, "time"],
                     self.df.loc[i, "T_s"],
                     self.df.loc[i, "ice"],
                 )
@@ -125,20 +125,20 @@ def test_get_temp(self, i):
 
     if np.isnan(self.df.loc[i, "delta_T_s"]):
         logger.error(
-            f"TIMESTAMP {self.df.TIMESTAMP[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+            f"time {self.df.time[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
         )
         sys.exit("Ice Temperature nan")
 
     if self.df.loc[i, "fountain_runoff"] < 0:
         logger.error(
-            f"TIMESTAMP {self.df.TIMESTAMP[i]},fountain_runoff {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+            f"time {self.df.time[i]},fountain_runoff {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
         )
         logger.error("All discharge froze!")
         # sys.exit("All discharge froze!")
 
     if np.isnan(self.df.loc[i, "fountain_runoff"]):
         logger.error(
-            f"TIMESTAMP {self.df.TIMESTAMP[i]},fountain_runoff {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+            f"time {self.df.time[i]},fountain_runoff {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
         )
         sys.exit("fountain runoff nan")
 
@@ -148,14 +148,14 @@ def test_get_temp(self, i):
     ):
 
         logger.error(
-            f"Discharge exceeded TIMESTAMP {self.df.TIMESTAMP[i]}, Fountain in {self.df.fountain_runoff[i]}, Discharge in {self.df.Discharge[i]* self.DT / 60}"
+            f"Discharge exceeded time {self.df.time[i]}, Fountain in {self.df.fountain_runoff[i]}, Discharge in {self.df.Discharge[i]* self.DT / 60}"
         )
 
     if math.fabs(self.df.loc[i, "delta_T_s"]) > 20:
         logger.warning(
             "Temperature change above 20C %s,Surface temp %i,Bulk temp %i"
             % (
-                self.df.loc[i, "TIMESTAMP"],
+                self.df.loc[i, "time"],
                 self.df.loc[i, "T_s"],
                 self.df.loc[i, "T_bulk"],
             )

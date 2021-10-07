@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import logging
 from codetiming import Timer
+
 # from redis_cache import cache_it
 
 logger = logging.getLogger(__name__)
@@ -35,6 +36,6 @@ def get_solar(
         }
     )
     solar_df.loc[solar_df["sea"] < 0, "sea"] = 0
-    solar_df.index = solar_df.index.set_names(["TIMESTAMP"])
+    solar_df.index = solar_df.index.set_names(["time"])
     solar_df = solar_df.reset_index()
     return solar_df

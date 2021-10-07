@@ -3,7 +3,8 @@
 
 # External modules
 import pickle
-pickle.HIGHEST_PROTOCOL = 4 # For python version 2.7
+
+pickle.HIGHEST_PROTOCOL = 4  # For python version 2.7
 import pandas as pd
 import sys, os, math, json
 import numpy as np
@@ -22,9 +23,11 @@ from src.utils.settings import config
 logger = logging.getLogger(__name__)
 logger.propagate = False
 
+
 class Icestupa:
 
     """Model hyperparameter"""
+
     DT = 60 * 60  # Model time step
 
     """Physical Constants"""
@@ -46,7 +49,7 @@ class Icestupa:
     IE = 0.97  # Ice Emissivity IE
     A_I = 0.25  # Albedo of Ice A_I
     A_S = 0.85  # Albedo of Fresh Snow A_S
-    A_DECAY = 16 # Albedo decay rate decay_t_d
+    A_DECAY = 16  # Albedo decay rate decay_t_d
     Z = 0.003  # Ice Momentum and Scalar roughness length
     T_PPT = 1  # Temperature condition for liquid precipitation
     DX = 20e-03  # m Surface layer thickness growth rate
@@ -55,7 +58,6 @@ class Icestupa:
 
     # """Fountain constants"""
     # T_F = 1.5  # FOUNTAIN Water temperature
-
 
     def __init__(self, location="Guttannen 2021", params="default"):
 
@@ -79,13 +81,13 @@ class Icestupa:
 
         # Initialize input dataset
         input_file = self.input + self.name + "_input_model.csv"
-        self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["TIMESTAMP"])
+        self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["time"])
 
         # Drops garbage columns
         self.df = self.df[self.df.columns.drop(list(self.df.filter(regex="Unnamed")))]
 
         # Reset date range
-        self.df = self.df.set_index("TIMESTAMP")
+        self.df = self.df.set_index("time")
         self.df = self.df[SITE["start_date"] : SITE["melt_out"]]
         self.df = self.df.reset_index()
 
@@ -101,6 +103,7 @@ class Icestupa:
     from src.models.methods._temp import get_temp, test_get_temp
     from src.models.methods._energy import get_energy, test_get_energy
     from src.models.methods._figures import summary_figures
+
     # from src.models.methods._stop import stop_model
 
     @Timer(text="Preprocessed data in {:.2f} seconds", logger=logging.warning)
@@ -141,12 +144,16 @@ class Icestupa:
 
             """ Vapour Pressure"""
             if "vp_a" in unknown:
-                f = 1.0016+3.15*math.pow(10,-6)*self.df.loc[i, "PRESS"]-0.074*math.pow(self.df.loc[i, "PRESS"],-1)
+                f = (
+                    1.0016
+                    + 3.15 * math.pow(10, -6) * self.df.loc[i, "press"]
+                    - 0.074 * math.pow(self.df.loc[i, "press"], -1)
+                )
                 self.df.loc[i, "vp_a"] = (
                     6.107
                     * math.pow(
                         10,
-                        7.5 * row.T_A / (row.T_A + 237.3),
+                        7.5 * row.temp / (row.temp + 237.3),
                     )
                     * row.RH
                     / 100
@@ -157,13 +164,13 @@ class Icestupa:
 
                 self.df.loc[i, "e_a"] = (
                     1.24
-                    * math.pow(abs(self.df.loc[i, "vp_a"] / (row.T_A + 273.15)), 1 / 7)
+                    * math.pow(abs(self.df.loc[i, "vp_a"] / (row.temp + 273.15)), 1 / 7)
                 ) * (1 + 0.22 * math.pow(row.cld, 2))
 
                 self.df.loc[i, "LW_in"] = (
                     self.df.loc[i, "e_a"]
                     * self.STEFAN_BOLTZMAN
-                    * math.pow(row.T_A + 273.15, 4)
+                    * math.pow(row.temp + 273.15, 4)
                 )
 
         self.get_discharge()
@@ -173,10 +180,10 @@ class Icestupa:
             latitude=self.latitude,
             longitude=self.longitude,
             start=self.start_date,
-            end=self.df["TIMESTAMP"].iloc[-1],
+            end=self.df["time"].iloc[-1],
             DT=self.DT,
         )
-        self.df = pd.merge(solar_df, self.df, on="TIMESTAMP")
+        self.df = pd.merge(solar_df, self.df, on="time")
 
         """Albedo"""
         if "a" in unknown:
@@ -224,32 +231,45 @@ class Icestupa:
         last_hour = self.df.shape[0]
 
         results_dict = {}
-        results = ["iceV_max", "last_hour", "M_input","M_F", "M_ppt", "M_dep", "M_water", "M_runoff", "M_sub", "M_ice"]
+        results = [
+            "iceV_max",
+            "last_hour",
+            "M_input",
+            "M_F",
+            "M_ppt",
+            "M_dep",
+            "M_water",
+            "M_runoff",
+            "M_sub",
+            "M_ice",
+        ]
 
         for variable in results:
             results_dict[variable] = int(eval(variable))
 
-        print("Summary of results for %s :"%self.name)
+        print("Summary of results for %s :" % self.name)
         print()
         for var in sorted(results_dict.keys()):
             print("\t%s: %r" % (var, results_dict[var]))
         print()
 
-        with open(self.output + 'results.json', 'w') as fp:
+        with open(self.output + "results.json", "w") as fp:
             json.dump(results_dict, fp, sort_keys=True, indent=4)
 
-        if last_hour > self.total_hours+1:
-            self.df = self.df[:self.total_hours]
+        if last_hour > self.total_hours + 1:
+            self.df = self.df[: self.total_hours]
         else:
             for j in range(last_hour, self.total_hours):
                 for col in self.df.columns:
                     self.df.loc[j, col] = 0
                     if col in ["iceV"]:
                         self.df.loc[j, col] = self.V_dome
-                    if col in ["TIMESTAMP"]:
-                        self.df.loc[j, col] = self.df.loc[j-1, col] + timedelta(hours=1)
+                    if col in ["time"]:
+                        self.df.loc[j, col] = self.df.loc[j - 1, col] + timedelta(
+                            hours=1
+                        )
                     if col in ["missing_type"]:
-                        self.df.loc[j, col] = self.df.loc[j-1, col]
+                        self.df.loc[j, col] = self.df.loc[j - 1, col]
 
         self.df = self.df.reset_index(drop=True)
 
@@ -338,9 +358,9 @@ class Icestupa:
         self.df.loc[1, "input"] = self.df.loc[1, "ice"]
 
         logger.warning(
-            "Initialise: TIMESTAMP %s, radius %.3f, height %.3f, iceV %.3f\n"
+            "Initialise: time %s, radius %.3f, height %.3f, iceV %.3f\n"
             % (
-                self.df.loc[0, "TIMESTAMP"],
+                self.df.loc[0, "time"],
                 self.df.loc[0, "r_ice"],
                 self.df.loc[0, "h_ice"],
                 self.df.loc[1, "iceV"],
@@ -361,10 +381,10 @@ class Icestupa:
 
             if ice_melted:
                 if (
-                    self.df.loc[i - 1, "TIMESTAMP"] < self.fountain_off_date
+                    self.df.loc[i - 1, "time"] < self.fountain_off_date
                     and self.df.loc[i - 1, "melted"] > 0
                 ):
-                    logger.error("Skipping %s" % self.df.loc[i, "TIMESTAMP"])
+                    logger.error("Skipping %s" % self.df.loc[i, "time"])
                 else:
 
                     col_list = [
@@ -378,7 +398,7 @@ class Icestupa:
                     for column in col_list:
                         self.df.loc[i - 1, column] = 0
 
-                    last_hour = i-1
+                    last_hour = i - 1
                     self.df = self.df[1:i]
                     self.df = self.df.reset_index(drop=True)
                 break
@@ -408,10 +428,10 @@ class Icestupa:
                 )
 
             # Precipitation to ice quantity
-            if self.df.loc[i, "T_A"] < self.T_PPT and self.df.loc[i, "PRECIP"] > 0:
+            if self.df.loc[i, "temp"] < self.T_PPT and self.df.loc[i, "ppt"] > 0:
                 self.df.loc[i, "ppt"] = (
                     self.RHO_W
-                    * self.df.loc[i, "PRECIP"]
+                    * self.df.loc[i, "ppt"]
                     / 1000
                     * math.pi
                     * math.pow(self.df.loc[i, "r_ice"], 2)
@@ -467,7 +487,7 @@ class Icestupa:
                 )
 
                 logger.info(
-                    f" TIMESTAMP {self.df.TIMESTAMP[i]},iceV {self.df.iceV[i+1]}, mass balance {self.df.t_cone[i]}"
+                    f" time {self.df.time[i]},iceV {self.df.iceV[i+1]}, mass balance {self.df.t_cone[i]}"
                 )
         # else:
-        #     print(self.df.loc[i, "TIMESTAMP"], self.df.loc[i, "iceV"])
+        #     print(self.df.loc[i, "time"], self.df.loc[i, "iceV"])
