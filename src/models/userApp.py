@@ -4,6 +4,8 @@
 # External modules
 import os, sys
 import logging, coloredlogs
+import matplotlib.pyplot as plt
+
 
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -26,10 +28,10 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2021",
-        # location="Gangles 2021",
-        run="yes",
-        # run="no",
+        # location="Guttannen 2021",
+        location="Gangles 2021",
+        # run="yes",
+        run="no",
     )
 
     # Initialise icestupa object
@@ -52,4 +54,12 @@ if __name__ == "__main__":
     else:
         # Use output parameters from cache
         icestupa.read_output()
-        icestupa.summary_figures()
+
+        plt.figure()
+        ax = plt.gca()
+        plt.scatter(icestupa.df.Qt, icestupa.df.fountain_froze / 60, s=1)
+        plt.legend()
+        plt.grid()
+        plt.savefig("data/tests/T_relation.jpg")
+
+        # icestupa.summary_figures()
