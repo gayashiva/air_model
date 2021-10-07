@@ -125,7 +125,7 @@ def get_parameter_metadata(
             "kind": "site",
             "units": "()",
         },
-        "time": {
+        "TIMESTAMP": {
             "name": "Timestamp",
             "kind": "Misc",
             "units": "()",
@@ -185,7 +185,7 @@ def get_parameter_metadata(
             "kind": "Derived",
             "units": "()",
         },
-        "vpress": {
+        "vp_a": {
             "name": "Air Vapour Pressure",
             "kind": "Derived",
             "units": "($hPa$)",
@@ -220,7 +220,7 @@ def get_parameter_metadata(
             "kind": "Output",
             "units": "($kg\\, s^{-1}$)",
         },
-        "temp": {
+        "T_A": {
             "name": "Temperature",
             "kind": "Input",
             "units": "($\\degree C$)",
@@ -235,7 +235,7 @@ def get_parameter_metadata(
             "kind": "Input",
             "units": "($\\%$)",
         },
-        "press": {
+        "PRESS": {
             "name": "Pressure",
             "kind": "Input",
             "units": "($hPa$)",
@@ -305,12 +305,12 @@ def get_parameter_metadata(
             "kind": "Output",
             "units": "($W\\,m^{-2}$)",
         },
-        "ppt": {
+        "PRECIP": {
             "name": "Precipitation",
             "kind": "Input",
             "units": "($mm$)",
         },
-        "wind": {
+        "WS": {
             "name": "Wind Speed",
             "kind": "Input",
             "units": "($m\\,s^{-1}$)",
@@ -325,7 +325,7 @@ def get_parameter_metadata(
             "kind": "Output",
             "units": "($kg$)",
         },
-        "albedo": {
+        "a": {
             "name": "Albedo",
             "kind": "Derived",
             "units": "()",

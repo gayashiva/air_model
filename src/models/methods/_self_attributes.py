@@ -7,9 +7,7 @@ from codetiming import Timer
 
 from src.models.methods.calibration import get_calibration
 from src.models.methods.droplet import get_droplet_projectile
-
 logger = logging.getLogger(__name__)
-
 
 def self_attributes(self, save=False):
     logger.info("Initialising Icestupa attributes")
@@ -28,12 +26,10 @@ def self_attributes(self, save=False):
 
     # Get spray radius
     if hasattr(self, "R_F"):
-        logger.error("Arbitrary spray radius of %s" % self.R_F)
+        logger.error("Arbitrary spray radius of %s" %self.R_F)
     else:
-        self.R_F = df_c.loc[
-            (df_c.time < self.fountain_off_date) & (df_c.index != 0), "rad"
-        ].mean()
-        logger.warning("Measured spray radius from drone %0.1f" % self.R_F)
+        self.R_F= df_c.loc[(df_c.TIMESTAMP < self.fountain_off_date) & (df_c.index!=0), "rad"].mean()
+        logger.warning("Measured spray radius from drone %0.1f"%self.R_F)
 
     # Understand R_F sensitivity
     # self.R_F*=1.1
@@ -43,10 +39,11 @@ def self_attributes(self, save=False):
     else:
         self.V_dome = df_c.loc[0, "DroneV"]
 
-    logger.warning("Dome Volume %0.1f" % self.V_dome)
+    logger.warning("Dome Volume %0.1f"%self.V_dome)
 
     # Get initial height
     self.h_i = self.DX + 3 * self.V_dome / (math.pi * self.R_F ** 2)
+
 
     if save:
         df_c.to_hdf(

@@ -6,6 +6,7 @@ import os, sys
 import logging, coloredlogs
 import matplotlib.pyplot as plt
 
+
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
@@ -27,10 +28,10 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2021",
-        # location="Gangles 2021",
-        run="yes",
-        # run="no",
+        # location="Guttannen 2021",
+        location="Gangles 2021",
+        # run="yes",
+        run="no",
     )
 
     # Initialise icestupa object
@@ -54,19 +55,11 @@ if __name__ == "__main__":
         # Use output parameters from cache
         icestupa.read_output()
 
-        # plt.figure()
-        # ax = plt.gca()
-        # plt.scatter(
-        #     # icestupa.df.Qfreeze - icestupa.df.Qsurf + icestupa.df.Ql,
-        #     icestupa.df.T_A,
-        #     icestupa.df.T_s,
-        #     # icestupa.df.LW,
-        #     # icestupa.df.fountain_froze / 60,
-        #     # s=3,
-        #     s=10 * icestupa.df.Qfreeze / icestupa.df.Qfreeze.min(),
-        # )
-        # plt.legend()
-        # plt.grid()
-        # plt.savefig("data/tests/T_relation.jpg")
+        plt.figure()
+        ax = plt.gca()
+        plt.scatter(icestupa.df.Qt, icestupa.df.fountain_froze / 60, s=1)
+        plt.legend()
+        plt.grid()
+        plt.savefig("data/tests/T_relation.jpg")
 
-        icestupa.summary_figures()
+        # icestupa.summary_figures()
