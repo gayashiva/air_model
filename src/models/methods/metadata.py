@@ -235,7 +235,7 @@ def get_parameter_metadata(
             "kind": "Input",
             "units": "($\\%$)",
         },
-        "PRESS": {
+        "press": {
             "name": "Pressure",
             "kind": "Input",
             "units": "($hPa$)",

@@ -141,6 +141,7 @@ def config(location="guttannen21"):
             H_AWS=2,
             SA_corr=1.2,
             Z=0.001,
+            R_F=10,
         )
 
         data_h = [

@@ -119,7 +119,7 @@ if __name__ == "__main__":
                 fit_list = ["temp", "RH", "wind"]
 
             if SITE["name"] in ["schwarzsee19"]:
-                fit_list = ["temp", "RH", "wind", "PRESS"]
+                fit_list = ["temp", "RH", "wind", "press"]
 
             for column in fit_list:
                 Y = df[column].values.reshape(-1, 1)
@@ -141,7 +141,7 @@ if __name__ == "__main__":
                 "RH",
                 "wind",
                 "ppt",
-                "PRESS",
+                "press",
                 "SW_direct",
                 "SW_diffuse",
                 "LW_in",
@@ -180,7 +180,7 @@ if __name__ == "__main__":
                 "SW_global",
                 "ppt",
                 # "vp_a",
-                "PRESS",
+                "press",
                 "missing_type",
                 # "LW_in",
                 "cld",
@@ -197,7 +197,7 @@ if __name__ == "__main__":
                 "SW_diffuse",
                 "ppt",
                 # "vp_a",
-                "PRESS",
+                "press",
                 "missing_type",
                 "LW_in",
             ]
@@ -212,7 +212,7 @@ if __name__ == "__main__":
                 "SW_diffuse",
                 "ppt",
                 "vp_a",
-                "PRESS",
+                "press",
                 "missing_type",
                 "LW_in",
             ]
@@ -234,7 +234,7 @@ if __name__ == "__main__":
         df_out.to_csv(FOLDER["input"] + SITE["name"] + "_input_model.csv", index=False)
 
         fig = plt.figure()
-        plt.plot(df_out.PRESS)
+        plt.plot(df_out.press)
         plt.ylabel("some numbers")
         plt.savefig(FOLDER["input"] + SITE["name"] + "test.png")
 

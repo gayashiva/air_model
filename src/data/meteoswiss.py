@@ -76,7 +76,7 @@ def meteoswiss_parameter(parameter):
             "units": "($%$)",
         },
         "prestas0": {
-            "name": "PRESS",
+            "name": "press",
             "units": "($hPa$)",
         },
         "pva200s0": {

@@ -61,7 +61,7 @@ def get_field(location="schwarzsee19"):
         df_in1.rename(
             columns={
                 "TIMESTAMP": "time",
-                "BP_mbar": "PRESS",  # mbar same as hPa
+                "BP_mbar": "press",  # mbar same as hPa
             },
             inplace=True,
         )
@@ -81,7 +81,7 @@ def get_field(location="schwarzsee19"):
         df_in = df_in.replace("NAN", np.NaN)
         df_in1 = df_in1.replace("NAN", np.NaN)
         df_in1 = df_in1.resample("15Min").interpolate("linear")
-        df_in.loc[:, "PRESS"] = df_in1["PRESS"]
+        df_in.loc[:, "press"] = df_in1["press"]
 
         df_in = df_in.replace("NAN", np.NaN)
         if df_in.isnull().values.any():
@@ -202,7 +202,7 @@ def get_field(location="schwarzsee19"):
                 "Wind Speed": "wind",
                 "Temperature": "temp",
                 "Humidity": "RH",
-                "Pressure": "PRESS",
+                "Pressure": "press",
             },
             inplace=True,
         )
@@ -277,7 +277,7 @@ def get_field(location="schwarzsee19"):
                 "Wind Speed": "wind",
                 "Temperature": "temp",
                 "Humidity": "RH",
-                "Pressure": "PRESS",
+                "Pressure": "press",
             },
             inplace=True,
         )
@@ -377,7 +377,7 @@ def get_field(location="schwarzsee19"):
                 "Wind Speed": "wind",
                 "Temperature": "temp",
                 "Humidity": "RH",
-                "Pressure": "PRESS",
+                "Pressure": "press",
             },
             inplace=True,
         )

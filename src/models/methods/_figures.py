@@ -18,7 +18,7 @@ def shade(location, df_in, col):
         df_ERA5 = df_in.copy()
         df = df_in.copy()
         df.loc[
-            :, ["time", "temp", "SW_direct", "SW_diffuse", "wind", "PRESS", "RH"]
+            :, ["time", "temp", "SW_direct", "SW_diffuse", "wind", "press", "RH"]
         ] = np.NaN
 
     else:
@@ -26,7 +26,7 @@ def shade(location, df_in, col):
         df_ERA5 = df_in.copy()
         df = df_in.copy()
         df.loc[
-            mask, ["time", "temp", "SW_direct", "SW_diffuse", "wind", "PRESS", "RH"]
+            mask, ["time", "temp", "SW_direct", "SW_diffuse", "wind", "press", "RH"]
         ] = np.NaN
 
         df_ERA5.loc[
@@ -37,7 +37,7 @@ def shade(location, df_in, col):
                 "SW_direct",
                 "SW_diffuse",
                 "wind",
-                "PRESS",
+                "press",
                 "RH",
                 "missing_type",
             ],
@@ -205,9 +205,9 @@ def summary_figures(self):
         ax5.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
     ax5.set_ylabel("Humidity [$\\%$]")
 
-    df_SZ, df_ERA5, events = shade(location=self.name, df_in=self.df, col="PRESS")
-    y6 = df_SZ.PRESS
-    y6_ERA5 = df_ERA5.PRESS
+    df_SZ, df_ERA5, events = shade(location=self.name, df_in=self.df, col="press")
+    y6 = df_SZ.press
+    y6_ERA5 = df_ERA5.press
     ax6.plot(x, y6, linestyle="-", color="#264653", linewidth=1)
     ax6.plot(x, y6_ERA5, linestyle="-", color="#284D58")
     for ev in events:

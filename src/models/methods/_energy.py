@@ -35,7 +35,7 @@ def get_energy(self, i):
     self.df.loc[i, "Qs"] = (
         self.C_A
         * self.RHO_A
-        * self.df.loc[i, "PRESS"]
+        * self.df.loc[i, "press"]
         / self.P0
         * math.pow(self.VAN_KARMAN, 2)
         * self.df.loc[i, "wind"]

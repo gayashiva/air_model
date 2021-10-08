@@ -64,11 +64,11 @@ if __name__ == "__main__":
 
     df_in.rename(
         columns={
-            "TIMESTAMP": "When",
-            "T_HMP": "T_a",
-            "WS_AVG": "v_a",
-            "PRESS": "p_a",
-            "PRECIP": "Prec",
+            "TIMESTAMP": "time",
+            "T_HMP": "temp",
+            "WS_AVG": "wind",
+            "PRESS": "press",
+            "PRECIP": "ppt",
             "SW_IN_AVG": "SW_global",
             "LW_IN_AVG": "LW_in",
         },

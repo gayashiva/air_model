@@ -122,7 +122,7 @@ def get_era5(location="schwarzsee19"):
     df_in3.rename(
         columns={
             "t2m": "temp",
-            "sp": "PRESS",
+            "sp": "press",
             # "tp": "ppt",
             "fdir": "SW_direct",
             "strd": "LW_in",
@@ -139,7 +139,7 @@ def get_era5(location="schwarzsee19"):
             "SW_direct",
             "SW_diffuse",
             "LW_in",
-            "PRESS",
+            "press",
         ]
     ]
 
@@ -158,7 +158,7 @@ def get_era5(location="schwarzsee19"):
     #             "SW_direct",
     #             "SW_diffuse",
     #             "LW_in",
-    #             "PRESS",
+    #             "press",
     #             "ppt",
     #         ]
     #     ]
@@ -179,7 +179,7 @@ def get_era5(location="schwarzsee19"):
     #         "SW_direct",
     #         "SW_diffuse",
     #         "LW_in",
-    #         "PRESS",
+    #         "press",
     #         "ppt",
     #     ]
     # ]
