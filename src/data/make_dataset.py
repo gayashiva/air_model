@@ -84,11 +84,11 @@ if __name__ == "__main__":
             df = df.reset_index()
 
             # Replace Wind zero values for 3 hours
-            mask = df.WS.shift().eq(df.WS)
+            mask = df.wind.shift().eq(df.wind)
             for i in range(1, 3 * 4):
-                mask &= df.WS.shift(-1 * i).eq(df.WS)
-            mask &= df.WS == 0
-            df.WS = df.WS.mask(mask)
+                mask &= df.wind.shift(-1 * i).eq(df.wind)
+            mask &= df.wind == 0
+            df.wind = df.wind.mask(mask)
 
             if location in ["schwarzsee19"]:
                 df_swiss = get_meteoswiss(location)
@@ -116,10 +116,10 @@ if __name__ == "__main__":
 
             # Fit ERA5 to field data
             if SITE["name"] in ["guttannen21", "guttannen20"]:
-                fit_list = ["temp", "RH", "WS"]
+                fit_list = ["temp", "RH", "wind"]
 
             if SITE["name"] in ["schwarzsee19"]:
-                fit_list = ["temp", "RH", "WS", "PRESS"]
+                fit_list = ["temp", "RH", "wind", "PRESS"]
 
             for column in fit_list:
                 Y = df[column].values.reshape(-1, 1)
@@ -127,10 +127,10 @@ if __name__ == "__main__":
                 slope, intercept = linreg(X, Y)
                 df_ERA5[column] = slope * df_ERA5[column] + intercept
                 df_ERA5_full[column] = slope * df_ERA5_full[column] + intercept
-                if column in ["WS"]:
+                if column in ["wind"]:
                     # Correct negative wind
-                    df_ERA5.WS.loc[df_ERA5.WS < 0] = 0
-                    df_ERA5_full.WS.loc[df_ERA5_full.WS < 0] = 0
+                    df_ERA5.wind.loc[df_ERA5.wind < 0] = 0
+                    df_ERA5_full.wind.loc[df_ERA5_full.wind < 0] = 0
 
             df_ERA5 = df_ERA5.set_index("time")
 
@@ -139,7 +139,7 @@ if __name__ == "__main__":
             for col in [
                 "temp",
                 "RH",
-                "WS",
+                "wind",
                 "ppt",
                 "PRESS",
                 "SW_direct",
@@ -174,7 +174,7 @@ if __name__ == "__main__":
                 # "Discharge",
                 "temp",
                 "RH",
-                "WS",
+                "wind",
                 # "SW_direct",
                 # "SW_diffuse",
                 "SW_global",
@@ -192,7 +192,7 @@ if __name__ == "__main__":
                 # "Discharge",
                 "temp",
                 "RH",
-                "WS",
+                "wind",
                 "SW_direct",
                 "SW_diffuse",
                 "ppt",
@@ -207,7 +207,7 @@ if __name__ == "__main__":
                 # "Discharge",
                 "temp",
                 "RH",
-                "WS",
+                "wind",
                 "SW_direct",
                 "SW_diffuse",
                 "ppt",

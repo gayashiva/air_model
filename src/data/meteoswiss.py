@@ -68,7 +68,7 @@ def meteoswiss_parameter(parameter):
             "units": "($\\degree$)",
         },
         "fkl010z0": {
-            "name": "WS",
+            "name": "wind",
             "units": "($ms^{-1}$)",
         },
         "ure200s0": {

@@ -104,7 +104,7 @@ def get_era5(location="schwarzsee19"):
     df_in3["ssrd"] /= time_steps
     df_in3["strd"] /= time_steps
     df_in3["fdir"] /= time_steps
-    df_in3["WS"] = np.sqrt(df_in3["u10"] ** 2 + df_in3["v10"] ** 2)
+    df_in3["wind"] = np.sqrt(df_in3["u10"] ** 2 + df_in3["v10"] ** 2)
     # Derive RH
     df_in3["t2m"] -= 273.15
     df_in3["d2m"] -= 273.15
@@ -135,7 +135,7 @@ def get_era5(location="schwarzsee19"):
             "temp",
             "RH",
             # "ppt",
-            "WS",
+            "wind",
             "SW_direct",
             "SW_diffuse",
             "LW_in",
@@ -154,7 +154,7 @@ def get_era5(location="schwarzsee19"):
     #             "When",
     #             "temp",
     #             "RH",
-    #             "WS",
+    #             "wind",
     #             "SW_direct",
     #             "SW_diffuse",
     #             "LW_in",
@@ -174,7 +174,7 @@ def get_era5(location="schwarzsee19"):
     #     [
     #         "When",
     #         "temp",
-    #         "WS",
+    #         "wind",
     #         "RH",
     #         "SW_direct",
     #         "SW_diffuse",

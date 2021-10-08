@@ -143,7 +143,7 @@ def get_parameter_metadata(
         "fountain_froze": {
             "name": "Frozen Discharge",
             "kind": "Output",
-            "units": "($kg\\, s^{-1}$)",
+            "units": "($kg\\, h^{-1}$)",
         },
         "event": {
             "name": "Freezing/Melting Event",
@@ -310,7 +310,7 @@ def get_parameter_metadata(
             "kind": "Input",
             "units": "($mm$)",
         },
-        "WS": {
+        "wind": {
             "name": "Wind Speed",
             "kind": "Input",
             "units": "($m\\,s^{-1}$)",

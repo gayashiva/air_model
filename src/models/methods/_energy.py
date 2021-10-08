@@ -25,7 +25,7 @@ def get_energy(self, i):
         * self.RHO_A
         / self.P0
         * math.pow(self.VAN_KARMAN, 2)
-        * self.df.loc[i, "WS"]
+        * self.df.loc[i, "wind"]
         * (self.df.loc[i, "vp_a"] - self.df.loc[i, "vp_ice"])
         / ((np.log(self.H_AWS / self.Z)) ** 2)
         * (1 + 0.5 * self.df.loc[i, "s_cone"])
@@ -38,7 +38,7 @@ def get_energy(self, i):
         * self.df.loc[i, "PRESS"]
         / self.P0
         * math.pow(self.VAN_KARMAN, 2)
-        * self.df.loc[i, "WS"]
+        * self.df.loc[i, "wind"]
         * (self.df.loc[i, "temp"] - self.df.loc[i, "T_s"])
         / ((np.log(self.H_AWS / self.Z)) ** 2)
         * (1 + 0.5 * self.df.loc[i, "s_cone"])
@@ -100,7 +100,7 @@ def test_get_energy(self, i):
 
     if np.isnan(self.df.loc[i, "Ql"]):
         logger.error(
-            f"time {self.df.When[i]},WS {self.df.WS[i]}, vp_ice {self.df.vp_ice[i]}"
+            f"time {self.df.When[i]},wind {self.df.wind[i]}, vp_ice {self.df.vp_ice[i]}"
         )
         sys.exit("Ql nan")
 
