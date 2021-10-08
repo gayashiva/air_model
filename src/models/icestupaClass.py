@@ -428,10 +428,10 @@ class Icestupa:
                 )
 
             # Precipitation to ice quantity
-            if self.df.loc[i, "T_A"] < self.T_PPT and self.df.loc[i, "PRECIP"] > 0:
+            if self.df.loc[i, "T_A"] < self.T_PPT and self.df.loc[i, "ppt"] > 0:
                 self.df.loc[i, "snow2ice"] = (
                     self.RHO_W
-                    * self.df.loc[i, "PRECIP"]
+                    * self.df.loc[i, "ppt"]
                     / 1000
                     * math.pi
                     * math.pow(self.df.loc[i, "r_ice"], 2)

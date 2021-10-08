@@ -99,7 +99,7 @@ if __name__ == "__main__":
                 df_swiss = df_swiss.set_index("time")
                 df = df.set_index("time")
 
-                for col in ["PRECIP"]:
+                for col in ["ppt"]:
                     logger.info("%s from meteoswiss" % col)
                     df[col] = df_swiss[col]
                 df_swiss = df_swiss.reset_index()
@@ -140,7 +140,7 @@ if __name__ == "__main__":
                 "T_A",
                 "RH",
                 "WS",
-                "PRECIP",
+                "ppt",
                 "PRESS",
                 "SW_direct",
                 "SW_diffuse",
@@ -178,7 +178,7 @@ if __name__ == "__main__":
                 # "SW_direct",
                 # "SW_diffuse",
                 "SW_global",
-                "PRECIP",
+                "ppt",
                 # "vp_a",
                 "PRESS",
                 "missing_type",
@@ -195,7 +195,7 @@ if __name__ == "__main__":
                 "WS",
                 "SW_direct",
                 "SW_diffuse",
-                "PRECIP",
+                "ppt",
                 # "vp_a",
                 "PRESS",
                 "missing_type",
@@ -210,7 +210,7 @@ if __name__ == "__main__":
                 "WS",
                 "SW_direct",
                 "SW_diffuse",
-                "PRECIP",
+                "ppt",
                 "vp_a",
                 "PRESS",
                 "missing_type",
@@ -240,7 +240,7 @@ if __name__ == "__main__":
 
         # Extend field data with ERA5
         if SITE["name"] in ["schwarzsee19"]:
-            df_ERA5_full["PRECIP"] = 0
+            df_ERA5_full["ppt"] = 0
             df_ERA5_full["Discharge"] = 0
             df_ERA5_full["missing_type"] = "-".join(df_out.columns)
             mask = (df_ERA5_full["time"] > df_out["time"].iloc[-1]) & (
@@ -258,7 +258,7 @@ if __name__ == "__main__":
 
             df_swiss = df_swiss.set_index("time")
 
-            df_ERA5_full["PRECIP"] = df_swiss["PRECIP"]
+            df_ERA5_full["ppt"] = df_swiss["ppt"]
             concat = pd.concat([df_out, df_ERA5_full])
             if len(concat[concat.index.duplicated()]):
                 logger.error("Duplicate indexes")

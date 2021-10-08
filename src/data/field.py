@@ -126,7 +126,7 @@ def get_field(location="schwarzsee19"):
         # df["SW_direct"] = (1-diffuse_fraction)* df.SW_global
         df = df.set_index("time").resample("H").mean().reset_index()
 
-        df["PRECIP"] = 0
+        df["ppt"] = 0
         df["missing_type"] = "-"
         df["cld"] = 0
 

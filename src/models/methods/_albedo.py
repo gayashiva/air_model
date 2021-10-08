@@ -9,16 +9,15 @@ import coloredlogs
 
 logger = logging.getLogger(__name__)
 
-def get_albedo(
-    self, i, s=0, f=0
-):  # Albedo Scheme described in
+
+def get_albedo(self, i, s=0, f=0):  # Albedo Scheme described in
 
     # Discharge event
     if self.df.Discharge[i] > 0:
         f = 1
     else:
         # Snow event
-        if self.df.T_A[i] < self.T_PPT and self.df.PRECIP[i] > 0: 
+        if self.df.T_A[i] < self.T_PPT and self.df.ppt[i] > 0:
             f = 0
             s = 0
 

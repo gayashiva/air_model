@@ -305,7 +305,7 @@ def get_parameter_metadata(
             "kind": "Output",
             "units": "($W\\,m^{-2}$)",
         },
-        "PRECIP": {
+        "ppt": {
             "name": "Precipitation",
             "kind": "Input",
             "units": "($mm$)",

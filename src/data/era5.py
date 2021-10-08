@@ -123,7 +123,7 @@ def get_era5(location="schwarzsee19"):
         columns={
             "t2m": "T_A",
             "sp": "PRESS",
-            # "tp": "PRECIP",
+            # "tp": "ppt",
             "fdir": "SW_direct",
             "strd": "LW_in",
         },
@@ -134,7 +134,7 @@ def get_era5(location="schwarzsee19"):
         [
             "T_A",
             "RH",
-            # "PRECIP",
+            # "ppt",
             "WS",
             "SW_direct",
             "SW_diffuse",
@@ -159,7 +159,7 @@ def get_era5(location="schwarzsee19"):
     #             "SW_diffuse",
     #             "LW_in",
     #             "PRESS",
-    #             "PRECIP",
+    #             "ppt",
     #         ]
     #     ]
     #
@@ -180,7 +180,7 @@ def get_era5(location="schwarzsee19"):
     #         "SW_diffuse",
     #         "LW_in",
     #         "PRESS",
-    #         "PRECIP",
+    #         "ppt",
     #     ]
     # ]
 
