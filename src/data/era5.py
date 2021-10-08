@@ -121,7 +121,7 @@ def get_era5(location="schwarzsee19"):
     # CSV output
     df_in3.rename(
         columns={
-            "t2m": "T_A",
+            "t2m": "temp",
             "sp": "PRESS",
             # "tp": "ppt",
             "fdir": "SW_direct",
@@ -132,7 +132,7 @@ def get_era5(location="schwarzsee19"):
 
     df_in3 = df_in3[
         [
-            "T_A",
+            "temp",
             "RH",
             # "ppt",
             "WS",
@@ -152,7 +152,7 @@ def get_era5(location="schwarzsee19"):
     #     df_in3 = interpolated[
     #         [
     #             "When",
-    #             "T_A",
+    #             "temp",
     #             "RH",
     #             "WS",
     #             "SW_direct",
@@ -173,7 +173,7 @@ def get_era5(location="schwarzsee19"):
     # df_ERA5 = interpolated[
     #     [
     #         "When",
-    #         "T_A",
+    #         "temp",
     #         "WS",
     #         "RH",
     #         "SW_direct",

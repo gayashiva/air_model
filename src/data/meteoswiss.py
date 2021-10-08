@@ -88,7 +88,7 @@ def meteoswiss_parameter(parameter):
             "units": "($\\degree C$)",
         },
         "tre200s0": {
-            "name": "T_A",
+            "name": "temp",
             "units": "($\\degree C$)",
         },
         "gre000z0": {

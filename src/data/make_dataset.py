@@ -64,7 +64,7 @@ if __name__ == "__main__":
             # )
             # df_hobo = df_hobo.set_index("When")
             # df_hobo = df_hobo[SITE['start_date']:SITE["melt_out"]]
-            # df['T_A'] = df_hobo['T_A']
+            # df['temp'] = df_hobo['temp']
             # df['RH'] = df_hobo['RH']
 
             df = df.reset_index()
@@ -116,10 +116,10 @@ if __name__ == "__main__":
 
             # Fit ERA5 to field data
             if SITE["name"] in ["guttannen21", "guttannen20"]:
-                fit_list = ["T_A", "RH", "WS"]
+                fit_list = ["temp", "RH", "WS"]
 
             if SITE["name"] in ["schwarzsee19"]:
-                fit_list = ["T_A", "RH", "WS", "PRESS"]
+                fit_list = ["temp", "RH", "WS", "PRESS"]
 
             for column in fit_list:
                 Y = df[column].values.reshape(-1, 1)
@@ -137,7 +137,7 @@ if __name__ == "__main__":
             # Fill from ERA5
             df["missing_type"] = ""
             for col in [
-                "T_A",
+                "temp",
                 "RH",
                 "WS",
                 "ppt",
@@ -172,7 +172,7 @@ if __name__ == "__main__":
             cols = [
                 "time",
                 # "Discharge",
-                "T_A",
+                "temp",
                 "RH",
                 "WS",
                 # "SW_direct",
@@ -190,7 +190,7 @@ if __name__ == "__main__":
             cols = [
                 "time",
                 # "Discharge",
-                "T_A",
+                "temp",
                 "RH",
                 "WS",
                 "SW_direct",
@@ -205,7 +205,7 @@ if __name__ == "__main__":
             cols = [
                 "time",
                 # "Discharge",
-                "T_A",
+                "temp",
                 "RH",
                 "WS",
                 "SW_direct",

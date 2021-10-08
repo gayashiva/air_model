@@ -153,7 +153,7 @@ class Icestupa:
                     6.107
                     * math.pow(
                         10,
-                        7.5 * row.T_A / (row.T_A + 237.3),
+                        7.5 * row.temp / (row.temp + 237.3),
                     )
                     * row.RH
                     / 100
@@ -164,13 +164,13 @@ class Icestupa:
 
                 self.df.loc[i, "e_a"] = (
                     1.24
-                    * math.pow(abs(self.df.loc[i, "vp_a"] / (row.T_A + 273.15)), 1 / 7)
+                    * math.pow(abs(self.df.loc[i, "vp_a"] / (row.temp + 273.15)), 1 / 7)
                 ) * (1 + 0.22 * math.pow(row.cld, 2))
 
                 self.df.loc[i, "LW_in"] = (
                     self.df.loc[i, "e_a"]
                     * self.STEFAN_BOLTZMAN
-                    * math.pow(row.T_A + 273.15, 4)
+                    * math.pow(row.temp + 273.15, 4)
                 )
 
         self.get_discharge()
@@ -428,7 +428,7 @@ class Icestupa:
                 )
 
             # Precipitation to ice quantity
-            if self.df.loc[i, "T_A"] < self.T_PPT and self.df.loc[i, "ppt"] > 0:
+            if self.df.loc[i, "temp"] < self.T_PPT and self.df.loc[i, "ppt"] > 0:
                 self.df.loc[i, "snow2ice"] = (
                     self.RHO_W
                     * self.df.loc[i, "ppt"]

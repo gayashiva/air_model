@@ -220,7 +220,7 @@ def get_parameter_metadata(
             "kind": "Output",
             "units": "($kg\\, s^{-1}$)",
         },
-        "T_A": {
+        "temp": {
             "name": "Temperature",
             "kind": "Input",
             "units": "($\\degree C$)",

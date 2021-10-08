@@ -39,7 +39,7 @@ def get_energy(self, i):
         / self.P0
         * math.pow(self.VAN_KARMAN, 2)
         * self.df.loc[i, "WS"]
-        * (self.df.loc[i, "T_A"] - self.df.loc[i, "T_s"])
+        * (self.df.loc[i, "temp"] - self.df.loc[i, "T_s"])
         / ((np.log(self.H_AWS / self.Z)) ** 2)
         * (1 + 0.5 * self.df.loc[i, "s_cone"])
     )

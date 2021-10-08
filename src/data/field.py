@@ -32,7 +32,7 @@ def get_field(location="schwarzsee19"):
             "RH",
             "WS",
         ]
-        cols = ["T_A", "RH", "WS"]
+        cols = ["temp", "RH", "WS"]
 
         df_in = pd.read_csv(
             FOLDER["raw"] + "/Gangles_Table15Min.dat",
@@ -45,7 +45,7 @@ def get_field(location="schwarzsee19"):
         df_in.rename(
             columns={
                 "TIMESTAMP": "time",
-                "AirTC_Avg": "T_A",
+                "AirTC_Avg": "temp",
                 "RH_probe_Avg": "RH",
                 # "WS": "WS",
             },
@@ -200,7 +200,7 @@ def get_field(location="schwarzsee19"):
         df.rename(
             columns={
                 "Wind Speed": "WS",
-                "Temperature": "T_A",
+                "Temperature": "temp",
                 "Humidity": "RH",
                 "Pressure": "PRESS",
             },
@@ -275,7 +275,7 @@ def get_field(location="schwarzsee19"):
         df.rename(
             columns={
                 "Wind Speed": "WS",
-                "Temperature": "T_A",
+                "Temperature": "temp",
                 "Humidity": "RH",
                 "Pressure": "PRESS",
             },
@@ -375,7 +375,7 @@ def get_field(location="schwarzsee19"):
         df.rename(
             columns={
                 "Wind Speed": "WS",
-                "Temperature": "T_A",
+                "Temperature": "temp",
                 "Humidity": "RH",
                 "Pressure": "PRESS",
             },
