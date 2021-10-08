@@ -222,7 +222,7 @@ class Icestupa:
             - self.V_dome * self.RHO_I,
             1,
         )
-        M_ppt = self.df["ppt"].sum()
+        M_ppt = self.df["snow2ice"].sum()
         M_dep = self.df["dep"].sum()
         M_water = self.df["meltwater"].iloc[-1]
         M_runoff = self.df["unfrozen_water"].iloc[-1]
@@ -330,7 +330,7 @@ class Icestupa:
             "SA",
             "h_ice",
             "r_ice",
-            "ppt",
+            "snow2ice",
             "dep",
             "t_cone",
             "fountain_runoff",
@@ -389,7 +389,7 @@ class Icestupa:
 
                     col_list = [
                         "dep",
-                        "ppt",
+                        "snow2ice",
                         "fountain_froze",
                         "fountain_runoff",
                         "sub",
@@ -429,7 +429,7 @@ class Icestupa:
 
             # Precipitation to ice quantity
             if self.df.loc[i, "T_A"] < self.T_PPT and self.df.loc[i, "PRECIP"] > 0:
-                self.df.loc[i, "ppt"] = (
+                self.df.loc[i, "snow2ice"] = (
                     self.RHO_W
                     * self.df.loc[i, "PRECIP"]
                     / 1000
@@ -448,7 +448,7 @@ class Icestupa:
                 self.df.loc[i, "ice"]
                 + self.df.loc[i, "fountain_froze"]
                 + self.df.loc[i, "dep"]
-                + self.df.loc[i, "ppt"]
+                + self.df.loc[i, "snow2ice"]
                 - self.df.loc[i, "sub"]
                 - self.df.loc[i, "melted"]
             )
@@ -463,7 +463,7 @@ class Icestupa:
 
             self.df.loc[i + 1, "input"] = (
                 self.df.loc[i, "input"]
-                + self.df.loc[i, "ppt"]
+                + self.df.loc[i, "snow2ice"]
                 + self.df.loc[i, "dep"]
                 + self.df.loc[i, "Discharge"] * self.DT / 60
             )
@@ -483,7 +483,7 @@ class Icestupa:
                     self.df.loc[1, "input"]
                     + self.df.Discharge[1 : i + 1].sum() * self.DT / 60
                     + self.df["dep"].sum()
-                    + self.df["ppt"].sum()
+                    + self.df["snow2ice"].sum()
                 )
 
                 logger.info(

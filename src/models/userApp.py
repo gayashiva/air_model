@@ -50,7 +50,7 @@ if __name__ == "__main__":
         icestupa.save()
 
         # Create figures for web interface
-        icestupa.summary_figures()
+        # icestupa.summary_figures()
     else:
         # Use output parameters from cache
         icestupa.read_output()
