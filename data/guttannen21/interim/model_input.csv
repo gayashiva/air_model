@@ -1,4 +1,4 @@
-,TIMESTAMP,sea,T_A,RH,WS,SW_direct,SW_diffuse,PRECIP,vp_a,PRESS,missing_type,LW_in,a,cld,Discharge
+,time,sea,T_A,RH,WS,SW_direct,SW_diffuse,PRECIP,vp_a,PRESS,missing_type,LW_in,a,cld,Discharge
 0,2020-11-22 15:00:00,0.101,2.517,87.467,1.083,63.099,65.906,0.0,6.4,805.094,PRESSSW_directSW_diffuseLW_in,230.579,0.25,0,7.5
 1,2020-11-22 16:00:00,0.0,2.083,88.483,1.083,5.239,14.596,0.0,6.267,805.101,PRESSSW_directSW_diffuseLW_in,233.677,0.25,0,7.5
 2,2020-11-22 17:00:00,0.0,1.733,89.617,1.717,0.0,0.0,0.0,6.2,805.3,PRESSSW_directSW_diffuseLW_in,237.41,0.25,0,7.5

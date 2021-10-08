@@ -125,7 +125,7 @@ def get_parameter_metadata(
             "kind": "site",
             "units": "()",
         },
-        "TIMESTAMP": {
+        "time": {
             "name": "Timestamp",
             "kind": "Misc",
             "units": "()",

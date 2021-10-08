@@ -95,7 +95,7 @@ if __name__ == "__main__":
     ) = vars(df_in)
 
     # df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
-    # df_in = df_in.set_index("TIMESTAMP")
+    # df_in = df_in.set_index("time")
     # df = df_in
     input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
     output_folder = os.path.join(dirname, "data/" + SITE["name"] + "/processed/")
@@ -223,9 +223,7 @@ if __name__ == "__main__":
             icestupa.df.Discharge != 0
         ].fountain_froze.mean() / (icestupa.DT / 60)
         fountain_duration = icestupa.df[icestupa.df.Discharge != 0].shape[0]
-        mean_melt_rate = icestupa.df.melted.mean() / (
-            icestupa.DT / 60
-        )
+        mean_melt_rate = icestupa.df.melted.mean() / (icestupa.DT / 60)
         st.markdown(
             """
         | Fountain | Estimation |
@@ -248,15 +246,15 @@ if __name__ == "__main__":
         )
 
     with row3_2:
-        if icestupa.name == 'gangles21':
-            SITE["end_date"] =datetime(2021, 6, 30)
+        if icestupa.name == "gangles21":
+            SITE["end_date"] = datetime(2021, 6, 30)
             diff = SITE["end_date"] - SITE["start_date"]
             days, seconds = diff.days, diff.seconds
             icestupa.total_hours = days * 24 + seconds // 3600
         # perf = (icestupa.total_hours - icestupa.last_hour)/24
         df_c = pd.read_hdf(icestupa.input + "model_input.h5", "df_c")
-        df_c = df_c.set_index("TIMESTAMP")
-        icestupa.df = icestupa.df.set_index("TIMESTAMP")
+        df_c = df_c.set_index("time")
+        icestupa.df = icestupa.df.set_index("time")
         tol = pd.Timedelta("1T")
         df = pd.merge_asof(
             left=icestupa.df,
@@ -271,8 +269,7 @@ if __name__ == "__main__":
         while (df[df.DroneV.notnull()].shape[0]) == 0 and ctr != 4:
             tol += pd.Timedelta("15T")
             logger.error(
-                "Timedelta increase as shape %s"
-                % (df[df.DroneV.notnull()].shape[0])
+                "Timedelta increase as shape %s" % (df[df.DroneV.notnull()].shape[0])
             )
             df = pd.merge_asof(
                 left=icestupa.df,
@@ -300,11 +297,11 @@ if __name__ == "__main__":
         """
             % (
                 icestupa.df["iceV"].max(),
-                icestupa.M_water/1000,
-                icestupa.M_sub/1000,
+                icestupa.M_water / 1000,
+                icestupa.M_sub / 1000,
                 (icestupa.M_runoff + icestupa.M_sub) / icestupa.M_input * 100,
-                SITE['melt_out'].strftime("%b %d"),
-                rmse_V/icestupa.df["iceV"].max() * 100,
+                SITE["melt_out"].strftime("%b %d"),
+                rmse_V / icestupa.df["iceV"].max() * 100,
             )
         )
 
@@ -324,8 +321,8 @@ if __name__ == "__main__":
                     direction="nearest",
                     tolerance=tol,
                 )
-                rmse_T = (((df.cam_temp - df.T_s) ** 2).mean() ** .5)
-                corr_T = df['cam_temp'].corr(df['T_s'])
+                rmse_T = ((df.cam_temp - df.T_s) ** 2).mean() ** 0.5
+                corr_T = df["cam_temp"].corr(df["T_s"])
             else:
                 rmse_T = 0
                 corr_T = 0

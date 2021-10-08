@@ -21,6 +21,7 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 sys.path.append(dirname)
 from src.utils.settings import config
 
+
 def get_era5(location="schwarzsee19"):
 
     if location in ["schwarzsee19"]:
@@ -44,10 +45,10 @@ def get_era5(location="schwarzsee19"):
             header=0,
             parse_dates=["When"],
         )
-        df_in2 = df_in2.rename(columns = {"When":"TIMESTAMP"})
-        df_in3 = df_in3.rename(columns = {"When":"TIMESTAMP"})
-        df_in3 = df_in3.set_index("TIMESTAMP")
-        df_in2 = df_in2.set_index("TIMESTAMP")
+        df_in2 = df_in2.rename(columns={"When": "time"})
+        df_in3 = df_in3.rename(columns={"When": "time"})
+        df_in3 = df_in3.set_index("time")
+        df_in2 = df_in2.set_index("time")
         df_in3 = pd.concat([df_in2, df_in3])
         df_in3 = df_in3.reset_index()
 
@@ -64,10 +65,10 @@ def get_era5(location="schwarzsee19"):
             header=0,
             parse_dates=["When"],
         )
-        df_in2 = df_in2.rename(columns = {"When":"TIMESTAMP"})
-        df_in3 = df_in3.rename(columns = {"When":"TIMESTAMP"})
-        df_in3 = df_in3.set_index("TIMESTAMP")
-        df_in2 = df_in2.set_index("TIMESTAMP")
+        df_in2 = df_in2.rename(columns={"When": "time"})
+        df_in3 = df_in3.rename(columns={"When": "time"})
+        df_in3 = df_in3.set_index("time")
+        df_in2 = df_in2.set_index("time")
         df_in3 = pd.concat([df_in2, df_in3])
         df_in3 = df_in3.reset_index()
 
@@ -78,8 +79,8 @@ def get_era5(location="schwarzsee19"):
             header=0,
             parse_dates=["When"],
         )
-        df_in3 = df_in3.rename({"When":"TIMESTAMP"})
-        df_in3 = df_in3.set_index("TIMESTAMP")
+        df_in3 = df_in3.rename({"When": "time"})
+        df_in3 = df_in3.set_index("time")
         df_in3 = df_in3.reset_index()
 
     if location in ["ravat20"]:
@@ -89,11 +90,11 @@ def get_era5(location="schwarzsee19"):
             header=0,
             parse_dates=["When"],
         )
-        df_in3 = df_in3.rename({"When":"TIMESTAMP"})
-        df_in3 = df_in3.set_index("TIMESTAMP")
+        df_in3 = df_in3.rename({"When": "time"})
+        df_in3 = df_in3.set_index("time")
         df_in3 = df_in3.reset_index()
 
-    SITE, FOLDER= config(location)
+    SITE, FOLDER = config(location)
 
     # mask = (df_in3["When"] >= SITE["start_date"]) & (df_in3["When"] <= SITE["end_date"])
     # df_in3 = df_in3.loc[mask]
@@ -115,7 +116,7 @@ def get_era5(location="schwarzsee19"):
     df_in3["sp"] = df_in3["sp"] / 100
     # df_in3["tp"] = df_in3["tp"] * 1000  # mm
     df_in3["SW_diffuse"] = df_in3["ssrd"] - df_in3["fdir"]
-    df_in3 = df_in3.set_index("TIMESTAMP")
+    df_in3 = df_in3.set_index("time")
 
     # CSV output
     df_in3.rename(
@@ -148,24 +149,23 @@ def get_era5(location="schwarzsee19"):
     # interpolated = upsampled.interpolate(method="linear")
     # interpolated = interpolated.reset_index()
 
-#     df_in3 = interpolated[
-#         [
-#             "When",
-#             "T_A",
-#             "RH",
-#             "WS",
-#             "SW_direct",
-#             "SW_diffuse",
-#             "LW_in",
-#             "PRESS",
-#             "PRECIP",
-#         ]
-#     ]
-# 
-#     df_in3 = df_in3.reset_index()
+    #     df_in3 = interpolated[
+    #         [
+    #             "When",
+    #             "T_A",
+    #             "RH",
+    #             "WS",
+    #             "SW_direct",
+    #             "SW_diffuse",
+    #             "LW_in",
+    #             "PRESS",
+    #             "PRECIP",
+    #         ]
+    #     ]
+    #
+    #     df_in3 = df_in3.reset_index()
     # mask = (df_in3["When"] >= SITE["start_date"]) & (df_in3["When"] <= SITE["end_date"])
     # df_in3 = df_in3.loc[mask]
-
 
     df_in3 = df_in3.reset_index()
     df_in3.to_csv(FOLDER["input"] + SITE["name"] + "_input_ERA5.csv")
@@ -196,5 +196,3 @@ def e_sat(T, surface="water", a1=611.21, a3=17.502, a4=32.19):
         a3 = 22.587  # NA
         a4 = -0.7  # K
     return a1 * np.exp(a3 * (T - 273.16) / (T - a4))
-
-

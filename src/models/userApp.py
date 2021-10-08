@@ -28,10 +28,10 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        # location="Guttannen 2021",
-        location="Gangles 2021",
-        # run="yes",
-        run="no",
+        location="Guttannen 2021",
+        # location="Gangles 2021",
+        run="yes",
+        # run="no",
     )
 
     # Initialise icestupa object
@@ -55,11 +55,11 @@ if __name__ == "__main__":
         # Use output parameters from cache
         icestupa.read_output()
 
-        plt.figure()
-        ax = plt.gca()
-        plt.scatter(icestupa.df.Qt, icestupa.df.fountain_froze / 60, s=1)
-        plt.legend()
-        plt.grid()
-        plt.savefig("data/tests/T_relation.jpg")
+        # plt.figure()
+        # ax = plt.gca()
+        # plt.scatter(icestupa.df.Qt, icestupa.df.fountain_froze / 60, s=1)
+        # plt.legend()
+        # plt.grid()
+        # plt.savefig("data/tests/T_relation.jpg")
 
-        # icestupa.summary_figures()
+        icestupa.summary_figures()

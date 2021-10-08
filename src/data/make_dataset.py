@@ -27,10 +27,12 @@ from src.data.field import get_field
 from src.data.era5 import get_era5
 from src.data.meteoswiss import get_meteoswiss
 
+
 def linreg(X, Y):
     mask = ~np.isnan(X) & ~np.isnan(Y)
     slope, intercept, r_value, p_value, std_err = stats.linregress(X[mask], Y[mask])
     return slope, intercept
+
 
 if __name__ == "__main__":
 
@@ -43,16 +45,16 @@ if __name__ == "__main__":
     # location = "guttannen21"
     # location = "schwarzsee19"
     # location = "gangles21"
-    # locations = ["gangles21", "guttannen20", "guttannen21"]
-    locations = ["guttannen21"]
+    locations = ["gangles21", "guttannen20", "guttannen21"]
+    # locations = ["guttannen21"]
 
     for location in locations:
         SITE, FOLDER = config(location)
 
         if location in ["gangles21"]:
             df = get_field(location)
-            df = df.set_index("TIMESTAMP")
-            df = df[SITE['start_date']:SITE["melt_out"]]
+            df = df.set_index("time")
+            df = df[SITE["start_date"] : SITE["melt_out"]]
             print(df.tail())
             # # Replace temp and Humidity from Hobo
             # df_hobo = pd.read_csv(
@@ -77,39 +79,38 @@ if __name__ == "__main__":
             if location in ["guttannen21", "guttannen20"]:
                 df = get_meteoswiss(location)
 
-            df = df.set_index("TIMESTAMP")
-            df = df[SITE['start_date']:SITE["melt_out"]]
+            df = df.set_index("time")
+            df = df[SITE["start_date"] : SITE["melt_out"]]
             df = df.reset_index()
 
             # Replace Wind zero values for 3 hours
             mask = df.WS.shift().eq(df.WS)
-            for i in range(1,3*4):
+            for i in range(1, 3 * 4):
                 mask &= df.WS.shift(-1 * i).eq(df.WS)
-            mask &= (df.WS ==0)
+            mask &= df.WS == 0
             df.WS = df.WS.mask(mask)
 
             if location in ["schwarzsee19"]:
                 df_swiss = get_meteoswiss(location)
-                df_swiss = df_swiss.set_index("TIMESTAMP")
-                df_swiss = df_swiss[SITE['start_date']:SITE["melt_out"]]
+                df_swiss = df_swiss.set_index("time")
+                df_swiss = df_swiss[SITE["start_date"] : SITE["melt_out"]]
                 df_swiss = df_swiss.reset_index()
 
-                df_swiss = df_swiss.set_index("TIMESTAMP")
-                df= df.set_index("TIMESTAMP")
+                df_swiss = df_swiss.set_index("time")
+                df = df.set_index("time")
 
                 for col in ["PRECIP"]:
                     logger.info("%s from meteoswiss" % col)
                     df[col] = df_swiss[col]
                 df_swiss = df_swiss.reset_index()
-                df= df.reset_index()
-
+                df = df.reset_index()
 
             df_ERA5_full = get_era5(SITE["name"])
 
-            df = df.set_index("TIMESTAMP")
-            
-            df_ERA5_full = df_ERA5_full.set_index("TIMESTAMP")
-            df_ERA5 = df_ERA5_full[SITE['start_date']:SITE["melt_out"]]
+            df = df.set_index("time")
+
+            df_ERA5_full = df_ERA5_full.set_index("time")
+            df_ERA5 = df_ERA5_full[SITE["start_date"] : SITE["melt_out"]]
             df_ERA5 = df_ERA5.reset_index()
             df_ERA5_full = df_ERA5_full.reset_index()
 
@@ -128,24 +129,35 @@ if __name__ == "__main__":
                 df_ERA5_full[column] = slope * df_ERA5_full[column] + intercept
                 if column in ["WS"]:
                     # Correct negative wind
-                    df_ERA5.WS.loc[df_ERA5.WS<0] = 0
-                    df_ERA5_full.WS.loc[df_ERA5_full.WS<0] = 0
+                    df_ERA5.WS.loc[df_ERA5.WS < 0] = 0
+                    df_ERA5_full.WS.loc[df_ERA5_full.WS < 0] = 0
 
-            df_ERA5 = df_ERA5.set_index("TIMESTAMP")
+            df_ERA5 = df_ERA5.set_index("time")
 
             # Fill from ERA5
-            df['missing_type'] = ''
-            for col in ["T_A", "RH", "WS", "PRECIP", "PRESS", "SW_direct", "SW_diffuse", "LW_in"]:
+            df["missing_type"] = ""
+            for col in [
+                "T_A",
+                "RH",
+                "WS",
+                "PRECIP",
+                "PRESS",
+                "SW_direct",
+                "SW_diffuse",
+                "LW_in",
+            ]:
                 try:
                     mask = df[col].isna()
-                    percent_nan = df[col].isna().sum()/df.shape[0] * 100
-                    logger.info(" %s has %s percent NaN values" %(col, percent_nan))
-                    if percent_nan > 1 :
-                        logger.warning(" Null values filled with ERA5 in %s" %col)
-                        df.loc[df[col].isna(), "missing_type"] = df.loc[df[col].isna(), "missing_type"] + col
+                    percent_nan = df[col].isna().sum() / df.shape[0] * 100
+                    logger.info(" %s has %s percent NaN values" % (col, percent_nan))
+                    if percent_nan > 1:
+                        logger.warning(" Null values filled with ERA5 in %s" % col)
+                        df.loc[df[col].isna(), "missing_type"] = (
+                            df.loc[df[col].isna(), "missing_type"] + col
+                        )
                         df.loc[df[col].isna(), col] = df_ERA5[col]
                     else:
-                        logger.warning(" Null values interpolated in %s" %col)
+                        logger.warning(" Null values interpolated in %s" % col)
                         df.loc[:, col] = df[col].interpolate()
                 except KeyError:
                     logger.warning("%s from ERA5" % col)
@@ -158,7 +170,7 @@ if __name__ == "__main__":
 
         if SITE["name"] in ["gangles21"]:
             cols = [
-                "TIMESTAMP",
+                "time",
                 # "Discharge",
                 "T_A",
                 "RH",
@@ -176,7 +188,7 @@ if __name__ == "__main__":
 
         if SITE["name"] in ["schwarzsee19"]:
             cols = [
-                "TIMESTAMP",
+                "time",
                 # "Discharge",
                 "T_A",
                 "RH",
@@ -191,7 +203,7 @@ if __name__ == "__main__":
             ]
         if SITE["name"] in ["guttannen20", "guttannen21"]:
             cols = [
-                "TIMESTAMP",
+                "time",
                 # "Discharge",
                 "T_A",
                 "RH",
@@ -211,41 +223,40 @@ if __name__ == "__main__":
             print(df_out[cols].isna().sum())
             for column in cols:
                 if df_out[column].isna().sum() > 0 and column not in ["missing_type"]:
-                    logger.warning(" Null values interpolated in %s" %column)
+                    logger.warning(" Null values interpolated in %s" % column)
                     df_out.loc[:, column] = df_out[column].interpolate()
 
         df_out = df_out.round(3)
         if len(df_out[df_out.index.duplicated()]):
             logger.error("Duplicate indexes")
 
-
         logger.info(df_out.tail())
         df_out.to_csv(FOLDER["input"] + SITE["name"] + "_input_model.csv", index=False)
 
         fig = plt.figure()
         plt.plot(df_out.PRESS)
-        plt.ylabel('some numbers')
+        plt.ylabel("some numbers")
         plt.savefig(FOLDER["input"] + SITE["name"] + "test.png")
 
         # Extend field data with ERA5
-        if SITE["name"] in ['schwarzsee19']:
+        if SITE["name"] in ["schwarzsee19"]:
             df_ERA5_full["PRECIP"] = 0
             df_ERA5_full["Discharge"] = 0
             df_ERA5_full["missing_type"] = "-".join(df_out.columns)
-            mask = (df_ERA5_full["TIMESTAMP"] > df_out["TIMESTAMP"].iloc[-1]) & (
-                df_ERA5_full["TIMESTAMP"] <= datetime(2019, 4, 30)
+            mask = (df_ERA5_full["time"] > df_out["time"].iloc[-1]) & (
+                df_ERA5_full["time"] <= datetime(2019, 4, 30)
             )
             df_ERA5_full = df_ERA5_full.loc[mask]
 
-            df_out = df_out.set_index("TIMESTAMP")
-            df_ERA5_full = df_ERA5_full.set_index("TIMESTAMP")
+            df_out = df_out.set_index("time")
+            df_ERA5_full = df_ERA5_full.set_index("time")
 
             df_swiss = get_meteoswiss(SITE["name"])
-            df_swiss = df_swiss.set_index("TIMESTAMP")
-            df_swiss = df_swiss[SITE['start_date']:datetime(2019, 4, 30)]
+            df_swiss = df_swiss.set_index("time")
+            df_swiss = df_swiss[SITE["start_date"] : datetime(2019, 4, 30)]
             df_swiss = df_swiss.reset_index()
 
-            df_swiss = df_swiss.set_index("TIMESTAMP")
+            df_swiss = df_swiss.set_index("time")
 
             df_ERA5_full["PRECIP"] = df_swiss["PRECIP"]
             concat = pd.concat([df_out, df_ERA5_full])
@@ -258,15 +269,18 @@ if __name__ == "__main__":
             if concat.isna().values.any():
                 print(concat[cols].isna().sum())
                 for column in cols:
-                    if concat[column].isna().sum() > 0 and column not in ["missing_type"]:
-                        logger.warning(" Null values interpolated in %s" %column)
+                    if concat[column].isna().sum() > 0 and column not in [
+                        "missing_type"
+                    ]:
+                        logger.warning(" Null values interpolated in %s" % column)
                         concat.loc[:, column] = concat[column].interpolate()
 
             print(concat.columns)
-            concat.to_csv(FOLDER["input"] + SITE["name"] + "_input_model.csv", index=False)
+            concat.to_csv(
+                FOLDER["input"] + SITE["name"] + "_input_model.csv", index=False
+            )
             concat.to_hdf(
                 FOLDER["input"] + SITE["name"] + "_input_model.h5",
                 key="df",
                 mode="w",
             )
-
