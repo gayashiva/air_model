@@ -71,7 +71,11 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         self.df = self.df.set_index("time")
         self.df.loc[df_f.index, "Discharge"] = self.D_F * df_f["fountain"]
         self.df = self.df.reset_index()
+
     if self.name in ["guttannen21", "guttannen20"]:
+        self.df["Discharge"] = self.D_F
+
+    if self.name in ["phortse20"]:
         self.df["Discharge"] = self.D_F
 
     mask = self.df["time"] > self.fountain_off_date

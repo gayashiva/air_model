@@ -131,9 +131,10 @@ def config(location="guttannen21"):
         SITE = dict(
             name="phortse20",
             start_date=datetime(2019, 12, 1),
+            melt_out=datetime(2020, 2, 1),
             # melt_out=datetime(2021, 5, 10, 1),
             fountain_off_date=datetime(2020, 2, 1),
-            D_F=7.5,
+            D_F=60,
             T_F=3,
             utc_offset=1,
             latitude=46.649999,
@@ -142,6 +143,7 @@ def config(location="guttannen21"):
             SA_corr=1.2,
             Z=0.001,
             R_F=10,
+            diffuse_fraction=0,
         )
 
         data_h = [

@@ -9,9 +9,6 @@ from functools import lru_cache
 import logging
 import sys
 
-# Module logger
-logger = logging.getLogger(__name__)
-
 
 def get_energy(self, i):
 
@@ -90,35 +87,37 @@ def get_energy(self, i):
 
 
 def test_get_energy(self, i):
+    # Module logger
+    logger = logging.getLogger(__name__)
     self.get_energy(i)
 
     if np.isnan(self.df.loc[i, "LW"]):
         logger.error(
-            f"time {self.df.When[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i]}"
+            f"time {self.df.time[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i]}"
         )
         sys.exit("LW nan")
 
     if np.isnan(self.df.loc[i, "Ql"]):
         logger.error(
-            f"time {self.df.When[i]},wind {self.df.wind[i]}, vp_ice {self.df.vp_ice[i]}"
+            f"time {self.df.time[i]},wind {self.df.wind[i]}, vp_ice {self.df.vp_ice[i]}"
         )
         sys.exit("Ql nan")
 
     if np.isnan(self.df.loc[i, "s_cone"]):
         logger.error(
-            f"time {self.df.When[i]}, r_ice{self.df.r_ice[i]}, SA {self.df.SA[i]}, h_ice{self.df.h_ice[i]}"
+            f"time {self.df.time[i]}, r_ice{self.df.r_ice[i]}, SA {self.df.SA[i]}, h_ice{self.df.h_ice[i]}"
         )
         sys.exit("scone nan")
 
     if np.isnan(self.df.loc[i, "SW"]):
         logger.error(
-            f"time {self.df.When[i]}, s_cone {self.df.f_cone[i]}, albedo {self.df.alb[i]}, direct {self.df.SW_direct[i]},diffuse {self.df.SW_diffuse[i]}"
+            f"time {self.df.time[i]}, s_cone {self.df.f_cone[i]}, albedo {self.df.alb[i]}, direct {self.df.SW_direct[i]},diffuse {self.df.SW_diffuse[i]}"
         )
         sys.exit("SW nan")
 
     if np.isnan(self.df.loc[i, "Qsurf"]):
         logger.error(
-            f"time {self.df.When[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}"
+            f"time {self.df.time[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}"
         )
         sys.exit("Energy nan")
 

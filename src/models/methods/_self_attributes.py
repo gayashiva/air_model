@@ -38,17 +38,17 @@ def self_attributes(self, save=False):
     # Understand R_F sensitivity
     # self.R_F*=1.1
 
-    if self.name == "schwarzsee19":
-        self.V_dome = 0
-    else:
+    if self.name in ["guttannen21", "guttannen20", "gangles21"]:
         self.V_dome = df_c.loc[0, "DroneV"]
+    else:
+        self.V_dome = 0
 
     logger.warning("Dome Volume %0.1f" % self.V_dome)
 
     # Get initial height
     self.h_i = self.DX + 3 * self.V_dome / (math.pi * self.R_F ** 2)
 
-    if save:
+    if save and self.name in ["guttannen21", "guttannen20", "gangles21"]:
         df_c.to_hdf(
             self.input + "model_input.h5",
             key="df_c",

@@ -71,7 +71,7 @@ if __name__ == "__main__":
         # ( "Guttannen 2021","Gangles 2021", "Diavolezza 2021","Guttannen 2020", "Schwarzsee 2019"),
         # ("Guttannen 2021", "Gangles 2021", "Guttannen 2020", "Schwarzsee 2019"),
         # ("Guttannen 2021", "Gangles 2021", "Guttannen 2020", "Schwarzsee 2019"),
-        ("Gangles 2021", "Guttannen 2021", "Guttannen 2020"),
+        ("Gangles 2021", "Guttannen 2021", "Guttannen 2020", "Phortse 2020"),
         # ("Guttannen 2021", "Guttannen 2020", "Schwarzsee 2019"),
     )
 
@@ -252,25 +252,11 @@ if __name__ == "__main__":
             days, seconds = diff.days, diff.seconds
             icestupa.total_hours = days * 24 + seconds // 3600
         # perf = (icestupa.total_hours - icestupa.last_hour)/24
-        df_c = pd.read_hdf(icestupa.input + "model_input.h5", "df_c")
-        df_c = df_c.set_index("time")
-        icestupa.df = icestupa.df.set_index("time")
-        tol = pd.Timedelta("1T")
-        df = pd.merge_asof(
-            left=icestupa.df,
-            right=df_c,
-            right_index=True,
-            left_index=True,
-            direction="nearest",
-            tolerance=tol,
-        )
-
-        ctr = 0
-        while (df[df.DroneV.notnull()].shape[0]) == 0 and ctr != 4:
-            tol += pd.Timedelta("15T")
-            logger.error(
-                "Timedelta increase as shape %s" % (df[df.DroneV.notnull()].shape[0])
-            )
+        if icestupa.name in ["gangles21", "guttannen21", "guttannen20"]:
+            df_c = pd.read_hdf(icestupa.input + "model_input.h5", "df_c")
+            df_c = df_c.set_index("time")
+            icestupa.df = icestupa.df.set_index("time")
+            tol = pd.Timedelta("1T")
             df = pd.merge_asof(
                 left=icestupa.df,
                 right=df_c,
@@ -279,10 +265,26 @@ if __name__ == "__main__":
                 direction="nearest",
                 tolerance=tol,
             )
-            ctr += 1
 
-        rmse_V = ((df.DroneV - df.iceV) ** 2).mean() ** 0.5
-        corr_V = df["DroneV"].corr(df["iceV"])
+            ctr = 0
+            while (df[df.DroneV.notnull()].shape[0]) == 0 and ctr != 4:
+                tol += pd.Timedelta("15T")
+                logger.error(
+                    "Timedelta increase as shape %s"
+                    % (df[df.DroneV.notnull()].shape[0])
+                )
+                df = pd.merge_asof(
+                    left=icestupa.df,
+                    right=df_c,
+                    right_index=True,
+                    left_index=True,
+                    direction="nearest",
+                    tolerance=tol,
+                )
+                ctr += 1
+
+            rmse_V = ((df.DroneV - df.iceV) ** 2).mean() ** 0.5
+            corr_V = df["DroneV"].corr(df["iceV"])
 
         st.markdown(
             """
@@ -293,7 +295,6 @@ if __name__ == "__main__":
         | Vapour loss | %i $tons$ |
         | Net Water loss | %i $percent$ |
         | Melt-out date | %s |
-        | Model performance | %i $percent$ |
         """
             % (
                 icestupa.df["iceV"].max(),
@@ -301,7 +302,7 @@ if __name__ == "__main__":
                 icestupa.M_sub / 1000,
                 (icestupa.M_runoff + icestupa.M_sub) / icestupa.M_input * 100,
                 SITE["melt_out"].strftime("%b %d"),
-                rmse_V / icestupa.df["iceV"].max() * 100,
+                # rmse_V / icestupa.df["iceV"].max() * 100,
             )
         )
 
@@ -330,12 +331,13 @@ if __name__ == "__main__":
             st.write("## Validation")
             path = output_folder + "jpg/Vol_Validation.jpg"
             st.image(path)
-            st.write(
+            if icestupa.name in ["gangles21", "guttannen21", "guttannen20"]:
+                st.write(
+                    """
+                Correlation of modelled with measured ice volume was **%.2f** and RMSE was **%.2f** $m^3$ 
                 """
-            Correlation of modelled with measured ice volume was **%.2f** and RMSE was **%.2f** $m^3$ 
-            """
-                % (corr_V, rmse_V)
-            )
+                    % (corr_V, rmse_V)
+                )
 
             # if SITE["name"] in ["guttannen21", "guttannen20"]:
             #     path = (

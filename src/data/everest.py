@@ -48,17 +48,17 @@ if __name__ == "__main__":
         "PRECIP",
         "WS_AVG",
         "SW_IN_AVG",
-        "SW_OUT_AVG",
+        # "SW_OUT_AVG",
         "LW_IN_AVG",
         "PRESS",
-        "SR50",
+        # "SR50",
     ]
 
     df_in = pd.read_csv(
         FOLDER["raw"] + "Phortse_20201231.csv",
         sep=",",
         # skiprows=[0, 2, 3, 4],
-        parse_dates=["TIMESTAMP"],
+        # parse_dates=["TIMESTAMP"],
     )
     df_in = df_in[col_list]
 
@@ -75,4 +75,11 @@ if __name__ == "__main__":
         inplace=True,
     )
 
+    df_in["missing_type"] = "-"
+    df_in["time"] = pd.to_datetime(df_in["time"], format="%d/%m/%Y %H:%M")
+    df_in = df_in.set_index("time")
+    df_in = df_in[datetime(2019, 12, 1) : datetime(2020, 5, 1)]
+    df_in.to_csv(FOLDER["input"] + SITE["name"] + "_input_model.csv", index=True)
+
     print(df_in.head())
+    print(df_in.tail())

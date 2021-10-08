@@ -28,10 +28,11 @@ if __name__ == "__main__":
 
     answers = dict(
         # location="Schwarzsee 2019",
-        location="Guttannen 2021",
+        # location="Guttannen 2021",
+        location="phortse20",
         # location="Gangles 2021",
-        run="yes",
-        # run="no",
+        # run="yes",
+        run="no",
     )
 
     # Initialise icestupa object
@@ -50,7 +51,7 @@ if __name__ == "__main__":
         icestupa.save()
 
         # Create figures for web interface
-        # icestupa.summary_figures()
+        icestupa.summary_figures()
     else:
         # Use output parameters from cache
         icestupa.read_output()
