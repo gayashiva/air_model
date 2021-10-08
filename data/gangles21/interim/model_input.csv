@@ -1,4 +1,4 @@
-,time,sea,T_A,RH,WS,SW_global,PRECIP,PRESS,missing_type,cld,a,vp_a,LW_in,SW_diffuse,SW_direct,e_a,Discharge
+,time,sea,temp,RH,wind,SW_global,ppt,PRESS,missing_type,cld,alb,vp_a,LW_in,SW_diffuse,SW_direct,e_a,Discharge
 0,2021-01-18 00:00:00,0.0,-6.567,32.53,0.851,0.0,0,621.883,-,0,0.25,0.0,0.0,0.0,0.0,,0.0
 1,2021-01-18 01:00:00,0.0,-6.579,33.705,1.196,0.0,0,621.693,-,0,0.25,1.258,165.187,0.0,0.0,0.577,0.0
 2,2021-01-18 02:00:00,0.004,-7.31,37.112,0.969,0.0,0,621.381,-,0,0.25,1.309,164.38,0.0,0.0,0.58,0.0

@@ -13,12 +13,12 @@ from src.utils.settings import config
 
 # define worker function
 def calculate(process_name, tasks, results):
-    print('[%s] evaluation routine starts' % process_name)
+    print("[%s] evaluation routine starts" % process_name)
 
     while True:
         new_value = tasks.get()
         if new_value == "None":
-            print('[%s] evaluation routine quits' % process_name)
+            print("[%s] evaluation routine quits" % process_name)
 
             # Indicate finished
             results.put(-1)
@@ -48,13 +48,14 @@ def calculate(process_name, tasks, results):
             compute = icestupa.df.iceV.max()
 
             # Output which process received the value
-            print('[%s] received value: %s' % (process_name, new_value))
-            print('[%s] calculated max ice volume: %.1f' % (process_name, compute))
+            print("[%s] received value: %s" % (process_name, new_value))
+            print("[%s] calculated max ice volume: %.1f" % (process_name, compute))
 
             # Add result to the queue
             results.put(compute)
 
     return
+
 
 if __name__ == "__main__":
     # Main logger
@@ -79,10 +80,12 @@ if __name__ == "__main__":
     for i in range(num_processes):
 
         # Set process name
-        process_name = 'P%i' % i
+        process_name = "P%i" % i
 
         # Create the process, and connect it to the worker function
-        new_process = multiprocessing.Process(target=calculate, args=(process_name,tasks,results))
+        new_process = multiprocessing.Process(
+            target=calculate, args=(process_name, tasks, results)
+        )
 
         # Add new process to the list of processes
         processes.append(new_process)
@@ -91,7 +94,8 @@ if __name__ == "__main__":
         new_process.start()
 
     # Fill task queue
-    task_list = ["guttannen21", "guttannen20", "gangles21", "schwarzsee19"]
+    # task_list = ["guttannen21", "guttannen20", "gangles21", "schwarzsee19"]
+    task_list = ["guttannen21", "guttannen20", "gangles21"]
     # task_list = [ "guttannen20", "gangles21"]
 
     for single_task in task_list:

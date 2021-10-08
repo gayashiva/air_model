@@ -18,7 +18,7 @@ def shade(location, df_in, col):
         df_ERA5 = df_in.copy()
         df = df_in.copy()
         df.loc[
-            :, ["time", "T_A", "SW_direct", "SW_diffuse", "WS", "PRESS", "RH"]
+            :, ["time", "temp", "SW_direct", "SW_diffuse", "wind", "PRESS", "RH"]
         ] = np.NaN
 
     else:
@@ -26,17 +26,17 @@ def shade(location, df_in, col):
         df_ERA5 = df_in.copy()
         df = df_in.copy()
         df.loc[
-            mask, ["time", "T_A", "SW_direct", "SW_diffuse", "WS", "PRESS", "RH"]
+            mask, ["time", "temp", "SW_direct", "SW_diffuse", "wind", "PRESS", "RH"]
         ] = np.NaN
 
         df_ERA5.loc[
             ~mask,
             [
                 "time",
-                "T_A",
+                "temp",
                 "SW_direct",
                 "SW_diffuse",
-                "WS",
+                "wind",
                 "PRESS",
                 "RH",
                 "missing_type",
@@ -134,7 +134,7 @@ def summary_figures(self):
     x = self.df.time
 
     y1 = self.df.Discharge
-    y2 = self.df.PRECIP
+    y2 = self.df.ppt
     ax1.plot(x, y1, linestyle="-", color="#284D58", linewidth=1)
     ax1.set_ylabel("Discharge [$l\\, min^{-1}$]")
 
@@ -150,9 +150,9 @@ def summary_figures(self):
     for tl in ax1t.get_yticklabels():
         tl.set_color(CB91_Blue)
 
-    df_SZ, df_ERA5, events = shade(location=self.name, df_in=self.df, col="T_A")
-    y2 = df_SZ.T_A
-    y2_ERA5 = df_ERA5.T_A
+    df_SZ, df_ERA5, events = shade(location=self.name, df_in=self.df, col="temp")
+    y2 = df_SZ.temp
+    y2_ERA5 = df_ERA5.temp
     ax2.plot(x, y2, linestyle="-", color="#284D58", linewidth=1)
     for ev in events:
         ax2.axvspan(
@@ -214,9 +214,9 @@ def summary_figures(self):
         ax6.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
     ax6.set_ylabel("Pressure [$hPa$]")
 
-    df_SZ, df_ERA5, events = shade(location=self.name, df_in=self.df, col="WS")
-    y7 = df_SZ.WS
-    y7_ERA5 = df_ERA5.WS
+    df_SZ, df_ERA5, events = shade(location=self.name, df_in=self.df, col="wind")
+    y7 = df_SZ.wind
+    y7_ERA5 = df_ERA5.wind
     ax7.plot(x, y7, linestyle="-", color="#264653", linewidth=1, label="Schwarzsee")
     ax7.plot(x, y7_ERA5, linestyle="-", color="#284D58")
     for ev in events:  # Creates DeprecationWarning

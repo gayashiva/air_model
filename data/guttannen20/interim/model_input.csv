@@ -1,4 +1,4 @@
-,TIMESTAMP,sea,T_A,RH,WS,SW_direct,SW_diffuse,PRECIP,vp_a,PRESS,missing_type,LW_in,a,cld,Discharge
+,time,sea,temp,RH,wind,SW_direct,SW_diffuse,ppt,vp_a,PRESS,missing_type,LW_in,alb,cld,Discharge
 0,2020-01-03 16:00:00,0.0,0.4,82.25,1.267,10.298,15.048,0.0,5.183,803.755,PRESSSW_directSW_diffuseLW_in,209.46,0.25,0,7.5
 1,2020-01-03 17:00:00,0.0,-0.017,82.6,1.35,0.0,0.0,0.0,5.05,804.074,PRESSSW_directSW_diffuseLW_in,204.382,0.25,0,7.5
 2,2020-01-03 18:00:00,0.0,0.117,80.2,1.45,0.0,0.0,0.0,4.933,804.108,PRESSSW_directSW_diffuseLW_in,219.135,0.25,0,7.5

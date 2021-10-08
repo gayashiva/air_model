@@ -370,7 +370,7 @@ def get_parameter_metadata(
             "kind": "Output",
             "units": "($W\\,m^{-2}$)",
         },
-        "ppt": {
+        "snow2ice": {
             "name": "Snow Accumulation",
             "kind": "Output",
             "units": "($kg$)",
