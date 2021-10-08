@@ -114,7 +114,7 @@ class Icestupa:
         # self.change_freq()
 
         unknown = [
-            "a",
+            "alb",
             "vp_a",
             "LW_in",
             "cld",
@@ -185,9 +185,7 @@ class Icestupa:
         )
         self.df = pd.merge(solar_df, self.df, on="time")
 
-        """Albedo"""
-        if "a" in unknown:
-            """Albedo Decay parameters initialized"""
+        if "alb" in unknown:
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
             s = 0
             f = 1

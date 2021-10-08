@@ -45,7 +45,7 @@ def get_energy(self, i):
     )
 
     # Short Wave Radiation SW
-    self.df.loc[i, "SW"] = (1 - self.df.loc[i, "a"]) * (
+    self.df.loc[i, "SW"] = (1 - self.df.loc[i, "alb"]) * (
         self.df.loc[i, "SW_direct"] * self.df.loc[i, "f_cone"]
         + self.df.loc[i, "SW_diffuse"]
     )
@@ -112,7 +112,7 @@ def test_get_energy(self, i):
 
     if np.isnan(self.df.loc[i, "SW"]):
         logger.error(
-            f"time {self.df.When[i]}, s_cone {self.df.f_cone[i]}, albedo {self.df.a[i]}, direct {self.df.SW_direct[i]},diffuse {self.df.SW_diffuse[i]}"
+            f"time {self.df.When[i]}, s_cone {self.df.f_cone[i]}, albedo {self.df.alb[i]}, direct {self.df.SW_direct[i]},diffuse {self.df.SW_diffuse[i]}"
         )
         sys.exit("SW nan")
 

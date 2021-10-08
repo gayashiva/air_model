@@ -325,7 +325,7 @@ def get_parameter_metadata(
             "kind": "Output",
             "units": "($kg$)",
         },
-        "a": {
+        "alb": {
             "name": "Albedo",
             "kind": "Derived",
             "units": "()",
