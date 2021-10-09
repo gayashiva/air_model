@@ -13,10 +13,10 @@ logger = logging.getLogger(__name__)
 
 # @cache_it(limit=1000, expire=None)
 def get_solar(
-    latitude, longitude, start, end, DT
+    latitude, longitude, start, end, DT, utc
 ):  # Provides solar angle for each time step
 
-    site_location = location.Location(latitude, longitude)
+    site_location = location.Location(latitude, longitude, tz=utc)
 
     times = pd.date_range(
         start,

@@ -6,7 +6,6 @@ import os, sys
 import logging, coloredlogs
 import matplotlib.pyplot as plt
 
-
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
@@ -29,10 +28,10 @@ if __name__ == "__main__":
     answers = dict(
         # location="Schwarzsee 2019",
         # location="Guttannen 2021",
-        location="phortse20",
-        # location="Gangles 2021",
-        # run="yes",
-        run="no",
+        # location="phortse20",
+        location="Gangles 2021",
+        run="yes",
+        # run="no",
     )
 
     # Initialise icestupa object

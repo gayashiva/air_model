@@ -33,7 +33,7 @@ def config(location="guttannen21"):
             fountain_off_date=datetime(2021, 2, 20, 10),
             D_F=7.5,  # FOUNTAIN min discharge
             T_F=3,  # FOUNTAIN min discharge
-            utc_offset=1,
+            utc_offset=2,
             latitude=46.649999,
             longitude=8.283333,
             H_AWS=2,
@@ -64,7 +64,7 @@ def config(location="guttannen21"):
             ),  # Image shows Dani switched off at 8th Mar 10 am
             D_F=7.5,  # FOUNTAIN min discharge
             T_F=3,  # FOUNTAIN min discharge
-            utc_offset=1,
+            utc_offset=2,
             latitude=46.649999,
             longitude=8.283333,
             H_AWS=2,
