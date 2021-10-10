@@ -1,22 +1,19 @@
 """Function that returns solar elevation angle
 """
-from functools import lru_cache
 from pvlib import location
 import numpy as np
 import pandas as pd
 import logging
 from codetiming import Timer
 
-# from redis_cache import cache_it
-
 logger = logging.getLogger(__name__)
 
 # @cache_it(limit=1000, expire=None)
 def get_solar(
-    latitude, longitude, start, end, DT, utc
+    latitude, longitude, start, end, DT, utc, alt
 ):  # Provides solar angle for each time step
 
-    site_location = location.Location(latitude, longitude, tz=utc)
+    site_location = location.Location(latitude, longitude, tz=utc, altitude=alt)
 
     times = pd.date_range(
         start,

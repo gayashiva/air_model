@@ -183,6 +183,7 @@ class Icestupa:
             end=self.df["time"].iloc[-1],
             DT=self.DT,
             utc=self.utc_offset,
+            alt=self.alt,
         )
         self.df = pd.merge(solar_df, self.df, on="time")
 
