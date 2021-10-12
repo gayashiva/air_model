@@ -42,6 +42,7 @@ if __name__ == "__main__":
         level=logging.INFO,
         logger=logger,
     )
+    logger.propagate = False
     # location = "guttannen21"
     # location = "schwarzsee19"
     # location = "gangles21"
@@ -183,7 +184,6 @@ if __name__ == "__main__":
                 "press",
                 "missing_type",
                 # "LW_in",
-                "cld",
             ]
 
         if SITE["name"] in ["schwarzsee19"]:

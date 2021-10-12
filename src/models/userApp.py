@@ -3,7 +3,6 @@
 
 # External modules
 import os, sys
-import logging, coloredlogs
 import matplotlib.pyplot as plt
 
 # Locals
@@ -12,16 +11,18 @@ sys.path.append(dirname)
 from src.models.icestupaClass import Icestupa
 from src.utils.settings import config
 from src.utils import setup_logger
+import logging, coloredlogs
 
 
 if __name__ == "__main__":
 
     # Main logger
     logger = logging.getLogger(__name__)
+    print(logger.name)
     coloredlogs.install(
         fmt="%(funcName)s %(levelname)s %(message)s",
-        # level=logging.WARNING,
-        level=logging.INFO,
+        level=logging.WARNING,
+        # level=logging.ERROR,
         logger=logger,
     )
 

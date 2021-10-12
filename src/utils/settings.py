@@ -96,7 +96,7 @@ def config(location="guttannen21"):
             longitude=77.606949,
             latitude=34.216638,
             H_AWS=2,
-            diffuse_fraction=0,
+            cld=0.9,
             SA_corr=1.5,
             # perimeter=82.3, # On 3 Mar
         )
@@ -146,7 +146,7 @@ def config(location="guttannen21"):
             SA_corr=1.2,
             Z=0.001,
             R_F=10,
-            diffuse_fraction=0,
+            cld=0,
         )
 
         data_h = [

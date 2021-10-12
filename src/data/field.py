@@ -128,7 +128,7 @@ def get_field(location="schwarzsee19"):
 
         df["ppt"] = 0
         df["missing_type"] = "-"
-        df["cld"] = 0
+        # df["cld"] = 0
 
         df.to_csv(FOLDER["input"] + location + "_input_model.csv")
         return df

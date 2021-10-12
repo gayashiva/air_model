@@ -20,7 +20,8 @@ from src.models.methods.solar import get_solar
 from src.utils.settings import config
 
 # Module logger
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
+logger = logging.getLogger("__main__")
 logger.propagate = False
 
 
@@ -106,7 +107,7 @@ class Icestupa:
 
     # from src.models.methods._stop import stop_model
 
-    @Timer(text="Preprocessed data in {:.2f} seconds", logger=logging.warning)
+    @Timer(text="Preprocessed data in {:.2f} seconds", logger=logging.getLogger("__main__").warning)
     def derive_parameters(
         self,
     ):  # Derives additional parameters required for simulation
@@ -120,6 +121,7 @@ class Icestupa:
             "cld",
             "SW_diffuse",
         ]  # Possible unknown variables
+
         for i in range(len(unknown)):
             if unknown[i] in list(self.df.columns):
                 unknown[i] = np.NaN  # Removes known variable
@@ -127,12 +129,25 @@ class Icestupa:
                 logger.error(" %s is unknown\n" % (unknown[i]))
                 self.df[unknown[i]] = 0
 
+        if "cld" in unknown:
+            if "SW_diffuse" in unknown:
+                self.df["SW_diffuse"] = self.cld * self.df.SW_global
+                self.df["SW_direct"] = (1 - self.cld) * self.df.SW_global
+                logger.warning(
+                    "Diffuse and direct SW calculated with diffuse fraction %s"
+                    % self.cld
+                )
+                self.df["cld"] = self.cld
+            else:
+                self.df["cld"] = self.df["SW_diffuse"]/(self.df["SW_direct"] + self.df["SW_diffuse"]) 
+
+
         if "SW_diffuse" in unknown:
-            self.df["SW_diffuse"] = self.diffuse_fraction * self.df.SW_global
-            self.df["SW_direct"] = (1 - self.diffuse_fraction) * self.df.SW_global
+            self.df["SW_diffuse"] = self.cld * self.df.SW_global
+            self.df["SW_direct"] = (1 - self.cld) * self.df.SW_global
             logger.warning(
                 "Diffuse and direct SW calculated with diffuse fraction %s"
-                % self.diffuse_fraction
+                % self.cld
             )
 
         for row in stqdm(
@@ -304,7 +319,7 @@ class Icestupa:
         # self.change_freq()
         self.self_attributes()
 
-    @Timer(text="Simulation executed in {:.2f} seconds", logger=logging.warning)
+    @Timer(text="Simulation executed in {:.2f} seconds", logger=logging.NOTSET)
     def melt_freeze(self, test=False):
 
         # Initialisaton for sites
@@ -385,6 +400,30 @@ class Icestupa:
                     and self.df.loc[i - 1, "melted"] > 0
                 ):
                     logger.error("Skipping %s" % self.df.loc[i, "time"])
+
+                    # Initialise first model time step
+                    for column in all_cols:
+                        if column in ["event"]:
+                            self.df[column] = np.nan
+                        else:
+                            self.df[column] = 0
+
+                    self.df.loc[i-1, "h_ice"] = self.h_i
+                    self.df.loc[i-1, "r_ice"] = self.R_F
+                    self.df.loc[i-1, "s_cone"] = self.df.loc[i-1, "h_ice"] / self.df.loc[i-1, "r_ice"]
+                    self.df.loc[i, "ice"] = V_initial * self.RHO_I
+                    self.df.loc[i, "iceV"] = V_initial
+                    self.df.loc[i, "input"] = self.df.loc[i, "ice"]
+
+                    logger.warning(
+                        "Initialise again: time %s, radius %.3f, height %.3f, iceV %.3f\n"
+                        % (
+                            self.df.loc[i-1, "time"],
+                            self.df.loc[i-1, "r_ice"],
+                            self.df.loc[i-1, "h_ice"],
+                            self.df.loc[i, "iceV"],
+                        )
+                    )
                 else:
 
                     col_list = [
@@ -401,7 +440,7 @@ class Icestupa:
                     last_hour = i - 1
                     self.df = self.df[1:i]
                     self.df = self.df.reset_index(drop=True)
-                break
+                    break
 
             self.get_area(i)
 
