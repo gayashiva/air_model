@@ -60,11 +60,7 @@ def calculate(process_name, tasks, results):
 if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
-    coloredlogs.install(
-        fmt="%(funcName)s %(levelname)s %(message)s",
-        level=logging.WARNING,
-        logger=logger,
-    )
+    logger.setLevel("ERROR")
 
     # Define IPC manager
     manager = multiprocessing.Manager()

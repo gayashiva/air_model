@@ -107,7 +107,10 @@ class Icestupa:
 
     # from src.models.methods._stop import stop_model
 
-    @Timer(text="Preprocessed data in {:.2f} seconds", logger=logging.getLogger("__main__").warning)
+    @Timer(
+        text="Preprocessed data in {:.2f} seconds",
+        logger=logging.getLogger("__main__").warning,
+    )
     def derive_parameters(
         self,
     ):  # Derives additional parameters required for simulation
@@ -126,7 +129,7 @@ class Icestupa:
             if unknown[i] in list(self.df.columns):
                 unknown[i] = np.NaN  # Removes known variable
             else:
-                logger.error(" %s is unknown\n" % (unknown[i]))
+                logger.warning(" %s is unknown\n" % (unknown[i]))
                 self.df[unknown[i]] = 0
 
         if "cld" in unknown:
@@ -139,16 +142,9 @@ class Icestupa:
                 )
                 self.df["cld"] = self.cld
             else:
-                self.df["cld"] = self.df["SW_diffuse"]/(self.df["SW_direct"] + self.df["SW_diffuse"]) 
-
-
-        if "SW_diffuse" in unknown:
-            self.df["SW_diffuse"] = self.cld * self.df.SW_global
-            self.df["SW_direct"] = (1 - self.cld) * self.df.SW_global
-            logger.warning(
-                "Diffuse and direct SW calculated with diffuse fraction %s"
-                % self.cld
-            )
+                self.df["cld"] = self.df["SW_diffuse"] / (
+                    self.df["SW_direct"] + self.df["SW_diffuse"]
+                )
 
         for row in stqdm(
             self.df[1:].itertuples(),
@@ -408,9 +404,11 @@ class Icestupa:
                         else:
                             self.df[column] = 0
 
-                    self.df.loc[i-1, "h_ice"] = self.h_i
-                    self.df.loc[i-1, "r_ice"] = self.R_F
-                    self.df.loc[i-1, "s_cone"] = self.df.loc[i-1, "h_ice"] / self.df.loc[i-1, "r_ice"]
+                    self.df.loc[i - 1, "h_ice"] = self.h_i
+                    self.df.loc[i - 1, "r_ice"] = self.R_F
+                    self.df.loc[i - 1, "s_cone"] = (
+                        self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
+                    )
                     self.df.loc[i, "ice"] = V_initial * self.RHO_I
                     self.df.loc[i, "iceV"] = V_initial
                     self.df.loc[i, "input"] = self.df.loc[i, "ice"]
@@ -418,9 +416,9 @@ class Icestupa:
                     logger.warning(
                         "Initialise again: time %s, radius %.3f, height %.3f, iceV %.3f\n"
                         % (
-                            self.df.loc[i-1, "time"],
-                            self.df.loc[i-1, "r_ice"],
-                            self.df.loc[i-1, "h_ice"],
+                            self.df.loc[i - 1, "time"],
+                            self.df.loc[i - 1, "r_ice"],
+                            self.df.loc[i - 1, "h_ice"],
                             self.df.loc[i, "iceV"],
                         )
                     )

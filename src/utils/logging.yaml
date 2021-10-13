@@ -10,7 +10,7 @@ formatters:
 handlers:
   console:
     class: logging.StreamHandler
-    level: DEBUG
+    level: WARNING
     formatter: standard
     stream: ext://sys.stdout
 
@@ -67,28 +67,28 @@ root:
 loggers:
 
   __main__:
-    level: ERROR
+    level: WARNING
     handlers:
       [
         console,
-        info_file_handler,
-        error_file_handler,
-        critical_file_handler,
-        debug_file_handler,
-        warn_file_handler,
+        # info_file_handler,
+        # error_file_handler,
+        # critical_file_handler,
+        # debug_file_handler,
+        # warn_file_handler,
       ]
     propogate: no
 
   <module>:
-    level: INFO
+    level: ERROR
     handlers:
       [
-        # console,
-        info_file_handler,
-        error_file_handler,
-        critical_file_handler,
-        debug_file_handler,
-        warn_file_handler,
+        console,
+        # info_file_handler,
+        # error_file_handler,
+        # critical_file_handler,
+        # debug_file_handler,
+        # warn_file_handler,
       ]
     propogate: no
 

@@ -18,28 +18,31 @@ if __name__ == "__main__":
 
     # Main logger
     logger = logging.getLogger(__name__)
-    print(logger.name)
-    coloredlogs.install(
-        fmt="%(funcName)s %(levelname)s %(message)s",
-        level=logging.WARNING,
-        # level=logging.ERROR,
-        logger=logger,
-    )
+    logger.setLevel("WARNING")
 
-    answers = dict(
-        # location="Schwarzsee 2019",
-        location="Guttannen 2021",
-        # location="phortse20",
-        # location="Gangles 2021",
-        run="yes",
-        # run="no",
-    )
+    tests = False
+
+    # location="Schwarzsee 2019"
+    # location = "Guttannen 2021"
+    # location="phortse20"
+    location = "Gangles 2021"
 
     # Initialise icestupa object
-    # icestupa = Icestupa(answers["location"], params='best')
-    icestupa = Icestupa(answers["location"])
+    icestupa = Icestupa(location)
 
-    if answers["run"] == "yes":
+    if tests:
+        # Use output parameters from cache
+        icestupa.read_output()
+
+        # plt.figure()
+        # ax = plt.gca()
+        # plt.scatter(icestupa.df.Qt, icestupa.df.fountain_froze / 60, s=1)
+        # plt.legend()
+        # plt.grid()
+        # plt.savefig("data/tests/T_relation.jpg")
+
+        icestupa.summary_figures()
+    else:
         # Derive all the input parameters
         icestupa.derive_parameters()
 
@@ -51,16 +54,4 @@ if __name__ == "__main__":
         icestupa.save()
 
         # Create figures for web interface
-        icestupa.summary_figures()
-    else:
-        # Use output parameters from cache
-        icestupa.read_output()
-
-        # plt.figure()
-        # ax = plt.gca()
-        # plt.scatter(icestupa.df.Qt, icestupa.df.fountain_froze / 60, s=1)
-        # plt.legend()
-        # plt.grid()
-        # plt.savefig("data/tests/T_relation.jpg")
-
         icestupa.summary_figures()

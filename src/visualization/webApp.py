@@ -52,12 +52,9 @@ def vars(df_in):
 
 
 if __name__ == "__main__":
+    # Main logger
     logger = logging.getLogger(__name__)
-    coloredlogs.install(
-        fmt="%(funcName)s %(levelname)s %(message)s",
-        level=logging.INFO,
-        logger=logger,
-    )
+    logger.setLevel("WARNING")
 
     st.sidebar.markdown(
         """
@@ -70,9 +67,8 @@ if __name__ == "__main__":
         "built at",
         # ( "Guttannen 2021","Gangles 2021", "Diavolezza 2021","Guttannen 2020", "Schwarzsee 2019"),
         # ("Guttannen 2021", "Gangles 2021", "Guttannen 2020", "Schwarzsee 2019"),
-        # ("Guttannen 2021", "Gangles 2021", "Guttannen 2020", "Schwarzsee 2019"),
-        ("Gangles 2021", "Guttannen 2021", "Guttannen 2020", "Phortse 2020"),
-        # ("Guttannen 2021", "Guttannen 2020", "Schwarzsee 2019"),
+        # ("Gangles 2021", "Guttannen 2021", "Guttannen 2020", "Phortse 2020"),
+        ("Gangles 2021", "Guttannen 2021", "Guttannen 2020"),
     )
 
     # location = "Gangles 2021"

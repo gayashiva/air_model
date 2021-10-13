@@ -10,7 +10,7 @@ import pandas as pd
 import logging
 from codetiming import Timer
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("__main__")
 
 
 def shade(location, df_in, col):
