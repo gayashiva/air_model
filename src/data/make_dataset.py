@@ -142,7 +142,7 @@ if __name__ == "__main__":
                 "press",
                 "SW_direct",
                 "SW_diffuse",
-                # "LW_in",
+                "LW_in",
             ]:
                 try:
                     mask = df[col].isna()
@@ -212,7 +212,8 @@ if __name__ == "__main__":
                 "vp_a",
                 "press",
                 "missing_type",
-                # "LW_in",
+                "LW_in",
+                # "tcc",
             ]
 
         df_out = df[cols]

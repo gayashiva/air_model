@@ -172,7 +172,7 @@ def get_parameter_metadata(
             "kind": "Derived",
             "units": "($m^3$)",
         },
-        "cld": {
+        "tcc": {
             "name": "Cloudiness",
             "kind": "Derived",
             "units": "()",

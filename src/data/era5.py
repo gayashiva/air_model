@@ -140,6 +140,7 @@ def get_era5(location="schwarzsee19"):
             "SW_diffuse",
             "LW_in",
             "press",
+            # "tcc",
         ]
     ]
 

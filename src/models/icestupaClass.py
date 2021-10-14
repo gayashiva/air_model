@@ -121,7 +121,6 @@ class Icestupa:
             "alb",
             "vp_a",
             "LW_in",
-            "cld",
             "SW_diffuse",
         ]  # Possible unknown variables
 
@@ -144,32 +143,40 @@ class Icestupa:
 
         self.df = pd.merge(solar_df, self.df, on="time")
 
-        for row in stqdm(
-            self.df[1:].itertuples(),
-            total=self.df.shape[0],
-            desc="Creating AIR input...",
-        ):
-            i = row.Index
+        if "SW_diffuse" in unknown:
+            self.df["SW_diffuse"] = self.tcc * self.df.SW_global
+            self.df["SW_direct"] = (1 - self.tcc) * self.df.SW_global
+            logger.warning("Diffuse and direct SW calculated with tcc %s" % self.tcc)
+        else:
+            self.tcc = self.df["SW_diffuse"].mean() / self.df["SW_global"].mean()
+            logger.warning(
+                "Total cloud cover calculated from with diffuse fraction %s" % self.tcc
+            )
 
-            """ Cloudiness """
-            if "cld" in unknown:
-                if self.df.loc[i, "ghics"] != 0 and self.df.loc[i, "SW_global"] != 0:
-                    # if self.df.loc[i, "SW_global"] / self.df.loc[i, "ghics"] < 0.05:
-                    #     self.df.loc[i, "cld"] = self.df.loc[i - 1, "cld"]
-                    # else:
-                    self.df.loc[i, "cld"] = (
-                        1 - self.df.loc[i, "SW_global"] / self.df.loc[i, "ghics"]
-                    )
-                else:
-                    self.df.loc[i, "cld"] = self.df.loc[i - 1, "cld"]
+        # for row in stqdm(
+        #     self.df[1:].itertuples(),
+        #     total=self.df.shape[0],
+        #     desc="Creating AIR input...",
+        # ):
+        #     i = row.Index
 
-            if self.df.loc[i, "cld"] < 0:
-                self.df.loc[i, "cld"] = self.df.loc[i - 1, "cld"]
+        #     """ Cloudiness """
+        #     if "tcc" in unknown:
+        #         if self.df.loc[i, "ghics"] != 0 and self.df.loc[i, "SW_global"] != 0:
+        #             self.df.loc[i, "tcc"] = (
+        #                 1 - self.df.loc[i, "SW_global"] / self.df.loc[i, "ghics"]
+        #             )
+        #         else:
+        #             self.df.loc[i, "tcc"] = self.df.loc[i - 1, "tcc"]
 
-        # self.df = self.df.set_index("time")
-        # self.df["cld"] = self.df.rolling("3H", min_periods=1).cld.mean()
-        # self.df = self.df.reset_index()
-        logger.warning("LW calculated with cloudiness %s" % self.df.cld.mean())
+        #     if self.df.loc[i, "tcc"] < 0:
+        #         self.df.loc[i, "tcc"] = self.df.loc[i - 1, "tcc"]
+
+        # # self.df = self.df.set_index("time")
+        # # self.df["tcc"] = self.df.rolling("3H", min_periods=1).tcc.mean()
+        # # self.df = self.df.reset_index()
+
+        logger.warning("LW calculated with cloudiness %s" % self.tcc)
 
         for row in stqdm(
             self.df[1:].itertuples(),
@@ -201,7 +208,7 @@ class Icestupa:
                 self.df.loc[i, "e_a"] = (
                     1.24
                     * math.pow(abs(self.df.loc[i, "vp_a"] / (row.temp + 273.15)), 1 / 7)
-                ) * (1 + 0.22 * math.pow(row.cld, 2))
+                ) * (1 + 0.22 * math.pow(self.tcc, 2))
 
                 self.df.loc[i, "LW_in"] = (
                     self.df.loc[i, "e_a"]
@@ -211,14 +218,6 @@ class Icestupa:
 
         self.get_discharge()
         self.self_attributes(save=True)
-
-        if "SW_diffuse" in unknown:
-            self.df["SW_diffuse"] = self.df.cld * self.df.SW_global
-            self.df["SW_direct"] = (1 - self.df.cld) * self.df.SW_global
-            logger.warning(
-                "Diffuse and direct SW calculated with diffuse fraction %s"
-                % self.df.cld.mean()
-            )
 
         if "alb" in unknown:
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
