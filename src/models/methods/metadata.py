@@ -104,6 +104,7 @@ def get_parameter_metadata(
         "guttannen21": {
             "name": "Guttannen 2021",
             "shortname": "CH21",
+            "slidename": "Swiss",
             "kind": "site",
             "units": "()",
         },
@@ -122,6 +123,7 @@ def get_parameter_metadata(
         "gangles21": {
             "name": "Gangles 2021",
             "shortname": "IN21",
+            "slidename": "Indian",
             "kind": "site",
             "units": "()",
         },

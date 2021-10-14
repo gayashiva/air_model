@@ -22,9 +22,7 @@ from src.models.methods.metadata import get_parameter_metadata
 
 if __name__ == "__main__":
 
-    # locations = ['gangles21', 'guttannen21', 'guttannen20']
-    locations = ["gangles21", "guttannen21"]
-    # locations = [ 'guttannen21']
+    locations = ["guttannen21", "gangles21"]
 
     blue = "#0a4a97"
     red = "#e23028"
@@ -41,10 +39,6 @@ if __name__ == "__main__":
     CB91_Violet = "#661D98"
     CB91_Amber = "#F5B14C"
 
-    # index = pd.date_range(start ='1-1-2022',
-    #      end ='1-1-2024', freq ='D', name= "time")
-    # df_out = pd.DataFrame(columns=locations,index=index)
-
     fig, ax = plt.subplots(len(locations), 1, sharex="col")
 
     for i, location in enumerate(locations):
@@ -58,10 +52,8 @@ if __name__ == "__main__":
         evaluations = []
 
         data = un.Data()
-        # filename1 = FOLDER['sim']+ "SE_full.h5"
         filename1 = FOLDER["sim"] + "full.h5"
         filename2 = FOLDER["sim"] + "fountain.h5"
-        # filename1 = FOLDER['sim']+ "efficiency.h5"
 
         if location == "schwarzsee19":
             SITE["start_date"] += pd.offsets.DateOffset(year=2023)
@@ -74,7 +66,6 @@ if __name__ == "__main__":
             SITE["melt_out"] += pd.offsets.DateOffset(year=2023)
         if location == "gangles21":
             SITE["start_date"] += pd.offsets.DateOffset(year=2023)
-            # SITE["end_date"] =SITE['melt_out'] + pd.offsets.DateOffset(year=2023)
 
         days = pd.date_range(
             start=SITE["start_date"],
@@ -88,14 +79,12 @@ if __name__ == "__main__":
         )
 
         data.load(filename1)
-        print(data)
         data1 = data[location]
         data1["percentile_5"] = data1["percentile_5"][1 : len(days2) + 1]
         data1["percentile_95"] = data1["percentile_95"][1 : len(days2) + 1]
         data1["time"] = days2
 
         data.load(filename2)
-        print(data)
         data2 = data[location]
         data2["percentile_5"] = data2["percentile_5"][1 : len(days2) + 1]
         data2["percentile_95"] = data2["percentile_95"][1 : len(days2) + 1]
@@ -164,52 +153,27 @@ if __name__ == "__main__":
             label="Simulated Volume",
             linewidth=1,
             color=CB91_Blue,
-            # color=CB91_Green,
+            alpha=1,
             zorder=10,
         )
-        ax[i].fill_between(
-            data1["time"],
-            data1.percentile_5,
-            data1.percentile_95,
-            color="skyblue",
-            # color=CB91_Green,
-            # color=CB91_Blue,
-            alpha=0.3,
-            label="Weather uncertainty",
-            zorder=6,
-        )
-        ax[i].fill_between(
-            data2["time"],
-            data2.percentile_5,
-            data2.percentile_95,
-            color="orange",
-            alpha=0.3,
-            label="Fountain uncertainty",
-            zorder=5,
-        )
         ax[i].errorbar(
-            x2, y2, yerr=df_c.DroneVError, color=CB91_Violet, lw=1, alpha=0.5, zorder=8
+            x2,
+            y2,
+            yerr=df_c.DroneVError,
+            color=CB91_Violet,
+            lw=1,
+            alpha=0.5,
+            zorder=8,
         )
         ax[i].scatter(x2, y2, s=5, color=CB91_Violet, zorder=7, label="UAV Volume")
-        # ax[i].scatter(SITE['end_date'], round(icestupa.V_dome,0) + 1,  color=CB91_Amber,marker = "x", zorder=2)
-        if location != "gangles21":
-            ax[i].axvline(
-                SITE["melt_out"],
-                color="black",
-                alpha=0.5,
-                linestyle="--",
-                zorder=2,
-                label="Melt-out date",
-            )
-        ax[i].set_ylim(
-            round(icestupa.V_dome, 0) - 1, round(data2.percentile_95.max(), 0)
-        )
+
+        ax[i].set_ylim(round(icestupa.V_dome, 0) - 1, round(df.iceV.max(), 0))
         v = get_parameter_metadata(location)
         at = AnchoredText(
-            v["shortname"], prop=dict(size=10), frameon=True, loc="upper left"
+            v["slidename"], prop=dict(size=10), frameon=True, loc="upper left"
         )
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-        if i != 2:
+        if i != len(locations) - 1:
             x_axis = ax[i].axes.get_xaxis()
             x_axis.set_visible(False)
             ax[i].spines["bottom"].set_visible(False)
@@ -227,9 +191,16 @@ if __name__ == "__main__":
         ax[i].yaxis.set_major_locator(plt.LinearLocator(numticks=2))
         ax[i].xaxis.set_major_locator(mdates.MonthLocator())
         ax[i].xaxis.set_major_formatter(mdates.DateFormatter("%b"))
+        # ax[i].xaxis.grid(color="gray", linestyle="dashed")
         fig.autofmt_xdate()
 
     fig.text(0.04, 0.5, "Ice Volume[$m^3$]", va="center", rotation="vertical")
     handles, labels = ax[1].get_legend_handles_labels()
     fig.legend(handles, labels, loc="upper right", prop={"size": 8})
-    plt.savefig("data/paper/icev_results_ppt.jpg", bbox_inches="tight", dpi=300)
+    plt.savefig(
+        # "data/slides/icev_slide_" + str(number) + ".jpg",
+        "data/slides/icev_slide1.jpg",
+        bbox_inches="tight",
+        dpi=300,
+    )
+    plt.clf()
