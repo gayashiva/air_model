@@ -132,19 +132,44 @@ class Icestupa:
                 logger.warning(" %s is unknown\n" % (unknown[i]))
                 self.df[unknown[i]] = 0
 
-        if "cld" in unknown:
-            if "SW_diffuse" in unknown:
-                self.df["SW_diffuse"] = self.cld * self.df.SW_global
-                self.df["SW_direct"] = (1 - self.cld) * self.df.SW_global
-                logger.warning(
-                    "Diffuse and direct SW calculated with diffuse fraction %s"
-                    % self.cld
-                )
-                self.df["cld"] = self.cld
-            else:
-                self.df["cld"] = self.df["SW_diffuse"] / (
-                    self.df["SW_direct"] + self.df["SW_diffuse"]
-                )
+        solar_df = get_solar(
+            latitude=self.latitude,
+            longitude=self.longitude,
+            start=self.start_date,
+            end=self.df["time"].iloc[-1],
+            DT=self.DT,
+            utc=self.utc_offset,
+            alt=self.alt,
+        )
+
+        self.df = pd.merge(solar_df, self.df, on="time")
+
+        for row in stqdm(
+            self.df[1:].itertuples(),
+            total=self.df.shape[0],
+            desc="Creating AIR input...",
+        ):
+            i = row.Index
+
+            """ Cloudiness """
+            if "cld" in unknown:
+                if self.df.loc[i, "ghics"] != 0 and self.df.loc[i, "SW_global"] != 0:
+                    # if self.df.loc[i, "SW_global"] / self.df.loc[i, "ghics"] < 0.05:
+                    #     self.df.loc[i, "cld"] = self.df.loc[i - 1, "cld"]
+                    # else:
+                    self.df.loc[i, "cld"] = (
+                        1 - self.df.loc[i, "SW_global"] / self.df.loc[i, "ghics"]
+                    )
+                else:
+                    self.df.loc[i, "cld"] = self.df.loc[i - 1, "cld"]
+
+            if self.df.loc[i, "cld"] < 0:
+                self.df.loc[i, "cld"] = self.df.loc[i - 1, "cld"]
+
+        # self.df = self.df.set_index("time")
+        # self.df["cld"] = self.df.rolling("3H", min_periods=1).cld.mean()
+        # self.df = self.df.reset_index()
+        logger.warning("LW calculated with cloudiness %s" % self.df.cld.mean())
 
         for row in stqdm(
             self.df[1:].itertuples(),
@@ -187,16 +212,13 @@ class Icestupa:
         self.get_discharge()
         self.self_attributes(save=True)
 
-        solar_df = get_solar(
-            latitude=self.latitude,
-            longitude=self.longitude,
-            start=self.start_date,
-            end=self.df["time"].iloc[-1],
-            DT=self.DT,
-            utc=self.utc_offset,
-            alt=self.alt,
-        )
-        self.df = pd.merge(solar_df, self.df, on="time")
+        if "SW_diffuse" in unknown:
+            self.df["SW_diffuse"] = self.df.cld * self.df.SW_global
+            self.df["SW_direct"] = (1 - self.df.cld) * self.df.SW_global
+            logger.warning(
+                "Diffuse and direct SW calculated with diffuse fraction %s"
+                % self.df.cld.mean()
+            )
 
         if "alb" in unknown:
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
@@ -300,9 +322,9 @@ class Icestupa:
         if self.df.isnull().values.any():
             logger.warning("\n Null values present\n")
 
-    def read_output(self):  # Reads output
+    def read_output(self, sim=""):  # Reads output
 
-        self.df = pd.read_hdf(self.output + "model_output.h5", "df")
+        self.df = pd.read_hdf(self.output + "model_output" + sim + ".h5", "df")
 
         with open(self.output + "results.json", "r") as read_file:
             results_dict = json.load(read_file)

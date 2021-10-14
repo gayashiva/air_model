@@ -244,7 +244,7 @@ def get_parameter_metadata(
         },
         "SW_global": {
             "name": "Shortwave Global",
-            "kind": "Misc",
+            "kind": "Derived",
             "units": "($W\\,m^{-2}$)",
         },
         "SW_direct": {
@@ -364,6 +364,11 @@ def get_parameter_metadata(
         },
         "sea": {
             "name": "Solar Elevation Angle",
+            "kind": "Derived",
+            "units": "($\\degree$)",
+        },
+        "ghics": {
+            "name": "Estimated Solar Irradiance",
             "kind": "Derived",
             "units": "($\\degree$)",
         },

@@ -23,10 +23,11 @@ def get_solar(
 
     # Get solar azimuth and zenith to pass to the transposition function
     solar_position = site_location.get_solarposition(times=times, method="ephemeris")
+    clearsky = site_location.get_clearsky(times=times)
 
     solar_df = pd.DataFrame(
         {
-            # "ghics": clearsky["ghi"],
+            "ghics": clearsky["ghi"],
             # "difcs": clearsky["dhi"],
             # "zen": solar_position["zenith"],
             "sea": np.radians(solar_position["elevation"]),

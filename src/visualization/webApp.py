@@ -439,7 +439,7 @@ if __name__ == "__main__":
             variable3 = st.multiselect(
                 "Choose",
                 options=(derived_cols),
-                default=["Albedo"],
+                default=["Cloudiness"],
             )
             if not (variable3):
                 st.error("Please select at least one variable.")

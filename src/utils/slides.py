@@ -43,52 +43,24 @@ if __name__ == "__main__":
 
     for i, location in enumerate(locations):
         SITE, FOLDER = config(location)
+        icestupa_sim = Icestupa(location)
+
+        # Sim settings
+
+        # if location == "gangles21":
+        #     icestupa_sim.cld = 0.68
+        #     # icestupa_sim.df["RH"] = 79
+        # if location == "guttannen21":
+        #     sims = ["cld", "RH"]
+        #     icestupa_sim.R_F = 10.2
+
+        # icestupa_sim.derive_parameters()
+        # icestupa_sim.melt_freeze()
+        # df_sim = icestupa_sim.df[["time", "iceV"]]
+
         icestupa = Icestupa(location)
         icestupa.read_output()
         icestupa.self_attributes()
-
-        variance = []
-        mean = []
-        evaluations = []
-
-        data = un.Data()
-        filename1 = FOLDER["sim"] + "full.h5"
-        filename2 = FOLDER["sim"] + "fountain.h5"
-
-        if location == "schwarzsee19":
-            SITE["start_date"] += pd.offsets.DateOffset(year=2023)
-            SITE["melt_out"] += pd.offsets.DateOffset(year=2023)
-        if location == "guttannen20":
-            SITE["start_date"] += pd.offsets.DateOffset(year=2023)
-            SITE["melt_out"] += pd.offsets.DateOffset(year=2023)
-        if location == "guttannen21":
-            SITE["start_date"] += pd.offsets.DateOffset(year=2022)
-            SITE["melt_out"] += pd.offsets.DateOffset(year=2023)
-        if location == "gangles21":
-            SITE["start_date"] += pd.offsets.DateOffset(year=2023)
-
-        days = pd.date_range(
-            start=SITE["start_date"],
-            end=SITE["start_date"] + timedelta(hours=icestupa.total_hours - 1),
-            freq="1H",
-        )
-        days2 = pd.date_range(
-            start=SITE["start_date"] + timedelta(hours=1),
-            end=SITE["start_date"] + timedelta(hours=icestupa.total_hours - 1),
-            freq="1H",
-        )
-
-        data.load(filename1)
-        data1 = data[location]
-        data1["percentile_5"] = data1["percentile_5"][1 : len(days2) + 1]
-        data1["percentile_95"] = data1["percentile_95"][1 : len(days2) + 1]
-        data1["time"] = days2
-
-        data.load(filename2)
-        data2 = data[location]
-        data2["percentile_5"] = data2["percentile_5"][1 : len(days2) + 1]
-        data2["percentile_95"] = data2["percentile_95"][1 : len(days2) + 1]
-        data2["time"] = days2
 
         df = icestupa.df[["time", "iceV"]]
         df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
@@ -96,50 +68,6 @@ if __name__ == "__main__":
             df_c = df_c[1:]
         df_c = df_c.set_index("time").resample("D").mean().reset_index()
         dfv = df_c[["time", "DroneV", "DroneVError"]]
-        if location == "schwarzsee19":
-            df["time"] = df["time"].mask(
-                icestupa.df["time"].dt.year == 2019,
-                icestupa.df["time"] + pd.offsets.DateOffset(year=2023),
-            )
-            dfv["time"] = dfv["time"].mask(
-                df_c["time"].dt.year == 2019,
-                df_c["time"] + pd.offsets.DateOffset(year=2023),
-            )
-        if location == "guttannen20":
-            df["time"] = df["time"].mask(
-                icestupa.df["time"].dt.year == 2019,
-                icestupa.df["time"] + pd.offsets.DateOffset(year=2022),
-            )
-            df["time"] = df["time"].mask(
-                icestupa.df["time"].dt.year == 2020,
-                icestupa.df["time"] + pd.offsets.DateOffset(year=2023),
-            )
-            dfv["time"] = dfv["time"].mask(
-                df_c["time"].dt.year == 2019,
-                df_c["time"] + pd.offsets.DateOffset(year=2022),
-            )
-            dfv["time"] = dfv["time"].mask(
-                df_c["time"].dt.year == 2020,
-                df_c["time"] + pd.offsets.DateOffset(year=2023),
-            )
-        if location == "guttannen21":
-            df["time"] = df["time"].mask(
-                icestupa.df["time"].dt.year == 2020,
-                icestupa.df["time"] + pd.offsets.DateOffset(year=2022),
-            )
-            dfv["time"] = dfv["time"].mask(
-                df_c["time"].dt.year == 2020,
-                df_c["time"] + pd.offsets.DateOffset(year=2022),
-            )
-        df["time"] = df["time"].mask(
-            icestupa.df["time"].dt.year == 2021,
-            icestupa.df["time"] + pd.offsets.DateOffset(year=2023),
-        )
-        dfv["time"] = dfv["time"].mask(
-            df_c["time"].dt.year == 2021,
-            df_c["time"] + pd.offsets.DateOffset(year=2023),
-        )
-        # df_out[location] = icestupa.df["iceV"]
         df = df.reset_index()
 
         x = df.time[1:]
@@ -156,6 +84,19 @@ if __name__ == "__main__":
             alpha=1,
             zorder=10,
         )
+
+        # x_sim = df_sim.time[1:]
+        # y1_sim = df_sim.iceV[1:]
+        # ax[i].plot(
+        #     x_sim,
+        #     y1_sim,
+        #     label="Simulated Volume",
+        #     linewidth=1,
+        #     linestyle="--",
+        #     color=CB91_Blue,
+        #     alpha=1,
+        #     zorder=10,
+        # )
         ax[i].errorbar(
             x2,
             y2,
@@ -166,7 +107,6 @@ if __name__ == "__main__":
             zorder=8,
         )
         ax[i].scatter(x2, y2, s=5, color=CB91_Violet, zorder=7, label="UAV Volume")
-
         ax[i].set_ylim(round(icestupa.V_dome, 0) - 1, round(df.iceV.max(), 0))
         v = get_parameter_metadata(location)
         at = AnchoredText(
@@ -177,6 +117,14 @@ if __name__ == "__main__":
             x_axis = ax[i].axes.get_xaxis()
             x_axis.set_visible(False)
             ax[i].spines["bottom"].set_visible(False)
+
+        ax[i].yaxis.set_ticks(
+            [
+                round(icestupa.V_dome, 0) - 1,
+                # round(df_sim.iceV.max(), 0),
+                round(df.iceV.max(), 0),
+            ]
+        )
         ax[i].add_artist(at)
         # Hide the right and top spines
         ax[i].spines["right"].set_visible(False)
@@ -188,7 +136,7 @@ if __name__ == "__main__":
         # Only show ticks on the left and bottom spines
         ax[i].yaxis.set_ticks_position("left")
         ax[i].xaxis.set_ticks_position("bottom")
-        ax[i].yaxis.set_major_locator(plt.LinearLocator(numticks=2))
+        # ax[i].yaxis.set_major_locator(plt.LinearLocator(numticks=2))
         ax[i].xaxis.set_major_locator(mdates.MonthLocator())
         ax[i].xaxis.set_major_formatter(mdates.DateFormatter("%b"))
         # ax[i].xaxis.grid(color="gray", linestyle="dashed")

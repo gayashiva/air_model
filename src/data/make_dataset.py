@@ -36,13 +36,10 @@ def linreg(X, Y):
 
 if __name__ == "__main__":
 
+    # Main logger
     logger = logging.getLogger(__name__)
-    coloredlogs.install(
-        fmt="%(name)s %(levelname)s %(message)s",
-        level=logging.INFO,
-        logger=logger,
-    )
-    logger.propagate = False
+    logger.setLevel("WARNING")
+
     # location = "guttannen21"
     # location = "schwarzsee19"
     # location = "gangles21"
@@ -74,7 +71,7 @@ if __name__ == "__main__":
             logger.info(df.missing_type.unique())
         else:
 
-            if location in ["schwarzsee19", "gangles21"]:
+            if location in ["schwarzsee19"]:
                 df = get_field(location)
 
             if location in ["guttannen21", "guttannen20"]:
@@ -145,7 +142,7 @@ if __name__ == "__main__":
                 "press",
                 "SW_direct",
                 "SW_diffuse",
-                "LW_in",
+                # "LW_in",
             ]:
                 try:
                     mask = df[col].isna()
@@ -195,11 +192,12 @@ if __name__ == "__main__":
                 "wind",
                 "SW_direct",
                 "SW_diffuse",
+                "SW_global",
                 "ppt",
                 # "vp_a",
                 "press",
                 "missing_type",
-                "LW_in",
+                # "LW_in",
             ]
         if SITE["name"] in ["guttannen20", "guttannen21"]:
             cols = [
@@ -214,7 +212,7 @@ if __name__ == "__main__":
                 "vp_a",
                 "press",
                 "missing_type",
-                "LW_in",
+                # "LW_in",
             ]
 
         df_out = df[cols]
@@ -229,6 +227,10 @@ if __name__ == "__main__":
         df_out = df_out.round(3)
         if len(df_out[df_out.index.duplicated()]):
             logger.error("Duplicate indexes")
+
+        if "SW_global" not in df_out.columns:
+            logger.warning("SW global added")
+            df_out["SW_global"] = df_out["SW_direct"] + df_out["SW_diffuse"]
 
         logger.info(df_out.tail())
         df_out.to_csv(FOLDER["input"] + SITE["name"] + "_input_model.csv", index=False)

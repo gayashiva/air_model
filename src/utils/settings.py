@@ -96,7 +96,7 @@ def config(location="guttannen21"):
             longitude=77.606949,
             latitude=34.216638,
             H_AWS=2,
-            cld=0,
+            # cld=0,
             SA_corr=1.5,
             # perimeter=82.3, # On 3 Mar
         )
