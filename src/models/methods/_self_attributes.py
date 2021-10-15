@@ -8,7 +8,8 @@ from codetiming import Timer
 from src.models.methods.calibration import get_calibration
 from src.models.methods.droplet import get_droplet_projectile
 
-logger = logging.getLogger(__name__)
+# Module logger
+logger = logging.getLogger("__main__")
 
 
 def self_attributes(self, save=False):

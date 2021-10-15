@@ -173,7 +173,7 @@ def get_parameter_metadata(
             "units": "($m^3$)",
         },
         "tcc": {
-            "name": "Cloudiness",
+            "name": "Total CLoud Cover",
             "kind": "Derived",
             "units": "()",
         },

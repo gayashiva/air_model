@@ -20,7 +20,6 @@ from src.models.methods.solar import get_solar
 from src.utils.settings import config
 
 # Module logger
-# logger = logging.getLogger(__name__)
 logger = logging.getLogger("__main__")
 logger.propagate = False
 
@@ -131,18 +130,6 @@ class Icestupa:
                 logger.warning(" %s is unknown\n" % (unknown[i]))
                 self.df[unknown[i]] = 0
 
-        solar_df = get_solar(
-            latitude=self.latitude,
-            longitude=self.longitude,
-            start=self.start_date,
-            end=self.df["time"].iloc[-1],
-            DT=self.DT,
-            utc=self.utc_offset,
-            alt=self.alt,
-        )
-
-        self.df = pd.merge(solar_df, self.df, on="time")
-
         if "SW_diffuse" in unknown:
             self.df["SW_diffuse"] = self.tcc * self.df.SW_global
             self.df["SW_direct"] = (1 - self.tcc) * self.df.SW_global
@@ -218,6 +205,18 @@ class Icestupa:
 
         self.get_discharge()
         self.self_attributes(save=True)
+
+        solar_df = get_solar(
+            latitude=self.latitude,
+            longitude=self.longitude,
+            start=self.start_date,
+            end=self.df["time"].iloc[-1],
+            DT=self.DT,
+            utc=self.utc_offset,
+            alt=self.alt,
+        )
+
+        self.df = pd.merge(solar_df, self.df, on="time", how="left")
 
         if "alb" in unknown:
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT

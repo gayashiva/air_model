@@ -10,6 +10,9 @@ import sys
 
 from src.utils import setup_logger
 
+# Module logger
+logger = logging.getLogger("__main__")
+
 
 def get_energy(self, i):
 
@@ -88,11 +91,8 @@ def get_energy(self, i):
 
 
 def test_get_energy(self, i):
-    # Module logger
-    logger = logging.getLogger("__main__")
 
     self.get_energy(i)
-
 
     if np.isnan(self.df.loc[i, "LW"]):
         logger.error(

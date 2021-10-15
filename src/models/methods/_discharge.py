@@ -10,7 +10,9 @@ from functools import lru_cache
 import logging
 import coloredlogs
 
-logger = logging.getLogger(__name__)
+# Module logger
+logger = logging.getLogger("__main__")
+logger.propagate = False
 
 
 def get_discharge(self):  # Provides discharge info based on trigger setting
@@ -74,6 +76,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
 
     if self.name in ["guttannen21", "guttannen20"]:
         self.df["Discharge"] = self.D_F
+        logger.info("Discharge constant")
 
     if self.name in ["phortse20"]:
         self.df["Discharge"] = self.D_F

@@ -23,13 +23,14 @@ if __name__ == "__main__":
     tests = False
 
     # location="Schwarzsee 2019"
-    location = "Guttannen 2021"
+    # location = "Guttannen 2021"
     # location = "Guttannen 2020"
     # location="phortse20"
-    # location = "Gangles 2021"
+    location = "Gangles 2021"
 
     # Initialise icestupa object
     icestupa = Icestupa(location)
+    # icestupa.R_F = 6.9
 
     if tests:
         # Use output parameters from cache
@@ -44,6 +45,7 @@ if __name__ == "__main__":
 
         icestupa.summary_figures()
     else:
+
         # Derive all the input parameters
         icestupa.derive_parameters()
 

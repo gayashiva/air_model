@@ -8,12 +8,12 @@ import logging
 import os, sys
 import numpy as np
 
-# Module logger
-logger = logging.getLogger(__name__)
+# # Module logger
+# logger = logging.getLogger("__main__")
 
-# Spammers
-logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
-logging.getLogger("numexpr").setLevel(logging.CRITICAL)
+# # Spammers
+# logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
+# logging.getLogger("numexpr").setLevel(logging.CRITICAL)
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
@@ -21,7 +21,7 @@ sys.path.append(dirname)
 
 def config(location="guttannen21"):
 
-    logger.info("Location is %s" % (location))
+    # logger.info("Location is %s" % (location))
 
     if location == "Guttannen 2021" or location == "guttannen21":
 
@@ -96,7 +96,7 @@ def config(location="guttannen21"):
             longitude=77.606949,
             latitude=34.216638,
             H_AWS=2,
-            tcc=0,
+            tcc=0,  # Total cloud cover
             SA_corr=1.5,
             # perimeter=82.3, # On 3 Mar
         )
