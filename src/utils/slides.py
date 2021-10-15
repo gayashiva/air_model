@@ -45,8 +45,20 @@ if __name__ == "__main__":
     CB91_Amber = "#F5B14C"
 
     locations = ["guttannen21", "gangles21"]
-    sims = ["normal", "R_F", "tcc", "R_F+tcc"]
+    sims = ["normal", "R_F", "tcc", "RH", "T", "R_F+tcc+RH+T"]
+    sims_mean = [
+        "Estimate",
+        "Equal spray radius",
+        "Half cloudy days",
+        "Twice more humidity",
+        "Similar temperature",
+        "All the above",
+    ]
+    label_dict = dict(zip(sims, sims_mean))
+
     compile = False
+    layout = 1
+    layout = 2
 
     if compile:
         time = pd.date_range("2020-11-01", freq="H", periods=365 * 24)
@@ -57,39 +69,46 @@ if __name__ == "__main__":
             attrs=dict(description="coords with matrices"),
         )
 
-        for i, location in enumerate(locations):
+        for i, loc in enumerate(locations):
             for sim in sims:
-                SITE, FOLDER = config(location)
-                icestupa_sim = Icestupa(location)
+                SITE, FOLDER = config(loc)
+                icestupa_sim = Icestupa(loc)
                 df = pd.DataFrame()
-                print(location, sim)
+                print(loc, sim)
                 if sim == "normal":
                     icestupa_sim.read_output()
                     icestupa_sim.self_attributes()
                     df = icestupa_sim.df[["time", "iceV"]]
 
                 else:
-                    if location == "gangles21":
+                    if loc == "gangles21":
+                        if sim == "T":
+                            icestupa_sim.df["temp"] += 2
+                        if sim == "RH":
+                            icestupa_sim.df["RH"] *= 2
+                            icestupa_sim.df.loc[icestupa_sim.df.RH > 100, "RH"] = 100
                         if sim == "R_F":
                             icestupa_sim.R_F = 6.9
                         if sim == "tcc":
                             icestupa_sim.tcc = 0.5
-                        if sim == "R_F+tcc":
+                        if sim == "R_F+tcc+RH+T":
+                            icestupa_sim.df["temp"] += 2
+                            icestupa_sim.df["RH"] *= 2
+                            icestupa_sim.df.loc[icestupa_sim.df.RH > 100, "RH"] = 100
                             icestupa_sim.R_F = 6.9
                             icestupa_sim.tcc = 0.5
+                        icestupa_sim.derive_parameters()
+                        icestupa_sim.melt_freeze()
+                        df = icestupa_sim.df[["time", "iceV"]]
                     else:
                         continue
 
-                    icestupa_sim.derive_parameters()
-                    icestupa_sim.melt_freeze()
-                    df = icestupa_sim.df[["time", "iceV"]]
                 ds.loc[
-                    dict(time=df.time.values[1:], locs=location, sims=sim)
+                    dict(time=df.time.values[1:], locs=loc, sims=sim)
                 ] = df.iceV.values[1:]
         ds.to_netcdf("data/slides/sims.nc")
-    else:
+    elif layout == 1:
         ds = xr.open_dataarray("data/slides/sims.nc")
-        print(ds)
 
         locations = ["guttannen21", "gangles21"]
 
@@ -170,6 +189,89 @@ if __name__ == "__main__":
         fig.legend(handles, labels, loc="upper right", prop={"size": 8})
         plt.savefig(
             "data/slides/icev_sims.jpg",
+            bbox_inches="tight",
+            dpi=300,
+        )
+        plt.clf()
+    elif layout == 2:
+        ds = xr.open_dataarray("data/slides/sims.nc")
+        fig, ax = plt.subplots(1, 1)
+        locations = ["gangles21"]
+        sims = ["normal", "R_F", "tcc", "T", "R_F+tcc+RH+T"]
+        style = ["--", "-"]
+        for i, loc in enumerate(locations):
+            SITE, FOLDER = config(loc)
+            icestupa = Icestupa(loc)
+            icestupa.self_attributes()
+            df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
+            df_c = df_c[1:]
+            df_c = df_c.set_index("time").resample("D").mean().reset_index()
+            dfv = df_c[["time", "DroneV", "DroneVError"]]
+            x2 = dfv.time
+            y2 = dfv.DroneV
+            yerr = dfv.DroneVError
+            Vol = []
+
+            for sim in sims:
+                ds.loc[dict(locs=loc, sims=sim)] -= icestupa.V_dome
+                y2 -= icestupa.V_dome
+                yerr -= icestupa.V_dome
+                ds.sel(locs=loc, sims=sim).plot(
+                    label=label_dict[sim],
+                    linewidth=1,
+                    # linestyle=style[i],
+                    # color=CB91_Blue,
+                    alpha=1,
+                    zorder=10,
+                    ax=ax,
+                )
+                # ax.set_title(label="")
+                ax.set(xlabel=None, title=None)
+                maxV = round(
+                    ds.sel(locs=loc, sims=sim).dropna(dim="time").data.max(), 0
+                )
+                Vol.append(maxV)
+
+            Vol = np.array(Vol)
+            maxV = round(
+                ds.sel(locs=loc, sims="normal").dropna(dim="time").data.max(), 0
+            )
+            ax.set_ylim(0, maxV)
+            ax.set_yticks(Vol)
+            Vol = np.around(Vol / 100, decimals=0).astype(int)
+            ax.set_yticklabels(Vol)
+
+            # ax.yaxis.set_ticks(
+            #     Vol
+            # )
+
+            # Hide the right and top spines
+            ax.spines["right"].set_visible(False)
+            ax.spines["top"].set_visible(False)
+            ax.spines["left"].set_color("grey")
+            ax.spines["bottom"].set_color("grey")
+            [t.set_color("grey") for t in ax.xaxis.get_ticklines()]
+            [t.set_color("grey") for t in ax.yaxis.get_ticklines()]
+            # Only show ticks on the left and bottom spines
+            ax.yaxis.set_ticks_position("left")
+            ax.xaxis.set_ticks_position("bottom")
+            # ax[i].yaxis.set_major_locator(plt.LinearLocator(numticks=2))
+            ax.xaxis.set_major_locator(mdates.MonthLocator())
+            ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
+            fig.autofmt_xdate()
+        fig.text(
+            0.04,
+            0.5,
+            "Number of Swiss AIRs",
+            va="center",
+            rotation="vertical",
+        )
+        handles, labels = ax.get_legend_handles_labels()
+        fig.legend(
+            handles, labels, loc="upper right", prop={"size": 8}, title="What if?"
+        )
+        plt.savefig(
+            "data/slides/icev_sims2.jpg",
             bbox_inches="tight",
             dpi=300,
         )
