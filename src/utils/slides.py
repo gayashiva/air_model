@@ -48,17 +48,17 @@ if __name__ == "__main__":
     sims_mean = [
         "Reference",
         "Remove snowfall",
-        "Temperature",
-        "Cloudiness",
-        "Spray radius",
+        "Temperature + 2 $\\degree C$",
+        "Cloudiness + 0.5",
+        "Spray radius - 3 $m$",
         "All the above",
     ]
     label_dict = dict(zip(sims, sims_mean))
 
-    compile = True
+    # compile = True
     compile = False
-    layout = 1
-    # layout = 2
+    # layout = 1
+    layout = 2
 
     if compile:
         time = pd.date_range("2020-11-01", freq="H", periods=365 * 24)
@@ -96,6 +96,9 @@ if __name__ == "__main__":
                             icestupa_sim.df.loc[icestupa_sim.df.RH > 100, "RH"] = 100
                         if sim == "R_F":
                             icestupa_sim.R_F = 6.9
+                        if sim == "cone":
+                            icestupa_sim.self_attributes()
+                            icestupa_sim.R_F += 4
                         if sim == "tcc":
                             icestupa_sim.tcc = 0.5
                         if sim == "R_F+tcc+RH+T":
@@ -115,6 +118,7 @@ if __name__ == "__main__":
                 ] = df.iceV.values[1:]
 
         ds.to_netcdf("data/slides/sims.nc")
+        # ds.to_netcdf("data/slides/sims_try.nc")
     elif layout == 1:
         ds = xr.open_dataarray("data/slides/sims.nc")
 
@@ -213,7 +217,7 @@ if __name__ == "__main__":
                 ax[i].yaxis.set_ticks(Vols)
                 v = get_parameter_metadata(loc)
                 at = AnchoredText(
-                    v["shortname"], prop=dict(size=10), frameon=True, loc="upper left"
+                    v["slidename"], prop=dict(size=10), frameon=True, loc="upper left"
                 )
                 at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
                 ax[i].add_artist(at)
@@ -249,12 +253,14 @@ if __name__ == "__main__":
         icestupa.self_attributes()
         CH_Vol = (
             round(
-                ds.sel(locs="guttannen21", sims="ppt").dropna(dim="time").data.max(), 0
+                ds.sel(locs="guttannen21", sims="ppt").dropna(dim="time").data.max(),
+                0,
             )
             - icestupa.V_dome
         )
         locations = ["gangles21"]
         sims = ["normal", "T", "tcc", "R_F", "R_F+tcc+RH+T"]
+        # sims = ["normal", "cone"]
         # locations = ["guttannen21"]
         # sims = ["normal", "ppt"]
         style = ["--", "-"]
@@ -301,7 +307,7 @@ if __name__ == "__main__":
                 ax.set(xlabel=None, ylabel="Number of Swiss AIRs", title=None)
                 CH_Vols = np.around(Vols / CH_Vol, decimals=0).astype(int)
                 ax.set_yticklabels(CH_Vols)
-                ax.legend(loc="upper right", prop={"size": 8}, title="Similar")
+                ax.legend(loc="upper right", prop={"size": 8}, title="Simulations")
 
                 # Hide the right and top spines
                 ax.spines["right"].set_visible(False)
