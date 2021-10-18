@@ -7,7 +7,6 @@ pd.options.mode.chained_assignment = None  # default='warn'
 import xarray as xr
 import math
 import matplotlib.colors
-import uncertainpy as un
 import statistics as st
 from datetime import datetime, timedelta
 from matplotlib.offsetbox import AnchoredText
@@ -47,7 +46,7 @@ if __name__ == "__main__":
     locations = ["guttannen21", "gangles21"]
     sims = ["normal", "ppt", "T", "tcc", "R_F", "R_F+tcc+RH+T"]
     sims_mean = [
-        "None",
+        "Reference",
         "Remove snowfall",
         "Temperature",
         "Cloudiness",
@@ -212,6 +211,12 @@ if __name__ == "__main__":
                     )
 
                 ax[i].yaxis.set_ticks(Vols)
+                v = get_parameter_metadata(loc)
+                at = AnchoredText(
+                    v["shortname"], prop=dict(size=10), frameon=True, loc="upper left"
+                )
+                at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+                ax[i].add_artist(at)
 
                 ax[i].set(xlabel=None)
                 # Hide the right and top spines
