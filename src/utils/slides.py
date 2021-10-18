@@ -44,11 +44,15 @@ if __name__ == "__main__":
     CB91_Amber = "#F5B14C"
 
     locations = ["guttannen21", "gangles21"]
-    sims = ["normal", "ppt", "T", "tcc", "R_F", "R_F+tcc+RH+T"]
+    sims = ["normal", "ppt", "SW", "v", "T", "RH", "p", "tcc", "R_F", "all"]
     sims_mean = [
         "Reference",
         "Remove snowfall",
+        "Shortwave - 171 $W\\,m^{-2}$",
+        "Wind - 1 $m\\,s^{-1}$",
         "Temperature + 2 $\\degree C$",
+        "Rel. Hum. + 44 $%$",
+        "Pressure + 171 $hPa$",
         "Cloudiness + 0.5",
         "Spray radius - 3 $m$",
         "All the above",
@@ -62,7 +66,6 @@ if __name__ == "__main__":
 
     if compile:
         time = pd.date_range("2020-11-01", freq="H", periods=365 * 24)
-        # put data into a dataset
         ds = xr.DataArray(
             dims=["time", "locs", "sims"],
             coords={"time": time, "locs": locations, "sims": sims},
@@ -91,19 +94,25 @@ if __name__ == "__main__":
                         icestupa_sim = Icestupa(loc)
                         if sim == "T":
                             icestupa_sim.df["temp"] += 2
+                        if sim == "v":
+                            icestupa_sim.df["wind"] -= 1
+                        if sim == "p":
+                            icestupa_sim.df["press"] += 794 - 623
+                        if sim == "SW":
+                            icestupa_sim.df["SW_global"] -= 246 - 138
                         if sim == "RH":
-                            icestupa_sim.df["RH"] *= 2
+                            icestupa_sim.df["RH"] += 44
                             icestupa_sim.df.loc[icestupa_sim.df.RH > 100, "RH"] = 100
                         if sim == "R_F":
                             icestupa_sim.R_F = 6.9
-                        if sim == "cone":
-                            icestupa_sim.self_attributes()
-                            icestupa_sim.R_F += 4
                         if sim == "tcc":
                             icestupa_sim.tcc = 0.5
-                        if sim == "R_F+tcc+RH+T":
+                        if sim == "all":
                             icestupa_sim.df["temp"] += 2
-                            icestupa_sim.df["RH"] *= 2
+                            # icestupa_sim.df["wind"] -= 1
+                            # icestupa_sim.df["SW_global"] -= 246 - 138
+                            # icestupa_sim.df["press"] += 794 - 623
+                            icestupa_sim.df["RH"] += 44
                             icestupa_sim.df.loc[icestupa_sim.df.RH > 100, "RH"] = 100
                             icestupa_sim.R_F = 6.9
                             icestupa_sim.tcc = 0.5
@@ -168,6 +177,16 @@ if __name__ == "__main__":
                         alpha=0.5,
                         zorder=8,
                     )
+                    ds.sel(locs=loc, sims="normal").plot(
+                        # label=sim,
+                        linewidth=1,
+                        color=CB91_Blue,
+                        alpha=0,
+                        zorder=10,
+                        ax=ax[i],
+                    )
+                    ax[i].set_title(label="")
+
                 if slide >= 1:
                     ds.sel(locs=loc, sims="normal").plot(
                         # label=sim,
@@ -190,6 +209,7 @@ if __name__ == "__main__":
                         ax=ax[i],
                     )
                     ax[i].set_title(label="")
+
                 maxV = round(
                     ds.sel(locs=loc, sims="normal").dropna(dim="time").data.max(), 0
                 )
@@ -240,7 +260,6 @@ if __name__ == "__main__":
                 fig.autofmt_xdate()
             fig.text(0.04, 0.5, "Ice Volume[$m^3$]", va="center", rotation="vertical")
             handles, labels = ax[1].get_legend_handles_labels()
-            # fig.legend(handles, labels, loc="upper right", prop={"size": 8})
             plt.savefig(
                 "data/slides/icev_slides_" + str(slide) + ".jpg",
                 bbox_inches="tight",
@@ -259,12 +278,8 @@ if __name__ == "__main__":
             - icestupa.V_dome
         )
         locations = ["gangles21"]
-        sims = ["normal", "T", "tcc", "R_F", "R_F+tcc+RH+T"]
-        # sims = ["normal", "cone"]
-        # locations = ["guttannen21"]
-        # sims = ["normal", "ppt"]
+        sims = ["normal", "SW", "v", "T", "tcc", "R_F", "all"]
         style = ["--", "-"]
-        fig, ax = plt.subplots(1, 1)
         # for slide in range(3, 6):
         for i, loc in enumerate(locations):
             SITE, FOLDER = config(loc)
@@ -278,35 +293,61 @@ if __name__ == "__main__":
             y2 = dfv.DroneV
             yerr = dfv.DroneVError
             Vols = np.array([])
-            slide = 4
+            res = []
+            # slide = 4
 
-            for sim in sims:
-                print(loc, sim)
-                ds.loc[dict(locs=loc, sims=sim)] -= icestupa.V_dome
+            for sim1 in sims:
+                ds.loc[dict(locs=loc, sims=sim1)] -= icestupa.V_dome
                 y2 -= icestupa.V_dome
                 yerr -= icestupa.V_dome
-                ds.sel(locs=loc, sims=sim).plot(
-                    label=label_dict[sim],
-                    linewidth=1,
-                    # linestyle=style[i],
-                    # color=CB91_Blue,
-                    alpha=1,
-                    zorder=10,
-                    ax=ax,
-                )
-                maxV = round(
-                    ds.sel(locs=loc, sims=sim).dropna(dim="time").data.max(), 0
-                )
-                Vols = np.append(Vols, maxV)
-
-                maxV = round(
-                    ds.sel(locs=loc, sims="normal").dropna(dim="time").data.max(), 0
-                )
-                ax.set_ylim(0, maxV)
-                ax.set_yticks(Vols)
-                ax.set(xlabel=None, ylabel="Number of Swiss AIRs", title=None)
+                fig, ax = plt.subplots(1, 1)
+                print(loc, sim1)
+                for sim2 in sims:
+                    if sims.index(sim2) < sims.index(sim1):
+                        ds.sel(locs=loc, sims=sim2).plot(
+                            label=label_dict[sim2],
+                            linewidth=1,
+                            # linestyle=style[i],
+                            # color=CB91_Blue,
+                            alpha=0.3,
+                            zorder=10,
+                            ax=ax,
+                        )
+                    if sims.index(sim2) == sims.index(sim1):
+                        ds.sel(locs=loc, sims=sim2).plot(
+                            label=label_dict[sim2],
+                            linewidth=1,
+                            # linestyle=style[i],
+                            # color=CB91_Blue,
+                            alpha=1,
+                            zorder=10,
+                            ax=ax,
+                        )
+                        V = round(
+                            ds.sel(locs=loc, sims=sim2).dropna(dim="time").data.max(), 0
+                        )
+                        Vols = np.append(Vols, V)
                 CH_Vols = np.around(Vols / CH_Vol, decimals=0).astype(int)
-                ax.set_yticklabels(CH_Vols)
+                [res.append(x) for x in CH_Vols if x not in res]
+                y_pos = np.array([x * 82 for x in res])
+                ax.set_yticks(y_pos)
+                ax.set_yticklabels(res)
+
+                maxV = y_pos.max()
+                # ds.sel(locs=loc, sims=sim1).plot(
+                #     label=label_dict[sim1],
+                #     linewidth=1,
+                #     # linestyle=style[i],
+                #     # color=CB91_Blue,
+                #     alpha=1,
+                #     zorder=10,
+                #     ax=ax,
+                # )
+                # maxV = round(
+                #     ds.sel(locs=loc, sims="normal").dropna(dim="time").data.max(), 0
+                # )
+                ax.set_ylim(0, maxV)
+                ax.set(xlabel=None, ylabel="Number of Swiss AIRs", title=None)
                 ax.legend(loc="upper right", prop={"size": 8}, title="Simulations")
 
                 # Hide the right and top spines
@@ -324,8 +365,9 @@ if __name__ == "__main__":
                 ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
                 fig.autofmt_xdate()
                 plt.savefig(
-                    "data/slides/icev_slides_" + str(slide) + ".jpg",
+                    "data/slides/icev_slides_" + sim1 + ".jpg",
                     bbox_inches="tight",
                     dpi=300,
                 )
-                slide += 1
+                plt.clf()
+                # slide += 1
