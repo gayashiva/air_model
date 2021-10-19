@@ -51,7 +51,7 @@ if __name__ == "__main__":
         "Shortwave - 171 $W\\,m^{-2}$",
         "Wind - 1 $m\\,s^{-1}$",
         "Temperature + 2 $\\degree C$",
-        "Rel. Hum. + 44 $%$",
+        "Rel. Hum. + 44 %",
         "Pressure + 171 $hPa$",
         "Cloudiness + 0.5",
         "Spray radius - 3 $m$",
@@ -109,9 +109,9 @@ if __name__ == "__main__":
                             icestupa_sim.tcc = 0.5
                         if sim == "all":
                             icestupa_sim.df["temp"] += 2
-                            # icestupa_sim.df["wind"] -= 1
-                            # icestupa_sim.df["SW_global"] -= 246 - 138
-                            # icestupa_sim.df["press"] += 794 - 623
+                            icestupa_sim.df["wind"] -= 1
+                            icestupa_sim.df["SW_global"] -= 246 - 138
+                            icestupa_sim.df["press"] += 794 - 623
                             icestupa_sim.df["RH"] += 44
                             icestupa_sim.df.loc[icestupa_sim.df.RH > 100, "RH"] = 100
                             icestupa_sim.R_F = 6.9
@@ -278,7 +278,8 @@ if __name__ == "__main__":
             - icestupa.V_dome
         )
         locations = ["gangles21"]
-        sims = ["normal", "SW", "v", "T", "tcc", "R_F", "all"]
+        # sims = ["normal", "SW", "v", "T", "tcc", "R_F", "all"]
+        sims = ["normal", "SW", "v", "T", "RH", "p", "tcc", "R_F", "all"]
         style = ["--", "-"]
         # for slide in range(3, 6):
         for i, loc in enumerate(locations):
@@ -294,6 +295,7 @@ if __name__ == "__main__":
             yerr = dfv.DroneVError
             Vols = np.array([])
             res = []
+            y_pos = np.array([])
             # slide = 4
 
             for sim1 in sims:
@@ -313,6 +315,10 @@ if __name__ == "__main__":
                             zorder=10,
                             ax=ax,
                         )
+                        V = round(
+                            ds.sel(locs=loc, sims=sim2).dropna(dim="time").data.max(), 0
+                        )
+                        Vols = np.append(Vols, V)
                     if sims.index(sim2) == sims.index(sim1):
                         ds.sel(locs=loc, sims=sim2).plot(
                             label=label_dict[sim2],
@@ -327,9 +333,14 @@ if __name__ == "__main__":
                             ds.sel(locs=loc, sims=sim2).dropna(dim="time").data.max(), 0
                         )
                         Vols = np.append(Vols, V)
-                CH_Vols = np.around(Vols / CH_Vol, decimals=0).astype(int)
-                [res.append(x) for x in CH_Vols if x not in res]
-                y_pos = np.array([x * 82 for x in res])
+                CH_Vols = np.around(Vols / CH_Vol, decimals=1)
+                [res.append(x.astype(int)) for x in CH_Vols if x.astype(int) not in res]
+                y_pos = np.array([x * 83 for x in res])
+                # [
+                #     np.append(y_pos, x * 83)
+                #     for x in CH_Vols
+                #     if x.astype(int) not in y_pos
+                # ]
                 ax.set_yticks(y_pos)
                 ax.set_yticklabels(res)
 
