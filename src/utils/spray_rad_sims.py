@@ -64,7 +64,7 @@ if __name__ == "__main__":
     logger.setLevel("WARNING")
     loc = "guttannen21"
     SITE, FOLDER = config(loc)
-    rads = list(range(5, 65, 1))
+    rads = list(range(1, 61, 1))
     file_path = "rad_sims.csv"
 
     # Define IPC manager
