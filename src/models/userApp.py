@@ -20,32 +20,20 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("WARNING")
 
-    tests = False
+    tests = True
+    # tests = False
 
     # location="Schwarzsee 2019"
-    # location = "Guttannen 2021"
+    location = "Guttannen 2021"
     # location = "Guttannen 2020"
     # location="phortse20"
-    location = "Gangles 2021"
+    # location = "Gangles 2021"
 
     # Initialise icestupa object
     icestupa = Icestupa(location)
-    # icestupa.R_F = 6.9
+    icestupa.R_F = 50
 
     if tests:
-        # Use output parameters from cache
-        icestupa.read_output()
-
-        # plt.figure()
-        # ax = plt.gca()
-        # plt.scatter(icestupa.df.Qt, icestupa.df.fountain_froze / 60, s=1)
-        # plt.legend()
-        # plt.grid()
-        # plt.savefig("data/tests/T_relation.jpg")
-
-        icestupa.summary_figures()
-    else:
-
         # Derive all the input parameters
         icestupa.derive_parameters()
 
@@ -57,4 +45,16 @@ if __name__ == "__main__":
         icestupa.save()
 
         # Create figures for web interface
+        icestupa.summary_figures()
+    else:
+        # Use output parameters from cache
+        icestupa.read_output()
+
+        # plt.figure()
+        # ax = plt.gca()
+        # plt.scatter(icestupa.df.Qt, icestupa.df.fountain_froze / 60, s=1)
+        # plt.legend()
+        # plt.grid()
+        # plt.savefig("data/tests/T_relation.jpg")
+
         icestupa.summary_figures()

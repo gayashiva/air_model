@@ -11,9 +11,9 @@ import numpy as np
 # # Module logger
 # logger = logging.getLogger("__main__")
 
-# # Spammers
-# logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
-# logging.getLogger("numexpr").setLevel(logging.CRITICAL)
+# Spammers
+logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
+logging.getLogger("numexpr").setLevel(logging.CRITICAL)
 
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)

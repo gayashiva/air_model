@@ -28,23 +28,23 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("WARNING")
 
-    blue = "#0a4a97"
-    red = "#e23028"
-    purple = "#9673b9"
-    green = "#28a745"
-    orange = "#ffc107"
-    pink = "#ce507a"
-    skyblue = "#9bc4f0"
-    grey = "#ced4da"
-    CB91_Blue = "#2CBDFE"
-    CB91_Green = "#47DBCD"
-    CB91_Pink = "#F3A0F2"
-    CB91_Purple = "#9D2EC5"
-    CB91_Violet = "#661D98"
-    CB91_Amber = "#F5B14C"
+    # blue = "#0a4a97"
+    # red = "#e23028"
+    # purple = "#9673b9"
+    # green = "#28a745"
+    # orange = "#ffc107"
+    # pink = "#ce507a"
+    # skyblue = "#9bc4f0"
+    # grey = "#ced4da"
+    # CB91_Blue = "#2CBDFE"
+    # CB91_Green = "#47DBCD"
+    # CB91_Pink = "#F3A0F2"
+    # CB91_Purple = "#9D2EC5"
+    # CB91_Violet = "#661D98"
+    # CB91_Amber = "#F5B14C"
 
     locations = ["guttannen21", "gangles21"]
-    sims = ["normal", "ppt", "SW", "v", "T", "RH", "p", "tcc", "R_F", "all"]
+    sims = ["normal", "ppt", "T", "RH", "p", "SW", "tcc", "v", "R_F", "all"]
     sims_mean = [
         "Reference",
         "Remove snowfall",
@@ -279,7 +279,7 @@ if __name__ == "__main__":
         )
         locations = ["gangles21"]
         # sims = ["normal", "SW", "v", "T", "tcc", "R_F", "all"]
-        sims = ["normal", "SW", "v", "T", "RH", "p", "tcc", "R_F", "all"]
+        sims = ["normal", "T", "RH", "p", "SW", "tcc", "v", "R_F", "all"]
         style = ["--", "-"]
         # for slide in range(3, 6):
         for i, loc in enumerate(locations):
@@ -329,13 +329,11 @@ if __name__ == "__main__":
                             zorder=10,
                             ax=ax,
                         )
-                        V = round(
-                            ds.sel(locs=loc, sims=sim2).dropna(dim="time").data.max(), 0
-                        )
+                        V = ds.sel(locs=loc, sims=sim2).dropna(dim="time").data.max(), 0
                         Vols = np.append(Vols, V)
                 CH_Vols = np.around(Vols / CH_Vol, decimals=1)
                 [res.append(x.astype(int)) for x in CH_Vols if x.astype(int) not in res]
-                y_pos = np.array([x * 83 for x in res])
+                y_pos = np.array([x * 87 for x in res])
                 # [
                 #     np.append(y_pos, x * 83)
                 #     for x in CH_Vols
