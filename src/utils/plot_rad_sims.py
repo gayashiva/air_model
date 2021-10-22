@@ -32,48 +32,54 @@ if __name__ == "__main__":
 
     df = pd.read_csv(FOLDER["sim"] + "rad_sims.csv")
 
-    x = df.rad
+    for ctr in range(2):
+        x = df.rad
 
-    y1 = df.maxV
-    y2 = df.days
-    fig, ax = plt.subplots()
-    ax.axvline(
-        x=7, color="grey", linestyle="--", zorder=0, label="Guttannen Spray radius"
-    )
-    ax.scatter(
-        7,
-        df.loc[df.rad == 7].maxV,
-        s=100,
-        color=CB91_Blue,
-        marker="*",
-        zorder=10,
-    )
-    ax.scatter(x, y1, s=5, color=CB91_Blue)
-    for tl in ax.get_yticklabels():
-        tl.set_color(CB91_Blue)
-    ax.set_ylabel("Max AIR Volume [$m^{3}$]", color=CB91_Blue)
-    ax.set_xlabel("Fountain Spray Radius [$m$]")
-    axt = ax.twinx()
-    axt.scatter(
-        7,
-        df.loc[df.rad == 7].days,
-        s=100,
-        color=CB91_Purple,
-        marker="*",
-    )
-    axt.scatter(
-        x,
-        y2,
-        s=5,
-        color=CB91_Purple,
-    )
-    axt.set_ylabel("Survival duration [$days$]", color=CB91_Purple)
-    for tl in axt.get_yticklabels():
-        tl.set_color(CB91_Purple)
-    # ax.legend()
-    # plt.figure()
-    # plt.scatter(df.rad, df.days, s=10, label="Survival duration")
-    # plt.scatter(df.rad, df.maxV, s=10, label="Max Volume")
-    # plt.legend()
-    # plt.grid()
-    plt.savefig(FOLDER["sim"] + "rad_sims.jpg")
+        y1 = df.maxV
+        y2 = df.days
+        fig, ax = plt.subplots()
+        ax.axvline(
+            x=7,
+            color="grey",
+            linestyle="--",
+            zorder=0,
+            label="Guttannen Spray radius",
+        )
+        ax.scatter(
+            7,
+            df.loc[df.rad == 7].maxV,
+            s=100,
+            color=CB91_Blue,
+            marker="*",
+            zorder=10,
+        )
+        ax.scatter(
+            x,
+            y1,
+            s=5,
+            color=CB91_Blue,
+            alpha=ctr,
+        )
+        for tl in ax.get_yticklabels():
+            tl.set_color(CB91_Blue)
+        ax.set_ylabel("Max AIR Volume [$m^{3}$]", color=CB91_Blue)
+        ax.set_xlabel("Fountain Spray Radius [$m$]")
+        axt = ax.twinx()
+        axt.scatter(
+            7,
+            df.loc[df.rad == 7].days,
+            s=100,
+            color=CB91_Purple,
+            marker="*",
+        )
+        axt.scatter(
+            x,
+            y2,
+            s=5,
+            color=CB91_Purple,
+            alpha=ctr,
+        )
+        axt.set_ylabel("Survival duration [$days$]", color=CB91_Purple)
+        for tl in axt.get_yticklabels():
+            tl.set_color(CB91_Purple)
+        plt.savefig(FOLDER["sim"] + "rad_sims_" + str(ctr) + ".jpg")
