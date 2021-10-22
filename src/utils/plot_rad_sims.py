@@ -70,7 +70,7 @@ if __name__ == "__main__":
     axt.set_ylabel("Survival duration [$days$]", color=CB91_Purple)
     for tl in axt.get_yticklabels():
         tl.set_color(CB91_Purple)
-    ax.legend()
+    # ax.legend()
     # plt.figure()
     # plt.scatter(df.rad, df.days, s=10, label="Survival duration")
     # plt.scatter(df.rad, df.maxV, s=10, label="Max Volume")

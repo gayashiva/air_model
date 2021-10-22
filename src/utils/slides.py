@@ -48,12 +48,12 @@ if __name__ == "__main__":
     sims_mean = [
         "Reference",
         "Remove snowfall",
-        "Shortwave - 171 $W\\,m^{-2}$",
-        "Wind - 1 $m\\,s^{-1}$",
         "Temperature + 2 $\\degree C$",
         "Rel. Hum. + 44 %",
         "Pressure + 171 $hPa$",
+        "Shortwave - 171 $W\\,m^{-2}$",
         "Cloudiness + 0.5",
+        "Wind - 1 $m\\,s^{-1}$",
         "Spray radius - 3 $m$",
         "All the above",
     ]
