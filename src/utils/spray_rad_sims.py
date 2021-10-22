@@ -43,8 +43,8 @@ def calculate(process_name, tasks, loc, results, results_list):
             icestupa.melt_freeze()
             df = icestupa.df[["time", "iceV"]]
             df = df.loc[df.iceV != 0].reset_index()
-            days = round(df.index[-1] / 24, 0)
-            maxV = round(df.iceV.max())
+            days = int(df.index[-1] / 24)
+            maxV = int(df.iceV.max())
             # Compute result and mimic a long-running task
             compute = maxV
 
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     logger.setLevel("WARNING")
     loc = "guttannen21"
     SITE, FOLDER = config(loc)
-    rads = list(range(5, 51, 5))
+    rads = list(range(5, 101, 5))
     file_path = "rad_sims.csv"
 
     # Define IPC manager
