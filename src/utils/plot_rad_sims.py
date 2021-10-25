@@ -53,6 +53,21 @@ if __name__ == "__main__":
             marker="*",
             zorder=10,
         )
+        ax.axvline(
+            x=43,
+            color="grey",
+            linestyle="--",
+            zorder=0,
+            # label="Guttannen Spray radius",
+        )
+        ax.scatter(
+            43,
+            df.loc[df.rad == 43].maxV,
+            s=100,
+            color=CB91_Blue,
+            marker="*",
+            zorder=10,
+        )
         ax.scatter(
             x,
             y1,
@@ -68,6 +83,13 @@ if __name__ == "__main__":
         axt.scatter(
             7,
             df.loc[df.rad == 7].days,
+            s=100,
+            color=CB91_Purple,
+            marker="*",
+        )
+        axt.scatter(
+            43,
+            df.loc[df.rad == 43].days,
             s=100,
             color=CB91_Purple,
             marker="*",
