@@ -44,16 +44,18 @@ if __name__ == "__main__":
     # CB91_Amber = "#F5B14C"
 
     locations = ["guttannen21", "gangles21"]
-    sims = ["normal", "ppt", "T", "RH", "p", "SW", "tcc", "v", "R_F", "all"]
+    sims = ["normal", "ppt", "T", "RH", "p","v", "T+RH+p+v", "SW", "tcc", "SW+tcc", "R_F", "all"]
     sims_mean = [
         "Reference",
         "Remove snowfall",
         "Temperature + 2 $\\degree C$",
         "Rel. Hum. + 44 %",
         "Pressure + 171 $hPa$",
+        "Wind - 1 $m\\,s^{-1}$",
+        "Similar latent heat",
         "Shortwave - 171 $W\\,m^{-2}$",
         "Cloudiness + 0.5",
-        "Wind - 1 $m\\,s^{-1}$",
+        "Similar day melt",
         "Spray radius - 3 $m$",
         "All the above",
     ]
@@ -107,6 +109,15 @@ if __name__ == "__main__":
                             icestupa_sim.R_F = 6.9
                         if sim == "tcc":
                             icestupa_sim.tcc = 0.5
+                        if sim == "SW+tcc":
+                            icestupa_sim.df["SW_global"] -= 246 - 138
+                            icestupa_sim.tcc = 0.5
+                        if sim == "T+RH+p+v":
+                            icestupa_sim.df["temp"] += 2
+                            icestupa_sim.df["wind"] -= 1
+                            icestupa_sim.df["press"] += 794 - 623
+                            icestupa_sim.df["RH"] += 44
+                            icestupa_sim.df.loc[icestupa_sim.df.RH > 100, "RH"] = 100
                         if sim == "all":
                             icestupa_sim.df["temp"] += 2
                             icestupa_sim.df["wind"] -= 1
@@ -277,12 +288,31 @@ if __name__ == "__main__":
             )
             - icestupa.V_dome
         )
-        locations = ["gangles21"]
+        loc= "gangles21"
         # sims = ["normal", "SW", "v", "T", "tcc", "R_F", "all"]
-        sims = ["normal", "T", "RH", "p", "SW", "tcc", "v", "R_F", "all"]
-        style = ["--", "-"]
+        # sims = ["normal", "T", "RH", "p", "SW", "tcc", "v", "R_F", "all"]
+        sims_total = ["normal", "ppt", "T", "RH", "p","v", "T+RH+p+v", "SW", "tcc", "SW+tcc", "R_F", "all"]
+        sims1 = ["normal", "T", "RH", "p","v", "T+RH+p+v"]
+        sims2 = ["normal", "T+RH+p+v", "SW", "tcc", "SW+tcc", "R_F", "all"]
+        sims3 = ["normal", "T+RH+p+v", "SW+tcc", "R_F", "all"]
+        # style = ["--", "-"]
         # for slide in range(3, 6):
-        for i, loc in enumerate(locations):
+        sims_list = [sims1, sims2, sims3]
+        for sim1 in sims_total:
+            SITE, FOLDER = config(loc)
+            icestupa = Icestupa(loc)
+            icestupa.self_attributes()
+            df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
+            df_c = df_c[1:]
+            df_c = df_c.set_index("time").resample("D").mean().reset_index()
+            dfv = df_c[["time", "DroneV", "DroneVError"]]
+            x2 = dfv.time
+            y2 = dfv.DroneV
+            yerr = dfv.DroneVError
+            ds.loc[dict(locs=loc, sims=sim1)] -= icestupa.V_dome
+            y2 -= icestupa.V_dome
+            yerr -= icestupa.V_dome
+        for sims in sims_list:
             SITE, FOLDER = config(loc)
             icestupa = Icestupa(loc)
             icestupa.self_attributes()
@@ -299,9 +329,9 @@ if __name__ == "__main__":
             # slide = 4
 
             for sim1 in sims:
-                ds.loc[dict(locs=loc, sims=sim1)] -= icestupa.V_dome
-                y2 -= icestupa.V_dome
-                yerr -= icestupa.V_dome
+                # ds.loc[dict(locs=loc, sims=sim1)] -= icestupa.V_dome
+                # y2 -= icestupa.V_dome
+                # yerr -= icestupa.V_dome
                 fig, ax = plt.subplots(1, 1)
                 print(loc, sim1)
                 for sim2 in sims:
@@ -379,4 +409,4 @@ if __name__ == "__main__":
                     dpi=300,
                 )
                 plt.clf()
-                # slide += 1
+            # slide += 1
