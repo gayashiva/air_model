@@ -20,25 +20,25 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("WARNING")
 
-    tests = True
+    test = True
     # tests = False
 
     # location="Schwarzsee 2019"
-    location = "Guttannen 2021"
-    # location = "Guttannen 2020"
+    # location = "Guttannen 2021"
+    location = "Guttannen 2020"
     # location="phortse20"
     # location = "Gangles 2021"
 
     # Initialise icestupa object
     icestupa = Icestupa(location)
-    icestupa.R_F = 50
+    # icestupa.R_F = 50
 
-    if tests:
+    if test:
         # Derive all the input parameters
         icestupa.derive_parameters()
 
         # Generate results
-        icestupa.melt_freeze(test=True)
+        icestupa.melt_freeze(test)
         # icestupa.melt_freeze()
 
         # Summarise and save model results
