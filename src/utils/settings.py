@@ -96,8 +96,8 @@ def config(location="guttannen21"):
             longitude=77.606949,
             latitude=34.216638,
             H_AWS=2,
-            # tcc=0,  # Total cloud cover
-            tcc=0.1,  # Total cloud cover
+            tcc=0,  # Total cloud cover
+            # tcc=0.1,  # Total cloud cover
             SA_corr=1.5,
             # perimeter=82.3, # On 3 Mar
         )
