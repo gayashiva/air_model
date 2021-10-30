@@ -28,23 +28,22 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("WARNING")
 
-    # blue = "#0a4a97"
-    # red = "#e23028"
-    # purple = "#9673b9"
-    # green = "#28a745"
-    # orange = "#ffc107"
-    # pink = "#ce507a"
-    # skyblue = "#9bc4f0"
-    # grey = "#ced4da"
-    # CB91_Blue = "#2CBDFE"
-    # CB91_Green = "#47DBCD"
-    # CB91_Pink = "#F3A0F2"
-    # CB91_Purple = "#9D2EC5"
-    # CB91_Violet = "#661D98"
-    # CB91_Amber = "#F5B14C"
-
     locations = ["guttannen21", "gangles21"]
-    sims = ["normal", "ppt", "T", "RH", "p","v", "T+RH+p+v", "SW", "tcc", "SW+tcc", "R_F", "all"]
+    sims = [
+        "normal",
+        "ppt",
+        "T",
+        "RH",
+        "p",
+        "v",
+        "T+RH+p+v",
+        "SW",
+        "tcc",
+        "SW+tcc",
+        "R_F",
+        "all",
+        "T+RH+p+v+SW+tcc",
+    ]
     sims_mean = [
         "Reference",
         "Remove snowfall",
@@ -56,8 +55,10 @@ if __name__ == "__main__":
         "Shortwave - 171 $W\\,m^{-2}$",
         "Cloudiness + 0.5",
         "Similar day melt",
-        "Spray radius - 3 $m$",
+        # "Spray radius - 3 $m$",
+        "Similar fountain",
         "All the above",
+        "Similar Weather",
     ]
     label_dict = dict(zip(sims, sims_mean))
 
@@ -118,6 +119,14 @@ if __name__ == "__main__":
                             icestupa_sim.df["press"] += 794 - 623
                             icestupa_sim.df["RH"] += 44
                             icestupa_sim.df.loc[icestupa_sim.df.RH > 100, "RH"] = 100
+                        if sim == "T+RH+p+v+SW+tcc":
+                            icestupa_sim.df["temp"] += 2
+                            icestupa_sim.df["wind"] -= 1
+                            icestupa_sim.df["press"] += 794 - 623
+                            icestupa_sim.df["RH"] += 44
+                            icestupa_sim.df.loc[icestupa_sim.df.RH > 100, "RH"] = 100
+                            icestupa_sim.df["SW_global"] -= 246 - 138
+                            icestupa_sim.tcc = 0.5
                         if sim == "all":
                             icestupa_sim.df["temp"] += 2
                             icestupa_sim.df["wind"] -= 1
@@ -288,13 +297,28 @@ if __name__ == "__main__":
             )
             - icestupa.V_dome
         )
-        loc= "gangles21"
+        loc = "gangles21"
         # sims = ["normal", "SW", "v", "T", "tcc", "R_F", "all"]
         # sims = ["normal", "T", "RH", "p", "SW", "tcc", "v", "R_F", "all"]
-        sims_total = ["normal", "ppt", "T", "RH", "p","v", "T+RH+p+v", "SW", "tcc", "SW+tcc", "R_F", "all"]
-        sims1 = ["normal", "T", "RH", "p","v", "T+RH+p+v"]
+        sims_total = [
+            "normal",
+            "ppt",
+            "T",
+            "RH",
+            "p",
+            "v",
+            "T+RH+p+v",
+            "SW",
+            "tcc",
+            "SW+tcc",
+            "R_F",
+            "all",
+            "T+RH+p+v+SW+tcc",
+        ]
+        sims1 = ["normal", "T", "RH", "p", "v", "T+RH+p+v"]
         sims2 = ["normal", "T+RH+p+v", "SW", "tcc", "SW+tcc", "R_F", "all"]
-        sims3 = ["normal", "T+RH+p+v", "SW+tcc", "R_F", "all"]
+        # sims3 = ["normal", "T+RH+p+v", "SW+tcc", "R_F", "all"]
+        sims3 = ["normal", "T+RH+p+v+SW+tcc", "R_F", "all"]
         # style = ["--", "-"]
         # for slide in range(3, 6):
         sims_list = [sims1, sims2, sims3]
@@ -312,6 +336,9 @@ if __name__ == "__main__":
             ds.loc[dict(locs=loc, sims=sim1)] -= icestupa.V_dome
             y2 -= icestupa.V_dome
             yerr -= icestupa.V_dome
+            if sim1 in sims3:
+                print(sim1)
+                print(ds.sel(locs=loc, sims=sim1).dropna(dim="time").data.max())
         for sims in sims_list:
             SITE, FOLDER = config(loc)
             icestupa = Icestupa(loc)
