@@ -23,6 +23,8 @@ from src.utils.settings import config
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.icestupaClass import Icestupa
 
+pd.options.display.float_format = "{:,.1f}".format
+
 if __name__ == "__main__":
     locations = ["gangles21", "guttannen21", "guttannen20", "schwarzsee19"]
     # locations = ['guttannen21',  'gangles21']
@@ -31,34 +33,31 @@ if __name__ == "__main__":
     for ctr, location in enumerate(locations):
         SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
-        icestupa.read_input()
-        pd.options.display.float_format = '{:,.1f}'.format
+        # icestupa.read_input()
 
-        cols = [
-            "T_a",
-            "RH",
-            "v_a",
-            "SW_direct",
-            "SW_diffuse",
-            "LW_in",
-            "Prec",
-            "p_a",
-        ]
-        icestupa.df['Prec'] *= 1000
-        df_i = icestupa.df[cols].describe().T[['mean', 'std']]
-        print(df_i)
+        # cols = [
+        #     "temp",
+        #     "RH",
+        #     "wind",
+        #     "SW_direct",
+        #     "SW_diffuse",
+        #     "LW_in",
+        #     "ppt",
+        #     "press",
+        # ]
+        # icestupa.df["ppt"] *= 1000
+        # df_i = icestupa.df[cols].describe().T[["mean", "std"]]
+        # print(df_i)
         print()
 
         icestupa.read_output()
 
-
         # icestupa.df.loc[icestupa.df.event == 0, 'Qfreeze'] = np.nan
         # icestupa.df.loc[icestupa.df.event == 1, 'Qmelt'] = np.nan
-        icestupa.df.loc[icestupa.df.Discharge== 0, 'fountain_froze'] = np.nan
-        icestupa.df['melted'] /= 60
-        icestupa.df['fountain_froze'] /= 60
+        icestupa.df.loc[icestupa.df.Discharge == 0, "fountain_froze"] = np.nan
+        icestupa.df["melted"] /= 60
+        icestupa.df["fountain_froze"] /= 60
         # print(icestupa.df.fountain_froze.max())
-
 
         # icestupa.df = icestupa.df.rename(
         #     {
@@ -76,63 +75,74 @@ if __name__ == "__main__":
         #     axis=1,
         # )
 
-        separate_periods_index = icestupa.df.loc[icestupa.df.Discharge> 0].index[-1]
-        df_ac = icestupa.df[icestupa.df.index<=separate_periods_index]
-        df_ab = icestupa.df[icestupa.df.index>separate_periods_index]
+        separate_periods_index = icestupa.df.loc[icestupa.df.Discharge > 0].index[-1]
+        df_ac = icestupa.df[icestupa.df.index <= separate_periods_index]
+        df_ab = icestupa.df[icestupa.df.index > separate_periods_index]
 
         # cols = ["$q_{SW}$", "$q_{LW}$","$q_S$","$q_L$","$q_{F}$","$q_{G}$","$q_{surf}$", "$q_{freeze}$", "$q_{melt}$",
         #     "$q_{T}$", "SA", "fountain_froze", "melted"]
-        cols = ["SW", "LW","Qs","Ql","Qf","Qg","Qsurf", "Qfreeze", "Qmelt","Qt", "SA", "fountain_froze", "melted"]
-        df_e = icestupa.df[cols].describe().T[['mean', 'std']]
+        cols = [
+            "SW",
+            "LW",
+            "Qs",
+            "Ql",
+            "Qf",
+            "Qg",
+            "Qsurf",
+            "Qfreeze",
+            "Qmelt",
+            "Qt",
+            "SA",
+            "fountain_froze",
+            "melted",
+        ]
+        df_e = icestupa.df[cols].describe().T[["mean", "std"]]
         print(df_e)
         print()
 
         print("Accumulation")
-        df_e = df_ac[cols].describe().T[['mean', 'std']]
+        df_e = df_ac[cols].describe().T[["mean", "std"]]
         print(df_e)
+        print("Sublimation", df_ac.vapour.tail(1).values)
         print()
         print("Ablation")
-        df_e = df_ab[cols].describe().T[['mean', 'std']]
+        df_e = df_ab[cols].describe().T[["mean", "std"]]
         print(df_e)
         print()
 
         # pd.options.display.float_format = '{:,.3f}'.format
-        dfds = icestupa.df.set_index("When").resample("D").sum().reset_index()
-        dfds['t_cone'] *=1000
-        separate_periods_index = dfds.loc[dfds.Discharge> 0].index[-1]
-        df_ac = dfds[dfds.index<=separate_periods_index]
-        df_ab = dfds[dfds.index>separate_periods_index]
-        df_e = dfds['t_cone'].describe().T[['mean', 'std']]
+        dfds = icestupa.df.set_index("time").resample("D").sum().reset_index()
+        dfds["t_cone"] *= 1000
+        separate_periods_index = dfds.loc[dfds.Discharge > 0].index[-1]
+        df_ac = dfds[dfds.index <= separate_periods_index]
+        df_ab = dfds[dfds.index > separate_periods_index]
+        df_e = dfds["t_cone"].describe().T[["mean", "std"]]
         print(df_e)
         print()
 
         print("Accumulation")
         print(df_ac.shape[0])
-        df_e = df_ac['t_cone'].describe().T[['mean', 'std']]
+        df_e = df_ac["t_cone"].describe().T[["mean", "std"]]
         print(df_e)
         print()
         print("Ablation")
         print(df_ab.shape[0])
-        df_e = df_ab['t_cone'].describe().T[['mean', 'std']]
+        df_e = df_ab["t_cone"].describe().T[["mean", "std"]]
         print(df_e)
         print()
         print("Absolute Energies")
-        dfd = icestupa.df.set_index("When").resample("D").mean().reset_index()
-        separate_periods_index = dfd.loc[dfd.Discharge> 0].index[-1]
-        dfd_ac = dfd[dfd.index<=separate_periods_index]
-        dfd_ab = dfd[dfd.index>separate_periods_index]
+        dfd = icestupa.df.set_index("time").resample("D").mean().reset_index()
+        separate_periods_index = dfd.loc[dfd.Discharge > 0].index[-1]
+        dfd_ac = dfd[dfd.index <= separate_periods_index]
+        dfd_ab = dfd[dfd.index > separate_periods_index]
         # Total = dfd.Qsurf.abs().sum()
-        Total1 = (
-            dfd.Qmelt.abs().sum()
-            + dfd.Qfreeze.abs().sum()
-            + dfd.Qt.abs().sum()
-        )
+        Total1 = dfd.Qmelt.abs().sum() + dfd.Qfreeze.abs().sum() + dfd.Qt.abs().sum()
         print(
             "Percent of Qmelt: %.1f \n Qfreeze: %.1f \n Qt: %.1f"
             % (
-                dfd.Qmelt.abs().sum() / Total1*100,
-                dfd.Qfreeze.abs().sum() / Total1*100,
-                dfd.Qt.abs().sum() / Total1*100,
+                dfd.Qmelt.abs().sum() / Total1 * 100,
+                dfd.Qfreeze.abs().sum() / Total1 * 100,
+                dfd.Qt.abs().sum() / Total1 * 100,
             )
         )
         print("Accumulation Energies")
@@ -147,12 +157,12 @@ if __name__ == "__main__":
         print(
             "Percent of SW: %.1f \n LW: %.1f \n Qs: %.1f \n Ql: %.1f \n Qf: %.1f\n Qg: %.1f"
             % (
-                dfd_ac.SW.abs().sum() / Total2*100,
-                dfd_ac.LW.abs().sum() / Total2*100,
-                dfd_ac.Qs.abs().sum() / Total2*100,
-                dfd_ac.Ql.abs().sum() / Total2*100,
-                dfd_ac.Qf.abs().sum() / Total2*100,
-                dfd_ac.Qg.abs().sum() / Total2*100,
+                dfd_ac.SW.abs().sum() / Total2 * 100,
+                dfd_ac.LW.abs().sum() / Total2 * 100,
+                dfd_ac.Qs.abs().sum() / Total2 * 100,
+                dfd_ac.Ql.abs().sum() / Total2 * 100,
+                dfd_ac.Qf.abs().sum() / Total2 * 100,
+                dfd_ac.Qg.abs().sum() / Total2 * 100,
             )
         )
         print("Ablation Energies")
@@ -167,12 +177,12 @@ if __name__ == "__main__":
         print(
             "Percent of SW: %.1f \n LW: %.1f \n Qs: %.1f \n Ql: %.1f \n Qf: %.1f\n Qg: %.1f"
             % (
-                dfd_ab.SW.abs().sum() / Total2*100,
-                dfd_ab.LW.abs().sum() / Total2*100,
-                dfd_ab.Qs.abs().sum() / Total2*100,
-                dfd_ab.Ql.abs().sum() / Total2*100,
-                dfd_ab.Qf.abs().sum() / Total2*100,
-                dfd_ab.Qg.abs().sum() / Total2*100,
+                dfd_ab.SW.abs().sum() / Total2 * 100,
+                dfd_ab.LW.abs().sum() / Total2 * 100,
+                dfd_ab.Qs.abs().sum() / Total2 * 100,
+                dfd_ab.Ql.abs().sum() / Total2 * 100,
+                dfd_ab.Qf.abs().sum() / Total2 * 100,
+                dfd_ab.Qg.abs().sum() / Total2 * 100,
             )
         )
         print("Full Energies")
@@ -187,12 +197,12 @@ if __name__ == "__main__":
         print(
             "Percent of SW: %.1f \n LW: %.1f \n Qs: %.1f \n Ql: %.1f \n Qf: %.1f\n Qg: %.1f"
             % (
-                dfd.SW.abs().sum() / Total2*100,
-                dfd.LW.abs().sum() / Total2*100,
-                dfd.Qs.abs().sum() / Total2*100,
-                dfd.Ql.abs().sum() / Total2*100,
-                dfd.Qf.abs().sum() / Total2*100,
-                dfd.Qg.abs().sum() / Total2*100,
+                dfd.SW.abs().sum() / Total2 * 100,
+                dfd.LW.abs().sum() / Total2 * 100,
+                dfd.Qs.abs().sum() / Total2 * 100,
+                dfd.Ql.abs().sum() / Total2 * 100,
+                dfd.Qf.abs().sum() / Total2 * 100,
+                dfd.Qg.abs().sum() / Total2 * 100,
             )
         )
         # print(
