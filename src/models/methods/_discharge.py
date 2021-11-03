@@ -9,6 +9,7 @@ from tqdm import tqdm
 from functools import lru_cache
 import logging
 import coloredlogs
+import pytz
 
 # Module logger
 logger = logging.getLogger("__main__")
@@ -69,6 +70,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         df_f = df_f.loc[mask]
         df_f = df_f.reset_index(drop=True)
         df_f = df_f.set_index("time")
+        # df_f = df_f.tz_localize(pytz.country_timezones(self.country)[0])
 
         self.df = self.df.set_index("time")
         self.df.loc[df_f.index, "Discharge"] = self.D_F * df_f["fountain"]

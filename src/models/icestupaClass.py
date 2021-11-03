@@ -9,6 +9,7 @@ import pandas as pd
 import sys, os, math, json
 import numpy as np
 import logging
+import pytz
 from stqdm import stqdm
 from codetiming import Timer
 from datetime import timedelta
@@ -89,6 +90,7 @@ class Icestupa:
         # Reset date range
         self.df = self.df.set_index("time")
         self.df = self.df[SITE["start_date"] : SITE["melt_out"]]
+        # self.df = self.df.tz_localize(pytz.country_timezones(self.country)[0])
         self.df = self.df.reset_index()
 
         logger.debug(self.df.head())
@@ -207,7 +209,8 @@ class Icestupa:
             start=self.start_date,
             end=self.df["time"].iloc[-1],
             DT=self.DT,
-            utc=self.utc_offset,
+            utc=self.utc,
+            # country=self.country,
             alt=self.alt,
         )
 

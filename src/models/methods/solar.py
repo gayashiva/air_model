@@ -4,6 +4,7 @@ from pvlib import location
 import numpy as np
 import pandas as pd
 import logging
+import pytz
 from codetiming import Timer
 
 logger = logging.getLogger(__name__)
@@ -13,17 +14,16 @@ def get_solar(
     latitude, longitude, start, end, DT, utc, alt
 ):  # Provides solar angle for each time step
 
-    site_location = location.Location(latitude, longitude, tz=utc, altitude=alt)
+    site_location = location.Location(latitude, longitude, altitude=alt)
 
     times = pd.date_range(
-        start,
-        end,
+        start - pd.Timedelta(hours=utc),
+        end - pd.Timedelta(hours=utc),
         freq=(str(int(DT / 60)) + "T"),
+        # tz=pytz.country_timezones(country)[0],
     )
 
-    # Get solar azimuth and zenith to pass to the transposition function
     solar_position = site_location.get_solarposition(times=times, method="ephemeris")
-    # clearsky = site_location.get_clearsky(times=times)
 
     solar_df = pd.DataFrame(
         {
@@ -36,4 +36,7 @@ def get_solar(
     solar_df.loc[solar_df["sea"] < 0, "sea"] = 0
     solar_df.index = solar_df.index.set_names(["time"])
     solar_df = solar_df.reset_index()
+    print(solar_df.head())
+    solar_df["time"] += pd.Timedelta(hours=utc)
+    print(solar_df.head())
     return solar_df
