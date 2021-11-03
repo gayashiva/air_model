@@ -57,11 +57,11 @@ def config(location="guttannen21"):
 
         SITE = dict(
             name="guttannen20",
-            start_date=datetime(2020, 1, 3, 16).tz_localize(tz="CH"),
+            start_date=datetime(2020, 1, 3, 16),
             # end_date=datetime(2020, 4, 6, 12),
-            melt_out=datetime(2020, 4, 6, 12).tz_localize(tz="CH"),
-            fountain_off_date=datetime(2020, 3, 8, 9).tz_localize(
-                tz="CH"
+            melt_out=datetime(2020, 4, 6, 12),
+            fountain_off_date=datetime(
+                2020, 3, 8, 9
             ),  # Image shows Dani switched off at 8th Mar 10 am
             D_F=7.5,  # FOUNTAIN min discharge
             T_F=3,  # FOUNTAIN min discharge

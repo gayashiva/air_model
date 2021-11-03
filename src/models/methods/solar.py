@@ -20,7 +20,6 @@ def get_solar(
         start - pd.Timedelta(hours=utc),
         end - pd.Timedelta(hours=utc),
         freq=(str(int(DT / 60)) + "T"),
-        # tz=pytz.country_timezones(country)[0],
     )
 
     solar_position = site_location.get_solarposition(times=times, method="ephemeris")
@@ -36,7 +35,5 @@ def get_solar(
     solar_df.loc[solar_df["sea"] < 0, "sea"] = 0
     solar_df.index = solar_df.index.set_names(["time"])
     solar_df = solar_df.reset_index()
-    print(solar_df.head())
     solar_df["time"] += pd.Timedelta(hours=utc)
-    print(solar_df.head())
     return solar_df
