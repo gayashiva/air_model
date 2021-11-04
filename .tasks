@@ -1,5 +1,0 @@
-[file-run:debug]
-command:python=/home/suryab/packages/miniconda3/envs/air/bin/python  "$(VIM_RELNAME)"
-output=terminal
-cwd=$(VIM_ROOT)
-save=2
