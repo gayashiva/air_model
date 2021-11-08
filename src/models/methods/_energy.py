@@ -52,9 +52,9 @@ def get_energy(self, i):
     )
 
     # Long Wave Radiation LW
-    self.df.loc[i, "LW"] = self.df.loc[
-        i, "LW_in"
-    ] - self.IE * self.STEFAN_BOLTZMAN * math.pow(self.df.loc[i, "T_s"] + 273.15, 4)
+    self.df.loc[i, "LW"] = self.df.loc[i, "LW_in"] - self.IE * self.sigma * math.pow(
+        self.df.loc[i, "T_s"] + 273.15, 4
+    )
 
     # if self.df.loc[i, "Discharge"] > 0:
     self.df.loc[i, "Qf"] = (

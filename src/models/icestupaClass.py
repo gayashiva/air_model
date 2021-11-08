@@ -26,43 +26,9 @@ logger.propagate = False
 
 
 class Icestupa:
-
-    """Model hyperparameter"""
-
-    DT = 60 * 60  # Model time step
-
-    """Physical Constants"""
-    L_S = 2848 * 1000  # J/kg Sublimation
-    L_F = 334 * 1000  # J/kg Fusion
-    C_A = 1.01 * 1000  # J/kgC Specific heat air
-    C_I = 2.097 * 1000  # J/kgC Specific heat ice
-    C_W = 4.186 * 1000  # J/kgC Specific heat water
-    RHO_W = 1000  # Density of water
-    RHO_I = 917  # Density of Ice RHO_I
-    RHO_A = 1.29  # kg/m3 air density at mean sea level
-    VAN_KARMAN = 0.4  # Van Karman constant
-    K_I = 2.123  # Thermal Conductivity Waite et al. 2006
-    STEFAN_BOLTZMAN = 5.670367 * math.pow(10, -8)  # Stefan Boltzman constant
-    P0 = 1013  # Standard air pressure hPa
-    G = 9.81  # Gravitational acceleration
-
-    """Surface Properties"""
-    IE = 0.97  # Ice Emissivity IE
-    A_I = 0.25  # Albedo of Ice A_I
-    A_S = 0.85  # Albedo of Fresh Snow A_S
-    A_DECAY = 16  # Albedo decay rate decay_t_d
-    Z = 0.003  # Ice Momentum and Scalar roughness length
-    T_PPT = 1  # Temperature condition for liquid precipitation
-    DX = 20e-03  # m Surface layer thickness growth rate
-
-    SA_corr = 1  # m Surface layer thickness growth rate
-
-    # """Fountain constants"""
-    # T_F = 1.5  # FOUNTAIN Water temperature
-
     def __init__(self, location="Guttannen 2021", params="default"):
 
-        SITE, FOLDER = config(location)
+        CONSTANTS, SITE, FOLDER = config(location)
         diff = SITE["melt_out"] - SITE["start_date"]
         days, seconds = diff.days, diff.seconds
         self.total_hours = days * 24 + seconds // 3600
@@ -70,12 +36,12 @@ class Icestupa:
         if params == "best":
             with open(FOLDER["sim"] + "best_params.pkl", "rb") as f:
                 best_params = pickle.load(f)
-            initial_data = [SITE, FOLDER, best_params]
+            initialize = [CONSTANTS, SITE, FOLDER, best_params]
         else:
-            initial_data = [SITE, FOLDER]
+            initialize = [CONSTANTS, SITE, FOLDER]
 
         # Initialise all variables of dictionary
-        for dictionary in initial_data:
+        for dictionary in initialize:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
                 logger.info(f"%s -> %s" % (key, str(dictionary[key])))
@@ -195,9 +161,7 @@ class Icestupa:
                 ) * (1 + 0.22 * math.pow(self.tcc, 2))
 
                 self.df.loc[i, "LW_in"] = (
-                    self.df.loc[i, "e_a"]
-                    * self.STEFAN_BOLTZMAN
-                    * math.pow(row.temp + 273.15, 4)
+                    self.df.loc[i, "e_a"] * self.sigma * math.pow(row.temp + 273.15, 4)
                 )
 
         self.get_discharge()

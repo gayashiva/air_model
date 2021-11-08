@@ -8,9 +8,6 @@ import logging
 import os, sys
 import numpy as np
 
-# # Module logger
-# logger = logging.getLogger("__main__")
-
 # Spammers
 logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
 logging.getLogger("numexpr").setLevel(logging.CRITICAL)
@@ -21,7 +18,33 @@ sys.path.append(dirname)
 
 def config(location="guttannen21"):
 
-    # logger.info("Location is %s" % (location))
+    """Model, Physical and Surface Constants"""
+    CONSTANTS = dict(
+        DT=60 * 60,  # Model time step [s]
+        H_AWS=2,  # AWS height [m]
+        DX=20e-03,  # Surface layer thickness [m]
+        L_F=3.34e5,  # latent heat for melting [J kg-1]
+        L_V=2.5e6,  # latent heat for vaporization [J kg-1]
+        L_S=2.848e6,  # latent heat for sublimation [J kg-1]
+        C_A=1010,  # specific heat of air [J kg-1 K-1]
+        C_I=2097,  # specific heat of ice [J Kg-1 K-1]
+        C_W=4186,  # specific heat of water [J Kg-1 K-1]
+        RHO_W=1000,  # Density of water
+        RHO_I=917,  # Density of Ice RHO_I
+        RHO_A=1.29,  # air density at mean sea level
+        VAN_KARMAN=0.4,  # Van Karman constant
+        K_I=2.123,  # thermal conductivity ice [W m^-1 K^-1] Waite et al. 2006
+        sigma=5.67e-8,  # Stefan-Bolzmann constant [W m-2 K-4]
+        P0=1013,  # Standard air pressure hPa
+        G=9.81,  # Gravitational acceleration
+        IE=0.97,  # Ice Emissivity IE
+        A_I=0.25,  # Albedo of Ice A_I
+        A_S=0.85,  # Albedo of Fresh Snow A_S
+        A_DECAY=16,  # Albedo decay rate decay_t_d
+        Z=0.003,  # Ice Momentum and Scalar roughness length
+        T_PPT=1,  # Temperature condition for liquid precipitation
+        SA_corr=1,  # m Surface layer thickness growth rate
+    )
 
     if location == "Guttannen 2021" or location == "guttannen21":
 
@@ -37,7 +60,6 @@ def config(location="guttannen21"):
             alt=1047.6,
             latitude=46.649999,
             longitude=8.283333,
-            H_AWS=2,
             # R_F=10.2,
             SA_corr=1.2,
             Z=0.001,
@@ -69,8 +91,6 @@ def config(location="guttannen21"):
             alt=1047.6,
             latitude=46.649999,
             longitude=8.283333,
-            H_AWS=2,
-            country="CH",
             # perimeter=28, # on 24 Jan
             # DX= 50e-03,
             # Z= 5e-03,
@@ -96,12 +116,10 @@ def config(location="guttannen21"):
             alt=4009,
             longitude=77.606949,
             latitude=34.216638,
-            H_AWS=2,
             tcc=0,  # Total cloud cover
             # tcc=0.1,  # Total cloud cover
             SA_corr=1.5,
             # perimeter=82.3, # On 3 Mar
-            country="IN",
         )
 
         data_h = [
@@ -116,13 +134,11 @@ def config(location="guttannen21"):
             # end_date=datetime(2019, 3, 17),
             melt_out=datetime(2019, 3, 10, 19),
             fountain_off_date=datetime(2019, 2, 16, 10),
-            T_F=1,  # FOUNTAIN min discharge
+            T_F=1,  # Fountain water temp
             utc=1,
             longitude=7.297543,
             latitude=46.693723,
             R_F=1.233,
-            H_AWS=2,
-            country="CH",
             # discharge=3.58,  # FOUNTAIN on mean discharge from field
             # dia_f=0.0056,  # FOUNTAIN aperture diameter
             # DX= 50e-03,
@@ -139,14 +155,12 @@ def config(location="guttannen21"):
             name="phortse20",
             start_date=datetime(2019, 12, 1),
             melt_out=datetime(2020, 2, 1),
-            # melt_out=datetime(2021, 5, 10, 1),
             fountain_off_date=datetime(2020, 2, 1),
             D_F=60,
             T_F=3,
             utc=1,
             latitude=46.649999,
             longitude=8.283333,
-            H_AWS=2,
             SA_corr=1.2,
             Z=0.001,
             R_F=10,
@@ -166,4 +180,4 @@ def config(location="guttannen21"):
     )
     df_h = pd.DataFrame(data_h)
 
-    return SITE, FOLDER
+    return CONSTANTS, SITE, FOLDER
