@@ -40,7 +40,6 @@ class Icestupa:
         else:
             initialize = [CONSTANTS, SITE, FOLDER]
 
-        # Initialise all variables of dictionary
         for dictionary in initialize:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
@@ -56,7 +55,6 @@ class Icestupa:
         # Reset date range
         self.df = self.df.set_index("time")
         self.df = self.df[SITE["start_date"] : SITE["melt_out"]]
-        # self.df = self.df.tz_localize(pytz.country_timezones(self.country)[0])
         self.df = self.df.reset_index()
 
         logger.debug(self.df.head())
@@ -72,8 +70,6 @@ class Icestupa:
     from src.models.methods._energy import get_energy, test_get_energy
     from src.models.methods._figures import summary_figures
 
-    # from src.models.methods._stop import stop_model
-
     @Timer(
         text="Preprocessed data in {:.2f} seconds",
         logger=logging.getLogger("__main__").warning,
@@ -81,8 +77,6 @@ class Icestupa:
     def derive_parameters(
         self,
     ):  # Derives additional parameters required for simulation
-
-        # self.change_freq()
 
         unknown = [
             "alb",

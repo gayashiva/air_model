@@ -18,34 +18,6 @@ sys.path.append(dirname)
 
 def config(location="guttannen21"):
 
-    """Model, Physical and Surface Constants"""
-    CONSTANTS = dict(
-        DT=60 * 60,  # Model time step [s]
-        H_AWS=2,  # AWS height [m]
-        DX=20e-03,  # Surface layer thickness [m]
-        L_F=3.34e5,  # latent heat for melting [J kg-1]
-        L_V=2.5e6,  # latent heat for vaporization [J kg-1]
-        L_S=2.848e6,  # latent heat for sublimation [J kg-1]
-        C_A=1010,  # specific heat of air [J kg-1 K-1]
-        C_I=2097,  # specific heat of ice [J Kg-1 K-1]
-        C_W=4186,  # specific heat of water [J Kg-1 K-1]
-        RHO_W=1000,  # Density of water
-        RHO_I=917,  # Density of Ice RHO_I
-        RHO_A=1.29,  # air density at mean sea level
-        VAN_KARMAN=0.4,  # Van Karman constant
-        K_I=2.123,  # thermal conductivity ice [W m^-1 K^-1] Waite et al. 2006
-        sigma=5.67e-8,  # Stefan-Bolzmann constant [W m-2 K-4]
-        P0=1013,  # Standard air pressure hPa
-        G=9.81,  # Gravitational acceleration
-        IE=0.97,  # Ice Emissivity IE
-        A_I=0.25,  # Albedo of Ice A_I
-        A_S=0.85,  # Albedo of Fresh Snow A_S
-        A_DECAY=16,  # Albedo decay rate decay_t_d
-        Z=0.003,  # Ice Momentum and Scalar roughness length
-        T_PPT=1,  # Temperature condition for liquid precipitation
-        SA_corr=1,  # m Surface layer thickness growth rate
-    )
-
     if location == "Guttannen 2021" or location == "guttannen21":
 
         SITE = dict(
@@ -54,8 +26,8 @@ def config(location="guttannen21"):
             # end_date=datetime(2021, 5, 10, 1),
             melt_out=datetime(2021, 5, 10, 1),
             fountain_off_date=datetime(2021, 2, 20, 10),
-            D_F=7.5,  # FOUNTAIN min discharge
-            T_F=3,  # FOUNTAIN min discharge
+            D_F=7.5,  # Fountain mean discharge
+            T_F=3,  # Fountain temp
             utc=2,
             alt=1047.6,
             latitude=46.649999,
@@ -85,8 +57,8 @@ def config(location="guttannen21"):
             fountain_off_date=datetime(
                 2020, 3, 8, 9
             ),  # Image shows Dani switched off at 8th Mar 10 am
-            D_F=7.5,  # FOUNTAIN min discharge
-            T_F=3,  # FOUNTAIN min discharge
+            D_F=7.5,  # Fountain mean discharge
+            T_F=3,  # Fountain temp
             utc=2,
             alt=1047.6,
             latitude=46.649999,
@@ -179,5 +151,33 @@ def config(location="guttannen21"):
         sim="data/" + SITE["name"] + "/processed/simulations/",
     )
     df_h = pd.DataFrame(data_h)
+
+    """Model, Physical and Surface Constants"""
+    CONSTANTS = dict(
+        DT=60 * 60,  # Model time step [s]
+        H_AWS=2,  # AWS height [m]
+        DX=20e-03,  # Surface layer thickness [m]
+        L_F=3.34e5,  # latent heat for melting [J kg-1]
+        L_V=2.5e6,  # latent heat for vaporization [J kg-1]
+        L_S=2.848e6,  # latent heat for sublimation [J kg-1]
+        C_A=1010,  # specific heat of air [J kg-1 K-1]
+        C_I=2097,  # specific heat of ice [J Kg-1 K-1]
+        C_W=4186,  # specific heat of water [J Kg-1 K-1]
+        RHO_W=1000,  # Density of water
+        RHO_I=917,  # Density of Ice RHO_I
+        RHO_A=1.29,  # air density at mean sea level
+        VAN_KARMAN=0.4,  # Van Karman constant
+        K_I=2.123,  # thermal conductivity ice [W m^-1 K^-1] Waite et al. 2006
+        sigma=5.67e-8,  # Stefan-Bolzmann constant [W m-2 K-4]
+        P0=1013,  # Standard air pressure hPa
+        G=9.81,  # Gravitational acceleration
+        IE=0.97,  # Ice Emissivity IE
+        A_I=0.25,  # Albedo of Ice A_I
+        A_S=0.85,  # Albedo of Fresh Snow A_S
+        A_DECAY=16,  # Albedo decay rate decay_t_d
+        Z=0.003,  # Ice Momentum and Scalar roughness length
+        T_PPT=1,  # Temperature condition for liquid precipitation
+        SA_corr=1,  # Surface area correction factor
+    )
 
     return CONSTANTS, SITE, FOLDER
