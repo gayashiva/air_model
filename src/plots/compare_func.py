@@ -38,7 +38,7 @@ if __name__ == "__main__":
     locations = ["guttannen21", "gangles21"]
     sources = ["model", "func"]
     for i, loc in enumerate(locations):
-        SITE, FOLDER = config(loc)
+        CONSTANTS, SITE, FOLDER = config(loc)
         icestupa_sim = Icestupa(loc)
         icestupa_sim.read_output()
         icestupa_sim.self_attributes()
