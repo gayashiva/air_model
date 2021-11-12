@@ -74,10 +74,12 @@ if __name__ == "__main__":
 
         plt.figure()
         x = df.time
-        y1 = df.iceV
+        y1 = df.iceV / df.SA
         y2 = df.dis_iceV
+        y3 = df.SA
         plt.plot(x, y1)
-        plt.plot(x, y2)
+        # plt.plot(x, y2)
+        # plt.plot(x, y3)
         plt.legend()
         plt.grid()
         plt.savefig(FOLDER["sim"] + "dis.jpg")
