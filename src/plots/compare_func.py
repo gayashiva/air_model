@@ -24,13 +24,13 @@ def datetime_to_int(dt):
     return int(dt.strftime("%H"))
 
 
-def autoDis(a1, a2, a3, b, amplitude, center, sigma, temp, time=10, rh=50, v=2):
+def autoDis(a, b, c, d, amplitude, center, sigma, temp, time=10, rh=50, v=2):
     model = GaussianModel()
     params = {"amplitude": amplitude, "center": center, "sigma": sigma}
-    return a1 * temp + a2 * rh + a3 * v + b + model.eval(x=time, **params)
+    return a * temp + b * rh + c * v + d + model.eval(x=time, **params)
 
-def simpleDis(a1, a2, a3, b, temp, rh=50, v=2):
-    return a1 * temp + a2 * rh + a3 * v + b 
+# def simpleDis(a1, a2, a3, b, temp, rh=50, v=2):
+#     return a1 * temp + a2 * rh + a3 * v + b 
 
 
 if __name__ == "__main__":
@@ -64,12 +64,12 @@ if __name__ == "__main__":
             i = row.Index
             if i !=0:
                 hour = datetime_to_int(row.time)
-                # df.loc[i, "dis_freeze"] = autoDis(
-                #     **param_values, time=hour, temp=row.temp, rh=row.RH, v=row.wind
-                # )
-                df.loc[i, "dis_freeze"] = simpleDis(
-                    **param_values, temp=row.temp, rh=row.RH, v=row.wind
+                df.loc[i, "dis_freeze"] = autoDis(
+                    **param_values, time=hour, temp=row.temp, rh=row.RH, v=row.wind
                 )
+                # df.loc[i, "dis_freeze"] = simpleDis(
+                #     **param_values, temp=row.temp, rh=row.RH, v=row.wind
+                # )
                  
                 if df.loc[i, "dis_freeze"] < 0:
                     df.loc[i, "dis_freeze"] = 0
