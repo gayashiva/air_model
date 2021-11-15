@@ -95,3 +95,4 @@ src/logs/
 *.zip
 *.html
 .python-version
+.tasks
