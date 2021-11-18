@@ -9,7 +9,7 @@ import coloredlogs
 
 
 def get_droplet_projectile(
-    dia=0, h_f=3, dis=0, x=0
+    dia=0, h_f=3, dis=0, r=0
 ):  # returns discharge or spray radius using projectile motion
 
     if dia == 0:
@@ -21,8 +21,8 @@ def get_droplet_projectile(
     Area = math.pi * math.pow(dia, 2) / 4
     theta_f = math.radians(45)
     G = 9.8
-    if x == 0:
-        data_xy = []
+    if r == 0:
+        data_ry = []
         v = dis / (60 * 1000 * Area)
         t = 0.0
         while True:
@@ -31,18 +31,18 @@ def get_droplet_projectile(
             # projectile has hit ground level
             if y < 0:
                 break
-            # calculate the distance x
-            x = v * math.cos(theta_f) * t
-            # append the (x, y) tuple to the list
-            data_xy.append((x, y))
+            # calculate the distance r
+            r = v * math.cos(theta_f) * t
+            # append the (r, y) tuple to the list
+            data_ry.append((r, y))
             t += 0.01
-        logger.warning("Spray radius is %s" % (x))
-        return x
+        logger.warning("Spray radius is %s" % (r))
+        return r
     else:
         v = math.sqrt(
             G ** 2
-            * x ** 2
-            / (math.cos(theta_f) ** 2 * 2 * G * h_f + math.sin(2 * theta_f) * G * x)
+            * r ** 2
+            / (math.cos(theta_f) ** 2 * 2 * G * h_f + math.sin(2 * theta_f) * G * r)
         )
         dis = v * (60 * 1000 * Area)
         logger.warning("Discharge calculated is %s" % (dis))
@@ -53,4 +53,5 @@ if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
     logger.setLevel("INFO")
-    get_droplet_projectile(h_f=3, dia=0.005, x=9)
+    get_droplet_projectile(h_f=3, dia=0.005, r=9)
+    # get_droplet_projectile(h_f=3, dia=0.005, dis=8)
