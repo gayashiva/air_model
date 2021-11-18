@@ -19,10 +19,8 @@ from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
 from src.models.methods.metadata import get_parameter_metadata
 
-
 def datetime_to_int(dt):
     return int(dt.strftime("%H"))
-
 
 def autoDis(a, b, c, d, amplitude, center, sigma, temp, time=10, rh=50, v=2):
     model = GaussianModel()
@@ -38,14 +36,15 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("WARNING")
 
-    locations = ["guttannen21", "gangles21"]
-    # locations = ["guttannen21"]
+    # locations = ["guttannen21", "gangles21"]
+    locations = ["guttannen21"]
     for loc in locations:
         CONSTANTS, SITE, FOLDER = config(loc)
         icestupa_sim = Icestupa(loc)
         icestupa_sim.read_output()
         icestupa_sim.self_attributes()
-        with open(FOLDER["input"] + "coeff.json") as f:
+        with open(FOLDER["sim"] + "coeffs.json") as f:
+        # with open(FOLDER["input"] + "coeff.json") as f:
             param_values = json.load(f)
         print(param_values)
 

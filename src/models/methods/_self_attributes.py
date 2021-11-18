@@ -6,7 +6,6 @@ import logging, coloredlogs
 from codetiming import Timer
 
 from src.models.methods.calibration import get_calibration
-from src.models.methods.droplet import get_droplet_projectile
 
 # Module logger
 logger = logging.getLogger("__main__")
@@ -20,12 +19,6 @@ def self_attributes(self, save=False):
     else:
         df_c = get_calibration(site=self.name, input=self.raw)
 
-    # if self.name == "schwarzsee19":
-    #     self.R_F = get_droplet_projectile(
-    #         dia=self.dia_f, h=self.h_f, d=self.discharge
-    #     )
-    #     logger.warning("Measured spray radius from fountain parameters %0.1f"%self.R_F)
-    # else:
 
     # Get spray radius
     if hasattr(self, "R_F"):

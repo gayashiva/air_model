@@ -8,7 +8,7 @@ import logging
 import coloredlogs
 
 
-def get_droplet_projectile(
+def get_projectile(
     dia=0, h_f=3, dis=0, r=0
 ):  # returns discharge or spray radius using projectile motion
 
@@ -36,7 +36,7 @@ def get_droplet_projectile(
             # append the (r, y) tuple to the list
             data_ry.append((r, y))
             t += 0.01
-        logger.warning("Spray radius is %s" % (r))
+        # logger.warning("Spray radius is %s" % (r))
         return r
     else:
         v = math.sqrt(
@@ -45,7 +45,7 @@ def get_droplet_projectile(
             / (math.cos(theta_f) ** 2 * 2 * G * h_f + math.sin(2 * theta_f) * G * r)
         )
         dis = v * (60 * 1000 * Area)
-        logger.warning("Discharge calculated is %s" % (dis))
+        # logger.warning("Discharge calculated is %s" % (dis))
         return dis
 
 
@@ -53,5 +53,5 @@ if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
     logger.setLevel("INFO")
-    # get_droplet_projectile(h_f=3, dia=0.005, r=9)
-    get_droplet_projectile(h_f=5, dia=0.005, dis=25)
+    get_droplet_projectile(h_f=3, dia=0.005, r=9)
+    # get_droplet_projectile(h_f=3, dia=0.005, dis=8)
