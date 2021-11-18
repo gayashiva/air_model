@@ -53,5 +53,5 @@ if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
     logger.setLevel("INFO")
-    get_droplet_projectile(h_f=3, dia=0.005, r=9)
-    # get_droplet_projectile(h_f=3, dia=0.005, dis=8)
+    # get_droplet_projectile(h_f=3, dia=0.005, r=9)
+    get_droplet_projectile(h_f=5, dia=0.005, dis=25)
