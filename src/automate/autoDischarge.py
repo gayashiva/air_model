@@ -126,12 +126,12 @@ def SunMelt(loc='guttannen21'):
     df["hour"] = df["index"].apply(lambda x: datetime_to_int(x))
     df["f_cone"] = 0
 
-    SA = math.pi * math.pow(params["r"],2) * math.pow(2,0.5) # Assuming h=r cone
+    SA = math.pi * math.pow(params["r_real"],2) * math.pow(2,0.5) # Assuming h=r cone
 
     for i in range(0, df.shape[0]):
         df.loc[i, "f_cone"] = (
-            math.pi * math.pow(params["r"], 2) * 0.5 * math.sin(df.loc[i, "sea"])
-            + 0.5 * math.pow(params["r"], 2) * math.cos(df.loc[i, "sea"])
+            math.pi * math.pow(params["r_real"], 2) * 0.5 * math.sin(df.loc[i, "sea"])
+            + 0.5 * math.pow(params["r_real"], 2) * math.cos(df.loc[i, "sea"])
         ) / SA
 
         df.loc[i, "SW_direct"] = (

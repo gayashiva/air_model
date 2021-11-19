@@ -27,10 +27,6 @@ def autoDis(a, b, c, d, amplitude, center, sigma, temp, time=10, rh=50, v=2):
     params = {"amplitude": amplitude, "center": center, "sigma": sigma}
     return a * temp + b * rh + c * v + d + model.eval(x=time, **params)
 
-# def simpleDis(a1, a2, a3, b, temp, rh=50, v=2):
-#     return a1 * temp + a2 * rh + a3 * v + b 
-
-
 if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)

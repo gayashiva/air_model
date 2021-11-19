@@ -7,7 +7,6 @@ import json
 import math
 from datetime import datetime, timedelta
 
-# from solar_gauss import Daymelt
 from autoDischarge import TempFreeze, SunMelt
 from projectile import get_projectile
 import matplotlib.pyplot as plt
@@ -35,11 +34,11 @@ def autoDis(a, b, c, d, amplitude, center, sigma, temp, time, rh, v):
 
 
 if __name__ == "__main__":
-    locs = ["gangles21", "guttannen21"]
-    # locs = ["guttannen21"]
+    locations = ["gangles21", "guttannen21"]
+    # locations = ["guttannen21"]
 
     for loc in locations:
-        CONSTANTS, loc, FOLDER = config(loc)
+        constants, SITE, FOLDER = config(loc)
         icestupa_sim = Icestupa(loc)
         icestupa_sim.read_output()
         icestupa_sim.self_attributes()
@@ -60,13 +59,13 @@ if __name__ == "__main__":
         print(f"The temperature, humidity and wind were less/more than {freeze_when} for {temp_cutoff} of the months of Jan and Feb" )
         growth_rate = TempFreeze(freeze_when,loc)
 
-        dis_desired = get_projectile(h_f=params["h_f"], dia=0.005, r=params["r_desired"])
+        dis_real = get_projectile(h_f=params["h_f"], dia=params["dia_f"], r=params["r_real"])
 
-        VA = dis_desired/growth_rate
+        VA = dis_real/growth_rate
         params["r_virtual"] = round(math.sqrt(VA/(math.pi*math.sqrt(2))),2)
 
-        print(f"Virtual radius for {loc} is {params['r_virtual']} for recommended radius of {params['r_desired']}" )
-        print(f"Recommended discharge for {loc} is {desired_dis}" )
+        print(f"Virtual radius for {loc} is {params['r_virtual']} for recommended radius of {params['r_real']}" )
+        print(f"Recommended discharge for {loc} is {dis_real}" )
 
         with open(FOLDER["raw"] + "info.json", "w") as f:
             json.dump(params, f)
@@ -74,7 +73,7 @@ if __name__ == "__main__":
         """Calculate Solar gaussian coeffs"""
         result = SunMelt(loc)
 
-        with open(FOLDER["input"] + "daymelt.json", "w") as f:
+        with open(FOLDER["input"] + "sunmelt.json", "w") as f:
             json.dump(dict(result.best_values), f)
 
         """Compute Temp coeffs"""
@@ -113,7 +112,7 @@ if __name__ == "__main__":
             for rh in da.rh.values:
                 for v in da.v.values:
                     aws = [temp, rh, v]
-                    da.sel(temp=temp, rh=rh, v=v).data += TempFreeze(aws, loc, virtual_r=params["virtual_r"])
+                    da.sel(temp=temp, rh=rh, v=v).data += TempFreeze(aws, loc, r_virtual=params["r_virtual"])
                     x.append(aws)
                     y.append(da.sel(temp=temp, rh=rh, v=v).data)
 
