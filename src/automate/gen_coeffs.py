@@ -34,8 +34,8 @@ def autoDis(a, b, c, d, amplitude, center, sigma, temp, time, rh, v):
 
 
 if __name__ == "__main__":
-    locations = ["gangles21", "guttannen21"]
-    # locations = ["guttannen21"]
+    # locations = ["gangles21", "guttannen21"]
+    locations = ["guttannen21"]
 
     for loc in locations:
         constants, SITE, FOLDER = config(loc)
