@@ -36,19 +36,21 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("WARNING")
 
-    # locations = ["guttannen21", "gangles21"]
-    locations = ["guttannen21"]
+    locations = ["guttannen21", "gangles21"]
+    # locations = ["guttannen21"]
     for loc in locations:
         CONSTANTS, SITE, FOLDER = config(loc)
         icestupa_sim = Icestupa(loc)
         icestupa_sim.read_output()
         icestupa_sim.self_attributes()
+
         with open(FOLDER["sim"] + "coeffs.json") as f:
         # with open(FOLDER["input"] + "coeff.json") as f:
             param_values = json.load(f)
         print(param_values)
 
         df = icestupa_sim.df
+
         t = tqdm(
             df.itertuples(),
             total=icestupa_sim.total_hours,
@@ -70,22 +72,23 @@ if __name__ == "__main__":
                 #     **param_values, temp=row.temp, rh=row.RH, v=row.wind
                 # )
                  
-                if df.loc[i, "dis_freeze"] < 0:
-                    df.loc[i, "dis_freeze"] = 0
+                if df.loc[i, "dis_freeze"] <= 0:
+                    df.loc[i, "dis_freeze"] = np.nan
                     
                 df.loc[i, "dis_iceV"] = (
                     df.loc[i - 1, "dis_iceV"]
                     + df.loc[i, "dis_freeze"] * 60 / icestupa_sim.RHO_I
                 )
 
-        print(df.loc[df.dis_freeze!=0].dis_freeze.describe())
+        print(df.dis_freeze.describe())
 
         plt.figure()
         x = df.time
         y1 = df.iceV
         y2 = df.dis_iceV
-        plt.plot(x, y1)
-        plt.plot(x, y2)
+        # plt.plot(x, y1)
+        # plt.plot(x, y2)
+        df.dis_freeze.plot.kde()
         # plt.plot(x, y3)
         plt.legend()
         plt.grid()

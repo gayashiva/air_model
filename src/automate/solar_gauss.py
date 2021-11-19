@@ -17,7 +17,7 @@ from src.utils.settings import config
 def datetime_to_int(dt):
     return int(dt.strftime("%H"))
 
-def Daymelt(site='guttannen21'):
+def SunMelt(site='guttannen21'):
 
     CONSTANTS, SITE, FOLDER = config(site)
     # with open("data/" + site + "/info.json") as f:

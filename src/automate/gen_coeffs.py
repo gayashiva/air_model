@@ -5,17 +5,22 @@ import numpy as np
 import os, sys
 import json
 import math
-from solar_gauss import Daymelt
-from autoDischarge import Automate
+from datetime import datetime, timedelta
+
+# from solar_gauss import Daymelt
+from autoDischarge import TempFreeze, SunMelt
 from projectile import get_projectile
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from lmfit.models import GaussianModel
 import logging
 import coloredlogs
+
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 from src.utils.settings import config
+from src.models.icestupaClass import Icestupa
+from src.models.methods.metadata import get_parameter_metadata
 
 def line(x, a, b, c, d):
     x1 = x[:, 0]
@@ -30,34 +35,45 @@ def autoDis(a, b, c, d, amplitude, center, sigma, temp, time, rh, v):
 
 
 if __name__ == "__main__":
-    # sites = ["gangles21", "guttannen21"]
-    sites = ["guttannen21"]
+    locs = ["gangles21", "guttannen21"]
+    # locs = ["guttannen21"]
 
+    for loc in locations:
+        CONSTANTS, loc, FOLDER = config(loc)
+        icestupa_sim = Icestupa(loc)
+        icestupa_sim.read_output()
+        icestupa_sim.self_attributes()
 
-    for site in sites:
-        CONSTANTS, SITE, FOLDER = config(site)
+        df = icestupa_sim.df
+
+        temp_cutoff = 0.25
+        wind_cutoff = 0.5
+        crit_temp = df.loc[df.time < datetime(2021, 3, 1)].temp.quantile(temp_cutoff)
+        crit_rh = df.loc[df.time < datetime(2021, 3, 1)].RH.quantile(temp_cutoff)
+        crit_wind = df.loc[df.time < datetime(2021, 3, 1)].wind.quantile(wind_cutoff)
+        freeze_when = [crit_temp,crit_rh, crit_wind]
 
         with open(FOLDER["raw"] + "info.json") as f:
             params = json.load(f)
 
         """Calculate Virtual radius"""
-        mean_dis = Automate(params["aws"],site)
+        print(f"The temperature, humidity and wind were less/more than {freeze_when} for {temp_cutoff} of the months of Jan and Feb" )
+        growth_rate = TempFreeze(freeze_when,loc)
 
-        desired_dis = get_projectile(h_f=params["h_f"], dia=0.005, r=params["r"])
+        dis_desired = get_projectile(h_f=params["h_f"], dia=0.005, r=params["r_desired"])
 
-        VA = desired_dis/mean_dis
-        params["virtual_r"] = round(math.sqrt(VA/math.pi),2)
+        VA = dis_desired/growth_rate
+        params["r_virtual"] = round(math.sqrt(VA/(math.pi*math.sqrt(2))),2)
 
-        print(f"Virtual radius for {site} is {params['virtual_r']} for recommended radius of {params['r']}" )
-        print(f"Recommended discharge for {site} is {desired_dis}" )
+        print(f"Virtual radius for {loc} is {params['r_virtual']} for recommended radius of {params['r_desired']}" )
+        print(f"Recommended discharge for {loc} is {desired_dis}" )
 
         with open(FOLDER["raw"] + "info.json", "w") as f:
             json.dump(params, f)
 
         """Calculate Solar gaussian coeffs"""
-        result = Daymelt(site)
+        result = SunMelt(loc)
 
-        # with open("data/" + site + "/daymelt.json", "w") as f:
         with open(FOLDER["input"] + "daymelt.json", "w") as f:
             json.dump(dict(result.best_values), f)
 
@@ -97,7 +113,7 @@ if __name__ == "__main__":
             for rh in da.rh.values:
                 for v in da.v.values:
                     aws = [temp, rh, v]
-                    da.sel(temp=temp, rh=rh, v=v).data += Automate(aws, site, virtual_r=params["virtual_r"])
+                    da.sel(temp=temp, rh=rh, v=v).data += TempFreeze(aws, loc, virtual_r=params["virtual_r"])
                     x.append(aws)
                     y.append(da.sel(temp=temp, rh=rh, v=v).data)
 
@@ -105,13 +121,12 @@ if __name__ == "__main__":
 
         popt, pcov = curve_fit(line, x, y)
         a, b, c, d = popt
-        print("For %s, dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f" % (site, a, b, c, d))
+        print("For %s, dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f" % (loc, a, b, c, d))
 
         """Combine all coeffs"""
         param_values = {}
 
-        # with open("data/" + site + "/daymelt.json") as f:
-        with open(FOLDER["input"] + "daymelt.json") as f:
+        with open(FOLDER["input"] + "sunmelt.json") as f:
             param_values = json.load(f)
 
         param_values["a"] = a
@@ -119,7 +134,6 @@ if __name__ == "__main__":
         param_values["c"] = c
         param_values["d"] = d
 
-        # with open("data/" + site + "/coeff.json", "w") as f:
         with open(FOLDER["sim"] + "coeffs.json", "w") as f:
             json.dump(param_values, f)
 
