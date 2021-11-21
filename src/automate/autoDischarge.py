@@ -83,8 +83,8 @@ def TempFreeze(aws, loc="guttannen21", r_virtual = 0):
     dis = -1 * freezing_energy / constants["L_F"] * 1000 / 60
 
     if r_virtual:
-        SA = math.pi * math.pow(params["r_virtual"],2) * math.pow(2,0.5) # Assuming h=r cone
-        dis *= SA
+        VA = math.pi * math.pow(params["r_virtual"],2) * math.pow(2,0.5) # Assuming h=r cone
+        dis *= VA
 
     return dis
 

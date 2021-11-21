@@ -63,8 +63,10 @@ if __name__ == "__main__":
 
         VA = dis_real/growth_rate
         params["r_virtual"] = round(math.sqrt(VA/(math.pi*math.sqrt(2))),2)
+        freezing_fraction = round(params['r_real'] ** 2/params['r_virtual'] ** 2,2)
 
         print(f"Virtual radius for {loc} is {params['r_virtual']} for recommended radius of {params['r_real']}" )
+        print(f"So only {freezing_fraction*100}% froze from the discharge rate" )
         print(f"Recommended discharge for {loc} is {dis_real}" )
 
         with open(FOLDER["raw"] + "info.json", "w") as f:
