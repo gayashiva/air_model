@@ -62,10 +62,11 @@ if __name__ == "__main__":
         dis_real = get_projectile(h_f=params["h_f"], dia=params["dia_f"], r=params["r_real"])
 
         VA = dis_real/growth_rate
-        params["r_virtual"] = round(math.sqrt(VA/(math.pi*math.sqrt(2))),2)
-        freezing_fraction = round(params['r_real'] ** 2/params['r_virtual'] ** 2,2)
+        # params["r_virtual"] = round(math.sqrt(VA/(math.pi*math.sqrt(2))),2)
+        r_virtual = round(math.sqrt(VA/(math.pi*math.sqrt(2))),2)
+        freezing_fraction = round(params['r_real'] ** 2/r_virtual ** 2,2)
 
-        print(f"Virtual radius for {loc} is {params['r_virtual']} for recommended radius of {params['r_real']}" )
+        print(f"Virtual radius for {loc} is {r_virtual} for recommended radius of {params['r_real']}" )
         print(f"So only {freezing_fraction*100}% froze from the discharge rate" )
         print(f"Recommended discharge for {loc} is {dis_real}" )
 
@@ -114,7 +115,7 @@ if __name__ == "__main__":
             for rh in da.rh.values:
                 for v in da.v.values:
                     aws = [temp, rh, v]
-                    da.sel(temp=temp, rh=rh, v=v).data += TempFreeze(aws, loc, r_virtual=params["r_virtual"])
+                    da.sel(temp=temp, rh=rh, v=v).data += TempFreeze(aws, loc, r_virtual)
                     x.append(aws)
                     y.append(da.sel(temp=temp, rh=rh, v=v).data)
 

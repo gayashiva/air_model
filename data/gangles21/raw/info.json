@@ -19,8 +19,7 @@
   "alb": 0.4,
   "temp_i": 0,
   "h_f": 3,
-  "dia_f": 0.012
+  "dia_f": 0.012,
   "solar_day": "2019-02-01",
-  "r_real": 10,
-  "r_virtual": 28.15,
+  "r_real": 10
 }
