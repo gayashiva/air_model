@@ -34,6 +34,10 @@ def autoDis(a, b, c, d, amplitude, center, sigma, temp, time, rh, v):
 
 
 if __name__ == "__main__":
+    # Main logger
+    logger = logging.getLogger(__name__)
+    logger.setLevel("ERROR")
+
     # locations = ["gangles21", "guttannen21"]
     locations = ["guttannen21"]
 
@@ -41,7 +45,6 @@ if __name__ == "__main__":
         constants, SITE, FOLDER = config(loc)
         icestupa_sim = Icestupa(loc)
         icestupa_sim.read_output()
-        icestupa_sim.self_attributes()
 
         df = icestupa_sim.df
 
