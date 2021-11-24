@@ -68,7 +68,8 @@ if __name__ == "__main__":
         # params["r_virtual"] = round(math.sqrt(VA/(math.pi*math.sqrt(2))),2)
         r_virtual = round(math.sqrt(VA/(math.pi*math.sqrt(2))),2)
         if loc == 'guttannen21':
-            r_virtual = 1/math.sqrt(math.pi*math.sqrt(2))
+            # r_virtual = 1/math.sqrt(math.pi*math.sqrt(2))
+            r_virtual = params['r_real']
 
         freezing_fraction = round(params['r_real'] ** 2/r_virtual ** 2,2)
 

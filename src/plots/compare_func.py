@@ -72,6 +72,7 @@ if __name__ == "__main__":
                     + df.loc[i, "dis_freeze"] * 60 / icestupa_sim.RHO_I
                 )
 
+        print(df.dis_freeze.describe())
         df.to_csv(FOLDER["sim"] + "auto_dis.csv")
         plt.figure()
         x = df.time
