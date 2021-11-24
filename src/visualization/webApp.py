@@ -74,7 +74,7 @@ if __name__ == "__main__":
     # location = "Gangles 2021"
     # trigger = "Manual"
 
-    SITE, FOLDER = config(location)
+    CONSTANTS, SITE, FOLDER = config(location)
 
     icestupa = Icestupa(location)
     icestupa.read_output()
@@ -439,7 +439,7 @@ if __name__ == "__main__":
             variable3 = st.multiselect(
                 "Choose",
                 options=(derived_cols),
-                default=["Cloudiness"],
+                default=["Solar Surface Area Fraction"],
             )
             if not (variable3):
                 st.error("Please select at least one variable.")

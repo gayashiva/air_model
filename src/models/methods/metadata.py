@@ -3,9 +3,7 @@
 
 import streamlit as st
 
-# from redis_cache import cache_it
 
-# @cache_it(limit=1000, expire=None)
 @st.cache
 def get_parameter_metadata(
     parameter,
@@ -173,7 +171,7 @@ def get_parameter_metadata(
             "units": "($m^3$)",
         },
         "tcc": {
-            "name": "Total CLoud Cover",
+            "name": "Total Cloud Cover",
             "kind": "Derived",
             "units": "()",
         },
