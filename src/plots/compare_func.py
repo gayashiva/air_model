@@ -30,18 +30,16 @@ def autoDis(a, b, c, d, amplitude, center, sigma, temp, time=10, rh=50, v=2):
 if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
-    logger.setLevel("WARNING")
+    logger.setLevel("ERROR")
 
-    locations = ["guttannen21", "gangles21"]
-    # locations = ["guttannen21"]
+    # locations = ["guttannen21", "gangles21"]
+    locations = ["guttannen21"]
     for loc in locations:
         CONSTANTS, SITE, FOLDER = config(loc)
         icestupa_sim = Icestupa(loc)
         icestupa_sim.read_output()
-        icestupa_sim.self_attributes()
 
         with open(FOLDER["sim"] + "coeffs.json") as f:
-        # with open(FOLDER["input"] + "coeff.json") as f:
             param_values = json.load(f)
         print(param_values)
 
@@ -64,27 +62,24 @@ if __name__ == "__main__":
                 df.loc[i, "dis_freeze"] = autoDis(
                     **param_values, time=hour, temp=row.temp, rh=row.RH, v=row.wind
                 )
-                # df.loc[i, "dis_freeze"] = simpleDis(
-                #     **param_values, temp=row.temp, rh=row.RH, v=row.wind
-                # )
                  
                 if df.loc[i, "dis_freeze"] <= 0:
-                    df.loc[i, "dis_freeze"] = np.nan
+                    # df.loc[i, "dis_freeze"] = 0
+                    df.loc[i, "dis_freeze"] =np.nan 
                     
                 df.loc[i, "dis_iceV"] = (
                     df.loc[i - 1, "dis_iceV"]
                     + df.loc[i, "dis_freeze"] * 60 / icestupa_sim.RHO_I
                 )
 
-        print(df.dis_freeze.describe())
-
+        df.to_csv(FOLDER["sim"] + "auto_dis.csv")
         plt.figure()
         x = df.time
         y1 = df.iceV
         y2 = df.dis_iceV
-        # plt.plot(x, y1)
-        # plt.plot(x, y2)
-        df.dis_freeze.plot.kde()
+        plt.plot(x, y1)
+        plt.plot(x, y2)
+        # df.dis_freeze.plot.kde()
         # plt.plot(x, y3)
         plt.legend()
         plt.grid()

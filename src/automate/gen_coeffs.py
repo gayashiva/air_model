@@ -62,11 +62,14 @@ if __name__ == "__main__":
         print(f"The temperature, humidity and wind were less/more than {freeze_when} for {temp_cutoff} of the months of Jan and Feb" )
         growth_rate = TempFreeze(freeze_when,loc)
 
-        dis_real = get_projectile(h_f=params["h_f"], dia=params["dia_f"], r=params["r_real"])
+        dis_real = get_projectile(h_f=params["h_f"], dia=params["dia_f"], theta_f=params["theta_f"], r=params["r_real"])
 
         VA = dis_real/growth_rate
         # params["r_virtual"] = round(math.sqrt(VA/(math.pi*math.sqrt(2))),2)
         r_virtual = round(math.sqrt(VA/(math.pi*math.sqrt(2))),2)
+        if loc == 'guttannen21':
+            r_virtual = 1/math.sqrt(math.pi*math.sqrt(2))
+
         freezing_fraction = round(params['r_real'] ** 2/r_virtual ** 2,2)
 
         print(f"Virtual radius for {loc} is {r_virtual} for recommended radius of {params['r_real']}" )
