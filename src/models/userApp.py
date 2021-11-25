@@ -20,8 +20,8 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("WARNING")
 
-    # test = True
-    test = False
+    test = True
+    # test = False
 
     # location="Schwarzsee 2019"
     location = "Guttannen 2021"
