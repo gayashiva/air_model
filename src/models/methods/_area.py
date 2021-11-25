@@ -9,32 +9,47 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def get_area(self, i):
+def get_area(self, i, option="old"):
 
-    if (self.df.t_cone[i]> 0) & (
-        self.df.loc[i - 1, "r_ice"] >= self.R_F
-    ):  # Growth rate positive and radius goes beyond spray radius
-        self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"]
+    if option == "new":
+        if (self.df.loc[i - 1, "r_ice"] >= self.R_F):  # Growth rate positive and radius goes beyond spray radius
+            self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"] + 0.00343 * 5 * (self.df.loc[i-1, "Qsurf"] -
+                self.df.loc[i-1, "Ql"]) / self.df.loc[i - 1, "r_ice"]
+        else:
+            self.df.loc[i, "r_ice"] = self.R_F
 
         self.df.loc[i, "h_ice"] = (
             3 * self.df.loc[i, "iceV"] / (math.pi * self.df.loc[i, "r_ice"] ** 2)
         )
-
         self.df.loc[i, "s_cone"] = (
             self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
         )
 
     else:
-        # Maintain constant Height to radius ratio
-        self.df.loc[i, "s_cone"] = self.df.loc[i - 1, "s_cone"]
+        if (self.df.t_cone[i]> 0) & (
+            self.df.loc[i - 1, "r_ice"] >= self.R_F
+        ):  # Growth rate positive and radius goes beyond spray radius
+            self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"]
 
-        # Ice Radius
-        self.df.loc[i, "r_ice"] = math.pow(
-            3 * self.df.loc[i, "iceV"] / (math.pi * self.df.loc[i, "s_cone"]), 1 / 3
-        )
+            self.df.loc[i, "h_ice"] = (
+                3 * self.df.loc[i, "iceV"] / (math.pi * self.df.loc[i, "r_ice"] ** 2)
+            )
 
-        # Ice Height
-        self.df.loc[i, "h_ice"] = self.df.loc[i, "s_cone"] * self.df.loc[i, "r_ice"]
+            self.df.loc[i, "s_cone"] = (
+                self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
+            )
+
+        else:
+            # Maintain constant Height to radius ratio
+            self.df.loc[i, "s_cone"] = self.df.loc[i - 1, "s_cone"]
+
+            # Ice Radius
+            self.df.loc[i, "r_ice"] = math.pow(
+                3 * self.df.loc[i, "iceV"] / (math.pi * self.df.loc[i, "s_cone"]), 1 / 3
+            )
+
+            # Ice Height
+            self.df.loc[i, "h_ice"] = self.df.loc[i, "s_cone"] * self.df.loc[i, "r_ice"]
 
     # Area of Conical Ice Surface
     self.df.loc[i, "SA"] = (

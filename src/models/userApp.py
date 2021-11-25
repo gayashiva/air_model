@@ -20,8 +20,8 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("WARNING")
 
-    test = True
-    # tests = False
+    # test = True
+    test = False
 
     # location="Schwarzsee 2019"
     location = "Guttannen 2021"
@@ -50,6 +50,8 @@ if __name__ == "__main__":
         # Use output parameters from cache
         icestupa.read_output()
 
+        print(icestupa.df.Qsurf.mean())
+
         # plt.figure()
         # ax = plt.gca()
         # plt.scatter(icestupa.df.Qt, icestupa.df.fountain_froze / 60, s=1)
@@ -57,4 +59,4 @@ if __name__ == "__main__":
         # plt.grid()
         # plt.savefig("data/tests/T_relation.jpg")
 
-        icestupa.summary_figures()
+        # icestupa.summary_figures()

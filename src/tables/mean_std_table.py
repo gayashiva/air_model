@@ -14,6 +14,7 @@ from matplotlib.offsetbox import AnchoredText
 from mpl_toolkits.axisartist.axislines import Axes
 from mpl_toolkits import axisartist
 import matplotlib.ticker as ticker
+import logging, coloredlogs
 
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -26,12 +27,15 @@ from src.models.icestupaClass import Icestupa
 pd.options.display.float_format = "{:,.1f}".format
 
 if __name__ == "__main__":
-    locations = ["gangles21", "guttannen21", "guttannen20", "schwarzsee19"]
-    # locations = ['guttannen21',  'gangles21']
+    # Main logger
+    logger = logging.getLogger(__name__)
+    logger.setLevel("ERROR")
+    # locations = ["gangles21", "guttannen21", "guttannen20", "schwarzsee19"]
+    locations = ['guttannen21',  'gangles21']
     # locations = ['guttannen21']
 
     for ctr, location in enumerate(locations):
-        SITE, FOLDER = config(location)
+        CONSTANTS, SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
         # icestupa.read_input()
 
