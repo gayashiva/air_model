@@ -60,22 +60,20 @@ if __name__ == "__main__":
 
         """Calculate Virtual radius"""
         print(f"The temperature, humidity and wind were less/more than {freeze_when} for {temp_cutoff} of the months of Jan and Feb" )
-        growth_rate = TempFreeze(freeze_when,loc)
+        dis = TempFreeze(freeze_when,loc)
+        scaling_factor = params['dis_min']/dis
 
-        dis_real = get_projectile(h_f=params["h_f"], dia=params["dia_f"], theta_f=params["theta_f"], r=params["r_real"])
+        # dis_real = get_projectile(h_f=params["h_f"], dia=params["dia_f"], theta_f=params["theta_f"], r=params["r_real"])
 
-        VA = dis_real/growth_rate
-        # params["r_virtual"] = round(math.sqrt(VA/(math.pi*math.sqrt(2))),2)
-        r_virtual = round(math.sqrt(VA/(math.pi*math.sqrt(2))),2)
-        if loc == 'guttannen21':
-            # r_virtual = 1/math.sqrt(math.pi*math.sqrt(2))
-            r_virtual = params['r_real']
+        # VA = dis_real/growth_rate
+        # r_virtual = round(math.sqrt(VA/(math.pi*math.sqrt(2))),2)
 
-        freezing_fraction = round(params['r_real'] ** 2/r_virtual ** 2,2)
+        # freezing_fraction = round(params['r'] ** 2/r_virtual ** 2,2)
 
-        print(f"Virtual radius for {loc} is {r_virtual} for recommended radius of {params['r_real']}" )
-        print(f"So only {freezing_fraction*100}% froze from the discharge rate" )
-        print(f"Recommended discharge for {loc} is {dis_real}" )
+        print(f"Radius for {loc} is {params['r']}" )
+        # print(f"So only {freezing_fraction*100}% froze from the discharge rate" )
+        print(f"Corresponding discharge for {loc} is {dis}" )
+        print(f"Recommended scaling factor is {scaling_factor} and given scaling factor is {params['scaling_factor']}" )
 
         with open(FOLDER["raw"] + "info.json", "w") as f:
             json.dump(params, f)
@@ -122,7 +120,8 @@ if __name__ == "__main__":
             for rh in da.rh.values:
                 for v in da.v.values:
                     aws = [temp, rh, v]
-                    da.sel(temp=temp, rh=rh, v=v).data += TempFreeze(aws, loc, r_virtual)
+                    da.sel(temp=temp, rh=rh, v=v).data += TempFreeze(aws,
+                        loc)
                     x.append(aws)
                     y.append(da.sel(temp=temp, rh=rh, v=v).data)
 
@@ -142,6 +141,9 @@ if __name__ == "__main__":
         param_values["b"] = b
         param_values["c"] = c
         param_values["d"] = d
+
+        # Scale all coeffs
+        param_values.update((x, y*params['scaling_factor']) for x, y in param_values.items())
 
         with open(FOLDER["sim"] + "coeffs.json", "w") as f:
             json.dump(param_values, f)

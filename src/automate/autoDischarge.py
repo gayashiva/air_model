@@ -1,3 +1,5 @@
+"""Functions to produce automation coefficients
+"""
 import math
 import numpy as np
 import pandas as pd
@@ -8,13 +10,13 @@ import json
 import logging
 import coloredlogs
 from lmfit.models import GaussianModel
-
 import os, sys
+
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 from src.utils.settings import config
 
-def TempFreeze(aws, loc="guttannen21", r_virtual = 0):
+def TempFreeze(aws, loc="guttannen21"):
 
     constants, SITE, FOLDER = config(loc)
 
@@ -82,9 +84,18 @@ def TempFreeze(aws, loc="guttannen21", r_virtual = 0):
     freezing_energy = Ql + Qs + LW + Qf
     dis = -1 * freezing_energy / constants["L_F"] * 1000 / 60
 
-    if r_virtual:
-        VA = math.pi * math.pow(r_virtual,2) * math.pow(2,0.5) # Assuming h=r cone
-        dis *= VA
+    SA = math.pi * math.pow(params['r'],2) * math.pow(2,0.5) # Assuming h=r cone
+    dis *= SA
+
+    # if scaling_factor:
+    #     dis *= scaling_factor
+
+    # if r_virtual:
+    #     VA = math.pi * math.pow(r_virtual,2) * math.pow(2,0.5) # Assuming h=r cone
+    #     dis *= VA
+    # else:
+    #     SA = math.pi * math.pow(params['r'],2) * math.pow(2,0.5) # Assuming h=r cone
+    #     dis *= SA
 
     return dis
 
@@ -126,12 +137,12 @@ def SunMelt(loc='guttannen21'):
     df["hour"] = df["index"].apply(lambda x: datetime_to_int(x))
     df["f_cone"] = 0
 
-    SA = math.pi * math.pow(params["r_real"],2) * math.pow(2,0.5) # Assuming h=r cone
+    SA = math.pi * math.pow(params["r"],2) * math.pow(2,0.5) # Assuming h=r cone
 
     for i in range(0, df.shape[0]):
         df.loc[i, "f_cone"] = (
-            math.pi * math.pow(params["r_real"], 2) * 0.5 * math.sin(df.loc[i, "sea"])
-            + 0.5 * math.pow(params["r_real"], 2) * math.cos(df.loc[i, "sea"])
+            math.pi * math.pow(params["r"], 2) * 0.5 * math.sin(df.loc[i, "sea"])
+            + 0.5 * math.pow(params["r"], 2) * math.cos(df.loc[i, "sea"])
         ) / SA
 
         df.loc[i, "SW_direct"] = (
