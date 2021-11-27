@@ -34,6 +34,7 @@ def config(location="guttannen21"):
             longitude=8.29149,
             R_F=5.4,
             SA_corr=1.2,
+            # SA_corr=1,
             Z=0.001,
             # perimeter=45, # on Feb 11
             # DX= 50e-03,
@@ -91,6 +92,7 @@ def config(location="guttannen21"):
             tcc=0,  # Total cloud cover
             # tcc=0.1,  # Total cloud cover
             SA_corr=1.5,
+            R_F=9.05,
             # perimeter=82.3, # On 3 Mar
         )
 

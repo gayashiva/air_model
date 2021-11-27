@@ -12,28 +12,42 @@ logger = logging.getLogger(__name__)
 def get_area(self, i, option="old"):
 
     if option == "new":
-        EB = (self.df.loc[i-1, "Qsurf"] - self.df.loc[i-1, "Ql"])
-        dy = math.sqrt(abs(EB)/(582.6*2))
-        new_vol = math.pi * (dy**2 + 2 * self.df.loc[i - 1, "r_ice"] * dy) * dy 
+        # EB = (self.df.loc[i-1, "Qsurf"] - self.df.loc[i-1, "Ql"])
+
+        if not  np.isnan(self.df.loc[i-1, "Qfreeze"]):
+            EB = self.df.loc[i-1, "Qfreeze"]
+        elif not np.isnan(self.df.loc[i-1, "Qmelt"]):
+            EB = self.df.loc[i-1, "Qmelt"]
+        else:
+            EB=0
+
+        # dy = math.sqrt(abs(EB)/(582.6*math.sqrt(self.df.loc[i - 1, "r_ice"])))* self.dx
+        dy = (abs(EB)/(582.6*math.sqrt(self.df.loc[i - 1, "r_ice"])))/ self.DX
+        # new_vol = math.pi * (dy**2 + 2 * self.df.loc[i - 1, "r_ice"] * dy) * dy 
+        new_vol = math.pi * (dy**2 + 2 * self.df.loc[i - 1, "r_ice"] * dy) * self.DX
 
         if EB > 0:
             new_vol *= -1
             dy *=-1
 
-        # if self.df.loc[i - 1, "r_ice"] >= self.R_F:  # Growth rate positive and radius goes beyond spray radius
-
         if new_vol > self.df.loc[i - 1, "fountain_runoff"]:
-            new_vol = 0
-            self.df.loc[i, "h_ice"] = self.df.loc[i-1, "h_ice"] + 3 * self.df.loc[i-1, "t_cone"]
-            self.df.loc[i, "r_ice"] = math.sqrt(
-                3 * (self.df.loc[i, "iceV"] + new_vol) / (math.pi * self.df.loc[i, "h_ice"])
-            )
+            new_vol = self.df.loc[i - 1, "fountain_runoff"]
             print("Full Discharge used")
-        else:
-            self.df.loc[i, "h_ice"] = self.df.loc[i-1, "h_ice"] + 3 * self.df.loc[i-1, "t_cone"]
-            self.df.loc[i, "r_ice"] = math.sqrt(
-                3 * (self.df.loc[i, "iceV"] + new_vol) / (math.pi * self.df.loc[i, "h_ice"])
-            )
+
+        # self.df.loc[i, "h_ice"] = self.df.loc[i-1, "h_ice"] + self.df.loc[i-1, "t_cone"]
+        self.df.loc[i, "h_ice"] = (
+            3 * (self.df.loc[i, "iceV"]) / (math.pi * self.df.loc[i-1, "r_ice"]**2)
+        )
+
+        if self.df.loc[i, "h_ice"] > 5:
+            self.df.loc[i, "h_ice"] = 5
+
+        self.df.loc[i, "r_ice"] = math.sqrt(
+            3 * (self.df.loc[i, "iceV"] + new_vol) / (math.pi * self.df.loc[i, "h_ice"])
+        )
+            # self.df.loc[i, "r_ice"] = math.sqrt(
+            #     3 * (self.df.loc[i, "iceV"] + new_vol) / (math.pi * self.df.loc[i, "h_ice"])
+            # )
         # else:
         #     self.df.loc[i, "r_ice"] = self.df.loc[i-1, "r_ice"] + dy
         #     self.df.loc[i, "h_ice"] = (
