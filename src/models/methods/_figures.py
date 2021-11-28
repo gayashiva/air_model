@@ -95,7 +95,6 @@ def summary_figures(self):
             self.df = self.df.reset_index()
 
     np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
-    output = self.output
     blue = "#0a4a97"
     red = "#e23028"
     purple = "#9673b9"
@@ -229,7 +228,7 @@ def summary_figures(self):
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
     fig.autofmt_xdate()
     plt.savefig(
-        output + "jpg/Model_Input.jpg",
+        self.fig + "Model_Input.jpg",
         bbox_inches="tight",
     )
     plt.clf()
@@ -390,7 +389,7 @@ def summary_figures(self):
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.savefig(
-        output + "jpg/Model_Output.jpg",
+        self.fig + "Model_Output.jpg",
         bbox_inches="tight",
     )
     plt.clf()
@@ -420,7 +419,7 @@ def summary_figures(self):
     ax.xaxis.set_minor_locator(mdates.DayLocator())
     fig.autofmt_xdate()
     plt.savefig(
-        output + "jpg/Vol_Validation.jpg",
+        self.fig + "Vol_Validation.jpg",
         bbox_inches="tight",
     )
     plt.clf()
@@ -455,7 +454,7 @@ def summary_figures(self):
         ax.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
         plt.savefig(
-            output + "jpg/Temp_Validation.jpg",
+            self.fig + "Temp_Validation.jpg",
             bbox_inches="tight",
         )
     plt.close("all")

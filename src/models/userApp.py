@@ -24,10 +24,10 @@ if __name__ == "__main__":
     # test = False
 
     # location="Schwarzsee 2019"
-    location = "Guttannen 2021"
+    # location = "Guttannen 2021"
     # location = "Guttannen 2020"
     # location="phortse20"
-    # location = "Gangles 2021"
+    location = "Gangles 2021"
 
     # Initialise icestupa object
     icestupa = Icestupa(location)
@@ -50,7 +50,7 @@ if __name__ == "__main__":
         # Use output parameters from cache
         icestupa.read_output()
 
-        print(icestupa.df.Qsurf.mean())
+        print(icestupa.df.Qfreeze.min())
 
         # plt.figure()
         # ax = plt.gca()
@@ -59,4 +59,4 @@ if __name__ == "__main__":
         # plt.grid()
         # plt.savefig("data/tests/T_relation.jpg")
 
-        # icestupa.summary_figures()
+        icestupa.summary_figures()
