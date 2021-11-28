@@ -42,14 +42,16 @@ if __name__ == "__main__":
         # y1 = df_c.rad
         for i in range(1, df_c.shape[0]):
             df_c.loc[i, "total_hours"] = -((df_c.time[0]- df_c.time[i]).total_seconds() / (60*60)) 
-            df_c.loc[i, "spray_energy"] = icestupa.df.Qfreeze[(icestupa.df.event == 1) & (icestupa.df.time<df_c.time[i])].sum()
+            # df_c.loc[i, "spray_energy"] = icestupa.df.Qfreeze[(icestupa.df.event == 1) & (icestupa.df.time<df_c.time[i])].sum()
             df_c.loc[i, "spray_hours"] = icestupa.df.event[(icestupa.df.event == 1) & (icestupa.df.time <df_c.time[i])].count() 
-            df_c.loc[i, "melt_energy"] = icestupa.df.Qmelt[(icestupa.df.event == 0) & (icestupa.df.time <df_c.time[i])].sum()
+            # df_c.loc[i, "melt_energy"] = icestupa.df.Qmelt[(icestupa.df.event == 0) & (icestupa.df.time <df_c.time[i])].sum()
             df_c.loc[i, "melt_hours"] = icestupa.df.event[(icestupa.df.event == 0) & (icestupa.df.time < df_c.time[i])].count()
-            df_c.loc[i, "spray_mag"] = df_c.loc[i, "spray_energy"]/(df_c.loc[i,"spray_hours"] * icestupa.L_F)
-            df_c.loc[i, "melt_mag"] = df_c.loc[i, "melt_energy"]/(df_c.loc[i,"melt_hours"]* icestupa.L_F )
-            df_c.loc[i, "diff"] = (df_c.loc[i,"spray_mag"] - df_c.loc[i,"melt_mag"])
-            y = (df_c.loc[i,"rad"] - df_c.loc[0,"rad"])/df_c.loc[i,"diff"] 
+            # df_c.loc[i, "spray_mag"] = df_c.loc[i, "spray_energy"]/(df_c.loc[i,"spray_hours"] * icestupa.L_F)
+            # df_c.loc[i, "melt_mag"] = df_c.loc[i, "melt_energy"]/(df_c.loc[i,"melt_hours"]* icestupa.L_F )
+            # df_c.loc[i, "diff"] = (df_c.loc[i,"spray_mag"] - df_c.loc[i,"melt_mag"])
+            df_c.loc[i, "diff"] = (df_c.loc[i,"spray_hours"] - df_c.loc[i,"melt_hours"])
+            y = (df_c.loc[i,"rad"] - df_c.loc[0,"rad"])/df_c.loc[i,"diff"]
+            # y = (df_c.loc[i,"rad"] - df_c.loc[0,"rad"])/df_c.loc[i,"spray_hours"] 
             x = df_c.index[i]
             ax.scatter(x, y)
 
