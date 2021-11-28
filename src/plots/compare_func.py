@@ -40,7 +40,7 @@ if __name__ == "__main__":
         icestupa_sim = Icestupa(loc)
         icestupa_sim.read_output()
 
-        with open(FOLDER["raw"] + "info.json") as f:
+        with open(FOLDER["raw"] + "automate_info.json") as f:
             params = json.load(f)
 
         with open(FOLDER["sim"] + "coeffs.json") as f:

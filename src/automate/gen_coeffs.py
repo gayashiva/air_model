@@ -55,7 +55,7 @@ if __name__ == "__main__":
         crit_wind = df.loc[df.time < datetime(2021, 3, 1)].wind.quantile(wind_cutoff)
         freeze_when = [crit_temp,crit_rh, crit_wind]
 
-        with open(FOLDER["raw"] + "info.json") as f:
+        with open(FOLDER["raw"] + "automate_info.json") as f:
             params = json.load(f)
 
         """Calculate Virtual radius"""
@@ -75,7 +75,7 @@ if __name__ == "__main__":
         print(f"Corresponding discharge for {loc} is {dis}" )
         print(f"Recommended scaling factor is {scaling_factor} and given scaling factor is {params['scaling_factor']}" )
 
-        with open(FOLDER["raw"] + "info.json", "w") as f:
+        with open(FOLDER["raw"] + "automate_info.json", "w") as f:
             json.dump(params, f)
 
         """Calculate Solar gaussian coeffs"""
