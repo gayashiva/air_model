@@ -416,7 +416,7 @@ class Icestupa:
                     self.df = self.df.reset_index(drop=True)
                     break
 
-            self.get_area(i)
+            self.get_area(i, option='old')
 
             if test:
                 self.test_get_energy(i)
@@ -503,4 +503,4 @@ class Icestupa:
                     f" time {self.df.time[i]},iceV {self.df.iceV[i+1]}, mass balance {self.df.t_cone[i]}"
                 )
         # else:
-        #     print(self.df.loc[i, "time"], self.df.loc[i, "iceV"])
+            # print(self.df.loc[i, "time"], self.df.loc[i, "iceV"])

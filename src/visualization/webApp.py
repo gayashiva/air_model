@@ -78,7 +78,6 @@ if __name__ == "__main__":
 
     icestupa = Icestupa(location)
     icestupa.read_output()
-    icestupa.self_attributes()
 
     df_in = icestupa.df
     (
@@ -325,7 +324,7 @@ if __name__ == "__main__":
                 corr_T = 0
 
             st.write("## Validation")
-            path = output_folder + "jpg/Vol_Validation.jpg"
+            path = icestupa.fig + "Vol_Validation.jpg"
             st.image(path)
             if icestupa.name in ["gangles21", "guttannen21", "guttannen20"]:
                 st.write(
@@ -337,7 +336,7 @@ if __name__ == "__main__":
 
             # if SITE["name"] in ["guttannen21", "guttannen20"]:
             #     path = (
-            #         output_folder
+            #         icestupa.fig
             #         + "jpg/Temp_Validation.jpg"
             #     )
             #     st.image(path)
@@ -364,7 +363,7 @@ if __name__ == "__main__":
 
         if "Data Overview" in display:
             st.write("## Input variables")
-            st.image(output_folder + "jpg/Model_Input.jpg")
+            st.image(icestupa.fig + "Model_Input.jpg")
             st.write(
                 """
             Measurements at the AWS of %s were used as main model input
@@ -375,7 +374,7 @@ if __name__ == "__main__":
                 % (icestupa.name)
             )
             st.write("## Output variables")
-            st.image(output_folder + "jpg/Model_Output.jpg")
+            st.image(icestupa.fig + "Model_Output.jpg")
             st.write(
                 """
             (a) Fountain discharge (b) energy flux components, (c) mass flux components (d)

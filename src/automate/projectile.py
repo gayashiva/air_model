@@ -1,25 +1,17 @@
 """Function that returns spray radius or discharge quantity by simulating projectile motion
 """
-
 import pandas as pd
 import math
 import numpy as np
 import logging
 import coloredlogs
 
-
 def get_projectile(
-    dia=0, h_f=3, dis=0, r=0
+    dia=0, h_f=3, dis=0, r=0, theta_f = 45
 ):  # returns discharge or spray radius using projectile motion
 
-    if dia == 0:
-        Area = dis / (v * 60 * 1000)
-        dia = math.sqrt(Area * 4 / math.pi)
-        logger.warning("Aperture dia is %s" % (dia))
-        return dia
-
     Area = math.pi * math.pow(dia, 2) / 4
-    theta_f = math.radians(45)
+    theta_f = math.radians(theta_f)
     G = 9.8
     if r == 0:
         data_ry = []
@@ -31,9 +23,7 @@ def get_projectile(
             # projectile has hit ground level
             if y < 0:
                 break
-            # calculate the distance r
             r = v * math.cos(theta_f) * t
-            # append the (r, y) tuple to the list
             data_ry.append((r, y))
             t += 0.01
         # logger.warning("Spray radius is %s" % (r))
@@ -52,6 +42,7 @@ def get_projectile(
 if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
-    logger.setLevel("INFO")
-    get_droplet_projectile(h_f=3, dia=0.005, r=9)
+    logger.setLevel("ERROR")
+
+    print(get_projectile(h_f=3, dia=0.006, r=3, theta_f=60))
     # get_droplet_projectile(h_f=3, dia=0.005, dis=8)

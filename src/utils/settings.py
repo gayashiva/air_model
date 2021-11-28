@@ -32,7 +32,7 @@ def config(location="guttannen21"):
             alt=1047.6,
             latitude=46.65549,
             longitude=8.29149,
-            # R_F=10.2,
+            # R_F=5.4,
             SA_corr=1.2,
             Z=0.001,
             # perimeter=45, # on Feb 11
@@ -40,7 +40,7 @@ def config(location="guttannen21"):
             # Z= 5e-03,
         )
 
-        data_h = [
+        f_heights = [
             {"When": SITE["start_date"], "h_f": 2.5},
             {"When": datetime(2020, 12, 30, 16), "h_f": 3.5},
             {"When": datetime(2021, 1, 7, 16), "h_f": 5.5},
@@ -68,7 +68,7 @@ def config(location="guttannen21"):
             # Z= 5e-03,
         )
 
-        data_h = [
+        f_heights = [
             {"When": SITE["start_date"], "h_f": 2.5},
             {"When": datetime(2020, 1, 24, 12), "h_f": 3.5},
             {"When": datetime(2020, 2, 5, 19), "h_f": 2.5},
@@ -91,10 +91,11 @@ def config(location="guttannen21"):
             tcc=0,  # Total cloud cover
             # tcc=0.1,  # Total cloud cover
             SA_corr=1.5,
+            # R_F=9.05,
             # perimeter=82.3, # On 3 Mar
         )
 
-        data_h = [
+        f_heights = [
             {"When": SITE["start_date"], "h_f": 5},
             # {"When": datetime(2021, 1, 22, 16), "h_f": 9},
         ]
@@ -117,7 +118,7 @@ def config(location="guttannen21"):
             # Z= 5e-03,
         )
 
-        data_h = [
+        f_heights = [
             {"When": SITE["start_date"], "h_f": 1.35},
         ]
 
@@ -139,7 +140,7 @@ def config(location="guttannen21"):
             tcc=0,
         )
 
-        data_h = [
+        f_heights = [
             {"When": SITE["start_date"], "h_f": 5},
         ]
 
@@ -149,8 +150,9 @@ def config(location="guttannen21"):
         input="data/" + SITE["name"] + "/interim/",
         output="data/" + SITE["name"] + "/processed/",
         sim="data/" + SITE["name"] + "/processed/simulations/",
+        fig="data/" + SITE["name"] + "/figs/",
     )
-    df_h = pd.DataFrame(data_h)
+    df_h = pd.DataFrame(f_heights)
 
     """Model, Physical and Surface Constants"""
     CONSTANTS = dict(
