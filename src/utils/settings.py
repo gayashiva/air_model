@@ -40,7 +40,7 @@ def config(location="guttannen21"):
             # Z= 5e-03,
         )
 
-        data_h = [
+        f_heights = [
             {"When": SITE["start_date"], "h_f": 2.5},
             {"When": datetime(2020, 12, 30, 16), "h_f": 3.5},
             {"When": datetime(2021, 1, 7, 16), "h_f": 5.5},
@@ -68,7 +68,7 @@ def config(location="guttannen21"):
             # Z= 5e-03,
         )
 
-        data_h = [
+        f_heights = [
             {"When": SITE["start_date"], "h_f": 2.5},
             {"When": datetime(2020, 1, 24, 12), "h_f": 3.5},
             {"When": datetime(2020, 2, 5, 19), "h_f": 2.5},
@@ -95,7 +95,7 @@ def config(location="guttannen21"):
             # perimeter=82.3, # On 3 Mar
         )
 
-        data_h = [
+        f_heights = [
             {"When": SITE["start_date"], "h_f": 5},
             # {"When": datetime(2021, 1, 22, 16), "h_f": 9},
         ]
@@ -118,7 +118,7 @@ def config(location="guttannen21"):
             # Z= 5e-03,
         )
 
-        data_h = [
+        f_heights = [
             {"When": SITE["start_date"], "h_f": 1.35},
         ]
 
@@ -140,7 +140,7 @@ def config(location="guttannen21"):
             tcc=0,
         )
 
-        data_h = [
+        f_heights = [
             {"When": SITE["start_date"], "h_f": 5},
         ]
 
@@ -152,7 +152,7 @@ def config(location="guttannen21"):
         sim="data/" + SITE["name"] + "/processed/simulations/",
         fig="data/" + SITE["name"] + "/figs/",
     )
-    df_h = pd.DataFrame(data_h)
+    df_h = pd.DataFrame(f_heights)
 
     """Model, Physical and Surface Constants"""
     CONSTANTS = dict(

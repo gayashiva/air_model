@@ -79,7 +79,6 @@ if __name__ == "__main__":
                     + df.loc[i, "dis_fountain"] * 60 / (icestupa_sim.RHO_I * params['scaling_factor'])
                 )
                     
-
         print(df.dis_freeze.describe())
         frozen_vol = df.dis_freeze.sum() * 60/1000
         total_vol = df.dis_fountain.sum() * 60/1000
@@ -103,5 +102,5 @@ if __name__ == "__main__":
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
-        plt.savefig(FOLDER["sim"] + "dis.jpg")
+        plt.savefig(FOLDER["fig"] + "auto_manual_dis.jpg")
 
