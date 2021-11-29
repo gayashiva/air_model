@@ -343,6 +343,7 @@ class Icestupa:
         V_initial = math.pi / 3 * self.R_F ** 2 * self.h_i
         self.df.loc[1, "ice"] = V_initial * self.RHO_I
         self.df.loc[1, "iceV"] = V_initial
+        self.df.loc[0, "iceV"] = V_initial
         self.df.loc[1, "input"] = self.df.loc[1, "ice"]
 
         logger.warning(
