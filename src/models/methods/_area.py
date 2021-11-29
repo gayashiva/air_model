@@ -12,57 +12,39 @@ logger = logging.getLogger("__main__")
 def get_area(self, i, option="old"):
 
     if option == "new":
-        # EB = (self.df.loc[i-1, "Qsurf"] - self.df.loc[i-1, "Ql"])
-        EB = self.df.loc[i-1, "Qsurf"]
 
-        # if not  np.isnan(self.df.loc[i-1, "Qfreeze"]):
-        #     EB = self.df.loc[i-1, "Qfreeze"]
-        # elif not np.isnan(self.df.loc[i-1, "Qmelt"]):
-        #     EB = self.df.loc[i-1, "Qmelt"]
-        # else:
-        #     EB=0
+        if not  np.isnan(self.df.loc[i-1, "Qfreeze"]):
+            EB = self.df.loc[i-1, "Qfreeze"]
+        elif not np.isnan(self.df.loc[i-1, "Qmelt"]):
+            EB = self.df.loc[i-1, "Qmelt"]
+        else:
+            EB=0
 
-        # dz = dy = 0.0015
-        dz = dy = math.sqrt(abs(EB)/(582.6* self.RHO_I * self.df.loc[i - 1, "r_ice"]))
-        # dy = (abs(EB)/(582.6*self.df.loc[i - 1, "r_ice"] * dz)) 
-        # new_vol = math.pi * (dy**2 + 2 * self.df.loc[i - 1, "r_ice"] * dy) * dy 
-        new_vol = math.pi * (dy**2 + 2 * self.df.loc[i - 1, "r_ice"] * dy) * dz
+        dz = dy = math.sqrt(abs(EB)/(2 * math.pi * self.L_F * self.RHO_I / self.DT * self.df.loc[i - 1, "r_ice"]))
+        dV = math.pi * (dy**2 + 2 * self.df.loc[i - 1, "r_ice"] * dy) * dz
 
         if EB > 0:
-            new_vol *= -1
+            dV *= -1
             dy *=-1
 
-        if new_vol > self.df.loc[i - 1, "fountain_runoff"]:
-            new_vol = self.df.loc[i - 1, "fountain_runoff"]
+        if dV*self.RHO_I > self.df.loc[i - 1, "fountain_runoff"]:
+            dV = self.df.loc[i - 1, "fountain_runoff"]
             logger.warning("Full Discharge used")
 
-        # self.df.loc[i, "h_ice"] = self.df.loc[i-1, "h_ice"] + self.df.loc[i-1, "t_cone"]
+        self.df.loc[i - 1, "fountain_froze"] += dV* self.RHO_I
+        self.df.loc[i - 1, "fountain_runoff"] -= dV* self.RHO_I
+
         self.df.loc[i, "r_ice"] = self.df.loc[i-1, "r_ice"] + dy
 
         self.df.loc[i, "h_ice"] = (
-            3 * (self.df.loc[i, "iceV"]+new_vol) / (math.pi * self.df.loc[i, "r_ice"]**2)
+            3 * (self.df.loc[i, "iceV"]+dV) / (math.pi * self.df.loc[i, "r_ice"]**2)
         )
-
-        # if self.df.loc[i, "h_ice"] > 5:
-        #     self.df.loc[i, "h_ice"] = 5
-
-        # self.df.loc[i, "r_ice"] = math.sqrt(
-        #     3 * (self.df.loc[i, "iceV"] + new_vol) / (math.pi * self.df.loc[i, "h_ice"])
-        # )
-            # self.df.loc[i, "r_ice"] = math.sqrt(
-            #     3 * (self.df.loc[i, "iceV"] + new_vol) / (math.pi * self.df.loc[i, "h_ice"])
-            # )
-        # else:
-        #     self.df.loc[i, "r_ice"] = self.df.loc[i-1, "r_ice"] + dy
-        #     self.df.loc[i, "h_ice"] = (
-        #         3 * (self.df.loc[i, "iceV"]) / (math.pi * self.df.loc[i, "r_ice"] ** 2)
-        #     )
 
         self.df.loc[i, "s_cone"] = (
             self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
         )
-        # print(self.df.loc[i, "time"], dy, self.df.loc[i, "h_ice"], self.df.loc[i, "r_ice"], self.df.loc[i, "iceV"])
 
+        logger.info(self.df.loc[i, "time"], dy, self.df.loc[i, "h_ice"], self.df.loc[i, "r_ice"], self.df.loc[i, "iceV"])
 
     else:
         if (self.df.t_cone[i]> 0) & (
