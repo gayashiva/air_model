@@ -317,6 +317,7 @@ class Icestupa:
             "SA",
             "h_ice",
             "r_ice",
+            "dy",
             "snow2ice",
             "dep",
             "t_cone",

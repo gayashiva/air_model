@@ -1,6 +1,5 @@
 """Icestupa class function that calculates surface area, ice radius and height
 """
-
 import pandas as pd
 import math
 import numpy as np
@@ -20,12 +19,12 @@ def get_area(self, i, option="old"):
         else:
             EB=0
 
-        dz = dy = math.sqrt(abs(EB)/(2 * math.pi * self.L_F * self.RHO_I / self.DT * self.df.loc[i - 1, "r_ice"]))
-        dV = math.pi * (dy**2 + 2 * self.df.loc[i - 1, "r_ice"] * dy) * dz
+        self.df.loc[i, "dy"] = math.sqrt(abs(EB)/(2 * math.pi * self.L_F * self.RHO_I / self.DT * self.df.loc[i - 1, "r_ice"]))
+        dV = math.pi * (self.df.loc[i, "dy"]**2 + 2 * self.df.loc[i - 1, "r_ice"] * self.df.loc[i, "dy"]) * self.df.loc[i, "dy"]
 
         if EB > 0:
             dV *= -1
-            dy *=-1
+            self.df.loc[i, "dy"] *=-1
 
         if dV*self.RHO_I > self.df.loc[i - 1, "fountain_runoff"]:
             dV = self.df.loc[i - 1, "fountain_runoff"]
@@ -34,7 +33,7 @@ def get_area(self, i, option="old"):
         self.df.loc[i - 1, "fountain_froze"] += dV* self.RHO_I
         self.df.loc[i - 1, "fountain_runoff"] -= dV* self.RHO_I
 
-        self.df.loc[i, "r_ice"] = self.df.loc[i-1, "r_ice"] + dy
+        self.df.loc[i, "r_ice"] = self.df.loc[i-1, "r_ice"] + self.df.loc[i, "dy"]
 
         self.df.loc[i, "h_ice"] = (
             3 * (self.df.loc[i, "iceV"]+dV) / (math.pi * self.df.loc[i, "r_ice"]**2)
@@ -44,9 +43,10 @@ def get_area(self, i, option="old"):
             self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
         )
 
-        logger.info(self.df.loc[i, "time"], dy, self.df.loc[i, "h_ice"], self.df.loc[i, "r_ice"], self.df.loc[i, "iceV"])
+        logger.info(self.df.loc[i, "time"], self.df.loc[i, "dy"], self.df.loc[i, "h_ice"], self.df.loc[i, "r_ice"], self.df.loc[i, "iceV"])
 
     else:
+
         if (self.df.t_cone[i]> 0) & (
             self.df.loc[i - 1, "r_ice"] >= self.R_F
         ):  # Growth rate positive and radius goes beyond spray radius
