@@ -420,4 +420,12 @@ def get_parameter_metadata(
             "kind": "Derived",
             "units": "($kg$)",
         },
+        "dy": {
+            "name": "Radius growth rate",
+            "latex": "$\\Delta y$",
+            # "ylim": [10e-03, 50e-03],
+            # "step": 5e-03,
+            "kind": "Output",
+            "units": "($m$)",
+        },
     }[parameter]

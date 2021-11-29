@@ -417,7 +417,7 @@ class Icestupa:
                     self.df = self.df.reset_index(drop=True)
                     break
 
-            self.get_area(i, option='new')
+            self.get_area(i)
 
             if test:
                 self.test_get_energy(i)

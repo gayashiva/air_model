@@ -24,8 +24,8 @@ if __name__ == "__main__":
     # test = False
 
     # location="Schwarzsee 2019"
-    location = "Guttannen 2021"
-    # location = "Guttannen 2020"
+    # location = "Guttannen 2021"
+    location = "Guttannen 2020"
     # location="phortse20"
     # location = "Gangles 2021"
 

@@ -24,13 +24,13 @@ def self_attributes(self, save=False):
     if hasattr(self, "R_F"):
         logger.error("Arbitrary spray radius of %s" % self.R_F)
     else:
-        self.R_F = df_c.loc[
-            (df_c.time < self.fountain_off_date) & (df_c.index != 0), "rad"
-        ].mean()
+        # self.R_F = df_c.loc[
+        #     (df_c.time < self.fountain_off_date) & (df_c.index != 0), "rad"
+        # ].mean()
+        self.R_F = df_c.loc[ 0, "rad"]
+        #     (df_c.time < self.fountain_off_date) & (df_c.index != 0), "rad"
+        # ].mean()
         logger.warning("Measured spray radius from drone %0.1f" % self.R_F)
-
-    # Understand R_F sensitivity
-    # self.R_F*=1.1
 
     if self.name in ["guttannen21", "guttannen20", "gangles21"]:
         self.V_dome = df_c.loc[0, "DroneV"]
