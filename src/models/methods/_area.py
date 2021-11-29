@@ -24,9 +24,10 @@ def get_area(self, i):
     dV = math.pi * (self.df.loc[i, "dy"]**2 + 2 * self.df.loc[i - 1, "r_ice"] * self.df.loc[i, "dy"]) * self.df.loc[i, "dy"]
 
     if self.df.loc[i - 1, "Discharge"] > 0:
-        s = 4.2 * self.df.loc[i-1, "s_cone"] # fountain constant
+        # s = 4.2 * self.df.loc[i-1, "s_cone"] # fountain constant
+        s = 1/self.df.loc[i-1, "s_cone"] # fountain constant
     else:
-        s = 0.5 * self.df.loc[i-1, "s_cone"]
+        s = self.df.loc[i-1, "s_cone"]
 
     # a = math.pi* self.df.loc[i - 1, "h_ice"]
     # b = math.pi * self.df.loc[i - 1, "r_ice"] * self.df.loc[i - 1, "h_ice"]
