@@ -12,12 +12,14 @@ def get_area(self, i):
 
     if not  np.isnan(self.df.loc[i-1, "Qfreeze"]):
         EB = self.df.loc[i-1, "Qfreeze"]
+        rho = self.RHO_I
     elif not np.isnan(self.df.loc[i-1, "Qmelt"]):
         EB = self.df.loc[i-1, "Qmelt"]
+        rho = self.RHO_I
     else:
         EB=0
 
-    self.df.loc[i, "dy"] = math.sqrt(abs(EB)/(2 * math.pi * self.L_F * self.RHO_I / self.DT * self.df.loc[i - 1, "r_ice"]))
+    self.df.loc[i, "dy"] = math.sqrt(abs(EB)/(2 * math.pi * self.L_F * rho / self.DT * self.df.loc[i - 1, "r_ice"]))
     dV = math.pi * (self.df.loc[i, "dy"]**2 + 2 * self.df.loc[i - 1, "r_ice"] * self.df.loc[i, "dy"]) * self.df.loc[i, "dy"]
 
     if EB > 0:
