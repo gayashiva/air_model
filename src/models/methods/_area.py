@@ -7,23 +7,23 @@ import numpy as np
 from functools import lru_cache
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("__main__")
 
 def get_area(self, i, option="old"):
 
     if option == "new":
         # EB = (self.df.loc[i-1, "Qsurf"] - self.df.loc[i-1, "Ql"])
+        EB = self.df.loc[i-1, "Qsurf"]
 
-        if not  np.isnan(self.df.loc[i-1, "Qfreeze"]):
-            EB = self.df.loc[i-1, "Qfreeze"]
-        elif not np.isnan(self.df.loc[i-1, "Qmelt"]):
-            EB = self.df.loc[i-1, "Qmelt"]
-        else:
-            EB=0
+        # if not  np.isnan(self.df.loc[i-1, "Qfreeze"]):
+        #     EB = self.df.loc[i-1, "Qfreeze"]
+        # elif not np.isnan(self.df.loc[i-1, "Qmelt"]):
+        #     EB = self.df.loc[i-1, "Qmelt"]
+        # else:
+        #     EB=0
 
-        # dy = 0.1167/100
-        dz=dy = self.DX
-        # dy = math.sqrt(abs(EB)/(582.6*math.sqrt(self.df.loc[i - 1, "r_ice"])))* self.dx
+        # dz = dy = 0.0015
+        dz = dy = math.sqrt(abs(EB)/(582.6* self.RHO_I * self.df.loc[i - 1, "r_ice"]))
         # dy = (abs(EB)/(582.6*self.df.loc[i - 1, "r_ice"] * dz)) 
         # new_vol = math.pi * (dy**2 + 2 * self.df.loc[i - 1, "r_ice"] * dy) * dy 
         new_vol = math.pi * (dy**2 + 2 * self.df.loc[i - 1, "r_ice"] * dy) * dz
@@ -34,7 +34,7 @@ def get_area(self, i, option="old"):
 
         if new_vol > self.df.loc[i - 1, "fountain_runoff"]:
             new_vol = self.df.loc[i - 1, "fountain_runoff"]
-            print("Full Discharge used")
+            logger.warning("Full Discharge used")
 
         # self.df.loc[i, "h_ice"] = self.df.loc[i-1, "h_ice"] + self.df.loc[i-1, "t_cone"]
         self.df.loc[i, "r_ice"] = self.df.loc[i-1, "r_ice"] + dy
@@ -61,7 +61,7 @@ def get_area(self, i, option="old"):
         self.df.loc[i, "s_cone"] = (
             self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
         )
-        print(self.df.loc[i, "time"], dy, self.df.loc[i, "h_ice"], self.df.loc[i, "r_ice"], self.df.loc[i, "iceV"])
+        # print(self.df.loc[i, "time"], dy, self.df.loc[i, "h_ice"], self.df.loc[i, "r_ice"], self.df.loc[i, "iceV"])
 
 
     else:
