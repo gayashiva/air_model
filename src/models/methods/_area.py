@@ -25,7 +25,7 @@ def get_area(self, i):
 
     if self.df.loc[i - 1, "Discharge"] > 0:
         # s = 4.2 * self.df.loc[i-1, "s_cone"] # fountain constant
-        s = 1/self.df.loc[i-1, "s_cone"] # fountain constant
+        s = 0.05 * 1/self.df.loc[i-1, "s_cone"] # fountain constant
     else:
         s = self.df.loc[i-1, "s_cone"]
 
