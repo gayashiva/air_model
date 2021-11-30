@@ -20,14 +20,23 @@ def get_area(self, i):
     else:
         EB=0
 
-    # self.df.loc[i, "dy"] = math.sqrt(abs(EB)/(2 * math.pi * self.L_F * rho / self.DT * self.df.loc[i - 1, "r_ice"]))
-    dV = math.pi * (self.df.loc[i, "dy"]**2 + 2 * self.df.loc[i - 1, "r_ice"] * self.df.loc[i, "dy"]) * self.df.loc[i, "dy"]
+    # self.df.loc[i, "dr"] = math.sqrt(abs(EB)/(2 * math.pi * self.L_F * rho / self.DT * self.df.loc[i - 1, "r_ice"]))
+    # dV = math.pi * (self.df.loc[i, "dr"]**2 + 2 * self.df.loc[i - 1, "r_ice"] * self.df.loc[i, "dr"]) * self.df.loc[i, "dr"]
 
-    if self.df.loc[i - 1, "Discharge"] > 0:
+    if self.df.loc[i - 1, "Discharge"] > 0 and EB < 0:
         # s = 4.2 * self.df.loc[i-1, "s_cone"] # fountain constant
-        s = 0.05 * 1/self.df.loc[i-1, "s_cone"] # fountain constant
+        # s = 0.05 * 1/self.df.loc[i-1, "s_cone"] # fountain constant
+        s = 0.5
+        dh = s * self.df.loc[i-1, "dr"] 
+        # if self.df.loc[i-1, "dr"] !=0:
+        #     s = dh/self.df.loc[i-1, "dr"]
+        # else:
+        #     s = 0
     else:
-        s = self.df.loc[i-1, "s_cone"]
+        # dh = self.df.loc[i-1, "h_ice"] / self.df.loc[i-1, "r_ice"] # fountain constant
+        # dh *= self.df.loc[i-1, "dr"]
+        s = 0.5
+
 
     # a = math.pi* self.df.loc[i - 1, "h_ice"]
     # b = math.pi * self.df.loc[i - 1, "r_ice"] * self.df.loc[i - 1, "h_ice"]
@@ -49,30 +58,30 @@ def get_area(self, i):
     # print('The solution are {0} and {1}'.format(sol1,sol2))
 
     if abs(sol1) < 2:
-        self.df.loc[i, "dy"] = sol1
+        self.df.loc[i, "dr"] = sol1
     else:
-        self.df.loc[i, "dy"] = sol2
+        self.df.loc[i, "dr"] = sol2
 
     # if EB > 0:
     #     dV *= -1
-    #     self.df.loc[i, "dy"] *=-1
+    #     self.df.loc[i, "dr"] *=-1
 
     # if dV*self.RHO_I > self.df.loc[i - 1, "fountain_runoff"]:
     #     dV = self.df.loc[i - 1, "fountain_runoff"]
     #     logger.warning("Full Discharge used")
 
-    self.df.loc[i - 1, "fountain_froze"] += dV* self.RHO_I
-    self.df.loc[i - 1, "fountain_runoff"] -= dV* self.RHO_I
+    # self.df.loc[i - 1, "fountain_froze"] += dV* self.RHO_I
+    # self.df.loc[i - 1, "fountain_runoff"] -= dV* self.RHO_I
 
-    self.df.loc[i, "r_ice"] = self.df.loc[i-1, "r_ice"] + self.df.loc[i, "dy"]
-    self.df.loc[i, "h_ice"] = self.df.loc[i-1, "h_ice"] + s * self.df.loc[i, "dy"]
+    self.df.loc[i, "r_ice"] = self.df.loc[i-1, "r_ice"] + self.df.loc[i, "dr"]
+    self.df.loc[i, "h_ice"] = self.df.loc[i-1, "h_ice"] + s * self.df.loc[i, "dr"]
 
     # self.df.loc[i, "h_ice"] = (
     #     3 * (self.df.loc[i, "iceV"]+dV) / (math.pi * self.df.loc[i, "r_ice"]**2)
     # )
 
-    # logger.warning(self.df.loc[i, "time"], self.df.loc[i, "dy"], self.df.loc[i, "r_ice"], self.df.loc[i, "iceV"])
-    # print(self.df.loc[i, "time"], self.df.loc[i, "dy"], self.df.loc[i, "h_ice"], self.df.loc[i, "r_ice"], self.df.loc[i, "iceV"])
+    # logger.warning(self.df.loc[i, "time"], self.df.loc[i, "dr"], self.df.loc[i, "r_ice"], self.df.loc[i, "iceV"])
+    # print(self.df.loc[i, "time"], self.df.loc[i, "dr"], self.df.loc[i, "h_ice"], self.df.loc[i, "r_ice"], self.df.loc[i, "iceV"])
 
     self.df.loc[i, "s_cone"] = (
         self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
