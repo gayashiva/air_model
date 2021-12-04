@@ -111,16 +111,16 @@ class UQ_Icestupa(un.Model, Icestupa):
         self.df_c = self.df_c.iloc[1:]
         self.y_true = self.df_c.DroneV.values
 
-        if location == 'gangles21':
-            self.z_true = [0]
-        else:
-            self.df_cam = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_cam")
-            self.df_cam = self.df_cam.reset_index()
-            # self.df_cam = self.df_cam.iloc[1180:]
-            self.z_true = self.df_cam.cam_temp.values
+        # if location == 'gangles21':
+        #     self.z_true = [0]
+        # else:
+        #     self.df_cam = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_cam")
+        #     self.df_cam = self.df_cam.reset_index()
+        #     # self.df_cam = self.df_cam.iloc[1180:]
+        #     self.z_true = self.df_cam.cam_temp.values
 
         print("Ice volume measurements for %s are %s\n" % (self.name, len(self.y_true)))
-        print("Surface temp measurements for %s are %s\n" % (self.name, len(self.z_true)))
+        # print("Surface temp measurements for %s are %s\n" % (self.name, len(self.z_true)))
 
     def run(self, **parameters):
 
@@ -159,7 +159,7 @@ class UQ_Icestupa(un.Model, Icestupa):
                 for i in range(len(self.df), self.total_hours):
                     self.df.loc[i, "iceV"] = 0
             y_pred = []
-            z_pred = []
+            # z_pred = []
             for date in self.df_c.time.values:
                 if self.df[self.df.time == date].shape[0]:
                     y_pred.append(self.df.loc[self.df.time == date, "iceV"].values[0])
@@ -168,20 +168,20 @@ class UQ_Icestupa(un.Model, Icestupa):
                     # print("Error: Date not found")
                     y_pred.append(0)
 
-            if self.name != 'gangles21':
-                for date in self.df_cam.time.values:
-                    if self.df[self.df.time == date].shape[0]:
-                        z_pred.append(self.df.loc[self.df.time == date, "T_s"].values[0])
-                    else:
-                        # print("Error: Date not found")
-                        z_pred.append(0)
-            else:
-                z_pred = [0]
+            # if self.name != 'gangles21':
+            #     for date in self.df_cam.time.values:
+            #         if self.df[self.df.time == date].shape[0]:
+            #             z_pred.append(self.df.loc[self.df.time == date, "T_s"].values[0])
+            #         else:
+            #             # print("Error: Date not found")
+            #             z_pred.append(0)
+            # else:
+            #     z_pred = [0]
         else:
             for i in range(0, self.total_hours):
                 self.df.loc[i, "iceV"] = self.V_dome
             y_pred = [999] * len(self.df_c.time.values)
-            z_pred = [999] * len(self.df_cam.time.values)
+            # z_pred = [999] * len(self.df_cam.time.values)
             se = 0
             last_hour = 0
 
