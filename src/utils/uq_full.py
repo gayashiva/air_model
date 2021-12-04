@@ -1,8 +1,8 @@
 """ UncertaintyQuantification of Icestupa class
 """
 import uncertainpy as un
-# import pickle
-# pickle.HIGHEST_PROTOCOL = 4 # For python version 2.7
+import pickle
+pickle.HIGHEST_PROTOCOL = 4 # For python version 2.7
 import chaospy as cp
 import pandas as pd
 import math
@@ -20,31 +20,27 @@ from src.models.icestupaClass import Icestupa
 from src.models.methods.calibration import get_calibration
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
-from src.models.methods.droplet import get_droplet_projectile
 from src.utils.uq_air import UQ_Icestupa, setup_params_dist, rmse_V
 
 if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
-    coloredlogs.install(
-        fmt="%(funcName)s %(levelname)s %(message)s",
-        level=logging.ERROR,
-        logger=logger,
-    )
+    logger.setLevel("WARNING")
 
     locations = ["gangles21", "guttannen21", "guttannen20"]
     # locations = ["gangles21"]
     for location in locations:
 
         # Get settings for given location and trigger
-        SITE, FOLDER = config(location)
+        CONSTANTS, SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
         icestupa.read_input()
         icestupa.self_attributes()
 
         # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z']
         # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'DX', 'SA_corr']
-        params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT']
+        # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT']
+        params = ['T_PPT']
         # params = ['D_F', 'T_F', 'r_F']
 
         parameters = un.Parameters(setup_params_dist(icestupa, params))

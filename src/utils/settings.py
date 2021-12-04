@@ -178,9 +178,9 @@ def config(location="guttannen21"):
         A_DECAY=16,  # Albedo decay rate decay_t_d
         T_PPT=1,  # Temperature condition for liquid precipitation
 
-        # DX=20e-03,  # Surface layer thickness [m]
-        # Z=0.003,  # Ice Momentum and Scalar roughness length
-        # SA_corr=1,  # Surface area correction factor
+        DX=20e-03,  # Surface layer thickness [m]
+        Z=0.003,  # Ice Momentum and Scalar roughness length
+        SA_corr=1,  # Surface area correction factor
     )
 
     return CONSTANTS, SITE, FOLDER

@@ -3,7 +3,6 @@
 
 # External modules
 import pickle
-
 pickle.HIGHEST_PROTOCOL = 4  # For python version 2.7
 import pandas as pd
 import sys, os, math, json
