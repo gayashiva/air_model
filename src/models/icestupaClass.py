@@ -317,6 +317,7 @@ class Icestupa:
             "SA",
             "h_ice",
             "r_ice",
+            "dr",
             "snow2ice",
             "dep",
             "t_cone",
@@ -342,6 +343,7 @@ class Icestupa:
         V_initial = math.pi / 3 * self.R_F ** 2 * self.h_i
         self.df.loc[1, "ice"] = V_initial * self.RHO_I
         self.df.loc[1, "iceV"] = V_initial
+        self.df.loc[0, "iceV"] = V_initial
         self.df.loc[1, "input"] = self.df.loc[1, "ice"]
 
         logger.warning(
@@ -416,7 +418,7 @@ class Icestupa:
                     self.df = self.df.reset_index(drop=True)
                     break
 
-            self.get_area(i, option='old')
+            self.get_area(i)
 
             if test:
                 self.test_get_energy(i)

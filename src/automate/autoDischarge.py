@@ -20,7 +20,7 @@ def TempFreeze(aws, loc="guttannen21"):
 
     constants, SITE, FOLDER = config(loc)
 
-    with open(FOLDER["raw"] + "info.json") as f:
+    with open(FOLDER["raw"] + "automate_info.json") as f:
         params = json.load(f)
 
     # AWS
@@ -106,7 +106,7 @@ def SunMelt(loc='guttannen21'):
 
     constants, SITE, FOLDER = config(loc)
 
-    with open(FOLDER["raw"] + "info.json") as f:
+    with open(FOLDER["raw"] + "automate_info.json") as f:
         params = json.load(f)
 
     times = pd.date_range(
