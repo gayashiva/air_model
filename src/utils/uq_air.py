@@ -8,7 +8,7 @@ import sys
 import os
 import logging
 import coloredlogs
-from sklearn.metrics import mean_squared_error
+# from sklearn.metrics import mean_squared_error
 
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -19,7 +19,7 @@ from src.models.icestupaClass import Icestupa
 from src.models.methods.calibration import get_calibration
 from src.models.methods.metadata import get_parameter_metadata
 from src.models.methods.solar import get_solar
-from src.models.methods.droplet import get_droplet_projectile
+# from src.utils.cv import setup_params
 
 def setup_params_dist(icestupa, params):
     params_range = []
@@ -31,7 +31,6 @@ def setup_params_dist(icestupa, params):
             param_range = cp.Uniform(y_lim[0], y_lim[1])
         params_range.append(param_range)
         print("\t%s : %s\n" %(param, param_range))
-
     tuned_params = {params[i]: params_range[i] for i in range(len(params))}
     return tuned_params
 
@@ -93,9 +92,9 @@ class UQ_Icestupa(un.Model, Icestupa):
             ignore = ignore
         )
 
-        SITE, FOLDER = config(location)
-        initial_data = [SITE, FOLDER]
-        diff = SITE["end_date"] - SITE["start_date"]
+        CONSTANTS, SITE, FOLDER = config(location)
+        initial_data = [CONSTANTS,SITE, FOLDER]
+        diff = SITE["melt_out"] - SITE["start_date"]
         days, seconds = diff.days, diff.seconds
         self.total_hours = days * 24 + seconds // 3600
 
@@ -161,18 +160,18 @@ class UQ_Icestupa(un.Model, Icestupa):
                     self.df.loc[i, "iceV"] = 0
             y_pred = []
             z_pred = []
-            for date in self.df_c.When.values:
-                if self.df[self.df.When == date].shape[0]:
-                    y_pred.append(self.df.loc[self.df.When == date, "iceV"].values[0])
+            for date in self.df_c.time.values:
+                if self.df[self.df.time == date].shape[0]:
+                    y_pred.append(self.df.loc[self.df.time == date, "iceV"].values[0])
                 else:
                     # y_pred.append(self.V_dome)
                     # print("Error: Date not found")
                     y_pred.append(0)
 
             if self.name != 'gangles21':
-                for date in self.df_cam.When.values:
-                    if self.df[self.df.When == date].shape[0]:
-                        z_pred.append(self.df.loc[self.df.When == date, "T_s"].values[0])
+                for date in self.df_cam.time.values:
+                    if self.df[self.df.time == date].shape[0]:
+                        z_pred.append(self.df.loc[self.df.time == date, "T_s"].values[0])
                     else:
                         # print("Error: Date not found")
                         z_pred.append(0)
@@ -181,8 +180,8 @@ class UQ_Icestupa(un.Model, Icestupa):
         else:
             for i in range(0, self.total_hours):
                 self.df.loc[i, "iceV"] = self.V_dome
-            y_pred = [999] * len(self.df_c.When.values)
-            z_pred = [999] * len(self.df_cam.When.values)
+            y_pred = [999] * len(self.df_c.time.values)
+            z_pred = [999] * len(self.df_cam.time.values)
             se = 0
             last_hour = 0
 
@@ -215,7 +214,7 @@ if __name__ == "__main__":
 
     for location in locations:
         # Get settings for given location and trigger
-        SITE, FOLDER = config(location)
+        CONSTANTS, SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
         icestupa.read_input()
         icestupa.self_attributes()
@@ -233,7 +232,7 @@ if __name__ == "__main__":
             params = ['IE', 'A_I', 'Z', 'T_F', 'DX']
         else:
             params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX']
-        parameters_full = setup_params_dist(params)
+        parameters_full = setup_params_dist(icestupa, params)
 
         # Create the parameters
         for k, v in parameters_full.items():
