@@ -25,7 +25,7 @@ def setup_params_dist(icestupa, params):
     params_range = []
     for param in params:
         y_lim = get_parameter_metadata(param)['ylim']
-        if param in ['r_F', 'D_F']:
+        if param in ['R_F', 'D_F']:
             param_range = cp.Uniform(getattr(icestupa, param) * y_lim[0],getattr(icestupa, param) * y_lim[1])
         else:
             param_range = cp.Uniform(y_lim[0], y_lim[1])
