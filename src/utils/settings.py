@@ -32,13 +32,10 @@ def config(location="guttannen21"):
             alt=1047.6,
             latitude=46.65549,
             longitude=8.29149,
-            # R_F=5.4,
-            # SA_corr=1.2,
-            Z=0.001,
             h_f=5,
             # perimeter=45, # on Feb 11
-            # DX= 50e-03,
-            # Z= 5e-03,
+            # SA_corr=1.2,
+            # Z=0.001,
         )
 
         f_heights = [
