@@ -33,7 +33,7 @@ def config(location="guttannen21"):
             latitude=46.65549,
             longitude=8.29149,
             # R_F=5.4,
-            SA_corr=1.2,
+            # SA_corr=1.2,
             Z=0.001,
             h_f=5,
             # perimeter=45, # on Feb 11
@@ -93,7 +93,7 @@ def config(location="guttannen21"):
             h_f=9,
             tcc=0,  # Total cloud cover
             # tcc=0.1,  # Total cloud cover
-            SA_corr=1.5,
+            # SA_corr=1.5,
             # R_F=9.05,
             # perimeter=82.3, # On 3 Mar
         )
@@ -161,7 +161,7 @@ def config(location="guttannen21"):
     CONSTANTS = dict(
         DT=60 * 60,  # Model time step [s]
         H_AWS=2,  # AWS height [m]
-        DX=20e-03,  # Surface layer thickness [m]
+        # DX=20e-03,  # Surface layer thickness [m]
         L_F=3.34e5,  # latent heat for melting [J kg-1]
         L_V=2.5e6,  # latent heat for vaporization [J kg-1]
         L_S=2.848e6,  # latent heat for sublimation [J kg-1]
@@ -180,9 +180,9 @@ def config(location="guttannen21"):
         A_I=0.25,  # Albedo of Ice A_I
         A_S=0.85,  # Albedo of Fresh Snow A_S
         A_DECAY=16,  # Albedo decay rate decay_t_d
-        Z=0.003,  # Ice Momentum and Scalar roughness length
+        # Z=0.003,  # Ice Momentum and Scalar roughness length
         T_PPT=1,  # Temperature condition for liquid precipitation
-        SA_corr=1,  # Surface area correction factor
+        # SA_corr=1,  # Surface area correction factor
     )
 
     return CONSTANTS, SITE, FOLDER
