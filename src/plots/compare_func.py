@@ -84,6 +84,10 @@ if __name__ == "__main__":
         total_vol = df.dis_fountain.sum() * 60/1000
         wasted_percent = (total_vol - frozen_vol) / total_vol * 100
         print(f"Percent wasted is {wasted_percent}")
+        dis_max = autoDis(
+                    **param_values, time=15, temp=-20, rh=80, v=1
+                )
+        print(f"Max Discharge was {dis_max}")
 
         df.to_csv(FOLDER["sim"] + "auto_dis.csv")
         fig, ax = plt.subplots()
