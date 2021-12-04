@@ -161,7 +161,6 @@ def config(location="guttannen21"):
     CONSTANTS = dict(
         DT=60 * 60,  # Model time step [s]
         H_AWS=2,  # AWS height [m]
-        # DX=20e-03,  # Surface layer thickness [m]
         L_F=3.34e5,  # latent heat for melting [J kg-1]
         L_V=2.5e6,  # latent heat for vaporization [J kg-1]
         L_S=2.848e6,  # latent heat for sublimation [J kg-1]
@@ -180,8 +179,10 @@ def config(location="guttannen21"):
         A_I=0.25,  # Albedo of Ice A_I
         A_S=0.85,  # Albedo of Fresh Snow A_S
         A_DECAY=16,  # Albedo decay rate decay_t_d
-        # Z=0.003,  # Ice Momentum and Scalar roughness length
         T_PPT=1,  # Temperature condition for liquid precipitation
+
+        # DX=20e-03,  # Surface layer thickness [m]
+        # Z=0.003,  # Ice Momentum and Scalar roughness length
         # SA_corr=1,  # Surface area correction factor
     )
 

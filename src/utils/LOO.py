@@ -70,9 +70,8 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("WARNING")
 
-    location = "gangles21"
-    # location = "guttannen21"
-    # location = "schwarzsee19"
+    # location = "gangles21"
+    location = "guttannen21"
 
     # icestupa = Icestupa(location)
     CONSTANTS, SITE, FOLDER = config(location)
