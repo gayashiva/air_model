@@ -78,8 +78,8 @@ if __name__ == "__main__":
 
     # Loading measurements
     obs = list()
-    kind = 'volume'
-    # kind = 'area'
+    # kind = 'volume'
+    kind = 'area'
     # kind = 'temp'
 
     df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
@@ -122,58 +122,61 @@ if __name__ == "__main__":
     days = (ctr*runtime/(num_processes*60*60*24))
     print("Total hours expected : %0.01f" % int(days*24))
     print("Total days expected : %0.01f" % days)
-    num_finished_tasks = 0
 
-    # Initiate the worker processes
-    for i in range(num_processes):
+    answer = input("Continue?")
+    if not answer.lower() in ["n","no"]:
+        num_finished_tasks = 0
 
-        # Set process name
-        process_name = 'P%i' % i
+        # Initiate the worker processes
+        for i in range(num_processes):
 
-        # Create the process, and connect it to the worker function
-        new_process = multiprocessing.Process(target=calculate, args=(process_name,location, tasks, X, y, results,
-            results_list, kind))
+            # Set process name
+            process_name = 'P%i' % i
 
-        # Add new process to the list of processes
-        processes.append(new_process)
+            # Create the process, and connect it to the worker function
+            new_process = multiprocessing.Process(target=calculate, args=(process_name,location, tasks, X, y, results,
+                results_list, kind))
 
-        # Start the process
-        new_process.start()
+            # Add new process to the list of processes
+            processes.append(new_process)
 
-    # Fill task queue
-    task_list = list(ParameterGrid(tuned_params))
+            # Start the process
+            new_process.start()
 
-    for single_task in task_list:
-        tasks.put(single_task)
+        # Fill task queue
+        task_list = list(ParameterGrid(tuned_params))
 
-    # Wait while the workers process
-    sleep(0.5)
+        for single_task in task_list:
+            tasks.put(single_task)
 
-    # Quit the worker processes by sending them -1
-    for i in range(num_processes):
-        tasks.put("None")
+        # Wait while the workers process
+        sleep(0.5)
 
-    # Read calculation results
-    num_finished_processes = 0
+        # Quit the worker processes by sending them -1
+        for i in range(num_processes):
+            tasks.put("None")
 
-    while True:
-        # Read result
-        new_result = results.get()
-        num_finished_tasks += 1
+        # Read calculation results
+        num_finished_processes = 0
 
-        # Have a look at the results
-        if new_result == -1:
-            # Process has finished
-            num_finished_processes += 1
+        while True:
+            # Read result
+            new_result = results.get()
+            num_finished_tasks += 1
+
+            # Have a look at the results
+            if new_result == -1:
+                # Process has finished
+                num_finished_processes += 1
 
 
-            if num_finished_processes == num_processes:
-                df = pd.DataFrame.from_records(results_list, columns=["params", "rmse"])
-                df = df.set_index('rmse').sort_index().reset_index()
-                print(df.head())
-                df.to_csv(FOLDER['sim'] + file_path, index=False)
-                break
-        else:
-            # Print percentage of completed tasks
-            print()
-            print(print("\tCompleted : %0.1f" % (num_finished_tasks/len(task_list) * 100)))
+                if num_finished_processes == num_processes:
+                    df = pd.DataFrame.from_records(results_list, columns=["params", "rmse"])
+                    df = df.set_index('rmse').sort_index().reset_index()
+                    print(df.head())
+                    df.to_csv(FOLDER['sim'] + file_path, index=False)
+                    break
+            else:
+                # Print percentage of completed tasks
+                print()
+                print(print("\tCompleted : %0.1f" % (num_finished_tasks/len(task_list) * 100)))
