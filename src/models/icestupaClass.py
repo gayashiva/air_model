@@ -190,11 +190,11 @@ class Icestupa:
                     logger.warning(" Null values interpolated in %s" % column)
                     self.df.loc[:, column] = self.df[column].interpolate()
 
-        # self.df.to_hdf(
-        #     self.input + "model_input.h5",
-        #     key="df",
-        #     mode="a",
-        # )
+        self.df.to_hdf(
+            self.input + "model_input.h5",
+            key="df",
+            mode="a",
+        )
         # self.df.to_csv(self.input + "model_input.csv")
         logger.debug(self.df.head())
         logger.debug(self.df.tail())

@@ -223,11 +223,11 @@ if __name__ == "__main__":
             """
         | Fountain | Estimation |
         | --- | --- |
-        | Spray Radius | %i $m$|
+        | Spray Radius | %.1f $m$|
         | Water sprayed| %i $m^3$ |
         | Mean discharge rate | %i $l/min$ |
-        | Mean freeze rate | %i $l/min$ |
-        | Mean melt rate | %i $l/min$ |
+        | Mean freeze rate | %.1f $l/min$ |
+        | Mean melt rate | %.1f $l/min$ |
         | Runtime | %s $hours$ |
         """
             % (
