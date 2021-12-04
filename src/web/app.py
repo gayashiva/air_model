@@ -20,7 +20,7 @@ from src.utils.settings import config
 
 
 # SETTING PAGE CONFIG TO WIDE MODE
-air_logo = os.path.join(dirname, "src/visualization/logos/AIR_logo_circle.png")
+air_logo = os.path.join(dirname, "src/web/logos/AIR_logo_circle.png")
 st.set_page_config(
     layout="centered",  # Can be "centered" or "wide". In the future also "dashboard", etc.
     initial_sidebar_state="expanded",  # Can be "auto", "expanded", "collapsed"
@@ -116,12 +116,12 @@ if __name__ == "__main__":
             "Derived",
         ]
         display = st.multiselect(
-            "Choose type of visualization below:",
+            "Choose type of web below:",
             options=(visualize),
             default=["Validation"],
             # default=["Validation", "Timelapse"],
         )
-        intro_markdown = Path("src/visualization/intro.md").read_text()
+        intro_markdown = Path("src/web/intro.md").read_text()
         st.markdown(intro_markdown, unsafe_allow_html=True)
 
     st.markdown("---")
@@ -161,25 +161,25 @@ if __name__ == "__main__":
     row3_1, row3_2 = st.columns((1, 1))
     with row2_1:
         st.image(
-            "src/visualization/logos/unifr.png",
+            "src/web/logos/unifr.png",
             caption="UniFR",
             use_column_width=True,
         )
         st.markdown(" ")
         st.image(
-            "src/visualization/logos/GA.png",
+            "src/web/logos/GA.png",
             caption="GlaciersAlive",
             use_column_width=True,
         )
         st.markdown(" ")
         st.image(
-            "src/visualization/logos/ng-logo.png",
+            "src/web/logos/ng-logo.png",
             # caption="GlaciersAlive",
             use_column_width=True,
         )
     with row2_2:
         st.image(
-            "src/visualization/logos/HIAL-logo.png",
+            "src/web/logos/HIAL-logo.png",
             caption="HIAL",
             use_column_width=True,
         )
@@ -187,20 +187,20 @@ if __name__ == "__main__":
         st.markdown(" ")
         st.markdown(" ")
         st.image(
-            "src/visualization/logos/logo-schwarzsee.png",
+            "src/web/logos/logo-schwarzsee.png",
             caption="Schwarzsee Tourism",
             use_column_width=True,
         )
         st.markdown(" ")
         st.markdown(" ")
         st.image(
-            "src/visualization/logos/dfrobot.png",
+            "src/web/logos/dfrobot.png",
             # caption="GlaciersAlive",
             use_column_width=True,
         )
     with row2_3:
         st.image(
-            "src/visualization/logos/guttannen-bewegt.png",
+            "src/web/logos/guttannen-bewegt.png",
             caption="Guttannen Moves",
             use_column_width=True,
         )
@@ -208,7 +208,7 @@ if __name__ == "__main__":
         st.markdown(" ")
         st.markdown(" ")
         st.image(
-            "src/visualization/logos/Logo-Swiss-Polar-Institute.png",
+            "src/web/logos/Logo-Swiss-Polar-Institute.png",
             # caption="Swiss Polar Institute",
             use_column_width=True,
         )
@@ -303,7 +303,7 @@ if __name__ == "__main__":
 
     st.markdown("---")
     if not (display):
-        st.error("Please select at least one visualization.")
+        st.error("Please select at least one web.")
     else:
         if "Validation" in display:
 
