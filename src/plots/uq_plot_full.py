@@ -48,7 +48,7 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(len(locations), 1, sharex="col")
 
     for i, location in enumerate(locations):
-        SITE, FOLDER = config(location)
+        CONSTANTS, SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
         icestupa.read_output()
         icestupa.self_attributes()
@@ -58,10 +58,8 @@ if __name__ == "__main__":
         evaluations = []
 
         data = un.Data()
-        # filename1 = FOLDER['sim']+ "SE_full.h5"
         filename1 = FOLDER["sim"] + "full.h5"
         filename2 = FOLDER["sim"] + "fountain.h5"
-        # filename1 = FOLDER['sim']+ "efficiency.h5"
 
         if location == "schwarzsee19":
             SITE["start_date"] += pd.offsets.DateOffset(year=2023)
