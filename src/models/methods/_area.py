@@ -5,92 +5,40 @@ import math
 import numpy as np
 from functools import lru_cache
 import logging
-import cmath  
 
 logger = logging.getLogger("__main__")
 
 def get_area(self, i):
 
-    if not np.isnan(self.df.loc[i-1, "Qfreeze"]):
-        EB = self.df.loc[i-1, "Qfreeze"]
-        rho = self.RHO_I
-    elif not np.isnan(self.df.loc[i-1, "Qmelt"]):
-        EB = self.df.loc[i-1, "Qmelt"]
-        rho = self.RHO_I
+    if (self.df.t_cone[i]> 0) & (
+        self.df.loc[i - 1, "r_ice"] >= self.R_F
+    ):  # Growth rate positive and radius goes beyond spray radius
+        self.df.loc[i, "r_ice"] = self.df.loc[i - 1, "r_ice"]
+
+        self.df.loc[i, "h_ice"] = (
+            3 * self.df.loc[i, "iceV"] / (math.pi * self.df.loc[i, "r_ice"] ** 2)
+        )
+
+        self.df.loc[i, "s_cone"] = (
+            self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
+        )
+
     else:
-        EB=0
+        # Maintain constant Height to radius ratio
+        self.df.loc[i, "s_cone"] = self.df.loc[i - 1, "s_cone"]
 
-    # self.df.loc[i, "dr"] = math.sqrt(abs(EB)/(2 * math.pi * self.L_F * rho / self.DT * self.df.loc[i - 1, "r_ice"]))
-    # dV = math.pi * (self.df.loc[i, "dr"]**2 + 2 * self.df.loc[i - 1, "r_ice"] * self.df.loc[i, "dr"]) * self.df.loc[i, "dr"]
+        # Ice Radius
+        self.df.loc[i, "r_ice"] = math.pow(
+            3 * self.df.loc[i, "iceV"] / (math.pi * self.df.loc[i, "s_cone"]), 1 / 3
+        )
 
-    if self.df.loc[i - 1, "Discharge"] > 0 and EB < 0:
-        # s = 4.2 * self.df.loc[i-1, "s_cone"] # fountain constant
-        # s = 0.05 * 1/self.df.loc[i-1, "s_cone"] # fountain constant
-        s = 0.5
-        dh = s * self.df.loc[i-1, "dr"] 
-        # if self.df.loc[i-1, "dr"] !=0:
-        #     s = dh/self.df.loc[i-1, "dr"]
-        # else:
-        #     s = 0
-    else:
-        # dh = self.df.loc[i-1, "h_ice"] / self.df.loc[i-1, "r_ice"] # fountain constant
-        # dh *= self.df.loc[i-1, "dr"]
-        s = 0.5
-
-
-    # a = math.pi* self.df.loc[i - 1, "h_ice"]
-    # b = math.pi * self.df.loc[i - 1, "r_ice"] * self.df.loc[i - 1, "h_ice"]
-    # c = - (self.df.loc[i, "iceV"] - self.df.loc[i-1, "iceV"])
-    a = math.pi/3* ( 2 * s * self.df.loc[i - 1, "r_ice"] + self.df.loc[i - 1, "h_ice"])
-    b = math.pi/3* ( s * self.df.loc[i - 1, "r_ice"] ** 2 + 2 * self.df.loc[i - 1, "r_ice"] * self.df.loc[i - 1, "h_ice"])
-    c = - (self.df.loc[i, "iceV"] - self.df.loc[i-1, "iceV"])
-
-    # if -c > self.df.loc[i - 1, "fountain_runoff"]:
-    #     c = self.df.loc[i - 1, "fountain_runoff"]
-    #     logger.warning("Full Discharge used")
-      
-# calculate the discriminant  
-    d = (b**2) - (4*a*c)  
-      
-# find two solutions  
-    sol1 = (-b-math.sqrt(d))/(2*a)  
-    sol2 = (-b+math.sqrt(d))/(2*a)  
-    # print('The solution are {0} and {1}'.format(sol1,sol2))
-
-    if abs(sol1) < 2:
-        self.df.loc[i, "dr"] = sol1
-    else:
-        self.df.loc[i, "dr"] = sol2
-
-    # if EB > 0:
-    #     dV *= -1
-    #     self.df.loc[i, "dr"] *=-1
-
-    # if dV*self.RHO_I > self.df.loc[i - 1, "fountain_runoff"]:
-    #     dV = self.df.loc[i - 1, "fountain_runoff"]
-    #     logger.warning("Full Discharge used")
-
-    # self.df.loc[i - 1, "fountain_froze"] += dV* self.RHO_I
-    # self.df.loc[i - 1, "fountain_runoff"] -= dV* self.RHO_I
-
-    self.df.loc[i, "r_ice"] = self.df.loc[i-1, "r_ice"] + self.df.loc[i, "dr"]
-    self.df.loc[i, "h_ice"] = self.df.loc[i-1, "h_ice"] + s * self.df.loc[i, "dr"]
-
-    # self.df.loc[i, "h_ice"] = (
-    #     3 * (self.df.loc[i, "iceV"]+dV) / (math.pi * self.df.loc[i, "r_ice"]**2)
-    # )
-
-    # logger.warning(self.df.loc[i, "time"], self.df.loc[i, "dr"], self.df.loc[i, "r_ice"], self.df.loc[i, "iceV"])
-    # print(self.df.loc[i, "time"], self.df.loc[i, "dr"], self.df.loc[i, "h_ice"], self.df.loc[i, "r_ice"], self.df.loc[i, "iceV"])
-
-    self.df.loc[i, "s_cone"] = (
-        self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
-    )
+        # Ice Height
+        self.df.loc[i, "h_ice"] = self.df.loc[i, "s_cone"] * self.df.loc[i, "r_ice"]
 
     # Area of Conical Ice Surface
     self.df.loc[i, "SA"] = (
         math.pi
-        * self.SA_corr
+        # * self.SA_corr
         * self.df.loc[i, "r_ice"]
         * math.pow(
             (
