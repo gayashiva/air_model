@@ -185,7 +185,7 @@ def config(location="guttannen21"):
         # Fix these first with calibration step
         DX=20e-03,  # Surface layer thickness [m]
         Z=0.003,  # Ice Momentum and Scalar roughness length
-        SA_corr=1,  # Surface area correction factor
+        SA_corr=1.5,  # Surface area correction factor
     )
 
     return CONSTANTS, SITE, FOLDER

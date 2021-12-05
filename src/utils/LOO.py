@@ -70,17 +70,15 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("WARNING")
 
-    # location = "gangles21"
-    location = "guttannen21"
+    location = "gangles21"
+    # location = "guttannen21"
 
-    # icestupa = Icestupa(location)
     CONSTANTS, SITE, FOLDER = config(location)
 
     # Loading measurements
     obs = list()
     # kind = 'volume'
     kind = 'area'
-    # kind = 'temp'
 
     df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
 
@@ -93,6 +91,7 @@ if __name__ == "__main__":
     obs.extend(df_c.reset_index()[["Where", 'time', 'DroneV', 'Area']].values.tolist())
 
     X = np.array([[a[0], a[1]] for a in obs])
+
     if kind == 'area':
         y = np.array([[a[3]] for a in obs])
     else:
