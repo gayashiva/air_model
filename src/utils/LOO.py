@@ -94,9 +94,9 @@ if __name__ == "__main__":
 
     X = np.array([[a[0], a[1]] for a in obs])
     if kind == 'area':
-        y = np.array([[a[2]] for a in obs])
-    else:
         y = np.array([[a[3]] for a in obs])
+    else:
+        y = np.array([[a[2]] for a in obs])
 
     print(X.shape, y.shape)
 
