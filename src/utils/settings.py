@@ -135,7 +135,7 @@ def config(location="guttannen21"):
             utc=1,
             latitude=46.649999,
             longitude=8.283333,
-            # SA_corr=1.2,
+            SA_corr=1.2,
             Z=0.001,
             R_F=10,
             tcc=0,
@@ -181,13 +181,14 @@ def config(location="guttannen21"):
         A_S=0.85,  # Albedo of Fresh Snow A_S
         A_DECAY=16,  # Albedo decay rate decay_t_d
         T_PPT=1,  # Temperature condition for liquid precipitation
-        DX=20e-03,  # Surface layer thickness [m]
-        Z=0.003,  # Ice Momentum and Scalar roughness length
 
         # Fountain uncertainty
         T_F=1.5,  # Fountain temp
 
-        # SA_corr=1.5,  # Surface area correction factor
+        # Fix these first with calibration step
+        DX=20e-03,  # Surface layer thickness [m]
+        Z=0.003,  # Ice Momentum and Scalar roughness length
+        SA_corr=1.5,  # Surface area correction factor
     )
 
     return CONSTANTS, SITE, FOLDER

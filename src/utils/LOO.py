@@ -70,8 +70,8 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("WARNING")
 
-    # location = "gangles21"
-    location = "guttannen21"
+    location = "gangles21"
+    # location = "guttannen21"
 
     CONSTANTS, SITE, FOLDER = config(location)
 
