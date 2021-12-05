@@ -27,7 +27,6 @@ def config(location="guttannen21"):
             melt_out=datetime(2021, 5, 10, 1),
             fountain_off_date=datetime(2021, 2, 20, 10),
             D_F=7.5,  # Fountain mean discharge
-            T_F=3,  # Fountain temp
             utc=2,
             alt=1047.6,
             latitude=46.65549,
@@ -58,7 +57,6 @@ def config(location="guttannen21"):
                 2020, 3, 8, 9
             ),  # Image shows Dani switched off at 8th Mar 10 am
             D_F=7.5,  # Fountain mean discharge
-            T_F=3,  # Fountain temp
             utc=2,
             alt=1047.6,
             latitude=46.649999,
@@ -82,7 +80,6 @@ def config(location="guttannen21"):
             melt_out=datetime(2021, 6, 20),
             fountain_off_date=datetime(2021, 3, 10, 18),
             D_F=60,  # FOUNTAIN min discharge
-            T_F=1,  # FOUNTAIN min discharge
             utc=5.5,
             alt=4009,
             longitude=77.606949,
@@ -109,7 +106,6 @@ def config(location="guttannen21"):
             # end_date=datetime(2019, 3, 17),
             melt_out=datetime(2019, 3, 10, 19),
             fountain_off_date=datetime(2019, 2, 16, 10),
-            T_F=1,  # Fountain water temp
             utc=1,
             longitude=7.297543,
             latitude=46.693723,
@@ -132,7 +128,6 @@ def config(location="guttannen21"):
             melt_out=datetime(2020, 2, 1),
             fountain_off_date=datetime(2020, 2, 1),
             D_F=60,
-            T_F=3,
             utc=1,
             latitude=46.649999,
             longitude=8.283333,
@@ -175,12 +170,16 @@ def config(location="guttannen21"):
         P0=1013,  # Standard air pressure hPa
         G=9.81,  # Gravitational acceleration
 
+
         # Weather uncertainty
         IE=0.97,  # Ice Emissivity IE
         A_I=0.25,  # Albedo of Ice A_I
         A_S=0.85,  # Albedo of Fresh Snow A_S
         A_DECAY=16,  # Albedo decay rate decay_t_d
         T_PPT=1,  # Temperature condition for liquid precipitation
+
+        # Fountain uncertainty
+        T_F=1.5,  # Fountain temp
 
         # Fix these first with calibration step
         DX=20e-03,  # Surface layer thickness [m]
