@@ -88,12 +88,12 @@ class UQ_Icestupa(un.Model, Icestupa):
             # labels=["Time (days)", "Ice Volume ($m^3$)"], 
             interpolate=False,
             suppress_graphics=False,
-            logger_level="debug",
+            logger_level="warning",
             ignore = ignore
         )
 
         CONSTANTS, SITE, FOLDER = config(location)
-        initial_data = [CONSTANTS,SITE, FOLDER]
+        initial_data = [CONSTANTS, SITE, FOLDER]
         diff = SITE["melt_out"] - SITE["start_date"]
         days, seconds = diff.days, diff.seconds
         self.total_hours = days * 24 + seconds // 3600
@@ -127,7 +127,7 @@ class UQ_Icestupa(un.Model, Icestupa):
         self.set_parameters(**parameters)
         # logger.info(parameters.values())
 
-        if "r_F" in parameters.keys():
+        if "R_F" in parameters.keys():
             self.self_attributes()
 
         if "D_F" in parameters.keys():

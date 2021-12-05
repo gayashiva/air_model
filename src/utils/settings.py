@@ -34,6 +34,8 @@ def config(location="guttannen21"):
             longitude=8.29149,
             h_f=5,
             # perimeter=45, # on Feb 11
+
+            # Calibrated values
             # SA_corr=1.2,
             # Z=0.001,
         )
@@ -63,8 +65,6 @@ def config(location="guttannen21"):
             longitude=8.283333,
             h_f=3,
             # perimeter=28, # on 24 Jan
-            # DX= 50e-03,
-            # Z= 5e-03,
         )
 
         f_heights = [
@@ -90,9 +90,11 @@ def config(location="guttannen21"):
             h_f=9,
             tcc=0,  # Total cloud cover
             # tcc=0.1,  # Total cloud cover
-            # SA_corr=1.5,
-            # R_F=9.05,
             # perimeter=82.3, # On 3 Mar
+
+            # Calibrated values
+            # SA_corr=1.5,
+            # Z=0.001,
         )
 
         f_heights = [
@@ -172,15 +174,18 @@ def config(location="guttannen21"):
         sigma=5.67e-8,  # Stefan-Bolzmann constant [W m-2 K-4]
         P0=1013,  # Standard air pressure hPa
         G=9.81,  # Gravitational acceleration
+
+        # Weather uncertainty
         IE=0.97,  # Ice Emissivity IE
         A_I=0.25,  # Albedo of Ice A_I
         A_S=0.85,  # Albedo of Fresh Snow A_S
         A_DECAY=16,  # Albedo decay rate decay_t_d
         T_PPT=1,  # Temperature condition for liquid precipitation
 
-        # DX=20e-03,  # Surface layer thickness [m]
-        # Z=0.003,  # Ice Momentum and Scalar roughness length
-        # SA_corr=1,  # Surface area correction factor
+        # Fix these first with calibration step
+        DX=20e-03,  # Surface layer thickness [m]
+        Z=0.003,  # Ice Momentum and Scalar roughness length
+        SA_corr=1,  # Surface area correction factor
     )
 
     return CONSTANTS, SITE, FOLDER

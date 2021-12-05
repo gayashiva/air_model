@@ -66,8 +66,7 @@ def bounds(var, res, change = 5):
 
 
 class CV_Icestupa(BaseEstimator,Icestupa):
-    def __init__(self, name = "guttannen21", DX = 0.020, DT = 60*60, A_I = 0.25, A_S = 0.85, IE = 0.97, T_PPT = 1, T_F
-        = 1.5, A_DECAY= 16, Z=0.0025, SA_corr = 1):
+    def __init__(self, name = "guttannen21", DX = 0.020, Z=0.003, SA_corr = 1):
         super(Icestupa, self).__init__()
 
         print("Initializing classifier:\n")
@@ -80,6 +79,10 @@ class CV_Icestupa(BaseEstimator,Icestupa):
             # print("{} = {}".format(arg,val))
 
         CONSTANTS, SITE, FOLDER = config(location = self.name)
+
+        for key in ["DX", "Z", "SA_corr"]:
+            CONSTANTS.pop(key)
+
         initialize = [CONSTANTS, SITE, FOLDER]
         for dictionary in initialize:
             for key in dictionary:

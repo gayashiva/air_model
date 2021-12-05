@@ -37,8 +37,6 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z']
-        # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'DX', 'SA_corr']
         # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT']
         # params = ['T_PPT']
         params = ['D_F', 'T_F', 'R_F']

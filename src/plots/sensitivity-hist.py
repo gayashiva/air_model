@@ -47,8 +47,8 @@ if __name__ == "__main__":
     # params = ['IE', 'A_I', 'Z', 'SA_corr', 'DX']
     # params = ['DX', 'SA_corr']
     params = ['Z', 'SA_corr', 'DX']
-    # kind = ['volume', 'area']
-    kind = ['volume']
+    kind = ['volume', 'area']
+    # kind = ['volume']
 
     sns.set(style="darkgrid")
     fig, ax = plt.subplots(
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         dfx = pd.DataFrame(columns=params)
         for ctr, location in enumerate(locations):
             icestupa = Icestupa(location)
-            SITE, FOLDER = config(location)
+            CONSTANTS, SITE, FOLDER = config(location)
             icestupa.read_output()
 
             file_path = 'loo-cv-'+obj+'-'
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
 
     plt.savefig(
-        "data/paper/param_hist.jpg",
+        "data/paper1/param_hist.jpg",
         dpi=300,
         bbox_inches="tight",
     )
