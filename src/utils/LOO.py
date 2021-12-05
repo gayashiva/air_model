@@ -70,16 +70,16 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("WARNING")
 
-    # location = "gangles21"
-    location = "guttannen21"
+    location = "gangles21"
+    # location = "guttannen21"
 
     # icestupa = Icestupa(location)
     CONSTANTS, SITE, FOLDER = config(location)
 
     # Loading measurements
     obs = list()
-    # kind = 'volume'
-    kind = 'area'
+    kind = 'volume'
+    # kind = 'area'
     # kind = 'temp'
 
     df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
