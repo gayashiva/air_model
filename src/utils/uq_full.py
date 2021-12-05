@@ -25,11 +25,12 @@ from src.utils.uq_air import UQ_Icestupa, setup_params_dist, rmse_V
 if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
-    logger.setLevel("WARNING")
+    logger.setLevel("ERROR")
 
     locations = ["gangles21", "guttannen21", "guttannen20"]
     # locations = ["gangles21"]
     for location in locations:
+
 
         # Get settings for given location and trigger
         CONSTANTS, SITE, FOLDER = config(location)
@@ -37,32 +38,35 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT']
-        # params = ['T_PPT']
-        # params = ['D_F', 'T_F']
+        types = ["fountain", "weather"]
+        params = [['D_F', 'T_F'], ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT'], ]
 
-        parameters = un.Parameters(setup_params_dist(icestupa, params))
+        for i, type in enumerate(types):
 
-        # Initialize the model
-        model = UQ_Icestupa(location)
+            print(f"\n\tBegin uncertainty quantification of {type} in {location}\n")
 
-        # Set up the uncertainty quantification
-        UQ = un.UncertaintyQuantification(
-            model=model,
-            parameters=parameters,
-            # CPUs=2,
-        )
+            param = params[i]
 
-        # Perform the uncertainty quantification using
-        # polynomial chaos with point collocation (by default)
-        data = UQ.quantify(
-            seed=10,
-            data_folder=FOLDER["sim"],
-            figure_folder=FOLDER["sim"],
-            # filename="SE_full",
-            # filename="full",
-            filename="fountain",
-            method="pc",
-            # pc_method="spectral",
-            rosenblatt=True           
-        )
+            parameters = un.Parameters(setup_params_dist(icestupa, param))
+
+            # Initialize the model
+            model = UQ_Icestupa(location)
+
+            # Set up the uncertainty quantification
+            UQ = un.UncertaintyQuantification(
+                model=model,
+                parameters=parameters,
+                # CPUs=2,
+            )
+
+            # Perform the uncertainty quantification using
+            # polynomial chaos with point collocation (by default)
+            data = UQ.quantify(
+                seed=10,
+                data_folder=FOLDER["sim"],
+                figure_folder=FOLDER["sim"],
+                filename=type,
+                method="pc",
+                # pc_method="spectral",
+                rosenblatt=True           
+            )
