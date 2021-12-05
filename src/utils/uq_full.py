@@ -37,9 +37,9 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT']
+        params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT']
         # params = ['T_PPT']
-        params = ['D_F', 'T_F', 'R_F']
+        # params = ['D_F', 'T_F']
 
         parameters = un.Parameters(setup_params_dist(icestupa, params))
 

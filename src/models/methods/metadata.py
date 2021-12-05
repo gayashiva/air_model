@@ -36,7 +36,7 @@ def get_parameter_metadata(
         "R_F": {
             "name": "Spray radius",
             "latex": "$r_{F}$",
-            "ylim": [0.9, 1.1],
+            # "ylim": [0.9, 1.1],
             "kind": "parameter",
             "units": "($m$)",
         },
