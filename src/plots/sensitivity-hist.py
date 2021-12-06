@@ -44,9 +44,8 @@ if __name__ == "__main__":
     # locations = ["guttannen21"]
     # location = "guttannen21"
 
-    # params = ['IE', 'A_I', 'Z', 'SA_corr', 'DX']
-    # params = ['DX', 'SA_corr']
-    params = ['Z', 'SA_corr', 'DX']
+    # params = ['Z', 'SA_corr', 'DX']
+    params = ['SA_corr', 'DX']
     kind = ['volume', 'area']
     # kind = ['volume']
 
@@ -90,7 +89,8 @@ if __name__ == "__main__":
                     df[col].value_counts(normalize=True)))
 
             df['AIR'] = get_parameter_metadata(location)['shortname']
-            df[['Z', 'DX']] *= 1000
+            # df[['Z', 'DX']] *= 1000
+            df[['DX']] *= 1000
             # df['Z'] = pd.to_numeric(df['Z'], downcast='integer')
             # df['DX'] = pd.to_numeric(df['DX'], downcast='integer')
             dfx = dfx.append(df, ignore_index = True)
