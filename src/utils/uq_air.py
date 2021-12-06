@@ -239,9 +239,9 @@ if __name__ == "__main__":
         )
 
         if location == 'gangles21':
-            params = ['IE', 'A_I', 'Z', 'DX', 'SA_corr']
+            params = ['IE', 'A_I', 'Z', 'DX']
         else:
-            params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'DX', 'SA_corr']
+            params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'DX']
         parameters_full = setup_params_dist(icestupa, params)
 
         # Initialize the model
