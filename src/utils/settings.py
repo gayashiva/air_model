@@ -35,7 +35,7 @@ def config(location="guttannen21"):
             # perimeter=45, # on Feb 11
 
             # Calibrated values
-            # SA_corr=1.4,
+            # SA_corr=1.8,
             # Z=0.001,
         )
 
@@ -186,9 +186,9 @@ def config(location="guttannen21"):
         T_F=1.5,  # Fountain temp
 
         # Fix these first with calibration step
-        DX=30e-03,  # Surface layer thickness [m]
+        DX=20e-03,  # Surface layer thickness [m]
         Z=0.003,  # Ice Momentum and Scalar roughness length
-        SA_corr=1.5,  # Surface area correction factor
+        SA_corr=1,  # Surface area correction factor
     )
 
     return CONSTANTS, SITE, FOLDER
