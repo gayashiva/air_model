@@ -77,8 +77,8 @@ if __name__ == "__main__":
 
     # Loading measurements
     obs = list()
-    # kind = 'volume'
-    kind = 'area'
+    kind = 'volume'
+    # kind = 'area'
 
     df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
 
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     results_list = manager.list()
 
     # Create process pool with four processes
-    num_processes = int(multiprocessing.cpu_count()/2)
+    num_processes = int(multiprocessing.cpu_count())
     pool = multiprocessing.Pool(processes=num_processes)
     processes = []
 
