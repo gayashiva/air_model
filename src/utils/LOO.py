@@ -70,8 +70,8 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("WARNING")
 
-    location = "gangles21"
-    # location = "guttannen21"
+    # location = "gangles21"
+    location = "guttannen21"
 
     CONSTANTS, SITE, FOLDER = config(location)
 
@@ -115,13 +115,13 @@ if __name__ == "__main__":
     results_list = manager.list()
 
     # Create process pool with four processes
-    num_processes = multiprocessing.cpu_count()
+    num_processes = int(multiprocessing.cpu_count()/2)
     pool = multiprocessing.Pool(processes=num_processes)
     processes = []
 
     print()
     ctr = len(list(ParameterGrid([tuned_params]))) 
-    runtime = 40
+    runtime = 60
     days = (ctr*runtime/(num_processes*60*60*24))
     print("Total hours expected : %0.01f" % int(days*24))
     print("Total days expected : %0.01f" % days)
