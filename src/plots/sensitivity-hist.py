@@ -49,7 +49,7 @@ if __name__ == "__main__":
     kind = ['volume', 'area']
     # kind = ['volume']
 
-    sns.set(style="darkgrid")
+    sns.set(style="whitegrid")
     fig, ax = plt.subplots(
         nrows=len(kind), ncols=len(params), sharey="row", figsize=(18, 8)
     )
@@ -70,7 +70,7 @@ if __name__ == "__main__":
             df = df.set_index('rmse').sort_index().reset_index()
             df['params'] = df['params'].apply(literal_eval)
 
-            num_selected = int(0.2 * df.shape[0])
+            num_selected = int(0.1 * df.shape[0])
             num_total = df.shape[0]
             print()
             print("\tObjective %s Site %s" % (obj, location))
@@ -98,11 +98,39 @@ if __name__ == "__main__":
         print(dfx.head())
         print(dfx.tail())
 
+        df_fill  = []
+        for k, param_name in enumerate(params):
+            ylim = get_parameter_metadata(param_name)['ylim']
+            step = get_parameter_metadata(param_name)['step']
+            bars = np.arange(ylim[0],ylim[1] + step,step)
+            for l in bars:
+                if k == 0:
+                    df_fill.append([l,10, 1, 'IN21'])
+                if k == 1:
+                    df_fill.append([1,l*1000, 1, 'IN21'])
+
+        df_fill = pd.DataFrame(df_fill, columns=['SA_corr', 'DX', 'rmse', 'AIR'])
+        # print(df_fill)
+        # bars = str(bars)
+        # heights = np.ones(len(bars))
+        # print(bars, heights)
+        # ax[j,i].bar(bars, heights)
+
         for i,param_name in enumerate(params):
+            ylim = get_parameter_metadata(param_name)['ylim']
+            step = get_parameter_metadata(param_name)['step']
+            bars = np.arange(ylim[0],ylim[1] + step,step)
+            if param_name == 'DX':
+                bars = [num*1000 for num in bars]
+                bars = [round(num, 0) for num in bars]
+            if param_name == 'SA_corr':
+                bars = [round(num, 1) for num in bars]
+
             if obj == 'volume':
                 j=0
                 sns.countplot( x=param_name, hue ='AIR', palette="Set1", data=dfx,
-                    ax=ax[j,i])
+                    ax=ax[j,i], order= bars)
+
                 if i == 0:
                     ax[j,i].set_ylabel('Volume Objective')
                 else:
@@ -113,7 +141,7 @@ if __name__ == "__main__":
             if obj == 'area':
                 j=1
                 sns.countplot( x=param_name, hue ='AIR', palette="Set1", data=dfx,
-                    ax=ax[j,i])
+                    ax=ax[j,i], order= bars)
                 if i == 0:
                     ax[j,i].set_ylabel('Area Objective')
                 else:
