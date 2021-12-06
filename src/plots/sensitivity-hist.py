@@ -71,7 +71,7 @@ if __name__ == "__main__":
             df = df.set_index('rmse').sort_index().reset_index()
             df['params'] = df['params'].apply(literal_eval)
 
-            num_selected = int(0.1 * df.shape[0])
+            num_selected = int(0.2 * df.shape[0])
             num_total = df.shape[0]
             print()
             print("\tObjective %s Site %s" % (obj, location))

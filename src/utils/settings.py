@@ -31,12 +31,12 @@ def config(location="guttannen21"):
             alt=1047.6,
             latitude=46.65549,
             longitude=8.29149,
-            h_f=5,
+            # h_f=5,
             # perimeter=45, # on Feb 11
 
             # Calibrated values
-            # SA_corr=1,
-            # Z=0.001,
+            SA_corr=1.4,
+            Z=0.001,
         )
 
         f_heights = [
@@ -61,12 +61,12 @@ def config(location="guttannen21"):
             alt=1047.6,
             latitude=46.649999,
             longitude=8.283333,
-            h_f=3,
+            # h_f=3,
             # perimeter=28, # on 24 Jan
 
             # Calibrated values
-            # SA_corr=1,
-            # Z=0.002,
+            SA_corr=1.2,
+            Z=0.003,
         )
 
         f_heights = [
@@ -94,7 +94,7 @@ def config(location="guttannen21"):
             # perimeter=82.3, # On 3 Mar
 
             # Calibrated values
-            # SA_corr=1,
+            SA_corr=1.2,
             # Z=0.002,
         )
 
@@ -186,7 +186,7 @@ def config(location="guttannen21"):
         T_F=1.5,  # Fountain temp
 
         # Fix these first with calibration step
-        DX=20e-03,  # Surface layer thickness [m]
+        DX=30e-03,  # Surface layer thickness [m]
         Z=0.003,  # Ice Momentum and Scalar roughness length
         SA_corr=1.5,  # Surface area correction factor
     )

@@ -75,11 +75,11 @@ def rmse(time, values, params, y_true, y_pred, z_true, z_pred, total_hours,last_
     print("\n\tRMSE T %0.3f\n" % (rmse))
     return None, rmse
 
-# def efficiency(time, values, params, y_true, y_pred, se):
-#     for param_name in sorted(params.keys()):
-#         print("\n\t%s: %r" % (param_name, params[param_name]))
-#     print("\n\tSE %0.1f\n" % (se))
-#     return None, se
+def efficiency(time, values, params, se):
+    for param_name in sorted(params.keys()):
+        print("\n\t%s: %r" % (param_name, params[param_name]))
+    print("\n\tSE %0.1f\n" % (se))
+    return None, se
 
 
 class UQ_Icestupa(un.Model, Icestupa):
@@ -148,9 +148,9 @@ class UQ_Icestupa(un.Model, Icestupa):
             M_water = round(self.df["meltwater"].iloc[-1], 1)
             M_ice = round(self.df["ice"].iloc[-1] - self.V_dome * self.RHO_I, 1)
             if M_input !=0:
-                se = (M_water + M_ice) / M_input * 100
+                SE = (M_water + M_ice) / M_input * 100
             else:
-                se=0
+                SE=0
 
             last_hour = len(self.df) -1
             if len(self.df) >= self.total_hours:
@@ -182,22 +182,32 @@ class UQ_Icestupa(un.Model, Icestupa):
                 self.df.loc[i, "iceV"] = self.V_dome
             y_pred = [999] * len(self.df_c.time.values)
             # z_pred = [999] * len(self.df_cam.time.values)
-            se = 0
+            SE = 0
             last_hour = 0
 
         return (
-            # None,
-            # se,
             self.df.index.values,
             self.df["iceV"].values,
-            # parameters,
-            # self.y_true,
-            # y_pred,
-            # self.z_true,
-            # [round(num, 3) for num in z_pred],
-            # self.total_hours,
-            # last_hour,
+            parameters,
+            SE,
         )
+        # return (
+        #     self.df.index.values,
+        #     self.df["iceV"].values,
+        # )
+        # return (
+        #     # None,
+        #     # se,
+        #     self.df.index.values,
+        #     self.df["iceV"].values,
+        #     # parameters,
+        #     # self.y_true,
+        #     # y_pred,
+        #     # self.z_true,
+        #     # [round(num, 3) for num in z_pred],
+        #     # self.total_hours,
+        #     # last_hour,
+        # )
 
 
 if __name__ == "__main__":
@@ -219,17 +229,18 @@ if __name__ == "__main__":
         icestupa.read_input()
         icestupa.self_attributes()
 
-        list_of_feature_functions = [rmse_V, rmse_T, rmse]
+        list_of_feature_functions = [rmse_V, rmse_T, rmse, efficiency]
 
         features = un.Features(
             # new_features=list_of_feature_functions, features_to_run=["max_volume"]
             # new_features=list_of_feature_functions, features_to_run=["rmse"]
             new_features=list_of_feature_functions,
-            features_to_run=["rmse_T", "rmse_V", "rmse"],
+            features_to_run=["efficiency"],
         )
 
         if location == 'gangles21':
             params = ['IE', 'A_I', 'Z', 'T_F', 'DX']
+            # params = ['IE']
         else:
             params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'T_F', 'DX']
         parameters_full = setup_params_dist(icestupa, params)
