@@ -35,8 +35,8 @@ def config(location="guttannen21"):
             # perimeter=45, # on Feb 11
 
             # Calibrated values
-            SA_corr=1.4,
-            Z=0.001,
+            # SA_corr=1.4,
+            # Z=0.001,
         )
 
         f_heights = [
@@ -65,8 +65,8 @@ def config(location="guttannen21"):
             # perimeter=28, # on 24 Jan
 
             # Calibrated values
-            SA_corr=1.2,
-            Z=0.003,
+            # SA_corr=1.2,
+            # Z=0.003,
         )
 
         f_heights = [
@@ -94,7 +94,7 @@ def config(location="guttannen21"):
             # perimeter=82.3, # On 3 Mar
 
             # Calibrated values
-            SA_corr=1.2,
+            # SA_corr=1.2,
             # Z=0.002,
         )
 
