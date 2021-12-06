@@ -219,8 +219,8 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    # locations = ["gangles21", "guttannen21"]
-    locations = ["guttannen21"]
+    locations = ["gangles21", "guttannen21"]
+    # locations = ["guttannen21"]
 
     for location in locations:
         # Get settings for given location and trigger
@@ -239,9 +239,9 @@ if __name__ == "__main__":
         )
 
         if location == 'gangles21':
-            params = ['IE', 'A_I', 'Z', 'DX']
+            params = ['IE', 'A_I', 'Z', 'DX', 'SA_corr']
         else:
-            params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'DX']
+            params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'DX', 'SA_corr']
         parameters_full = setup_params_dist(icestupa, params)
 
         # Initialize the model
