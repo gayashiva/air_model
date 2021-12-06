@@ -70,8 +70,8 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("WARNING")
 
-    # location = "gangles21"
-    location = "guttannen21"
+    location = "gangles21"
+    # location = "guttannen21"
 
     CONSTANTS, SITE, FOLDER = config(location)
 
@@ -100,7 +100,8 @@ if __name__ == "__main__":
     print(X.shape, y.shape)
 
 
-    params = [ 'Z', 'SA_corr', 'DX']
+    # params = [ 'Z', 'SA_corr', 'DX']
+    params = [ 'SA_corr', 'DX']
     tuned_params = setup_params(params)
 
     file_path = 'loo-cv-'+kind+'-'
