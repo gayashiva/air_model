@@ -101,7 +101,8 @@ if __name__ == "__main__":
 
 
     # params = [ 'Z', 'SA_corr', 'DX']
-    params = [ 'SA_corr', 'DX']
+    # params = [ 'SA_corr', 'DX']
+    params = ['DX']
     tuned_params = setup_params(params)
 
     file_path = 'loo-cv-'+kind+'-'
@@ -116,7 +117,7 @@ if __name__ == "__main__":
     results_list = manager.list()
 
     # Create process pool with four processes
-    num_processes = int(multiprocessing.cpu_count())
+    num_processes = int(multiprocessing.cpu_count()/2)
     pool = multiprocessing.Pool(processes=num_processes)
     processes = []
 

@@ -27,10 +27,11 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("ERROR")
 
-    # locations = ["gangles21", "guttannen21"]
-    locations = [ 'gangles21']
+    locations = ["gangles21", "guttannen21"]
+    # locations = [ 'gangles21']
 
     for i, location in enumerate(locations):
+        print(f'\n\tLocation is {location} ')
         CONSTANTS, SITE, FOLDER = config(location)
 
         data = un.Data()
@@ -39,6 +40,6 @@ if __name__ == "__main__":
         data.load(filename1)
         data1 = data[location]
 
-    for param, value in zip(data.uncertain_parameters,data1['sobol_total_average'] ):
-        print(f'\t{param} has total order sens. =  {round(value,2)}')
+        for param, value in zip(data.uncertain_parameters,data1['sobol_total_average'] ):
+            print(f'\t{param} has total order sens. =  {round(value,2)}')
 
