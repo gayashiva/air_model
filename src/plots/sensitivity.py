@@ -33,27 +33,27 @@ if __name__ == "__main__":
     df_out = pd.DataFrame(columns=locations, index=index)
 
     names = [
+        "DX",
         "IE",
         "A_I",
         "A_S",
         "A_DECAY",
         "T_PPT",
         "Z",
-        "DX",
-        "T_W",
+        "T_F",
         # "D_MEAN",
         # "MU_CONE",
         # "r_spray",
     ]
     names_label = [
+        "$\\Delta x$",
         "$\\epsilon_{ice}$",
         r"$\alpha_{ice}$",
         r"$\alpha_{snow}$",
         "$\\tau$",
         "$T_{ppt}$",
         "$z_{0}$",
-        "$\\Delta x$",
-        "$T_{water}$",
+        "$T_{F}$",
         # "$d_{mean}$",
         # r"$\mu_{cone}$",
         # "$r_{spray}$",
