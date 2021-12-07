@@ -17,14 +17,14 @@ def get_parameter_metadata(
             "kind": "parameter",
             "units": "($m$)",
         },
-        "SA_corr": {
-            "name": "Surface area correction factor",
-            "latex": "$A_{corr}$",
-            "ylim": [1, 2],
-            "step": 0.1,
-            "kind": "parameter",
-            "units": "( )",
-        },
+        # "SA_corr": {
+        #     "name": "Surface area correction factor",
+        #     "latex": "$A_{corr}$",
+        #     "ylim": [1, 2],
+        #     "step": 0.1,
+        #     "kind": "parameter",
+        #     "units": "( )",
+        # },
         "Z": {
             "name": "Surface roughness",
             "latex": "$z_{0}$",
