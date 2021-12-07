@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
         data = un.Data()
         filename1 = FOLDER["sim"] + "full.h5"
-        # filename2 = FOLDER["sim"] + "fountain.h5"
+        filename2 = FOLDER["sim"] + "fountain.h5"
 
         if location == "schwarzsee19":
             SITE["start_date"] += pd.offsets.DateOffset(year=2023)
@@ -96,12 +96,12 @@ if __name__ == "__main__":
         data1["percentile_95"] = data1["percentile_95"][1 : len(days2) + 1]
         data1["time"] = days2
 
-        # data.load(filename2)
-        # print(data)
-        # data2 = data[location]
-        # data2["percentile_5"] = data2["percentile_5"][1 : len(days2) + 1]
-        # data2["percentile_95"] = data2["percentile_95"][1 : len(days2) + 1]
-        # data2["time"] = days2
+        data.load(filename2)
+        print(data)
+        data2 = data[location]
+        data2["percentile_5"] = data2["percentile_5"][1 : len(days2) + 1]
+        data2["percentile_95"] = data2["percentile_95"][1 : len(days2) + 1]
+        data2["time"] = days2
 
         df = icestupa.df[["time", "iceV"]]
         df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
@@ -180,15 +180,15 @@ if __name__ == "__main__":
             label="Weather uncertainty",
             zorder=6,
         )
-        # ax[i].fill_between(
-        #     data2["time"],
-        #     data2.percentile_5,
-        #     data2.percentile_95,
-        #     color="orange",
-        #     alpha=0.3,
-        #     label="Fountain uncertainty",
-        #     zorder=5,
-        # )
+        ax[i].fill_between(
+            data2["time"],
+            data2.percentile_5,
+            data2.percentile_95,
+            color="orange",
+            alpha=0.3,
+            label="Fountain uncertainty",
+            zorder=5,
+        )
         ax[i].errorbar(
             x2, y2, yerr=df_c.DroneVError, color=CB91_Violet, lw=1, alpha=0.5, zorder=8
         )
@@ -203,12 +203,12 @@ if __name__ == "__main__":
                 zorder=2,
                 label="Melt-out date",
             )
-        # ax[i].set_ylim(
-        #     round(icestupa.V_dome, 0) - 1, round(data2.percentile_95.max(), 0)
-        # )
         ax[i].set_ylim(
-            round(icestupa.V_dome, 0) - 1, round(data1.percentile_95.max(), 0)
+            round(icestupa.V_dome, 0) - 1, round(data2.percentile_95.max(), 0)
         )
+        # ax[i].set_ylim(
+        #     round(icestupa.V_dome, 0) - 1, round(data1.percentile_95.max(), 0)
+        # )
         v = get_parameter_metadata(location)
         at = AnchoredText(
             v["shortname"], prop=dict(size=10), frameon=True, loc="upper left"
