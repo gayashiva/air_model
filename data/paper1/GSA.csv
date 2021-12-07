@@ -1,0 +1,12 @@
+,AIR,param,value
+0,CH21,$\epsilon_{ice}$,0.127
+1,CH21,$\alpha_{ice}$,0.077
+2,CH21,$\alpha_{snow}$,0.013
+3,CH21,$\tau$,0.016
+4,CH21,$T_{ppt}$,0.038
+5,CH21,$z_{0}$,0.228
+6,CH21,$\Delta x$,0.658
+7,IN21,$\epsilon_{ice}$,0.038
+8,IN21,$\alpha_{ice}$,0.049
+9,IN21,$z_{0}$,0.086
+10,IN21,$\Delta x$,0.93

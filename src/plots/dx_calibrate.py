@@ -7,6 +7,7 @@ import math
 import matplotlib.colors
 import statistics as st
 from datetime import datetime, timedelta
+import seaborn as sns
 from matplotlib.offsetbox import AnchoredText
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
@@ -64,24 +65,31 @@ if __name__ == "__main__":
     print(dfx.head())
     print(dfx.tail())
 
-    fig, ax = plt.subplots()
     df1 = dfx.loc[dfx["AIR"] == "IN21"]
     df2 = dfx.loc[dfx["AIR"] == "CH21"]
     df3 = dfx.loc[dfx["rmse"] <= 0.1]
 
-    # print(df3)
-
-    ax.scatter(df1.DX, df1.rmse)
-    ax.scatter(df2.DX, df2.rmse)
-
-    plt.savefig(
-        "data/paper1/try.jpg",
-        dpi=300,
-        bbox_inches="tight",
-    )
     IN_DX = (df1.loc[df1.rmse == df1.rmse.min()].DX.values[0])
     CH_DX = (df2.loc[df2.rmse == df2.rmse.min()].DX.values[0])
 
     print(f'\t\nThe recommended DX for IN is {IN_DX} and CH is {CH_DX} mm.')
     print(f'\t\nDX Range recommended is {df3.DX.min()} and CH is {df3.DX.max()} mm.')
+
+    dfx.to_csv("data/paper1/dx_calibrate.csv")
+
+    fig, ax = plt.subplots()
+    ax = sns.lineplot(
+        x="DX", y="rmse", hue="AIR", data=dfx, palette="Set1"
+    )
+    print(dfx.loc[dfx.AIR == "CH21", "rmse"].min())
+    ax.plot(dfx[(dfx.AIR == "CH21")].loc[(dfx.rmse == dfx.loc[dfx.AIR == "CH21", "rmse"].min()), "DX"], dfx.loc[dfx.AIR == "CH21", "rmse"].min(), 'bo')
+    ax.plot(dfx[(dfx.AIR == "IN21")].loc[(dfx.rmse == dfx.loc[dfx.AIR == "IN21", "rmse"].min()), "DX"], dfx.loc[dfx.AIR == "IN21", "rmse"].min(), 'ro')
+    ax.set_xlabel(get_parameter_metadata("DX")["latex"])
+    ax.set_ylabel("Normalized RMSE")
+
+    plt.savefig(
+        "data/paper1/dx.jpg",
+        dpi=300,
+        bbox_inches="tight",
+    )
 
