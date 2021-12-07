@@ -66,7 +66,7 @@ def bounds(var, res, change = 5):
 
 
 class CV_Icestupa(BaseEstimator,Icestupa):
-    def __init__(self, name = "guttannen21", DX = 0.020, Z=0.003, SA_corr = 1.5):
+    def __init__(self, name = "guttannen21", DX = 0.020, Z=0.003):
         super(Icestupa, self).__init__()
 
         print("Initializing classifier:\n")
