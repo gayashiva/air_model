@@ -68,7 +68,7 @@ def calculate(process_name,location, tasks, X, y, results, results_list, kind):
 if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
-    logger.setLevel("WARNING")
+    logger.setLevel("ERROR")
 
     location = "gangles21"
     # location = "guttannen21"

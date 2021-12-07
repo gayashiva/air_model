@@ -15,7 +15,7 @@ def get_parameter_metadata(
             "ylim": [1e-02, 10e-02],
             "step": 1e-02,
             "kind": "parameter",
-            "units": "($cm$)",
+            "units": "($m$)",
         },
         "SA_corr": {
             "name": "Surface area correction factor",
