@@ -31,15 +31,16 @@ if __name__ == "__main__":
     # locations = ["gangles21"]
     for location in locations:
 
-
-        # Get settings for given location and trigger
         CONSTANTS, SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
         icestupa.read_input()
         icestupa.self_attributes()
 
         types = ["fountain", "weather"]
-        params = [['D_F', 'T_F'], ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT'], ]
+        params = [['D_F', 'T_F'], ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z'], ]
+
+        if location == 'gangles21':
+            params = [['D_F', 'T_F'], ['IE', 'A_I', 'Z'], ]
 
         for i, type in enumerate(types):
 
@@ -56,7 +57,7 @@ if __name__ == "__main__":
             UQ = un.UncertaintyQuantification(
                 model=model,
                 parameters=parameters,
-                # CPUs=2,
+                CPUs=12,
             )
 
             # Perform the uncertainty quantification using

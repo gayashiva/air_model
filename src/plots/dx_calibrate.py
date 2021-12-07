@@ -67,9 +67,9 @@ if __name__ == "__main__":
     fig, ax = plt.subplots()
     df1 = dfx.loc[dfx["AIR"] == "IN21"]
     df2 = dfx.loc[dfx["AIR"] == "CH21"]
-    df3 = dfx.loc[dfx["rmse"] <= 0.2]
+    df3 = dfx.loc[dfx["rmse"] <= 0.1]
 
-    print(df3)
+    # print(df3)
 
     ax.scatter(df1.DX, df1.rmse)
     ax.scatter(df2.DX, df2.rmse)
