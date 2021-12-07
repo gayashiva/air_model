@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     # Main logger
     logger = logging.getLogger(__name__)
-    logger.setLevel("WARNING")
+    logger.setLevel("ERROR")
 
     test = True
     # test = False
@@ -26,11 +26,13 @@ if __name__ == "__main__":
     # location="Schwarzsee 2019"
     # location="phortse20"
     # location = "Guttannen 2020"
-    location = "Guttannen 2021"
-    # location = "Gangles 2021"
+    # location = "Guttannen 2021"
+    location = "Gangles 2021"
 
     # Initialise icestupa object
     icestupa = Icestupa(location)
+    icestupa.DX = 0.04
+    print(icestupa.DX)
 
     if test:
         # Derive all the input parameters
