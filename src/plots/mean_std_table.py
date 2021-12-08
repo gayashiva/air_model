@@ -37,6 +37,7 @@ if __name__ == "__main__":
     for ctr, location in enumerate(locations):
         CONSTANTS, SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
+        print(location)
         # icestupa.read_input()
 
         # cols = [

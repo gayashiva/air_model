@@ -66,7 +66,7 @@ if __name__ == "__main__":
     ax1t.plot(dfx[(dfx.AIR == "IN21")].loc[(dfx.rmse == dfx.loc[dfx.AIR == "IN21", "rmse"].min()), "DX"], dfx.loc[dfx.AIR == "IN21", "rmse"].min(), 'ro')
     ax[1].set_xlabel(get_parameter_metadata("DX")["latex"] + " " + get_parameter_metadata("DX")["units"])
     ax[1].set_ylabel(" ")
-    ax1t.set_ylabel("RMSE [$m^3$]", color=pal[0])
+    ax1t.set_ylabel("RMSE [$m^3$]")
     for tl in ax1t.get_yticklabels():
         tl.set_color(pal[0])
     for tl in ax[1].get_yticklabels():

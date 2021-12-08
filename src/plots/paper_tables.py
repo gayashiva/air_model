@@ -25,7 +25,7 @@ if __name__ == "__main__":
     #     location="Guttannen 2020",
     #     # location="Gangles 2021",
     # )
-    locations = ["Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
+    locations = ["Gangles 2021", "Guttannen 2021", "Guttannen 2020"]
     filenames = []
 
     for location in locations:
@@ -33,7 +33,9 @@ if __name__ == "__main__":
         icestupa = Icestupa(location)
         CONSTANTS, SITE, FOLDER = config(location)
         icestupa.read_output()
-        icestupa.self_attributes()
+        # icestupa.self_attributes()
+        print(location)
+        print(icestupa.df.iceV.tail(1))
 
 #         M_F= round(icestupa.df["Discharge"].sum()* icestupa.DT/ 60 + icestupa.df.loc[0, "input"] - icestupa.V_dome *
 #             icestupa.RHO_I,1)
@@ -75,7 +77,12 @@ if __name__ == "__main__":
     )
     df = df.set_index("Mass")
     df = df.groupby(level=0).sum().reset_index()
-    # print(mass_table)
+# format to scientific notation
+    pd.options.display.float_format = "{:.1e}".format
+    df = df.set_index("Mass")
+    df = df.reindex(["F", "ppt", "dep", "water", "ice", "sub", "runoff"])
+    df = df.reset_index()
+
 
     for i in range(0,df.shape[0]):
         print(df.loc[i,"Mass"])

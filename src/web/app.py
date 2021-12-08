@@ -279,6 +279,7 @@ if __name__ == "__main__":
                 ctr += 1
 
             rmse_V = ((df.DroneV - df.iceV) ** 2).mean() ** 0.5
+            rmse_A = ((df.Area - df.SA) ** 2).mean() ** 0.5/ df.SA.max()
             corr_V = df["DroneV"].corr(df["iceV"])
 
         st.markdown(
@@ -329,9 +330,10 @@ if __name__ == "__main__":
             if icestupa.name in ["gangles21", "guttannen21", "guttannen20"]:
                 st.write(
                     """
-                Correlation of modelled with measured ice volume was **%.2f** and RMSE was **%.2f** $m^3$ 
+                Correlation of modelled with measured ice volume was **%.2f** and RMSE vol was **%.0f** $m^3$
+                RMSE area was **%.2f** $m^2$ 
                 """
-                    % (corr_V, rmse_V)
+                    % (corr_V, rmse_V, rmse_A)
                 )
 
             # if SITE["name"] in ["guttannen21", "guttannen20"]:
