@@ -58,7 +58,7 @@ if __name__ == "__main__":
     ax[1].set_ylabel("Normalized RMSE")
 
     plt.savefig(
-        "data/paper1/sens.jpg",
+        "data/paper1/Figure_5.jpg",
         dpi=300,
         bbox_inches="tight",
     )
