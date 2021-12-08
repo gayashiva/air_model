@@ -63,8 +63,8 @@ if __name__ == "__main__":
 
         data = un.Data()
         filename1 = FOLDER["sim"] + "weather.h5"
-        if location == 'guttannen20':
-            filename1 = FOLDER["sim"] + "full.h5"
+        # if location == 'guttannen20':
+        #     filename1 = FOLDER["sim"] + "full.h5"
         filename2 = FOLDER["sim"] + "fountain.h5"
 
         if location == "schwarzsee19":
