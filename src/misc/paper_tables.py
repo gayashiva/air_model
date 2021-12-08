@@ -16,25 +16,22 @@ from src.utils.settings import config
 from src.utils import setup_logger
 
 if __name__ == "__main__":
+    # Main logger
     logger = logging.getLogger(__name__)
-    coloredlogs.install(
-        fmt="%(funcName)s %(levelname)s %(message)s",
-        level=logging.INFO,
-        logger=logger,
-    )
+    logger.setLevel("ERROR")
 
     # answers = dict(
     #     # location="Schwarzsee 2019",
     #     location="Guttannen 2020",
     #     # location="Gangles 2021",
     # )
-    locations = ["Guttannen 2021", "Guttannen 2020", "Schwarzsee 2019", "Gangles 2021"]
+    locations = ["Guttannen 2021", "Guttannen 2020", "Gangles 2021"]
     filenames = []
 
     for location in locations:
         # Initialise icestupa object
         icestupa = Icestupa(location)
-        SITE, FOLDER = config(location)
+        CONSTANTS, SITE, FOLDER = config(location)
         icestupa.read_output()
         icestupa.self_attributes()
 

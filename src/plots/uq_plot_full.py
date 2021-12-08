@@ -203,7 +203,7 @@ if __name__ == "__main__":
                 alpha=0.5,
                 linestyle="--",
                 zorder=2,
-                label="Melt-out date",
+                label="Expiry date",
             )
         if data2.percentile_95.max() > data1.percentile_95.max():
             ax[i].set_ylim(

@@ -30,7 +30,7 @@ if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
     logger.setLevel("ERROR")
-    # locations = ["gangles21", "guttannen21", "guttannen20", "schwarzsee19"]
+
     locations = ['guttannen21',  'gangles21']
     # locations = ['guttannen21']
 
