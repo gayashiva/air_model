@@ -205,12 +205,14 @@ if __name__ == "__main__":
                 zorder=2,
                 label="Melt-out date",
             )
-        ax[i].set_ylim(
-            round(icestupa.V_dome, 0) - 1, round(data2.percentile_95.max(), 0)
-        )
-        # ax[i].set_ylim(
-        #     round(icestupa.V_dome, 0) - 1, round(data1.percentile_95.max(), 0)
-        # )
+        if data2.percentile_95.max() > data1.percentile_95.max():
+            ax[i].set_ylim(
+                round(icestupa.V_dome, 0) - 1, round(data2.percentile_95.max(), 0)
+            )
+        else:
+            ax[i].set_ylim(
+                round(icestupa.V_dome, 0) - 1, round(data1.percentile_95.max(), 0)
+            )
         v = get_parameter_metadata(location)
         at = AnchoredText(
             v["shortname"], prop=dict(size=10), frameon=True, loc="upper left"
@@ -239,4 +241,4 @@ if __name__ == "__main__":
     fig.text(0.04, 0.5, "Ice Volume[$m^3$]", va="center", rotation="vertical")
     handles, labels = ax[1].get_legend_handles_labels()
     fig.legend(handles, labels, loc="upper right", prop={"size": 8})
-    plt.savefig("data/paper1/icev_results.jpg", bbox_inches="tight", dpi=300)
+    plt.savefig("data/paper1/Figure_6.jpg", bbox_inches="tight", dpi=300)

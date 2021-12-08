@@ -59,7 +59,7 @@ if __name__ == "__main__":
         df['AIR'] = get_parameter_metadata(location)['shortname']
         df[['DX']] *= 1000
         df = df.round(2)
-        df.rmse /=df_c.DroneV.max() 
+        # df.rmse /=df_c.DroneV.max() 
         dfx = dfx.append(df, ignore_index = True)
 
     print(dfx.head())
