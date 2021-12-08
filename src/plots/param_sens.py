@@ -49,6 +49,10 @@ if __name__ == "__main__":
     ax[0].set_xlabel("Sensitivity of Net Water Loss")
     ax[0].get_legend().remove()
 
+    at = AnchoredText("(a)", prop=dict(size=10), frameon=True, loc="upper right")
+    at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+    ax[0].add_artist(at)
+
     sns.lineplot(
         x="DX", y="rmse", hue="AIR", data=dfx, palette=pal, ax=ax[1]
     )
@@ -56,6 +60,10 @@ if __name__ == "__main__":
     ax[1].plot(dfx[(dfx.AIR == "IN21")].loc[(dfx.rmse == dfx.loc[dfx.AIR == "IN21", "rmse"].min()), "DX"], dfx.loc[dfx.AIR == "IN21", "rmse"].min(), 'ro')
     ax[1].set_xlabel(get_parameter_metadata("DX")["latex"] + " " + get_parameter_metadata("DX")["units"])
     ax[1].set_ylabel("Normalized RMSE")
+    at = AnchoredText("(b)", prop=dict(size=10), frameon=True, loc="upper right")
+    at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+    ax[1].add_artist(at)
+    ax[1].legend(loc = 'upper left', title= 'AIR')
 
     plt.savefig(
         "data/paper1/Figure_5.jpg",
