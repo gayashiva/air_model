@@ -36,8 +36,6 @@ def config(location="guttannen21"):
 
             # Calibrated values
             DX=45e-03,  # Surface layer thickness [m]
-            # SA_corr=1.8,
-            # Z=0.001,
         )
 
         f_heights = [
@@ -67,8 +65,6 @@ def config(location="guttannen21"):
 
             # Calibrated values
             DX=45e-03,  # Surface layer thickness [m]
-            # SA_corr=1.2,
-            # Z=0.003,
         )
 
         f_heights = [
@@ -97,8 +93,6 @@ def config(location="guttannen21"):
 
             # Calibrated values
             DX=65e-03,  # Surface layer thickness [m]
-            # SA_corr=1.2,
-            # Z=0.002,
         )
 
         f_heights = [
@@ -162,35 +156,36 @@ def config(location="guttannen21"):
     CONSTANTS = dict(
         DT=60 * 60,  # Model time step [s]
         H_AWS=2,  # AWS height [m]
-        L_F=3.34e5,  # latent heat for melting [J kg-1]
-        L_V=2.5e6,  # latent heat for vaporization [J kg-1]
-        L_S=2.848e6,  # latent heat for sublimation [J kg-1]
-        C_A=1010,  # specific heat of air [J kg-1 K-1]
-        C_I=2097,  # specific heat of ice [J Kg-1 K-1]
-        C_W=4186,  # specific heat of water [J Kg-1 K-1]
+
+        VAN_KARMAN=0.4,  # Van Karman constant
+        sigma=5.67e-8,  # Stefan-Bolzmann constant [W m-2 K-4]
+        P0=1013,  # Standard air pressure hPa
         RHO_W=1000,  # Density of water
         RHO_I=917,  # Density of Ice RHO_I
         RHO_A=1.29,  # air density at mean sea level
-        VAN_KARMAN=0.4,  # Van Karman constant
+        C_W=4186,  # specific heat of water [J Kg-1 K-1]
+        C_I=2097,  # specific heat of ice [J Kg-1 K-1]
+        C_A=1010,  # specific heat of air [J kg-1 K-1]
+        L_F=3.34e5,  # latent heat for melting [J kg-1]
+        L_V=2.5e6,  # latent heat for vaporization [J kg-1]
+        L_S=2.848e6,  # latent heat for sublimation [J kg-1]
         K_I=2.123,  # thermal conductivity ice [W m^-1 K^-1] Waite et al. 2006
-        sigma=5.67e-8,  # Stefan-Bolzmann constant [W m-2 K-4]
-        P0=1013,  # Standard air pressure hPa
         G=9.81,  # Gravitational acceleration
 
 
         # Weather uncertainty
         IE=0.97,  # Ice Emissivity IE
+        Z=0.003,  # Ice Momentum and Scalar roughness length
         A_I=0.25,  # Albedo of Ice A_I
         A_S=0.85,  # Albedo of Fresh Snow A_S
-        A_DECAY=16,  # Albedo decay rate decay_t_d
         T_PPT=1,  # Temperature condition for liquid precipitation
+        A_DECAY=16,  # Albedo decay rate decay_t_d
 
         # Fountain uncertainty
         T_F=1.5,  # Fountain temp
 
         # Fix these first with calibration step
         DX=20e-03,  # Surface layer thickness [m]
-        Z=0.003,  # Ice Momentum and Scalar roughness length
     )
 
     return CONSTANTS, SITE, FOLDER

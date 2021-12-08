@@ -82,7 +82,7 @@ if __name__ == "__main__":
         df.loc[i,"Mass"] = '$M_{' +df.loc[i,"Mass"] + '}$'
 
     df = df.set_index("Mass")
-    df.to_csv("data/paper/mass_bal.csv")
+    df.to_csv("data/paper1/mass_bal.csv")
     print(df)
 
 
