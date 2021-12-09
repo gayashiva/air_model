@@ -90,7 +90,7 @@ if __name__ == "__main__":
         dfds = icestupa.df[
             [
                 "time",
-                "ppt",
+                "snow2ice",
                 "dep",
                 "melted",
                 "sub",
@@ -98,7 +98,7 @@ if __name__ == "__main__":
                 "fountain_froze",
                 "fountain_runoff",
                 "Discharge",
-                # "mb",
+                "t_cone",
             ]
         ]
 
@@ -114,7 +114,7 @@ if __name__ == "__main__":
                     dfds.loc[i, "sub"] *= -1 / (
                         icestupa.df.loc[i, "SA"] * 1000
                     )
-                    dfds.loc[i, "ppt"] *= 1 / (
+                    dfds.loc[i, "snow2ice"] *= 1 / (
                         icestupa.df.loc[i, "SA"] * 1000
                     )
                     dfds.loc[i, "dep"] *= 1 / (
@@ -127,7 +127,7 @@ if __name__ == "__main__":
                     dfds.loc[i, "Ice"] = 0
                     dfds.loc[i, "melted"] *= 0
                     dfds.loc[i, "sub"] *= 0
-                    dfds.loc[i, "ppt"] *= 0
+                    dfds.loc[i, "snow2ice"] *= 0
                     dfds.loc[i, "dep"] *= 0
 
         dfds["sub/dep"] = dfds["sub"] + dfds["dep"]
@@ -135,7 +135,7 @@ if __name__ == "__main__":
 
         dfds = dfds.rename(
             columns={
-                "ppt": "Snowfall",
+                "snow2ice": "Snowfall",
                 "melted": "Melt",
                 "sub/dep": "Sublimation/Deposition",
             }
@@ -151,7 +151,7 @@ if __name__ == "__main__":
             ]
         ]
         y2 = y2.mul(1000)
-        # dfds["mb"] *= (1000)
+        dfds["t_cone"] *= (1000)
 
         dfd = icestupa.df.set_index("time").resample("D").mean().reset_index()
         # dfd["When"] = dfd["When"].dt.strftime("%b %d")
@@ -184,27 +184,28 @@ if __name__ == "__main__":
         for j in range(2):
             y2.plot.bar(
                 stacked=True,
-                edgecolor="black",
+                edgecolor = "black",
                 linewidth=0.5,
-                color=["xkcd:azure", "#0C70DE", skyblue, "xkcd:yellowgreen", pink],
+                color=[skyblue, "#0C70DE","xkcd:azure" , "xkcd:yellowgreen", pink],
                 ax=ax[0, j],
             )
-            # ax[0, j].plot(dfds["mb"],'--k.')
+            ax[0, j].plot(dfds["t_cone"],'--k.')
             z.plot.bar(
                 stacked=True,
                 edgecolor="black",
                 linewidth=0.5,
-                color=[
-                    "xkcd:azure",
+                color=[skyblue,
                     "#0C70DE",
-                    CB91_Violet,
+                    # CB91_Violet,
+                    purple,
                     red,
                     orange,
                     green,
                     "xkcd:yellowgreen",
-                    # purple,
                     pink,
-                    blue,
+                    "black",
+                    # "xkcd:azure",
+                    # blue,
                 ],
                 ax=ax[1, j],
             )
@@ -221,7 +222,7 @@ if __name__ == "__main__":
                 ax[i, j].spines["top"].set_visible(False)
 
                 if i == 1:
-                    ax[i, j].set_ylim(-310, 310)
+                    ax[i, j].set_ylim(-350, 350)
                     ax[i, j].set_ylabel("Energy [$W\\,m^{-2}$]")
 
                     d = 0.015  # how big to make the diagonal lines in axes coordinates
@@ -275,7 +276,7 @@ if __name__ == "__main__":
     add_patch(lgd1, title="Thickness Components", label = '$j_{cone}$', color='k')
     add_patch(lgd2)
     plt.savefig(
-        "data/paper1/mass_energy_bal.jpg",
+        "data/paper1/Figure_7.jpg",
         dpi=300,
         bbox_inches="tight",
     )
