@@ -62,7 +62,8 @@ if __name__ == "__main__":
     sns.lineplot(
         x="DX", y="rmse", data=dfx[(dfx.AIR == "IN21")], color=pal[0], ax=ax1t
     )
-    ax[1].plot(dfx[(dfx.AIR == "CH21")].loc[(dfx.rmse == dfx.loc[dfx.AIR == "CH21", "rmse"].min()), "DX"], dfx.loc[dfx.AIR == "CH21", "rmse"].min(), 'bo')
+    ax[1].plot(dfx[(dfx.AIR == "CH21")].loc[(dfx.rmse == dfx.loc[dfx.AIR == "CH21", "rmse"].min()), "DX"],
+        dfx.loc[dfx.AIR == "CH21", "rmse"].min(), 'o', color=pal[1])
     ax1t.plot(dfx[(dfx.AIR == "IN21")].loc[(dfx.rmse == dfx.loc[dfx.AIR == "IN21", "rmse"].min()), "DX"], dfx.loc[dfx.AIR == "IN21", "rmse"].min(), 'ro')
     ax[1].set_xlabel(get_parameter_metadata("DX")["latex"] + " " + get_parameter_metadata("DX")["units"])
     ax[1].set_ylabel(" ")
