@@ -115,6 +115,12 @@ if __name__ == "__main__":
         print(df_e)
         print()
 
+        print("Accumulation")
+        print("Total hours", df_ac.shape[0])
+        print("Max freezing rate", df_ac.fountain_froze.quantile(0.9))
+        print("Hours reaching max", df_ac.loc[df_ac.fountain_froze>=icestupa.D_F/2].shape[0])
+        print("% with no freezing", df_ac.loc[df_ac.fountain_froze==0].shape[0]/ df_ac.shape[0])
+
         # pd.options.display.float_format = '{:,.3f}'.format
         dfds = icestupa.df.set_index("time").resample("D").sum().reset_index()
         dfds["t_cone"] *= 1000
@@ -126,7 +132,6 @@ if __name__ == "__main__":
         print()
 
         print("Accumulation")
-        print(df_ac.shape[0])
         df_e = df_ac["t_cone"].describe().T[["mean", "std"]]
         print(df_e)
         print()

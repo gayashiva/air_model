@@ -14,6 +14,7 @@ from mpl_toolkits.axisartist.axislines import Axes
 from mpl_toolkits import axisartist
 import matplotlib.ticker as ticker
 from matplotlib.lines import Line2D
+import logging, coloredlogs
 
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -39,6 +40,10 @@ def add_patch(legend, title = "Energy Balance Components", label="-$q_{total}$",
     legend.set_title(title)
 
 if __name__ == "__main__":
+    # Main logger
+    logger = logging.getLogger(__name__)
+    logger.setLevel("ERROR")
+
     locations = ["gangles21", "guttannen21"]
 
     blue = "#0a4a97"
@@ -59,7 +64,7 @@ if __name__ == "__main__":
     fig = plt.figure(figsize=(12, 14))
     subfigs = fig.subfigures(len(locations), 1, wspace=0.25)
     for ctr, location in enumerate(locations):
-        SITE, FOLDER = config(location)
+        CONSTANTS, SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
         icestupa.read_output()
         icestupa.df = icestupa.df[:icestupa.last_hour]
@@ -84,7 +89,7 @@ if __name__ == "__main__":
 
         dfds = icestupa.df[
             [
-                "When",
+                "time",
                 "ppt",
                 "dep",
                 "melted",
@@ -93,7 +98,7 @@ if __name__ == "__main__":
                 "fountain_froze",
                 "fountain_runoff",
                 "Discharge",
-                "mb",
+                # "mb",
             ]
         ]
 
@@ -126,7 +131,7 @@ if __name__ == "__main__":
                     dfds.loc[i, "dep"] *= 0
 
         dfds["sub/dep"] = dfds["sub"] + dfds["dep"]
-        dfds = dfds.set_index("When").resample("D").sum().reset_index()
+        dfds = dfds.set_index("time").resample("D").sum().reset_index()
 
         dfds = dfds.rename(
             columns={
@@ -146,9 +151,9 @@ if __name__ == "__main__":
             ]
         ]
         y2 = y2.mul(1000)
-        dfds["mb"] *= (1000)
+        # dfds["mb"] *= (1000)
 
-        dfd = icestupa.df.set_index("When").resample("D").mean().reset_index()
+        dfd = icestupa.df.set_index("time").resample("D").mean().reset_index()
         # dfd["When"] = dfd["When"].dt.strftime("%b %d")
         # dfd = dfd.set_index('When')
 
@@ -184,7 +189,7 @@ if __name__ == "__main__":
                 color=["xkcd:azure", "#0C70DE", skyblue, "xkcd:yellowgreen", pink],
                 ax=ax[0, j],
             )
-            ax[0, j].plot(dfds["mb"],'--k.')
+            # ax[0, j].plot(dfds["mb"],'--k.')
             z.plot.bar(
                 stacked=True,
                 edgecolor="black",
@@ -270,7 +275,7 @@ if __name__ == "__main__":
     add_patch(lgd1, title="Thickness Components", label = '$j_{cone}$', color='k')
     add_patch(lgd2)
     plt.savefig(
-        "data/paper/mass_energy_bal.jpg",
+        "data/paper1/mass_energy_bal.jpg",
         dpi=300,
         bbox_inches="tight",
     )
