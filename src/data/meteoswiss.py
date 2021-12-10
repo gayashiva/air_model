@@ -24,7 +24,7 @@ from src.utils.settings import config
 
 def get_meteoswiss(location="schwarzsee19"):
 
-    SITE, FOLDER = config(location)
+    CONSTANTS, SITE, FOLDER = config(location)
     if location == "schwarzsee19":
         location = "plaffeien19"
 

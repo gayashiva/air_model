@@ -94,7 +94,7 @@ def get_era5(location="schwarzsee19"):
         df_in3 = df_in3.set_index("time")
         df_in3 = df_in3.reset_index()
 
-    SITE, FOLDER = config(location)
+    CONSTANTS, SITE, FOLDER = config(location)
 
     # mask = (df_in3["When"] >= SITE["start_date"]) & (df_in3["When"] <= SITE["end_date"])
     # df_in3 = df_in3.loc[mask]

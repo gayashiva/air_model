@@ -24,7 +24,7 @@ from src.utils.settings import config
 
 
 def get_field(location="schwarzsee19"):
-    SITE, FOLDER = config(location)
+    CONSTANTS, SITE, FOLDER = config(location)
     if location == "gangles21":
         col_list = [
             "TIMESTAMP",

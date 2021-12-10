@@ -31,7 +31,7 @@ from src.data.meteoswiss import get_meteoswiss
 def linreg(X, Y):
     mask = ~np.isnan(X) & ~np.isnan(Y)
     slope, intercept, r_value, p_value, std_err = stats.linregress(X[mask], Y[mask])
-    return slope, intercept
+    return slope, intercept, r_value
 
 
 if __name__ == "__main__":
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     # locations = ["guttannen21"]
 
     for location in locations:
-        SITE, FOLDER = config(location)
+        CONSTANTS, SITE, FOLDER = config(location)
 
         if location in ["gangles21"]:
             df = get_field(location)
@@ -122,7 +122,8 @@ if __name__ == "__main__":
             for column in fit_list:
                 Y = df[column].values.reshape(-1, 1)
                 X = df_ERA5[column].values.reshape(-1, 1)
-                slope, intercept = linreg(X, Y)
+                slope, intercept, r_value = linreg(X, Y)
+                print(f"Correlation of {column} in ERA5 is {r_value} at {location}")
                 df_ERA5[column] = slope * df_ERA5[column] + intercept
                 df_ERA5_full[column] = slope * df_ERA5_full[column] + intercept
                 if column in ["wind"]:
