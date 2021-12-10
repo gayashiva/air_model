@@ -135,15 +135,26 @@ class Icestupa:
 
             """ Vapour Pressure"""
             if "vp_a" in unknown:
-                self.df.loc[i, "vp_a"] = (
-                    6.107
-                    * math.pow(
-                        10,
-                        7.5 * row.temp / (row.temp + 237.3),
-                    )
-                    * row.RH
-                    / 100
+                f = (
+                    1.0016
+                    + 3.15 * math.pow(10, -6) * self.df.loc[i, "press"]
+                    - 0.074 * math.pow(self.df.loc[i, "press"], -1)
                 )
+
+                # WMO formula
+                self.df.loc[i, "vp_a"] = f * ( 6.112  * np.exp(17.62*row.temp/ (243.12 + row.temp)))
+                self.df.loc[i, "vp_a"] *= row.RH/100
+
+                # Royal Meteorology formula
+                # self.df.loc[i, "vp_a"] = (
+                #     6.107
+                #     * math.pow(
+                #         10,
+                #         7.5 * row.temp / (row.temp + 237.3),
+                #     )
+                #     * row.RH
+                #     / 100
+                # )
 
             """LW incoming"""
             if "LW_in" in unknown:
