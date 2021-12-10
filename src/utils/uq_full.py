@@ -37,10 +37,10 @@ if __name__ == "__main__":
         icestupa.self_attributes()
 
         types = ["fountain", "weather"]
-        params = [['D_F', 'T_F'], ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z'], ]
+        params = [['D_F', 'T_F'], ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z'] ]
 
         if location == 'gangles21':
-            params = [['D_F', 'T_F'], ['IE', 'A_I', 'Z'], ]
+            params = [['D_F', 'T_F'], ['IE', 'A_I', 'Z'] ]
 
         for i, type in enumerate(types):
 
