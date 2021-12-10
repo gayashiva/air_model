@@ -57,7 +57,7 @@ if __name__ == "__main__":
             UQ = un.UncertaintyQuantification(
                 model=model,
                 parameters=parameters,
-                CPUs=12,
+                # CPUs=12,
             )
 
             # Perform the uncertainty quantification using
