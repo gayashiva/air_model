@@ -117,7 +117,7 @@ if __name__ == "__main__":
     results_list = manager.list()
 
     # Create process pool with four processes
-    num_processes = int(multiprocessing.cpu_count()/2)
+    num_processes = int(multiprocessing.cpu_count())
     pool = multiprocessing.Pool(processes=num_processes)
     processes = []
 

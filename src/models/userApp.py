@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     # Initialise icestupa object
     icestupa = Icestupa(location)
-    # icestupa.DX = 100e-03
+    # icestupa.DX = 65e-03
     # print("DX change")
 
     if test:
