@@ -92,11 +92,11 @@ if __name__ == "__main__":
         )
 
         data.load(filename1)
-        # print(data[feature_name])
-        print(data)
-        data1 = data[location]
+        print(f"The prediction interval for {feature_name} is {data[feature_name].percentile_5} to {data[feature_name].percentile_95}")
+        # print(data)
+        data1 = data[location] 
         data1["percentile_5"] = data1["percentile_5"][1 : len(days2) + 1]
-        data1["percentile_95"] = data1["percentile_95"][1 : len(days2) + 1]
+        data1["percentile_95"] = data1["percentile_95"][1 : len(days2) + 1] 
         data1["time"] = days2
 
         data.load(filename2)
