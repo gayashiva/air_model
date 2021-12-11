@@ -26,9 +26,9 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("ERROR")
 
-    # locations = ['gangles21', 'guttannen21', 'guttannen20']
+    locations = ['gangles21', 'guttannen21', 'guttannen20']
     # locations = ["gangles21", "guttannen21"]
-    locations = [ 'gangles21']
+    # locations = [ 'gangles21']
     feature_name = 'max_volume'
 
     blue = "#0a4a97"
@@ -63,13 +63,8 @@ if __name__ == "__main__":
 
         data = un.Data()
         filename1 = FOLDER["sim"] + "weather.h5"
-        # if location == 'guttannen20':
-        #     filename1 = FOLDER["sim"] + "full.h5"
         filename2 = FOLDER["sim"] + "fountain.h5"
 
-        if location == "schwarzsee19":
-            SITE["start_date"] += pd.offsets.DateOffset(year=2023)
-            SITE["melt_out"] += pd.offsets.DateOffset(year=2023)
         if location == "guttannen20":
             SITE["start_date"] += pd.offsets.DateOffset(year=2023)
             SITE["melt_out"] += pd.offsets.DateOffset(year=2023)
@@ -92,7 +87,8 @@ if __name__ == "__main__":
         )
 
         data.load(filename1)
-        print(f"The prediction interval for {feature_name} is {data[feature_name].percentile_5} to {data[feature_name].percentile_95}")
+        print(f"\n\tThe weather prediction interval for {location} is {data[feature_name].percentile_5-data[feature_name].percentile_95}")
+        print(f"\tThe prediction interval magnitude is {(data[feature_name].percentile_95 - data[feature_name].percentile_5)/icestupa.df.iceV.max() * 100} %")
         # print(data)
         data1 = data[location] 
         data1["percentile_5"] = data1["percentile_5"][1 : len(days2) + 1]
@@ -100,7 +96,8 @@ if __name__ == "__main__":
         data1["time"] = days2
 
         data.load(filename2)
-        print(data)
+        print(f"\tThe fountain prediction interval magnitude is {(data[feature_name].percentile_95 - data[feature_name].percentile_5)/icestupa.df.iceV.max() * 100} %")
+        # print(data)
         data2 = data[location]
         data2["percentile_5"] = data2["percentile_5"][1 : len(days2) + 1]
         data2["percentile_95"] = data2["percentile_95"][1 : len(days2) + 1]

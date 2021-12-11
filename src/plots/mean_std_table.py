@@ -31,14 +31,13 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("ERROR")
 
-    locations = ['guttannen21',  'gangles21']
+    locations = ['gangles21',  'guttannen21']
     # locations = ['guttannen21']
 
     for ctr, location in enumerate(locations):
         CONSTANTS, SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
         print(location)
-        # icestupa.read_input()
 
         # cols = [
         #     "temp",

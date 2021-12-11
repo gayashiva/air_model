@@ -52,9 +52,7 @@ def config(location="guttannen21"):
             start_date=datetime(2020, 1, 3, 16),
             # end_date=datetime(2020, 4, 6, 12),
             melt_out=datetime(2020, 4, 6, 12),
-            fountain_off_date=datetime(
-                2020, 3, 8, 9
-            ),  # Image shows Dani switched off at 8th Mar 10 am
+            fountain_off_date=datetime(2020, 3, 8, 9),  # Image shows Dani switched off at 8th Mar 10 am
             D_F=7.5,  # Fountain mean discharge
             utc=2,
             alt=1047.6,
