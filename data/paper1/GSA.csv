@@ -1,14 +1,7 @@
 ,AIR,param,value
-0,CH21,$\epsilon_{ice}$,0.127
-1,CH21,$\alpha_{ice}$,0.077
-2,CH21,$\alpha_{snow}$,0.013
-3,CH21,$\tau$,0.016
-4,CH21,$T_{ppt}$,0.038
-5,CH21,$z_{0}$,0.228
-6,CH21,$\Delta x$,0.658
-7,IN21,$\epsilon_{ice}$,0.04
-8,IN21,$\alpha_{ice}$,0.031
-9,IN21,$z_{0}$,0.055
-10,IN21,$\Delta x$,0.844
-11,IN21,$T_{F}$,0.12
-12,IN21,$d_{F}$,0.05
+0,IN21,$\epsilon_{ice}$,0.04
+1,IN21,$\alpha_{ice}$,0.031
+2,IN21,$z_{0}$,0.055
+3,IN21,$\Delta x$,0.844
+4,IN21,$T_{F}$,0.12
+5,IN21,$d_{F}$,0.05

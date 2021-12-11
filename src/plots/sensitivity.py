@@ -74,7 +74,6 @@ if __name__ == "__main__":
         SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
         icestupa.read_output()
-        icestupa.self_attributes()
         feature_name = "efficiency"
 
         icestupa.se = (icestupa.M_water + icestupa.M_ice) / icestupa.M_input * 100

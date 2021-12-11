@@ -26,9 +26,10 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("ERROR")
 
-    locations = ['gangles21', 'guttannen21', 'guttannen20']
+    # locations = ['gangles21', 'guttannen21', 'guttannen20']
     # locations = ["gangles21", "guttannen21"]
-    # locations = [ 'guttannen21']
+    locations = [ 'gangles21']
+    feature_name = 'max_volume'
 
     blue = "#0a4a97"
     red = "#e23028"
@@ -55,7 +56,6 @@ if __name__ == "__main__":
         CONSTANTS, SITE, FOLDER = config(location)
         icestupa = Icestupa(location)
         icestupa.read_output()
-        icestupa.self_attributes()
 
         variance = []
         mean = []
@@ -92,6 +92,7 @@ if __name__ == "__main__":
         )
 
         data.load(filename1)
+        # print(data[feature_name])
         print(data)
         data1 = data[location]
         data1["percentile_5"] = data1["percentile_5"][1 : len(days2) + 1]

@@ -69,6 +69,7 @@ if __name__ == "__main__":
             UQ = un.UncertaintyQuantification(
                 model=model,
                 parameters=parameters,
+                features=features,
                 # CPUs=12,
             )
 
@@ -80,7 +81,6 @@ if __name__ == "__main__":
                 figure_folder=FOLDER["sim"],
                 filename=type,
                 method="pc",
-                features=features,
                 # pc_method="spectral",
                 rosenblatt=True           
             )

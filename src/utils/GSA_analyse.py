@@ -29,8 +29,8 @@ if __name__ == "__main__":
     logger.setLevel("ERROR")
 
     # locations = ["gangles21", "guttannen21"]
-    locations = ["guttannen21", "gangles21"]
-    # locations = [ 'gangles21']
+    # locations = ["guttannen21", "gangles21"]
+    locations = [ 'gangles21']
 
     result = []
     for i, location in enumerate(locations):
@@ -42,6 +42,7 @@ if __name__ == "__main__":
 
         data.load(filename1)
         data1 = data[location]
+        print(data)
 
         for param, value in zip(data.uncertain_parameters,data1['sobol_total_average'] ):
             print(f'\t{param} has total order sens. =  {round(value,2)}')
