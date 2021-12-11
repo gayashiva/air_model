@@ -238,52 +238,55 @@ if __name__ == "__main__":
             features_to_run=["efficiency"],
         )
 
-        if location == 'gangles21':
-            params = ['IE', 'A_I', 'Z', 'DX', 'T_F', 'D_F']
-        else:
-            # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'DX', 'T_F', 'D_F']
-            params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'DX', 'T_F']
-        parameters_full = setup_params_dist(icestupa, params)
+        # if location == 'gangles21':
+        #     params = ['IE', 'A_I', 'Z', 'DX', 'T_F', 'D_F']
+        # else:
+        #     # params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'DX', 'T_F', 'D_F']
+        #     params = ['IE', 'A_I', 'A_S','A_DECAY', 'T_PPT', 'Z', 'DX', 'T_F']
+        # parameters_full = setup_params_dist(icestupa, params)
 
-        # Initialize the model
-        model = UQ_Icestupa(location=location)
+        # # Initialize the model
+        # model = UQ_Icestupa(location=location)
 
-        # Set up the uncertainty quantification
-        UQ = un.UncertaintyQuantification(
-            model=model,
-            parameters=parameters_full,
-            features=features,
-            # CPUs=3,
-        )
+        # # Set up the uncertainty quantification
+        # UQ = un.UncertaintyQuantification(
+        #     model=model,
+        #     parameters=parameters_full,
+        #     features=features,
+        #     # CPUs=3,
+        # )
 
-        # Perform the uncertainty quantification using # polynomial chaos with point collocation (by default) data =
-        data = UQ.quantify(
-            seed=10,
-            data_folder=FOLDER["sim"],
-            figure_folder=FOLDER["sim"],
-            filename="globalSA",
-        )
+        # # Perform the uncertainty quantification using # polynomial chaos with point collocation (by default) data =
+        # data = UQ.quantify(
+        #     seed=10,
+        #     data_folder=FOLDER["sim"],
+        #     figure_folder=FOLDER["sim"],
+        #     filename="globalSA",
+        # )
 
-        # # Create the parameters
-        # for k, v in parameters_full.items():
-        #     print(k, v)
-        #     parameters_single = un.Parameters({k: v})
+        ind_params = ['D_F', 'T_F']
+        ind_parameters = setup_params_dist(icestupa, ind_params)
 
-        #     # Initialize the model
-        #     model = UQ_Icestupa(location=location)
+        # Create the parameters
+        for k, v in ind_parameters.items():
+            print(k, v)
+            parameters_single = un.Parameters({k: v})
 
-        #     # Set up the uncertainty quantification
-        #     UQ = un.UncertaintyQuantification(
-        #         model=model,
-        #         parameters=parameters_single,
-        #         features=features,
-        #         # CPUs=3,
-        #     )
+            # Initialize the model
+            model = UQ_Icestupa(location=location)
 
-        #     # Perform the uncertainty quantification using # polynomial chaos with point collocation (by default) data =
-        #     data = UQ.quantify(
-        #         seed=10,
-        #         data_folder=FOLDER["sim"],
-        #         figure_folder=FOLDER["sim"],
-        #         filename=k,
-        #     )
+            # Set up the uncertainty quantification
+            UQ = un.UncertaintyQuantification(
+                model=model,
+                parameters=parameters_single,
+                features=features,
+                # CPUs=3,
+            )
+
+            # Perform the uncertainty quantification using # polynomial chaos with point collocation (by default) data =
+            data = UQ.quantify(
+                seed=10,
+                data_folder=FOLDER["sim"],
+                figure_folder=FOLDER["sim"],
+                filename=k,
+            )
