@@ -28,9 +28,8 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("ERROR")
 
-    # locations = ["gangles21", "guttannen21"]
-    # locations = ["guttannen21", "gangles21"]
-    locations = [ 'gangles21']
+    locations = ["guttannen21", "gangles21"]
+    # locations = [ 'gangles21']
 
     result = []
     for i, location in enumerate(locations):
@@ -53,6 +52,14 @@ if __name__ == "__main__":
                     round(value,3),
                 ]
             )
+            if location == 'gangles21' and param == 'D_F':
+                result.append(
+                    [
+                        get_parameter_metadata('guttannen21')["shortname"],
+                        get_parameter_metadata(param)["latex"],
+                        round(value,3),
+                    ]
+                )
 
     df = pd.DataFrame(result, columns=["AIR", "param", "value"])
     print(df)
