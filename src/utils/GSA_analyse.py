@@ -29,7 +29,7 @@ if __name__ == "__main__":
     logger.setLevel("ERROR")
 
     locations = ["guttannen21", "gangles21"]
-    # locations = [ 'gangles21']
+    # locations = [ 'guttannen21']
 
     result = []
     for i, location in enumerate(locations):
@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
         data.load(filename1)
         data1 = data[location]
-        print(data)
+        # print(data)
 
         for param, value in zip(data.uncertain_parameters,data1['sobol_total_average'] ):
             print(f'\t{param} has total order sens. =  {round(value,2)}')
@@ -52,19 +52,20 @@ if __name__ == "__main__":
                     round(value,3),
                 ]
             )
-            if location == 'gangles21' and param == 'D_F':
-                result.append(
-                    [
-                        get_parameter_metadata('guttannen21')["shortname"],
-                        get_parameter_metadata(param)["latex"],
-                        round(value,3),
-                    ]
-                )
+        if location == 'guttannen21':
+            result.append(
+                [
+                    get_parameter_metadata('guttannen21')["shortname"],
+                    get_parameter_metadata('D_F')["latex"],
+                    0.05, #From GSA2
+                ]
+            )
 
     df = pd.DataFrame(result, columns=["AIR", "param", "value"])
     print(df)
     df.to_csv("data/paper1/GSA.csv")
 
+    print(df)
     fig, ax = plt.subplots()
     ax = sns.barplot(
         y="param", x="value", hue="AIR", data=df, palette="Set1"
