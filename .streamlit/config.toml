@@ -9,3 +9,7 @@ backgroundColor="#003049"
 secondaryBackgroundColor="#31333F"
 textColor="#ffffea"
 font="sans serif"
+
+[server]
+enableCORS = false
+enableWebsocketCompression = false
