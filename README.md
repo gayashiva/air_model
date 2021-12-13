@@ -1,5 +1,5 @@
 <p align="center">
-<a href="url"><img align="center" alt="screen recorder" src="https://github.com/Gayashiva/air_model/blob/dev/src/visualization/logos/AIR_logo_circle.png" align="left" height="148" width="148" ></a>
+<a href="url"><img align="center" alt="screen recorder" src="https://github.com/Gayashiva/air_model/blob/dev/src/web/logos/AIR_logo_circle.png" align="left" height="148" width="148" ></a>
 </a>
 </p>
 <p align="center">
@@ -10,7 +10,7 @@
 ---
 
 <h3 align="center">
-   <a href="https://share.streamlit.io/gayashiva/air_model/src/visualization/webApp.py">Run model</a> 
+   <a href="https://share.streamlit.io/gayashiva/air_model/src/web/app.py">Run model</a> 
 </h3>
 
 ---
