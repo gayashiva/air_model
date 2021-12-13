@@ -13,3 +13,4 @@ font="sans serif"
 [server]
 # enableCORS = false
 # enableWebsocketCompression = false
+runOnSave = true
