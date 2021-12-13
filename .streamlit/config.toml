@@ -11,5 +11,5 @@ textColor="#ffffea"
 font="sans serif"
 
 [server]
-enableCORS = false
-enableWebsocketCompression = false
+# enableCORS = false
+# enableWebsocketCompression = false
