@@ -11,12 +11,10 @@ textColor="#ffffea"
 font="sans serif"
 
 [server]
-# enableCORS = false
-# enableWebsocketCompression = false
 runOnSave = true
 
-port = 80
+# port = 80
 # baseUrlPath = ""
-enableCORS = false
-enableXsrfProtection = false
-enableWebsocketCompression = false
+# enableCORS = false
+# enableXsrfProtection = false
+# enableWebsocketCompression = false
