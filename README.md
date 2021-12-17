@@ -7,13 +7,21 @@
 </p>
 <p align="center"> A physical model that estimates the meltwater quantity and survival duration of artificial ice reservoirs (aka Icestupas). </p>
 
----
+<!-- --- -->
 
-<h3 align="center">
-   <a href="https://share.streamlit.io/gayashiva/air_model/src/web/app.py">Run model</a> 
-</h3>
+<!-- <h3 align="center"> -->
+<!--    <a href="https://share.streamlit.io/gayashiva/air_model/src/web/app.py">Run model</a>  -->
+<!-- </h3> -->
 
----
+<!-- --- -->
+
+# Gallery / Cool things
+
+You can open a Mixture graph just by double clicking any texture field in the inspector with a Mixture assigned to it.
+![](media/Guttannen_Icestupa_2021.gif)
+
+[Surface Gradient](https://blogs.unity3d.com/2019/11/20/normal-map-compositing-using-the-surface-gradient-framework-in-shader-graph/) powered normal map operations.
+![](docs/docfx/images/NormalBlend.gif)
 
 ## Project Organization
 
