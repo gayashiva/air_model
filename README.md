@@ -20,8 +20,8 @@
 You can open a Mixture graph just by double clicking any texture field in the inspector with a Mixture assigned to it.
 ![](media/Guttannen_Icestupa_2021.gif)
 
-[Guttannen 2020-21](https://youtu.be/kXi4abO4YVM) 
-[Guttannen 2019-20](https://youtu.be/kcrvhU20OOE) 
+### [Guttannen 2020-21](https://youtu.be/kXi4abO4YVM) 
+### [Guttannen 2019-20](https://youtu.be/kcrvhU20OOE) 
 <!-- ![](docs/docfx/images/NormalBlend.gif) -->
 
 ## Project Organization
