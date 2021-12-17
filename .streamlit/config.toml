@@ -15,8 +15,8 @@ font="sans serif"
 # enableWebsocketCompression = false
 runOnSave = true
 
-port = 8501
-baseUrlPath = ""
+port = 80
+# baseUrlPath = ""
 enableCORS = false
 enableXsrfProtection = false
 enableWebsocketCompression = false
