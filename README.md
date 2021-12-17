@@ -18,7 +18,7 @@
 ## Icestupa Timelapses
 
 You can open a Mixture graph just by double clicking any texture field in the inspector with a Mixture assigned to it.
-![](src/web/Guttannen_Icestupa_2021.gif)
+![](src/web/logos/Guttannen_Icestupa_2021.gif)
 
 ### [Guttannen 2020-21](https://youtu.be/kXi4abO4YVM) 
 ### [Guttannen 2019-20](https://youtu.be/kcrvhU20OOE) 
