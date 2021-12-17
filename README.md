@@ -15,9 +15,11 @@
 
 <!-- --- -->
 
-## AIR Timelapses
+## Timelapses
 
 ![](src/web/logos/Guttannen_Icestupa_2021.gif)
+
+The full timelapses can be viewed here:
 
 [Guttannen 2020-21](https://youtu.be/kXi4abO4YVM) 
 
