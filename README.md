@@ -25,6 +25,8 @@ The full timelapses can be viewed here:
 
 [Guttannen 2019-20](https://youtu.be/kcrvhU20OOE) 
 
+[Fribourg 2018-19](https://youtu.be/GhljRBGpxMg)
+
 ## Project Organization
 
     ├── LICENSE
