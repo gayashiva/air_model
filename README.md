@@ -15,12 +15,12 @@
 
 <!-- --- -->
 
-# Gallery / Cool things
+## Timelapses
 
 You can open a Mixture graph just by double clicking any texture field in the inspector with a Mixture assigned to it.
 ![](media/Guttannen_Icestupa_2021.gif)
 
-[Surface Gradient](https://blogs.unity3d.com/2019/11/20/normal-map-compositing-using-the-surface-gradient-framework-in-shader-graph/) powered normal map operations.
+[Guttannen Icestupa 2020-21 Timelapse](https://blogs.unity3d.com/2019/11/20/normal-map-compositing-using-the-surface-gradient-framework-in-shader-graph/) powered normal map operations.
 ![](docs/docfx/images/NormalBlend.gif)
 
 ## Project Organization
