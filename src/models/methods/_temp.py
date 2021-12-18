@@ -65,7 +65,7 @@ def get_temp(self, i):
 
     if self.df.loc[i, "event"]:
         self.df.loc[i, "fountain_froze"] += (
-            -self.df.loc[i, "Qfreeze"] * self.DT * self.df.loc[i, "SA"]
+            -self.df.loc[i, "Qfreeze"] * self.DT * self.df.loc[i, "A_cone"]
         ) / (self.L_F)
 
         self.df.loc[i, "wasted"] = (
@@ -77,14 +77,14 @@ def get_temp(self, i):
             self.df.loc[i, "Qfreeze"] -= (
                 self.df.loc[i, "wasted"]
                 * (self.L_F)
-                / (self.DT * self.df.loc[i, "SA"])
+                / (self.DT * self.df.loc[i, "A_cone"])
             )
             self.df.loc[i, "Qt"] += (
-                self.df.loc[i, "wasted"] * self.DT * self.df.loc[i, "SA"]
+                self.df.loc[i, "wasted"] * self.DT * self.df.loc[i, "A_cone"]
             ) / (self.L_F)
             self.df.loc[i, "wasted"] = 0
             self.df.loc[i, "fountain_froze"] = (
-                -self.df.loc[i, "Qfreeze"] * self.DT * self.df.loc[i, "SA"]
+                -self.df.loc[i, "Qfreeze"] * self.DT * self.df.loc[i, "A_cone"]
             ) / (self.L_F)
     else:
         self.df.loc[i, "wasted"] = self.df.Discharge.loc[i] * self.DT / 60
@@ -94,7 +94,7 @@ def get_temp(self, i):
         self.df.loc[i, "melted"] = 0
     else:
         self.df.loc[i, "melted"] = (
-            self.df.loc[i, "Qmelt"] * self.DT * self.df.loc[i, "SA"] / (self.L_F)
+            self.df.loc[i, "Qmelt"] * self.DT * self.df.loc[i, "A_cone"] / (self.L_F)
         )
 
 

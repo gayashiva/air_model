@@ -245,7 +245,7 @@ def summary_figures(self):
             "dep",
             "melted",
             "sub",
-            "SA",
+            "A_cone",
             "iceV",
             "Discharge",
             "wasted",
@@ -254,14 +254,14 @@ def summary_figures(self):
 
     with pd.option_context("mode.chained_assignment", None):
         for i in range(0, dfds.shape[0]):
-            if self.df.loc[i, "SA"] != 0:
+            if self.df.loc[i, "A_cone"] != 0:
                 dfds.loc[i, "Ice"] = dfds.loc[i, "fountain_froze"] / (
-                    self.df.loc[i, "SA"] * self.RHO_I
+                    self.df.loc[i, "A_cone"] * self.RHO_I
                 )
-                dfds.loc[i, "melted"] *= -1 / (self.df.loc[i, "SA"] * self.RHO_I)
-                dfds.loc[i, "sub"] *= -1 / (self.df.loc[i, "SA"] * self.RHO_I)
-                dfds.loc[i, "ppt"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
-                dfds.loc[i, "dep"] *= 1 / (self.df.loc[i, "SA"] * self.RHO_I)
+                dfds.loc[i, "melted"] *= -1 / (self.df.loc[i, "A_cone"] * self.RHO_I)
+                dfds.loc[i, "sub"] *= -1 / (self.df.loc[i, "A_cone"] * self.RHO_I)
+                dfds.loc[i, "ppt"] *= 1 / (self.df.loc[i, "A_cone"] * self.RHO_I)
+                dfds.loc[i, "dep"] *= 1 / (self.df.loc[i, "A_cone"] * self.RHO_I)
             else:
                 dfds.loc[i, "Ice"] = 0
                 dfds.loc[i, "melted"] *= 0

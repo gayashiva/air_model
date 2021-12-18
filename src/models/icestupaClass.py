@@ -309,7 +309,7 @@ class Icestupa:
             "Qf",
             "Qg",
             "meltwater",
-            "SA",
+            "A_cone",
             "h_cone",
             "r_cone",
             "dr",
@@ -429,12 +429,12 @@ class Icestupa:
             if self.df.loc[i, "Ql"] < 0:
                 L = self.L_S
                 self.df.loc[i, "sub"] = -(
-                    self.df.loc[i, "Ql"] * self.DT * self.df.loc[i, "SA"] / L
+                    self.df.loc[i, "Ql"] * self.DT * self.df.loc[i, "A_cone"] / L
                 )
             else:
                 L = self.L_S
                 self.df.loc[i, "dep"] = (
-                    self.df.loc[i, "Ql"] * self.DT * self.df.loc[i, "SA"] / self.L_S
+                    self.df.loc[i, "Ql"] * self.DT * self.df.loc[i, "A_cone"] / self.L_S
                 )
 
             # Precipitation to ice quantity
@@ -479,7 +479,7 @@ class Icestupa:
             )
             self.df.loc[i + 1, "j_cone"] = (
                 self.df.loc[i + 1, "iceV"] - self.df.loc[i, "iceV"]
-            ) / (self.df.loc[i, "SA"])
+            ) / (self.df.loc[i, "A_cone"])
 
             if test and not ice_melted:
                 output = (

@@ -94,34 +94,34 @@ if __name__ == "__main__":
                 "dep",
                 "melted",
                 "sub",
-                "SA",
+                "A_cone",
                 "fountain_froze",
                 "fountain_runoff",
                 "Discharge",
-                "t_cone",
+                "j_cone",
             ]
         ]
 
         with pd.option_context("mode.chained_assignment", None):
             for i in range(0, dfds.shape[0]):
-                if icestupa.df.loc[i, "SA"] != 0:
+                if icestupa.df.loc[i, "A_cone"] != 0:
                     dfds.loc[i, "Ice"] = dfds.loc[i, "fountain_froze"] / (
-                        icestupa.df.loc[i, "SA"] * 1000
+                        icestupa.df.loc[i, "A_cone"] * 1000
                     )
                     dfds.loc[i, "melted"] *= -1 / (
-                        icestupa.df.loc[i, "SA"] * 1000
+                        icestupa.df.loc[i, "A_cone"] * 1000
                     )
                     dfds.loc[i, "sub"] *= -1 / (
-                        icestupa.df.loc[i, "SA"] * 1000
+                        icestupa.df.loc[i, "A_cone"] * 1000
                     )
                     dfds.loc[i, "snow2ice"] *= 1 / (
-                        icestupa.df.loc[i, "SA"] * 1000
+                        icestupa.df.loc[i, "A_cone"] * 1000
                     )
                     dfds.loc[i, "dep"] *= 1 / (
-                        icestupa.df.loc[i, "SA"] * 1000
+                        icestupa.df.loc[i, "A_cone"] * 1000
                     )
                     dfds.loc[i, "Runoff"] = dfds.loc[i, "fountain_runoff"] / (
-                        icestupa.df.loc[i, "SA"] * 1000
+                        icestupa.df.loc[i, "A_cone"] * 1000
                     )
                 else:
                     dfds.loc[i, "Ice"] = 0
@@ -151,7 +151,7 @@ if __name__ == "__main__":
             ]
         ]
         y2 = y2.mul(1000)
-        dfds["t_cone"] *= (1000)
+        dfds["j_cone"] *= (1000)
 
         dfd = icestupa.df.set_index("time").resample("D").mean().reset_index()
         # dfd["When"] = dfd["When"].dt.strftime("%b %d")
@@ -189,7 +189,7 @@ if __name__ == "__main__":
                 color=[skyblue, "#0C70DE","xkcd:azure" , "xkcd:yellowgreen", pink],
                 ax=ax[0, j],
             )
-            ax[0, j].plot(dfds["t_cone"],'--k.')
+            ax[0, j].plot(dfds["j_cone"],'--k.')
             z.plot.bar(
                 stacked=True,
                 edgecolor="black",

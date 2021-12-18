@@ -36,9 +36,9 @@ def get_area(self, i):
         self.df.loc[i, "h_cone"] = self.df.loc[i, "s_cone"] * self.df.loc[i, "r_cone"]
 
     # Area of Conical Ice Surface
-    self.df.loc[i, "SA"] = (
+    self.df.loc[i, "A_cone"] = (
         math.pi
-        # * self.SA_corr
+        # * self.A_cone_corr
         * self.df.loc[i, "r_cone"]
         * math.pow(
             (
@@ -58,4 +58,4 @@ def get_area(self, i):
         * math.pow(self.df.loc[i, "r_cone"], 2)
         * 0.5
         * math.sin(self.df.loc[i, "sea"])
-    ) / self.df.loc[i, "SA"]
+    ) / self.df.loc[i, "A_cone"]

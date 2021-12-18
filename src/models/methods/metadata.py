@@ -17,7 +17,7 @@ def get_parameter_metadata(
             "kind": "parameter",
             "units": "[$mm$]",
         },
-        # "SA_corr": {
+        # "A_cone_corr": {
         #     "name": "Surface area correction factor",
         #     "latex": "$A_{corr}$",
         #     "ylim": [1, 2],
@@ -405,7 +405,7 @@ def get_parameter_metadata(
             "kind": "Output",
             "units": "($kg$)",
         },
-        "SA": {
+        "A_cone": {
             "name": "Surface Area",
             "kind": "Output",
             "units": "($m^2$)",
