@@ -26,13 +26,11 @@ if __name__ == "__main__":
     # location="Schwarzsee 2019"
     # location="phortse20"
     # location = "Guttannen 2020"
-    # location = "Guttannen 2021"
-    location = "Gangles 2021"
+    location = "Guttannen 2021"
+    # location = "Gangles 2021"
 
     # Initialise icestupa object
     icestupa = Icestupa(location)
-    # icestupa.DX = 65e-03
-    # print("DX change")
 
     if test:
         # Derive all the input parameters
@@ -50,14 +48,5 @@ if __name__ == "__main__":
     else:
         # Use output parameters from cache
         icestupa.read_output()
-
-        print(icestupa.df.Qfreeze.min())
-
-        # plt.figure()
-        # ax = plt.gca()
-        # plt.scatter(icestupa.df.Qt, icestupa.df.fountain_froze / 60, s=1)
-        # plt.legend()
-        # plt.grid()
-        # plt.savefig("data/tests/T_relation.jpg")
 
         icestupa.summary_figures()

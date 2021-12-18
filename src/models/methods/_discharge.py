@@ -66,7 +66,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         )
 
         mask = df_f["time"] >= self.start_date
-        mask &= df_f["time"] <= self.melt_out
+        mask &= df_f["time"] <= self.expiry_date
         df_f = df_f.loc[mask]
         df_f = df_f.reset_index(drop=True)
         df_f = df_f.set_index("time")

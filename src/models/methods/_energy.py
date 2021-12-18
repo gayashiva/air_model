@@ -80,7 +80,7 @@ def get_energy(self, i):
     ] * self.DT * self.df.loc[i, "SA"] / (self.df.loc[i, "ice"] * self.C_I)
 
     # Total Energy W/m2
-    self.df.loc[i, "Qsurf"] = (
+    self.df.loc[i, "Qtotal"] = (
         self.df.loc[i, "SW"]
         + self.df.loc[i, "LW"]
         + self.df.loc[i, "Qs"]
@@ -118,13 +118,13 @@ def test_get_energy(self, i):
         )
         sys.exit("SW nan")
 
-    if np.isnan(self.df.loc[i, "Qsurf"]):
+    if np.isnan(self.df.loc[i, "Qtotal"]):
         logger.error(
             f"time {self.df.time[i]}, SW {self.df.SW[i]}, LW {self.df.LW[i]}, Qs {self.df.Qs[i]}, Qf {self.df.Qf[i]}, Qg {self.df.Qg[i]}"
         )
         sys.exit("Energy nan")
 
-    if math.fabs(self.df.loc[i, "Qsurf"]) > 1000:
+    if math.fabs(self.df.loc[i, "Qtotal"]) > 1000:
         logger.warning(
             "Energy above 1000 %s,Fountain water %s,Sensible %s, SW %s, LW %s, Qg %s"
             % (

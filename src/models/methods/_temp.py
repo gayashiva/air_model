@@ -13,13 +13,13 @@ logger = logging.getLogger(__name__)
 
 def get_temp(self, i):
 
-    freezing_energy = self.df.loc[i, "Qsurf"] - self.df.loc[i, "Ql"]
+    freezing_energy = self.df.loc[i, "Qtotal"] - self.df.loc[i, "Ql"]
     self.df.loc[i, "Qt"] = self.df.loc[i, "Ql"]
 
     if (
         self.df.loc[i, "Discharge"] > 0
         and freezing_energy < 0
-        and self.df.loc[i, "Qsurf"] < 0
+        and self.df.loc[i, "Qtotal"] < 0
     ):
         self.df.loc[i, "event"] = 1
     else:

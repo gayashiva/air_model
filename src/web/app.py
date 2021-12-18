@@ -297,7 +297,7 @@ if __name__ == "__main__":
                 icestupa.M_water / 1000,
                 icestupa.M_sub / 1000,
                 (icestupa.M_runoff + icestupa.M_sub) / icestupa.M_input * 100,
-                SITE["melt_out"].strftime("%b %d"),
+                SITE["expiry_date"].strftime("%b %d"),
                 # rmse_V / icestupa.df["iceV"].max() * 100,
             )
         )

@@ -370,7 +370,7 @@ def get_parameter_metadata(
             "kind": "Derived",
             "units": "($\\degree$)",
         },
-        "Qsurf": {
+        "Qtotal": {
             "name": "Net Energy",
             "kind": "Output",
             "units": "($W\\,m^{-2}$)",
