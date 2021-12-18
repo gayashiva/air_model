@@ -1,4 +1,3 @@
- 
 import sys
 import pandas as pd
 import numpy as np
@@ -18,11 +17,12 @@ import glob
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 from src.utils.settings import config
-from src.data.make_dataset import era5, linreg, meteoswiss, meteoswiss_parameter
+import re
+# from src.data.make_dataset import linreg, meteoswiss, meteoswiss_parameter
 
 
-def aws(location="diavolezza21"):
-    SITE, FOLDER, df_h = config(location = "Diavolezza 2021")
+def aws(location="guttannen22"):
+    CONSTANTS, SITE, FOLDER = config(location)
     # Get header colun list
     df = pd.read_csv(
         FOLDER["raw"] + location + "_aws.csv",
@@ -107,36 +107,57 @@ def aws(location="diavolezza21"):
     df = df.reset_index()
     return df
 
-def field(location="schwarzsee19"):
-    if location == "diavolezza21":
-        path = "/home/suryab/ownCloud/Sites/Diavolezza/diavolezza_sdcard/"
+def field(location):
+    if location == "guttannen22":
+        # path = "/home/suryab/ownCloud/Sites/Diavolezza/diavolezza_sdcard/"
+        CONSTANTS, SITE, FOLDER = config(location)
+        path = FOLDER["raw"] + "sdcard/"
         all_files = glob.glob(path + "*.txt")
+        # print(all_files[0])
 
-        SITE, FOLDER, df_h = config(location = "Diavolezza 2021")
         li = []
         ctr = 0
 
-        # Get header colun list
-        df = pd.read_csv(
-            all_files[10],
-            sep=";",
-            skiprows=3,
-            header=0,
-            encoding="latin-1",
-        )
-        names = df.columns
-        names = names[:-3]
+        # # Get header colun list
+        # df = pd.read_csv(
+        #     all_files[0],
+        #     sep=";",
+        #     skiprows=3,
+        #     usecols=["Q_Wasser ", "T_Luft", "r_Luft","w_Luft"],
+        #     # header=0,
+        #     encoding="latin-1",
+        # )
+        # df.rename(
+        #     columns={
+        #         "w_Luft": "v_a",
+        #         "T_Luft": "T_a",
+        #         "r_Luft": "RH",
+        #         "Q_Wasser ": "Discharge",
+        #     },
+        #     inplace=True,
+        # )
+        # print(df.head())
+        # sys.exit()
+        # names = df.columns
+        # names = names[:-3]
 
         for file in all_files:
 
+            # var = re.split("[.|_| ]", file)
+            # date = var[4:-1]
+            # date = (' '.join(date))
+            # date = re.sub(' +', ' ', date)
+            # date= datetime.strptime(date, '%B %d %Y %I %M %S %p')
+            # print(date)
             try:
                 df = pd.read_csv(
                     file,
                     sep=";",
                     skiprows=3,
-                    header=0,
+                    # header=0,
                     encoding="latin-1",
-                    usecols=names,
+                    # usecols=names,
+                    usecols=["Q_Wasser ", "T_Luft", "r_Luft","w_Luft"],
                 )
                 df = df[1:].reset_index(drop=True)
                 df = df[["Q_Wasser ", "T_Luft", "r_Luft","w_Luft"]]
@@ -153,12 +174,12 @@ def field(location="schwarzsee19"):
                     },
                     inplace=True,
                 )
-                a_file = open(file,encoding= 'latin-1')
-                line =a_file.readline()
-                line = line.split(";")[-1]
-                date = line.split("+")[0]
-                date = date[3:]
-                date= datetime.strptime(date, ' %d %b %Y %I:%M:%S %p ')
+                var = re.split("[.|_| ]", file)
+                date = var[4:-1]
+                date = (' '.join(date))
+                date = re.sub(' +', ' ', date)
+                date= datetime.strptime(date, '%B %d %Y %I %M %S %p')
+                print(date)
                 df["When"] = pd.to_datetime([date+timedelta(seconds=10 * h) for h in range(0,df.shape[0])])
 
                 li.append(df)
@@ -179,16 +200,17 @@ def field(location="schwarzsee19"):
     df = df.set_index("When").sort_index().reset_index()
     df= df.set_index("When").resample(pd.offsets.Minute(n=15)).mean().reset_index()
 
-    mask = (df["When"] >= SITE["start_date"]) & (
-        df["When"] <= SITE["end_date"]
-    )
-    df= df.loc[mask]
-    df= df.reset_index(drop=True)
+    # mask = (df["When"] >= SITE["start_date"]) & (
+    #     df["When"] <= SITE["end_date"]
+    # )
+    # df= df.loc[mask]
+    # df= df.reset_index(drop=True)
 
     print("Number of hours missing : %s" %ctr)
 
     # CSV output
     df.to_csv(FOLDER["raw"] + SITE["name"] + "_field.csv")
+    print(df.tail(10))
     return df
 
 if __name__ == "__main__":
@@ -200,14 +222,14 @@ if __name__ == "__main__":
     )
 
 
-    SITE, FOLDER, *args = config("Diavolezza 2021")
-    df = aws()
+    CONSTANTS, SITE, FOLDER = config("guttannen22")
+    # df = aws()
 
-    # sdcard = True
-    sdcard = False
+    sdcard = True
+    # sdcard = False
     
     if sdcard:
-        df_field = field("diavolezza21")
+        df_field = field("guttannen22")
     else:
         df_field = pd.read_csv(
                 FOLDER["raw"]+ SITE["name"] + "_field.csv",
