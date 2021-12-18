@@ -207,7 +207,7 @@ class Icestupa:
         M_ppt = self.df["snow2ice"].sum()
         M_dep = self.df["dep"].sum()
         M_water = self.df["meltwater"].iloc[-1]
-        M_runoff = self.df["unfrozen_water"].iloc[-1]
+        M_runoff = self.df["wastewater"].iloc[-1]
         M_sub = self.df["vapour"].iloc[-1]
         M_ice = self.df["ice"].iloc[-1] - self.V_dome * self.RHO_I
         last_hour = self.df.shape[0]
@@ -300,7 +300,7 @@ class Icestupa:
             "vapour",
             "melted",
             "delta_T_s",
-            "unfrozen_water",
+            "wastewater",
             "Qtotal",
             "SW",
             "LW",
@@ -310,13 +310,13 @@ class Icestupa:
             "Qg",
             "meltwater",
             "SA",
-            "h_ice",
-            "r_ice",
+            "h_cone",
+            "r_cone",
             "dr",
             "snow2ice",
             "dep",
-            "t_cone",
-            "fountain_runoff",
+            "j_cone",
+            "wasted",
             "fountain_froze",
             "Qt",
             "Qmelt",
@@ -332,9 +332,9 @@ class Icestupa:
                 self.df[column] = 0
 
         # Initialise first model time step
-        self.df.loc[0, "h_ice"] = self.h_i
-        self.df.loc[0, "r_ice"] = self.R_F
-        self.df.loc[0, "s_cone"] = self.df.loc[0, "h_ice"] / self.df.loc[0, "r_ice"]
+        self.df.loc[0, "h_cone"] = self.h_i
+        self.df.loc[0, "r_cone"] = self.R_F
+        self.df.loc[0, "s_cone"] = self.df.loc[0, "h_cone"] / self.df.loc[0, "r_cone"]
         V_initial = math.pi / 3 * self.R_F ** 2 * self.h_i
         self.df.loc[1, "ice"] = V_initial * self.RHO_I
         self.df.loc[1, "iceV"] = V_initial
@@ -345,8 +345,8 @@ class Icestupa:
             "Initialise: time %s, radius %.3f, height %.3f, iceV %.3f\n"
             % (
                 self.df.loc[0, "time"],
-                self.df.loc[0, "r_ice"],
-                self.df.loc[0, "h_ice"],
+                self.df.loc[0, "r_cone"],
+                self.df.loc[0, "h_cone"],
                 self.df.loc[1, "iceV"],
             )
         )
@@ -377,10 +377,10 @@ class Icestupa:
                         else:
                             self.df[column] = 0
 
-                    self.df.loc[i - 1, "h_ice"] = self.h_i
-                    self.df.loc[i - 1, "r_ice"] = self.R_F
+                    self.df.loc[i - 1, "h_cone"] = self.h_i
+                    self.df.loc[i - 1, "r_cone"] = self.R_F
                     self.df.loc[i - 1, "s_cone"] = (
-                        self.df.loc[i - 1, "h_ice"] / self.df.loc[i - 1, "r_ice"]
+                        self.df.loc[i - 1, "h_cone"] / self.df.loc[i - 1, "r_cone"]
                     )
                     self.df.loc[i, "ice"] = V_initial * self.RHO_I
                     self.df.loc[i, "iceV"] = V_initial
@@ -390,8 +390,8 @@ class Icestupa:
                         "Initialise again: time %s, radius %.3f, height %.3f, iceV %.3f\n"
                         % (
                             self.df.loc[i - 1, "time"],
-                            self.df.loc[i - 1, "r_ice"],
-                            self.df.loc[i - 1, "h_ice"],
+                            self.df.loc[i - 1, "r_cone"],
+                            self.df.loc[i - 1, "h_cone"],
                             self.df.loc[i, "iceV"],
                         )
                     )
@@ -401,7 +401,7 @@ class Icestupa:
                         "dep",
                         "snow2ice",
                         "fountain_froze",
-                        "fountain_runoff",
+                        "wasted",
                         "sub",
                         "melted",
                     ]
@@ -444,7 +444,7 @@ class Icestupa:
                     * self.df.loc[i, "ppt"]
                     / 1000
                     * math.pi
-                    * math.pow(self.df.loc[i, "r_ice"], 2)
+                    * math.pow(self.df.loc[i, "r_cone"], 2)
                 )
 
             """ Quantities of all phases """
@@ -466,8 +466,8 @@ class Icestupa:
             self.df.loc[i + 1, "vapour"] = (
                 self.df.loc[i, "vapour"] + self.df.loc[i, "sub"]
             )
-            self.df.loc[i + 1, "unfrozen_water"] = (
-                self.df.loc[i, "unfrozen_water"] + self.df.loc[i, "fountain_runoff"]
+            self.df.loc[i + 1, "wastewater"] = (
+                self.df.loc[i, "wastewater"] + self.df.loc[i, "wasted"]
             )
             self.df.loc[i + 1, "iceV"] = self.df.loc[i + 1, "ice"] / self.RHO_I
 
@@ -477,14 +477,14 @@ class Icestupa:
                 + self.df.loc[i, "dep"]
                 + self.df.loc[i, "Discharge"] * self.DT / 60
             )
-            self.df.loc[i + 1, "t_cone"] = (
+            self.df.loc[i + 1, "j_cone"] = (
                 self.df.loc[i + 1, "iceV"] - self.df.loc[i, "iceV"]
             ) / (self.df.loc[i, "SA"])
 
             if test and not ice_melted:
                 output = (
                     self.df.loc[i + 1, "ice"]
-                    + self.df.loc[i + 1, "unfrozen_water"]
+                    + self.df.loc[i + 1, "wastewater"]
                     + self.df.loc[i + 1, "vapour"]
                     + self.df.loc[i + 1, "meltwater"]
                 )
@@ -497,7 +497,7 @@ class Icestupa:
                 )
 
                 logger.info(
-                    f" time {self.df.time[i]},iceV {self.df.iceV[i+1]}, mass balance {self.df.t_cone[i]}"
+                    f" time {self.df.time[i]},iceV {self.df.iceV[i+1]}, mass balance {self.df.j_cone[i]}"
                 )
         # else:
             # print(self.df.loc[i, "time"], self.df.loc[i, "iceV"])

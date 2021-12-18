@@ -248,7 +248,7 @@ def summary_figures(self):
             "SA",
             "iceV",
             "Discharge",
-            "fountain_runoff",
+            "wasted",
         ]
     ]
 

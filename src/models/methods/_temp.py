@@ -68,26 +68,26 @@ def get_temp(self, i):
             -self.df.loc[i, "Qfreeze"] * self.DT * self.df.loc[i, "SA"]
         ) / (self.L_F)
 
-        self.df.loc[i, "fountain_runoff"] = (
+        self.df.loc[i, "wasted"] = (
             self.df.Discharge.loc[i] * self.DT / 60 - self.df.loc[i, "fountain_froze"]
         )
 
-        if self.df.loc[i, "fountain_runoff"] < 0:
+        if self.df.loc[i, "wasted"] < 0:
             logger.warning("Water not enough. Mean discharge exceeded")
             self.df.loc[i, "Qfreeze"] -= (
-                self.df.loc[i, "fountain_runoff"]
+                self.df.loc[i, "wasted"]
                 * (self.L_F)
                 / (self.DT * self.df.loc[i, "SA"])
             )
             self.df.loc[i, "Qt"] += (
-                self.df.loc[i, "fountain_runoff"] * self.DT * self.df.loc[i, "SA"]
+                self.df.loc[i, "wasted"] * self.DT * self.df.loc[i, "SA"]
             ) / (self.L_F)
-            self.df.loc[i, "fountain_runoff"] = 0
+            self.df.loc[i, "wasted"] = 0
             self.df.loc[i, "fountain_froze"] = (
                 -self.df.loc[i, "Qfreeze"] * self.DT * self.df.loc[i, "SA"]
             ) / (self.L_F)
     else:
-        self.df.loc[i, "fountain_runoff"] = self.df.Discharge.loc[i] * self.DT / 60
+        self.df.loc[i, "wasted"] = self.df.Discharge.loc[i] * self.DT / 60
         self.df.loc[i, "fountain_froze"] = 0
 
     if np.isnan(self.df.loc[i, "Qmelt"]):
@@ -129,26 +129,26 @@ def test_get_temp(self, i):
         )
         sys.exit("Ice Temperature nan")
 
-    if self.df.loc[i, "fountain_runoff"] < 0:
+    if self.df.loc[i, "wasted"] < 0:
         logger.error(
-            f"time {self.df.time[i]},fountain_runoff {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+            f"time {self.df.time[i]},wasted {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
         )
         logger.error("All discharge froze!")
         # sys.exit("All discharge froze!")
 
-    if np.isnan(self.df.loc[i, "fountain_runoff"]):
+    if np.isnan(self.df.loc[i, "wasted"]):
         logger.error(
-            f"time {self.df.time[i]},fountain_runoff {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
+            f"time {self.df.time[i]},wasted {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
         )
         sys.exit("fountain runoff nan")
 
     if (
-        self.df.loc[i, "fountain_runoff"] - self.df.loc[i, "Discharge"] * self.DT / 60
+        self.df.loc[i, "wasted"] - self.df.loc[i, "Discharge"] * self.DT / 60
         > 2
     ):
 
         logger.error(
-            f"Discharge exceeded time {self.df.time[i]}, Fountain in {self.df.fountain_runoff[i]}, Discharge in {self.df.Discharge[i]* self.DT / 60}"
+            f"Discharge exceeded time {self.df.time[i]}, Fountain in {self.df.wasted[i]}, Discharge in {self.df.Discharge[i]* self.DT / 60}"
         )
 
     if math.fabs(self.df.loc[i, "delta_T_s"]) > 20:

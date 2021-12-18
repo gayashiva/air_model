@@ -71,7 +71,7 @@ def get_energy(self, i):
     self.df.loc[i, "Qg"] = (
         self.K_I
         * (self.df.loc[i, "T_bulk"] - self.df.loc[i, "T_s"])
-        / (self.df.loc[i, "r_ice"] + self.df.loc[i, "h_ice"] / 2)
+        / (self.df.loc[i, "r_cone"] + self.df.loc[i, "h_cone"] / 2)
     )
 
     # Bulk Temperature
@@ -108,7 +108,7 @@ def test_get_energy(self, i):
 
     if np.isnan(self.df.loc[i, "s_cone"]):
         logger.error(
-            f"time {self.df.time[i]}, r_ice{self.df.r_ice[i]}, SA {self.df.SA[i]}, h_ice{self.df.h_ice[i]}"
+            f"time {self.df.time[i]}, r_cone{self.df.r_cone[i]}, SA {self.df.SA[i]}, h_cone{self.df.h_cone[i]}"
         )
         sys.exit("scone nan")
 

@@ -205,7 +205,7 @@ def get_parameter_metadata(
             "kind": "Derived",
             "units": "($kg$)",
         },
-        "t_cone": {
+        "j_cone": {
             "name": "Thickness",
             "kind": "Derived",
             "units": "($m$)",
@@ -215,8 +215,8 @@ def get_parameter_metadata(
             "kind": "Input",
             "units": "($l\\, min^{-1}$)",
         },
-        "fountain_runoff": {
-            "name": "Discharge Runoff",
+        "wasted": {
+            "name": "Discharge Wasted",
             "kind": "Output",
             "units": "($kg\\, s^{-1}$)",
         },
@@ -340,12 +340,12 @@ def get_parameter_metadata(
             "kind": "Derived",
             "units": "()",
         },
-        "h_ice": {
+        "h_cone": {
             "name": "Ice Cone Height",
             "kind": "Output",
             "units": "($m$)",
         },
-        "r_ice": {
+        "r_cone": {
             "name": "Ice Cone Radius",
             "kind": "Output",
             "units": "($m$)",
@@ -400,8 +400,8 @@ def get_parameter_metadata(
             "kind": "Output",
             "units": "($kg$)",
         },
-        "unfrozen_water": {
-            "name": "Wasted Water Runoff",
+        "wastewater": {
+            "name": "Wasted Foutain Water",
             "kind": "Output",
             "units": "($kg$)",
         },
