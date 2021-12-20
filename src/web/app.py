@@ -279,7 +279,7 @@ if __name__ == "__main__":
                 ctr += 1
 
             rmse_V = ((df.DroneV - df.iceV) ** 2).mean() ** 0.5
-            rmse_A = ((df.Area - df.SA) ** 2).mean() ** 0.5/ df.SA.max()
+            rmse_A = ((df.Area - df.A_cone) ** 2).mean() ** 0.5/ df.A_cone.max()
             corr_V = df["DroneV"].corr(df["iceV"])
 
         st.markdown(

@@ -89,7 +89,7 @@ class CV_Icestupa(BaseEstimator,Icestupa):
                 setattr(self, key, dictionary[key])
                 logger.info(f"%s -> %s" % (key, str(dictionary[key])))
 
-        diff = SITE["melt_out"] - SITE["start_date"]
+        diff = SITE["expiry_date"] - SITE["start_date"]
         days, seconds = diff.days, diff.seconds
         self.total_hours = days * 24 + seconds // 3600
 

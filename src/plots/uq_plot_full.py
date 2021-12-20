@@ -67,13 +67,13 @@ if __name__ == "__main__":
 
         if location == "guttannen20":
             SITE["start_date"] += pd.offsets.DateOffset(year=2023)
-            SITE["melt_out"] += pd.offsets.DateOffset(year=2023)
+            SITE["expiry_date"] += pd.offsets.DateOffset(year=2023)
         if location == "guttannen21":
             SITE["start_date"] += pd.offsets.DateOffset(year=2022)
-            SITE["melt_out"] += pd.offsets.DateOffset(year=2023)
+            SITE["expiry_date"] += pd.offsets.DateOffset(year=2023)
         if location == "gangles21":
             SITE["start_date"] += pd.offsets.DateOffset(year=2023)
-            # SITE["end_date"] =SITE['melt_out'] + pd.offsets.DateOffset(year=2023)
+            # SITE["end_date"] =SITE['expiry_date'] + pd.offsets.DateOffset(year=2023)
 
         days = pd.date_range(
             start=SITE["start_date"],
@@ -193,24 +193,26 @@ if __name__ == "__main__":
             x2, y2, yerr=df_c.DroneVError, color=CB91_Violet, lw=1, alpha=0.5, zorder=8
         )
         ax[i].scatter(x2, y2, s=5, color=CB91_Violet, zorder=7, label="UAV Volume")
-        # ax[i].scatter(SITE['end_date'], round(icestupa.V_dome,0) + 1,  color=CB91_Amber,marker = "x", zorder=2)
         if location != "gangles21":
             ax[i].axvline(
-                SITE["melt_out"],
+                SITE["expiry_date"],
                 color="black",
                 alpha=0.5,
                 linestyle="--",
                 zorder=2,
                 label="Expiry date",
             )
+
         if data2.percentile_95.max() > data1.percentile_95.max():
             ax[i].set_ylim(
-                round(icestupa.V_dome, 0) - 1, round(data2.percentile_95.max(), 0)
+                round(icestupa.V_dome, 0) - 1, round(ax[i].get_ylim()[1])
             )
+
         else:
             ax[i].set_ylim(
-                round(icestupa.V_dome, 0) - 1, round(data1.percentile_95.max(), 0)
+                round(icestupa.V_dome, 0) - 1, round(ax[i].get_ylim()[1])
             )
+
         v = get_parameter_metadata(location)
         at = AnchoredText(
             v["shortname"], prop=dict(size=10), frameon=True, loc="upper left"
