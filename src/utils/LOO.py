@@ -71,7 +71,8 @@ if __name__ == "__main__":
     logger.setLevel("ERROR")
 
     # location = "gangles21"
-    location = "guttannen21"
+    # location = "guttannen21"
+    location = "guttannen20"
 
     CONSTANTS, SITE, FOLDER = config(location)
 
