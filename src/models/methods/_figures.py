@@ -13,86 +13,8 @@ from codetiming import Timer
 logger = logging.getLogger("__main__")
 
 
-def shade(location, df_in, col):
-    if location == "ravat20" or location == "diavolezza21":
-        df_ERA5 = df_in.copy()
-        df = df_in.copy()
-        df.loc[
-            :, ["time", "temp", "SW_direct", "SW_diffuse", "wind", "press", "RH"]
-        ] = np.NaN
-
-    else:
-        mask = df_in.missing_type.str.contains(col, na=False)
-        df_ERA5 = df_in.copy()
-        df = df_in.copy()
-        df.loc[
-            mask, ["time", "temp", "SW_direct", "SW_diffuse", "wind", "press", "RH"]
-        ] = np.NaN
-
-        df_ERA5.loc[
-            ~mask,
-            [
-                "time",
-                "temp",
-                "SW_direct",
-                "SW_diffuse",
-                "wind",
-                "press",
-                "RH",
-                "missing_type",
-            ],
-        ] = np.NaN
-
-    events = np.split(df_ERA5.time, np.where(np.isnan(df_ERA5.time.values))[0])
-    # removing NaN entries
-    events = [
-        ev[~np.isnan(ev.values)] for ev in events if not isinstance(ev, np.ndarray)
-    ]
-    # removing empty DataFrames
-    events = [ev for ev in events if not ev.empty]
-    return df, df_ERA5, events
-
-
 @Timer(text="%s executed in {:.2f} seconds" % __name__, logger=logging.warning)
 def summary_figures(self):
-    logger.info("Creating figures")
-
-    if self.name in ["guttannen21", "guttannen20", "gangles21"]:
-        df_c = pd.read_hdf(self.input + "model_input.h5", "df_c")
-        df_c = df_c.rename(columns={"When": "time"})
-
-        df_c = df_c[["time", "DroneV", "DroneVError"]]
-        if self.name in ["guttannen21", "guttannen20", "gangles21"]:
-            df_c = df_c[1:]
-
-        tol = pd.Timedelta("15T")
-        df_c = df_c.set_index("time")
-        self.df = self.df.set_index("time")
-        df_c = pd.merge_asof(
-            left=self.df,
-            right=df_c,
-            right_index=True,
-            left_index=True,
-            direction="nearest",
-            tolerance=tol,
-        )
-        df_c = df_c[["DroneV", "DroneVError", "iceV"]]
-        self.df = self.df.reset_index()
-
-        if self.name in ["guttannen21", "guttannen20"]:
-            df_cam = pd.read_hdf(self.input + "model_input.h5", "df_cam")
-            tol = pd.Timedelta("15T")
-            self.df = self.df.set_index("time")
-            df_cam = pd.merge_asof(
-                left=self.df,
-                right=df_cam,
-                right_index=True,
-                left_index=True,
-                direction="nearest",
-                tolerance=tol,
-            )
-            df_cam = df_cam[["cam_temp", "T_s", "T_bulk"]]
-            self.df = self.df.reset_index()
 
     np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
     blue = "#0a4a97"
@@ -111,6 +33,7 @@ def summary_figures(self):
     CB91_Violet = "#661D98"
     CB91_Amber = "#F5B14C"
 
+    """MB and EB fig"""
     self.df = self.df.rename(
         {
             "SW": "$q_{SW}$",
@@ -127,116 +50,6 @@ def summary_figures(self):
         axis=1,
     )
 
-    fig, (ax1, ax2, ax3, ax4, ax5, ax6, ax7) = plt.subplots(
-        nrows=7, ncols=1, sharex="col", sharey="row", figsize=(12, 18)
-    )
-
-    x = self.df.time
-
-    y1 = self.df.Discharge
-    y2 = self.df.ppt
-    ax1.plot(x, y1, linestyle="-", color="#284D58", linewidth=1)
-    ax1.set_ylabel("Discharge [$l\\, min^{-1}$]")
-
-    ax1t = ax1.twinx()
-    ax1t.plot(
-        x,
-        y2,
-        linestyle="-",
-        color=CB91_Blue,
-        # label="Plaffeien",
-    )
-    ax1t.set_ylabel("Precipitation [$mm$]", color=CB91_Blue)
-    for tl in ax1t.get_yticklabels():
-        tl.set_color(CB91_Blue)
-
-    df_SZ, df_ERA5, events = shade(location=self.name, df_in=self.df, col="temp")
-    y2 = df_SZ.temp
-    y2_ERA5 = df_ERA5.temp
-    ax2.plot(x, y2, linestyle="-", color="#284D58", linewidth=1)
-    for ev in events:
-        ax2.axvspan(
-            ev.head(1).values, ev.tail(1).values, facecolor="xkcd:grey", alpha=0.25
-        )
-    ax2.plot(x, y2_ERA5, linestyle="-", color="#284D58")
-    ax2.set_ylabel("Temperature [$\\degree C$]")
-
-    y3 = self.df.SW_direct
-    lns2 = ax3.plot(x, y3, linestyle="-", label="Shortwave Direct", color=red)
-    lns1 = ax3.plot(
-        x,
-        self.df.SW_diffuse,
-        linestyle="-",
-        label="Shortwave Diffuse",
-        color=orange,
-        alpha=0.6,
-    )
-    # lns3 = ax3.plot(x, self.df.LW_in, linestyle="-", label="Longwave", color=green, alpha=0.6)
-    ax3.axvspan(
-        self.df.time.head(1).values,
-        self.df.time.tail(1).values,
-        facecolor="grey",
-        alpha=0.25,
-    )
-    ax3.set_ylabel("Radiation [$W\\,m^{-2}$]")
-
-    # lns = lns1 + lns2 + lns3
-    lns = lns1 + lns2
-    labs = [l.get_label() for l in lns]
-    ax3.legend(lns, labs, ncol=2, loc="best")
-
-    y4 = self.df.LW_in
-    ax4.plot(x, y4, linestyle="-", color=green, alpha=0.6, label="Longwave")
-    ax4.axvspan(
-        self.df.time.head(1).values,
-        self.df.time.tail(1).values,
-        facecolor="grey",
-        alpha=0.25,
-    )
-    ax4.set_ylabel("Radiation [$W\\,m^{-2}$]")
-    ax4.legend(loc="best")
-
-    df_SZ, df_ERA5, events = shade(location=self.name, df_in=self.df, col="RH")
-    y5 = df_SZ.RH
-    y5_ERA5 = df_ERA5.RH
-    ax5.plot(x, y5, linestyle="-", color="#284D58", linewidth=1)
-    ax5.plot(x, y5_ERA5, linestyle="-", color="#284D58")
-    for ev in events:
-        ax5.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
-    ax5.set_ylabel("Humidity [$\\%$]")
-
-    df_SZ, df_ERA5, events = shade(location=self.name, df_in=self.df, col="press")
-    y6 = df_SZ.press
-    y6_ERA5 = df_ERA5.press
-    ax6.plot(x, y6, linestyle="-", color="#264653", linewidth=1)
-    ax6.plot(x, y6_ERA5, linestyle="-", color="#284D58")
-    for ev in events:
-        ax6.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
-    ax6.set_ylabel("Pressure [$hPa$]")
-
-    df_SZ, df_ERA5, events = shade(location=self.name, df_in=self.df, col="wind")
-    y7 = df_SZ.wind
-    y7_ERA5 = df_ERA5.wind
-    ax7.plot(x, y7, linestyle="-", color="#264653", linewidth=1, label="Schwarzsee")
-    ax7.plot(x, y7_ERA5, linestyle="-", color="#284D58")
-    for ev in events:  # Creates DeprecationWarning
-        ax7.axvspan(ev.head(1).values, ev.tail(1).values, facecolor="grey", alpha=0.25)
-    ax7.set_ylabel("Wind speed [$m\\,s^{-1}$]")
-
-    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax1.xaxis.set_minor_locator(mdates.DayLocator())
-    fig.autofmt_xdate()
-    plt.savefig(
-        self.fig + "Model_Input.jpg",
-        bbox_inches="tight",
-    )
-    plt.clf()
-
-    # fig = plt.figure(figsize=(15, 10))
-    # fig, ax2 = plt.subplots(
-    #     nrows=1, ncols=1, sharex="col", sharey="row", figsize=(15, 12)
-    # )
     dfds = self.df[
         [
             "time",
@@ -394,6 +207,44 @@ def summary_figures(self):
     )
     plt.clf()
 
+    """Ice Volume Fig"""
+    if self.name in ["guttannen21", "guttannen20", "gangles21"]:
+        df_c = pd.read_hdf(self.input + "model_input.h5", "df_c")
+        df_c = df_c.rename(columns={"When": "time"})
+
+        df_c = df_c[["time", "DroneV", "DroneVError"]]
+        if self.name in ["guttannen21", "guttannen20", "gangles21"]:
+            df_c = df_c[1:]
+
+        tol = pd.Timedelta("15T")
+        df_c = df_c.set_index("time")
+        self.df = self.df.set_index("time")
+        df_c = pd.merge_asof(
+            left=self.df,
+            right=df_c,
+            right_index=True,
+            left_index=True,
+            direction="nearest",
+            tolerance=tol,
+        )
+        df_c = df_c[["DroneV", "DroneVError", "iceV"]]
+        self.df = self.df.reset_index()
+
+        if self.name in ["guttannen21", "guttannen20"]:
+            df_cam = pd.read_hdf(self.input + "model_input.h5", "df_cam")
+            tol = pd.Timedelta("15T")
+            self.df = self.df.set_index("time")
+            df_cam = pd.merge_asof(
+                left=self.df,
+                right=df_cam,
+                right_index=True,
+                left_index=True,
+                direction="nearest",
+                tolerance=tol,
+            )
+            df_cam = df_cam[["cam_temp", "T_s", "T_bulk"]]
+            self.df = self.df.reset_index()
+
     fig, ax = plt.subplots()
     x = self.df.time
     y1 = self.df.iceV
@@ -473,4 +324,3 @@ def summary_figures(self):
         },
         axis=1,
     )
-    logger.info("Outputs produced")

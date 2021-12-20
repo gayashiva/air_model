@@ -203,14 +203,17 @@ if __name__ == "__main__":
                 label="Expiry date",
             )
 
+
         if data2.percentile_95.max() > data1.percentile_95.max():
             ax[i].set_ylim(
-                round(icestupa.V_dome, 0) - 1, round(ax[i].get_ylim()[1])
+                # round(icestupa.V_dome, 0) - 1, round(ax[i].get_ylim()[1])
+                round(icestupa.V_dome, 0) - 1, round(data2.percentile_95.max(), 0)
             )
 
         else:
             ax[i].set_ylim(
-                round(icestupa.V_dome, 0) - 1, round(ax[i].get_ylim()[1])
+                # round(icestupa.V_dome, 0) - 1, round(ax[i].get_ylim()[1])
+                round(icestupa.V_dome, 0) - 1, round(data1.percentile_95.max(), 0)
             )
 
         v = get_parameter_metadata(location)

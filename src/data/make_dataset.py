@@ -26,7 +26,7 @@ from src.utils.settings import config
 from src.data.field import get_field
 from src.data.era5 import get_era5
 from src.data.meteoswiss import get_meteoswiss
-
+from src.plots.data import plot_input
 
 def linreg(X, Y):
     mask = ~np.isnan(X) & ~np.isnan(Y)
@@ -35,14 +35,10 @@ def linreg(X, Y):
 
 
 if __name__ == "__main__":
-
     # Main logger
     logger = logging.getLogger(__name__)
-    logger.setLevel("WARNING")
+    logger.setLevel("ERROR")
 
-    # location = "guttannen21"
-    # location = "schwarzsee19"
-    # location = "gangles21"
     locations = ["gangles21", "guttannen20", "guttannen21"]
     # locations = ["guttannen21"]
 
@@ -52,19 +48,7 @@ if __name__ == "__main__":
         if location in ["gangles21"]:
             df = get_field(location)
             df = df.set_index("time")
-            df = df[SITE["start_date"] : SITE["melt_out"]]
-            print(df.tail())
-            # # Replace temp and Humidity from Hobo
-            # df_hobo = pd.read_csv(
-            #     FOLDER["input"] + SITE["name"] + "_input_hobo.csv",
-            #     sep=",",
-            #     parse_dates = ['When'],
-            # )
-            # df_hobo = df_hobo.set_index("When")
-            # df_hobo = df_hobo[SITE['start_date']:SITE["melt_out"]]
-            # df['temp'] = df_hobo['temp']
-            # df['RH'] = df_hobo['RH']
-
+            df = df[SITE["start_date"] : SITE["expiry_date"]]
             df = df.reset_index()
 
             logger.info(df.missing_type.describe())
@@ -78,7 +62,7 @@ if __name__ == "__main__":
                 df = get_meteoswiss(location)
 
             df = df.set_index("time")
-            df = df[SITE["start_date"] : SITE["melt_out"]]
+            df = df[SITE["start_date"] : SITE["expiry_date"]]
             df = df.reset_index()
 
             # Replace Wind zero values for 3 hours
@@ -91,7 +75,7 @@ if __name__ == "__main__":
             if location in ["schwarzsee19"]:
                 df_swiss = get_meteoswiss(location)
                 df_swiss = df_swiss.set_index("time")
-                df_swiss = df_swiss[SITE["start_date"] : SITE["melt_out"]]
+                df_swiss = df_swiss[SITE["start_date"] : SITE["expiry_date"]]
                 df_swiss = df_swiss.reset_index()
 
                 df_swiss = df_swiss.set_index("time")
@@ -108,7 +92,7 @@ if __name__ == "__main__":
             df = df.set_index("time")
 
             df_ERA5_full = df_ERA5_full.set_index("time")
-            df_ERA5 = df_ERA5_full[SITE["start_date"] : SITE["melt_out"]]
+            df_ERA5 = df_ERA5_full[SITE["start_date"] : SITE["expiry_date"]]
             df_ERA5 = df_ERA5.reset_index()
             df_ERA5_full = df_ERA5_full.reset_index()
 
@@ -234,57 +218,13 @@ if __name__ == "__main__":
             logger.warning("SW global added")
             df_out["SW_global"] = df_out["SW_direct"] + df_out["SW_diffuse"]
 
+        if "SW_direct" not in df_out.columns:
+            logger.warning("SW direct added from global")
+            df_out["SW_direct"] = df_out["SW_global"]
+            df_out["SW_diffuse"] = 0
+
         logger.info(df_out.tail())
+        plot_input(df_out, FOLDER['fig'], SITE["name"])
+        df_out = df_out.drop(columns=['missing_type'])
+
         df_out.to_csv(FOLDER["input"] + SITE["name"] + "_input_model.csv", index=False)
-
-        fig = plt.figure()
-        plt.plot(df_out.press)
-        plt.ylabel("some numbers")
-        plt.savefig(FOLDER["input"] + SITE["name"] + "test.png")
-
-        # Extend field data with ERA5
-        if SITE["name"] in ["schwarzsee19"]:
-            df_ERA5_full["ppt"] = 0
-            df_ERA5_full["Discharge"] = 0
-            df_ERA5_full["missing_type"] = "-".join(df_out.columns)
-            mask = (df_ERA5_full["time"] > df_out["time"].iloc[-1]) & (
-                df_ERA5_full["time"] <= datetime(2019, 4, 30)
-            )
-            df_ERA5_full = df_ERA5_full.loc[mask]
-
-            df_out = df_out.set_index("time")
-            df_ERA5_full = df_ERA5_full.set_index("time")
-
-            df_swiss = get_meteoswiss(SITE["name"])
-            df_swiss = df_swiss.set_index("time")
-            df_swiss = df_swiss[SITE["start_date"] : datetime(2019, 4, 30)]
-            df_swiss = df_swiss.reset_index()
-
-            df_swiss = df_swiss.set_index("time")
-
-            df_ERA5_full["ppt"] = df_swiss["ppt"]
-            concat = pd.concat([df_out, df_ERA5_full])
-            if len(concat[concat.index.duplicated()]):
-                logger.error("Duplicate indexes")
-            logger.info(concat.tail())
-
-            concat = concat.reset_index()
-
-            if concat.isna().values.any():
-                print(concat[cols].isna().sum())
-                for column in cols:
-                    if concat[column].isna().sum() > 0 and column not in [
-                        "missing_type"
-                    ]:
-                        logger.warning(" Null values interpolated in %s" % column)
-                        concat.loc[:, column] = concat[column].interpolate()
-
-            print(concat.columns)
-            concat.to_csv(
-                FOLDER["input"] + SITE["name"] + "_input_model.csv", index=False
-            )
-            concat.to_hdf(
-                FOLDER["input"] + SITE["name"] + "_input_model.h5",
-                key="df",
-                mode="w",
-            )

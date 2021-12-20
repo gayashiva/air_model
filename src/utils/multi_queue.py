@@ -29,17 +29,14 @@ def calculate(process_name, tasks, results):
             icestupa = Icestupa(location)
 
             # Derive all the input parameters
-            icestupa.derive_parameters()
+            icestupa.gen_input()
             # icestupa.read_input()
 
             # Generate results
-            icestupa.melt_freeze()
+            icestupa.sim_air()
 
             # Summarise and save model results
-            icestupa.save()
-
-            # Read Output
-            # icestupa.read_output()
+            icestupa.gen_output()
 
             # Create figures for web interface
             icestupa.summary_figures()

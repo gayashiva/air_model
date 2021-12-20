@@ -73,10 +73,7 @@ class Icestupa:
         text="Preprocessed data in {:.2f} seconds",
         logger=logging.getLogger("__main__").warning,
     )
-    def derive_parameters(
-        self,
-    ):  # Derives additional parameters required for simulation
-
+    def gen_input(self):  # Use processed input dataset
         unknown = [
             "alb",
             "vp_a",
@@ -100,31 +97,6 @@ class Icestupa:
             logger.warning(
                 "Total cloud cover calculated from with diffuse fraction %s" % self.tcc
             )
-
-        # for row in stqdm(
-        #     self.df[1:].itertuples(),
-        #     total=self.df.shape[0],
-        #     desc="Creating AIR input...",
-        # ):
-        #     i = row.Index
-
-        #     """ Cloudiness """
-        #     if "tcc" in unknown:
-        #         if self.df.loc[i, "ghics"] != 0 and self.df.loc[i, "SW_global"] != 0:
-        #             self.df.loc[i, "tcc"] = (
-        #                 1 - self.df.loc[i, "SW_global"] / self.df.loc[i, "ghics"]
-        #             )
-        #         else:
-        #             self.df.loc[i, "tcc"] = self.df.loc[i - 1, "tcc"]
-
-        #     if self.df.loc[i, "tcc"] < 0:
-        #         self.df.loc[i, "tcc"] = self.df.loc[i - 1, "tcc"]
-
-        # # self.df = self.df.set_index("time")
-        # # self.df["tcc"] = self.df.rolling("3H", min_periods=1).tcc.mean()
-        # # self.df = self.df.reset_index()
-
-        logger.warning("LW calculated with cloudiness %s" % self.tcc)
 
         for row in stqdm(
             self.df[1:].itertuples(),
@@ -154,7 +126,7 @@ class Icestupa:
                 )
 
         self.get_discharge()
-        self.self_attributes(save=False)
+        self.self_attributes()
 
         solar_df = get_solar(
             latitude=self.latitude,
@@ -185,17 +157,36 @@ class Icestupa:
                     logger.warning(" Null values interpolated in %s" % column)
                     self.df.loc[:, column] = self.df[column].interpolate()
 
-        self.df.to_hdf(
-            self.input + "model_input.h5",
-            key="df",
-            mode="a",
-        )
-        # self.df.to_csv(self.input + "model_input.csv")
+        if self.name in ["guttannen21", "guttannen20", "gangles21"]:
+            self.df.to_hdf(
+                self.input + "model_input.h5",
+                key="df",
+                mode="a",
+            )
+        else:
+            self.df.to_hdf(
+                self.input + "model_input.h5",
+                key="df",
+                mode="w",
+            )
         logger.debug(self.df.head())
         logger.debug(self.df.tail())
 
-    def save(self):  # Use processed input dataset
+    def gen_output(self):  # Use processed input dataset
 
+        results_dict = {}
+        results = [
+            "iceV_max",
+            "last_hour",
+            "M_input",
+            "M_F",
+            "M_ppt",
+            "M_dep",
+            "M_water",
+            "M_runoff",
+            "M_sub",
+            "M_ice",
+        ]
         iceV_max = round(self.df["iceV"].max(), 1)
         M_input = round(self.df["input"].iloc[-1], 1)
         M_F = round(
@@ -211,20 +202,6 @@ class Icestupa:
         M_sub = self.df["vapour"].iloc[-1]
         M_ice = self.df["ice"].iloc[-1] - self.V_dome * self.RHO_I
         last_hour = self.df.shape[0]
-
-        results_dict = {}
-        results = [
-            "iceV_max",
-            "last_hour",
-            "M_input",
-            "M_F",
-            "M_ppt",
-            "M_dep",
-            "M_water",
-            "M_runoff",
-            "M_sub",
-            "M_ice",
-        ]
 
         for variable in results:
             results_dict[variable] = int(eval(variable))
@@ -250,8 +227,6 @@ class Icestupa:
                         self.df.loc[j, col] = self.df.loc[j - 1, col] + timedelta(
                             hours=1
                         )
-                    if col in ["missing_type"]:
-                        self.df.loc[j, col] = self.df.loc[j - 1, col]
 
         self.df = self.df.reset_index(drop=True)
 
@@ -261,7 +236,7 @@ class Icestupa:
         self.df.to_hdf(
             self.output + "model_output.h5",
             key="df",
-            mode="a",
+            mode="w",
         )
 
     def read_input(self):  # Use processed input dataset
@@ -287,7 +262,7 @@ class Icestupa:
         self.self_attributes()
 
     @Timer(text="Simulation executed in {:.2f} seconds", logger=logging.NOTSET)
-    def melt_freeze(self, test=False):
+    def sim_air(self, test=False):
 
         # Initialisaton for sites
         all_cols = [

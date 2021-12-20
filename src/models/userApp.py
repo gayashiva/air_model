@@ -18,15 +18,16 @@ if __name__ == "__main__":
 
     # Main logger
     logger = logging.getLogger(__name__)
-    logger.setLevel("ERROR")
+    logger.setLevel("WARNING")
+    # logger.setLevel("INFO")
 
     test = True
     # test = False
 
     # location="Schwarzsee 2019"
     # location="phortse20"
-    location = "Guttannen 2020"
-    # location = "Guttannen 2021"
+    # location = "Guttannen 2020"
+    location = "Guttannen 2021"
     # location = "Gangles 2021"
 
     # Initialise icestupa object
@@ -35,17 +36,12 @@ if __name__ == "__main__":
     # print("DX change")
 
     if test:
-        # Derive all the input parameters
-        icestupa.derive_parameters()
+        icestupa.gen_input()
 
-        # Generate results
-        icestupa.melt_freeze(test)
-        # icestupa.melt_freeze()
+        icestupa.sim_air(test)
 
-        # Summarise and save model results
-        icestupa.save()
+        icestupa.gen_output()
 
-        # Create figures for web interface
         icestupa.summary_figures()
     else:
         # Use output parameters from cache

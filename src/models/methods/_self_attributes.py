@@ -4,6 +4,7 @@ import pandas as pd
 import math
 import logging, coloredlogs
 from codetiming import Timer
+import os
 
 from src.models.methods.calibration import get_calibration
 
@@ -11,7 +12,7 @@ from src.models.methods.calibration import get_calibration
 logger = logging.getLogger("__main__")
 
 
-def self_attributes(self, save=False):
+def self_attributes(self):
     logger.info("Initialising Icestupa attributes")
 
     if self.name in ["guttannen21", "guttannen20"]:
@@ -42,7 +43,7 @@ def self_attributes(self, save=False):
     # Get initial height
     self.h_i = self.DX + 3 * self.V_dome / (math.pi * self.R_F ** 2)
 
-    if save and self.name in ["guttannen21", "guttannen20", "gangles21"]:
+    if self.name in ["guttannen21", "guttannen20", "gangles21"]:
         df_c.to_hdf(
             self.input + "model_input.h5",
             key="df_c",
