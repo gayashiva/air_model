@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
         for i, loc in enumerate(locations):
             for sim in sims:
-                SITE, FOLDER = config(loc)
+                CONSTANTS, SITE, FOLDER = config(loc)
                 df = pd.DataFrame()
                 print(loc, sim)
                 if sim == "normal":
@@ -168,7 +168,7 @@ if __name__ == "__main__":
         for slide in range(4):
             fig, ax = plt.subplots(len(locations), 1, sharex="col")
             for i, loc in enumerate(locations):
-                SITE, FOLDER = config(loc)
+                CONSTANTS, SITE, FOLDER = config(loc)
                 icestupa = Icestupa(loc)
                 icestupa.self_attributes()
                 df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
@@ -323,7 +323,7 @@ if __name__ == "__main__":
         # for slide in range(3, 6):
         sims_list = [sims1, sims2, sims3]
         for sim1 in sims_total:
-            SITE, FOLDER = config(loc)
+            CONSTANTS, SITE, FOLDER = config(loc)
             icestupa = Icestupa(loc)
             icestupa.self_attributes()
             df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
@@ -340,7 +340,7 @@ if __name__ == "__main__":
                 print(sim1)
                 print(ds.sel(locs=loc, sims=sim1).dropna(dim="time").data.max())
         for sims in sims_list:
-            SITE, FOLDER = config(loc)
+            CONSTANTS, SITE, FOLDER = config(loc)
             icestupa = Icestupa(loc)
             icestupa.self_attributes()
             df_c = pd.read_hdf(FOLDER["input"] + "model_input.h5", "df_c")
