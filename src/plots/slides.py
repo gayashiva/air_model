@@ -62,10 +62,13 @@ if __name__ == "__main__":
     ]
     label_dict = dict(zip(sims, sims_mean))
 
+    CB91_Violet = "#661D98"
+    CB91_Blue = "#2CBDFE"
+
     # compile = True
     compile = False
-    # layout = 1
-    layout = 2
+    layout = 1
+    # layout = 2
 
     if compile:
         time = pd.date_range("2020-11-01", freq="H", periods=365 * 24)
@@ -186,7 +189,7 @@ if __name__ == "__main__":
 
                 if slide <= 1:
                     ax[i].scatter(
-                        x2, y2, s=5, color=CB91_Violet, zorder=7, label="UAV Volume"
+                        x2, y2, s=5, color=CB91_Violet, zorder=7, label="Drone surveys"
                     )
                     ax[i].errorbar(
                         x2,
@@ -198,7 +201,7 @@ if __name__ == "__main__":
                         zorder=8,
                     )
                     ds.sel(locs=loc, sims="normal").plot(
-                        # label=sim,
+                        label="Simulated Volume",
                         linewidth=1,
                         color=CB91_Blue,
                         alpha=0,
@@ -206,6 +209,8 @@ if __name__ == "__main__":
                         ax=ax[i],
                     )
                     ax[i].set_title(label="")
+
+                    # ax[i].legend(loc="upper right")
 
                 if slide >= 1:
                     ds.sel(locs=loc, sims="normal").plot(
@@ -280,6 +285,7 @@ if __name__ == "__main__":
                 fig.autofmt_xdate()
             fig.text(0.04, 0.5, "Ice Volume[$m^3$]", va="center", rotation="vertical")
             handles, labels = ax[1].get_legend_handles_labels()
+            fig.legend(handles, labels, loc="upper right", prop={"size": 8})
             plt.savefig(
                 "data/slides/icev_slides_" + str(slide) + ".jpg",
                 bbox_inches="tight",
