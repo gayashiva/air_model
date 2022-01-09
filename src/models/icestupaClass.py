@@ -250,6 +250,8 @@ class Icestupa:
 
         self.df = pd.read_hdf(self.output + "model_output" + sim + ".h5", "df")
 
+        self.self_attributes()
+
         with open(self.output + "results.json", "r") as read_file:
             results_dict = json.load(read_file)
 
@@ -258,8 +260,6 @@ class Icestupa:
             setattr(self, key, results_dict[key])
             logger.warning(f"%s -> %s" % (key, str(results_dict[key])))
 
-        # self.change_freq()
-        self.self_attributes()
 
     @Timer(text="Simulation executed in {:.2f} seconds", logger=logging.NOTSET)
     def sim_air(self, test=False):

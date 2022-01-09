@@ -7,13 +7,13 @@
 </p>
 <p align="center"> A physical model that estimates the meltwater quantity and survival duration of artificial ice reservoirs (aka Icestupas). </p>
 
-<!-- --- -->
+---
 
-<!-- <h3 align="center"> -->
-<!--    <a href="https://share.streamlit.io/gayashiva/air_model/src/web/app.py">Run model</a>  -->
-<!-- </h3> -->
+<h3 align="center">
+   <a href="https://share.streamlit.io/gayashiva/air_app/app.py">Run model</a> 
+</h3>
 
-<!-- --- -->
+---
 
 ## Timelapses
 
