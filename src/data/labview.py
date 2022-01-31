@@ -18,7 +18,6 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 sys.path.append(dirname)
 from src.utils.settings import config
 import re
-# from src.data.make_dataset import linreg, meteoswiss, meteoswiss_parameter
 
 
 def aws(location="guttannen22"):

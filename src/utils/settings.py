@@ -18,6 +18,31 @@ sys.path.append(dirname)
 
 def config(location="guttannen21"):
 
+    if location == "Guttannen 2022" or location == "guttannen22":
+
+        SITE = dict(
+            name="guttannen22",
+            start_date=datetime(2021, 12, 3, 10),
+            # end_date=datetime(2021, 5, 10, 1),
+            expiry_date=datetime(2022, 5, 10, 1),
+            fountain_off_date=datetime(2022, 1, 28, 10),
+            D_F=7.5,  # Fountain mean discharge
+            utc=2,
+            alt=1047.6,
+            latitude=46.65549,
+            longitude=8.29149,
+            # h_f=3,
+            # perimeter=35, # on Jan 28
+
+            # Calibrated values
+            DX=45e-03,  # Surface layer thickness [m]
+        )
+
+        f_heights = [
+            {"When": SITE["start_date"], "h_f": 3},
+            {"When": datetime(2022, 12, 23, 16), "h_f": 4},
+        ]
+
     if location == "Guttannen 2021" or location == "guttannen21":
 
         SITE = dict(
@@ -138,33 +163,6 @@ def config(location="guttannen21"):
 
         f_heights = [
             {"When": SITE["start_date"], "h_f": 5},
-        ]
-
-    if location == "Guttannen 2022" or location == "guttannen22":
-
-        SITE = dict(
-            name="guttannen22",
-            start_date=datetime(2020, 11, 22, 15),
-            # end_date=datetime(2021, 5, 10, 1),
-            expiry_date=datetime(2021, 5, 10, 1),
-            fountain_off_date=datetime(2021, 2, 20, 10),
-            D_F=7.5,  # Fountain mean discharge
-            utc=2,
-            alt=1047.6,
-            latitude=46.65549,
-            longitude=8.29149,
-            # h_f=5,
-            # perimeter=45, # on Feb 11
-
-            # Calibrated values
-            DX=45e-03,  # Surface layer thickness [m]
-        )
-
-        f_heights = [
-            {"When": SITE["start_date"], "h_f": 2.5},
-            {"When": datetime(2020, 12, 30, 16), "h_f": 3.5},
-            {"When": datetime(2021, 1, 7, 16), "h_f": 5.5},
-            {"When": datetime(2021, 1, 11, 16), "h_f": 4.5},
         ]
 
 
