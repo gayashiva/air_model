@@ -26,7 +26,7 @@ def get_era5(location="schwarzsee19"):
 
     if location in ["schwarzsee19"]:
         df_in3 = pd.read_csv(
-            "/home/suryab/work/ERA5/outputs/" + location[:-2] + "_2019.csv",
+            "../ERA5/outputs/" + location[:-2] + "_2019.csv",
             sep=",",
             header=0,
             parse_dates=["When"],
@@ -67,6 +67,26 @@ def get_era5(location="schwarzsee19"):
         )
         df_in2 = df_in2.rename(columns={"When": "time"})
         df_in3 = df_in3.rename(columns={"When": "time"})
+        df_in3 = df_in3.set_index("time")
+        df_in2 = df_in2.set_index("time")
+        df_in3 = pd.concat([df_in2, df_in3])
+        df_in3 = df_in3.reset_index()
+
+    if location in ["guttannen22"]:
+        df_in3 = pd.read_csv(
+            "../ERA5/outputs/" + location[:-2] + "_2022.csv",
+            sep=",",
+            header=0,
+            parse_dates=["time"],
+        )
+        df_in2 = pd.read_csv(
+            "../ERA5/outputs/" + location[:-2] + "_2021.csv",
+            sep=",",
+            header=0,
+            parse_dates=["time"],
+        )
+        # df_in2 = df_in2.rename(columns={"When": "time"})
+        # df_in3 = df_in3.rename(columns={"When": "time"})
         df_in3 = df_in3.set_index("time")
         df_in2 = df_in2.set_index("time")
         df_in3 = pd.concat([df_in2, df_in3])

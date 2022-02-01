@@ -91,4 +91,9 @@ def get_calibration(site, input):
             {"time": datetime(2020, 1, 1, 17), "DroneV": 0.1, "DroneVError": 0.1},
         ]
         df_c = pd.DataFrame(dataV)
+    if site in ["guttannen22"]:
+        dataV = [
+            {"time": datetime(2021, 12, 3, 12), "DroneV": 0.1, "DroneVError": 0.1},
+        ]
+        df_c = pd.DataFrame(dataV)
         return df_c

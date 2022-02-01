@@ -27,6 +27,7 @@ def config(location="guttannen21"):
             expiry_date=datetime(2022, 5, 10, 1),
             fountain_off_date=datetime(2022, 1, 28, 10),
             D_F=7.5,  # Fountain mean discharge
+            R_F=5.6,  # Fountain mean discharge
             utc=2,
             alt=1047.6,
             latitude=46.65549,

@@ -1,6 +1,5 @@
 """Convert raw sonic data to model input format
 """
-
 # External modules
 import sys, os
 import pandas as pd
@@ -49,7 +48,8 @@ if __name__ == "__main__":
         "Tice_Avg(7)",
         "Tice_Avg(8)",
     ]
-    cols_new = ["time", "temp", "RH", "press", "wind", "snow_h"]
+    cols_new = ["time", "temp", "RH", "press", "wind", "snow_h", "SW_global", "SW_out", "LW_in", "LW_out",
+        "Qs_meas", "T_ice_1", "T_ice_2", "T_ice_3", "T_ice_4", "T_ice_5","T_ice_6","T_ice_7","T_ice_8"]
     cols_dict = dict(zip(cols_old, cols_new))
 
     path = FOLDER["raw"] + "CardConvert/"
@@ -76,15 +76,21 @@ if __name__ == "__main__":
 
     df = pd.concat(li, axis=0, ignore_index=True)
     df = df.set_index("time").sort_index()
-    print(SITE["start_date"])
     df = df[SITE["start_date"] :]
     df = df.reset_index()
     print(df.head())
     print(df.tail())
-    col = "H"
+    col = "snow_h"
     print(df[col].describe())
 
     """Correct data errors"""
+    df= df.replace("NAN", np.NaN)
+    df = df.set_index("time").resample("H").mean().reset_index()
+    df["ppt"] = 0
+    df["missing_type"] = "-"
+
+    df.to_csv(FOLDER["input"] + SITE["name"] + "_input_model.csv", index=False)
+
     fig, ax = plt.subplots()
     x = df.time
     y = df[col]
@@ -110,4 +116,3 @@ if __name__ == "__main__":
     )
     plt.clf()
 
-    df.to_csv(FOLDER["input"] + SITE["name"] + "_input_model.csv", index=False)

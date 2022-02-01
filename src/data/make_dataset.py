@@ -39,8 +39,8 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("ERROR")
 
-    locations = ["gangles21", "guttannen20", "guttannen21"]
-    # locations = ["guttannen21"]
+    # locations = ["gangles21", "guttannen20", "guttannen21"]
+    locations = ["guttannen22"]
 
     for location in locations:
         CONSTANTS, SITE, FOLDER = config(location)
@@ -58,7 +58,7 @@ if __name__ == "__main__":
             if location in ["schwarzsee19"]:
                 df = get_field(location)
 
-            if location in ["guttannen21", "guttannen20"]:
+            if location in ["guttannen21", "guttannen20", "guttannen22"]:
                 df = get_meteoswiss(location)
 
             df = df.set_index("time")
@@ -199,6 +199,20 @@ if __name__ == "__main__":
                 "missing_type",
                 "LW_in",
                 # "tcc",
+            ]
+
+        if SITE["name"] in ["guttannen22"]:
+            cols = [
+                "time",
+                "temp",
+                "RH",
+                "wind",
+                "SW_global",
+                "ppt",
+                "press",
+                "LW_in",
+                "LW_out",
+                "missing_type",
             ]
 
         df_out = df[cols]

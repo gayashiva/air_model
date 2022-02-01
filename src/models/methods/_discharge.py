@@ -76,7 +76,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         self.df.loc[df_f.index, "Discharge"] = self.D_F * df_f["fountain"]
         self.df = self.df.reset_index()
 
-    if self.name in ["guttannen21", "guttannen20"]:
+    if self.name in ["guttannen21", "guttannen20", "guttannen22"]:
         self.df["Discharge"] = self.D_F
         logger.info("Discharge constant")
 
