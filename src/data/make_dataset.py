@@ -97,7 +97,7 @@ if __name__ == "__main__":
             df_ERA5_full = df_ERA5_full.reset_index()
 
             # Fit ERA5 to field data
-            if SITE["name"] in ["guttannen21", "guttannen20"]:
+            if SITE["name"] in ["guttannen21", "guttannen20", "guttannen22"]:
                 fit_list = ["temp", "RH", "wind"]
 
             if SITE["name"] in ["schwarzsee19"]:
@@ -184,7 +184,7 @@ if __name__ == "__main__":
                 "missing_type",
                 # "LW_in",
             ]
-        if SITE["name"] in ["guttannen20", "guttannen21"]:
+        if SITE["name"] in ["guttannen20", "guttannen21", "guttannen22"]:
             cols = [
                 "time",
                 # "Discharge",
@@ -201,19 +201,19 @@ if __name__ == "__main__":
                 # "tcc",
             ]
 
-        if SITE["name"] in ["guttannen22"]:
-            cols = [
-                "time",
-                "temp",
-                "RH",
-                "wind",
-                "SW_global",
-                "ppt",
-                "press",
-                "LW_in",
-                "LW_out",
-                "missing_type",
-            ]
+        # if SITE["name"] in ["guttannen22"]:
+        #     cols = [
+        #         "time",
+        #         "temp",
+        #         "RH",
+        #         "wind",
+        #         "SW_global",
+        #         "ppt",
+        #         "press",
+        #         "LW_in",
+        #         "LW_out",
+        #         "missing_type",
+        #     ]
 
         df_out = df[cols]
 
