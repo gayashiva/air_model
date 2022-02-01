@@ -45,7 +45,7 @@ class Icestupa:
                 logger.info(f"%s -> %s" % (key, str(dictionary[key])))
 
         # Initialize input dataset
-        input_file = self.input + self.name + "_input_model.csv"
+        input_file = self.input + "input.csv"
         self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["time"])
 
         # Drops garbage columns
@@ -157,15 +157,16 @@ class Icestupa:
                     logger.warning(" Null values interpolated in %s" % column)
                     self.df.loc[:, column] = self.df[column].interpolate()
 
-        if self.name in ["guttannen21", "guttannen20", "gangles21"]:
+        # TODO Correct the below line
+        if self.name in ["guttannen21", "guttannen20", "guttannen22",  "gangles21"]:
             self.df.to_hdf(
-                self.input + "model_input.h5",
+                self.input + "input.h5",
                 key="df",
                 mode="a",
             )
         else:
             self.df.to_hdf(
-                self.input + "model_input.h5",
+                self.input + "input.h5",
                 key="df",
                 mode="w",
             )
@@ -231,24 +232,24 @@ class Icestupa:
         self.df = self.df.reset_index(drop=True)
 
         # Full Output
-        filename4 = self.output + "model_output.csv"
+        filename4 = self.output + "output.csv"
         self.df.to_csv(filename4, sep=",")
         self.df.to_hdf(
-            self.output + "model_output.h5",
+            self.output + "output.h5",
             key="df",
             mode="w",
         )
 
     def read_input(self):  # Use processed input dataset
 
-        self.df = pd.read_hdf(self.input + "model_input.h5", "df")
+        self.df = pd.read_hdf(self.input + "input.h5", "df")
 
         if self.df.isnull().values.any():
             logger.warning("\n Null values present\n")
 
     def read_output(self, sim=""):  # Reads output
 
-        self.df = pd.read_hdf(self.output + "model_output" + sim + ".h5", "df")
+        self.df = pd.read_hdf(self.output + "output" + sim + ".h5", "df")
 
         self.self_attributes()
 

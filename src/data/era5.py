@@ -189,7 +189,7 @@ def get_era5(location="schwarzsee19"):
     # df_in3 = df_in3.loc[mask]
 
     df_in3 = df_in3.reset_index()
-    df_in3.to_csv(FOLDER["input"] + SITE["name"] + "_input_ERA5.csv")
+    df_in3.to_csv(FOLDER["raw"] + "era5.csv")
 
     # df_ERA5 = interpolated[
     #     [

@@ -28,10 +28,8 @@ def get_meteoswiss(location="schwarzsee19"):
     if location == "schwarzsee19":
         location = "plaffeien19"
 
-    location = location[:-2]
-
     df = pd.read_csv(
-        os.path.join(FOLDER["raw"], location + "_meteoswiss.txt"),
+        os.path.join(FOLDER["raw"], "meteoswiss.txt"),
         # sep="\s+",
         sep=";",
         skiprows=2,

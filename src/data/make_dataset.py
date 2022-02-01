@@ -241,4 +241,4 @@ if __name__ == "__main__":
         plot_input(df_out, FOLDER['fig'], SITE["name"])
         df_out = df_out.drop(columns=['missing_type'])
 
-        df_out.to_csv(FOLDER["input"] + SITE["name"] + "_input_model.csv", index=False)
+        df_out.to_csv(FOLDER["input"]  + "input.csv", index=False)

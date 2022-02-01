@@ -88,7 +88,7 @@ def get_field(location="schwarzsee19"):
         df["ppt"] = 0
         df["missing_type"] = "-"
 
-        df.to_csv(FOLDER["input"] + SITE["name"] + "_input_model.csv", index=False)
+        df.to_csv(FOLDER["raw"] + "field.csv", index=False)
         return df
 
     if location == "gangles21":
