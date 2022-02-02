@@ -184,7 +184,7 @@ if __name__ == "__main__":
                 "missing_type",
                 # "LW_in",
             ]
-        if SITE["name"] in ["guttannen20", "guttannen21", "guttannen22"]:
+        if SITE["name"] in ["guttannen20", "guttannen21"]:
             cols = [
                 "time",
                 # "Discharge",
@@ -201,7 +201,47 @@ if __name__ == "__main__":
                 # "tcc",
             ]
 
-        # if SITE["name"] in ["guttannen22"]:
+        if SITE["name"] in ["guttannen22"]:
+            df_f = pd.read_csv(
+                FOLDER["raw"]+ "field.csv",
+                sep=",",
+                parse_dates=["time"],
+            )
+            df_f = df_f.set_index("time")
+            print(df_f.Qs_meas.describe())
+            df_f.loc[df_f.Qs_meas > 300, "Qs_meas"] = np.NaN 
+            df_f.loc[df_f.Qs_meas < -300, "Qs_meas"] = np.NaN 
+            df_f.loc[:, "Qs_meas"] = df_f["Qs_meas"].interpolate()
+            # df = df.replace(np.NaN, 0)
+            df_f["alb"] = df_f["SW_out"]/df_f["SW_global"]
+            df_f.loc[df_f.alb > 1, "alb"] = np.NaN 
+            df_f.loc[df_f.alb < 0, "alb"] = np.NaN 
+            df_f.loc[:, "alb"] = df_f["alb"].interpolate()
+            print(df_f.alb.describe())
+            # df["alb"] = CONSTANTS["A_S"]
+
+            df = df.set_index("time")
+            df[["SW_direct", "LW_in", "Qs_meas", "alb"]] = df_f[["SW_global", "LW_in", "Qs_meas", "alb"]]
+
+            df = df.reset_index()
+            cols = [
+                "time",
+                # "Discharge",
+                "temp",
+                "RH",
+                "wind",
+                "SW_direct",
+                "SW_diffuse",
+                "alb",
+                "ppt",
+                "vp_a",
+                "press",
+                "missing_type",
+                "LW_in",
+                "Qs_meas",
+                # "tcc",
+            ]
+
         #     cols = [
         #         "time",
         #         "temp",
@@ -217,6 +257,7 @@ if __name__ == "__main__":
 
         df_out = df[cols]
 
+            
         if df_out.isna().values.any():
             print(df_out[cols].isna().sum())
             for column in cols:

@@ -68,7 +68,7 @@ if __name__ == "__main__":
         # ( "Guttannen 2021","Gangles 2021", "Diavolezza 2021","Guttannen 2020", "Schwarzsee 2019"),
         # ("Guttannen 2021", "Gangles 2021", "Guttannen 2020", "Schwarzsee 2019"),
         # ("Gangles 2021", "Guttannen 2021", "Guttannen 2020", "Phortse 2020"),
-        ("Gangles 2021", "Guttannen 2021", "Guttannen 2020"),
+        ("Gangles 2021", "Guttannen 2021", "Guttannen 2020", "Guttannen 2022"),
     )
 
     # location = "Gangles 2021"
@@ -248,7 +248,7 @@ if __name__ == "__main__":
             icestupa.total_hours = days * 24 + seconds // 3600
         # perf = (icestupa.total_hours - icestupa.last_hour)/24
         if icestupa.name in ["gangles21", "guttannen21", "guttannen20"]:
-            df_c = pd.read_hdf(icestupa.input + "model_input.h5", "df_c")
+            df_c = pd.read_hdf(icestupa.input + "input.h5", "df_c")
             df_c = df_c.set_index("time")
             icestupa.df = icestupa.df.set_index("time")
             tol = pd.Timedelta("1T")
@@ -309,7 +309,7 @@ if __name__ == "__main__":
         if "Validation" in display:
 
             if icestupa.name in ["guttannen21", "guttannen20"]:
-                df_cam = pd.read_hdf(icestupa.input + "model_input.h5", "df_cam")
+                df_cam = pd.read_hdf(icestupa.input + "input.h5", "df_cam")
                 df = pd.merge_asof(
                     left=icestupa.df,
                     right=df_cam,

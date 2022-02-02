@@ -92,7 +92,6 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         self.df["Discharge"] = df_f["Discharge"]
         self.df = self.df.reset_index()
         self.df= self.df.replace(np.NaN, 0)
-        print(self.df.Discharge.tail())
 
     if self.name in ["phortse20"]:
         self.df["Discharge"] = self.D_F
