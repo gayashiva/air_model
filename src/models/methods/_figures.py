@@ -208,7 +208,7 @@ def summary_figures(self):
     plt.clf()
 
     """Ice Volume Fig"""
-    if self.name in ["guttannen21", "guttannen20", "gangles21"]:
+    if self.name in ["guttannen21", "guttannen20", "gangles21", "guttannen22"]:
         df_c = pd.read_hdf(self.input + "model_input.h5", "df_c")
         df_c = df_c.rename(columns={"When": "time"})
 
@@ -256,7 +256,7 @@ def summary_figures(self):
         linewidth=1,
         color=CB91_Blue,
     )
-    if self.name in ["guttannen21", "guttannen20", "schwarzsee19", "gangles21"]:
+    if self.name in ["guttannen21", "guttannen22", "guttannen20", "schwarzsee19", "gangles21"]:
         y2 = df_c.DroneV
         yerr = df_c.DroneVError
         ax.fill_between(x, y1=self.V_dome, y2=0, color=grey, label="Dome Volume")

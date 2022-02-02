@@ -16,9 +16,9 @@ def self_attributes(self):
     logger.info("Initialising Icestupa attributes")
 
     if self.name in ["guttannen21", "guttannen20"]:
-        df_c, df_cam = get_calibration(site=self.name, input=self.raw)
+        df_c, df_cam = get_calibration(site=self.name, input=self.input)
     else:
-        df_c = get_calibration(site=self.name, input=self.raw)
+        df_c = get_calibration(site=self.name, input=self.input)
 
 
     # Get spray radius
@@ -43,7 +43,7 @@ def self_attributes(self):
     # Get initial height
     self.h_i = self.DX + 3 * self.V_dome / (math.pi * self.R_F ** 2)
 
-    if self.name in ["guttannen21", "guttannen20", "gangles21"]:
+    if self.name in ["guttannen21", "guttannen22", "guttannen20", "gangles21"]:
         df_c.to_hdf(
             self.input + "model_input.h5",
             key="df_c",

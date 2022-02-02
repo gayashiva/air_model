@@ -16,14 +16,14 @@ logger = logging.getLogger(__name__)
 
 # @cache_it(limit=1000, expire=None)
 def get_calibration(site, input):
-    if site in ["guttannen21", "guttannen20", "gangles21", "diavolezza21"]:
+    if site in ["guttannen21", "guttannen20", "guttannen22", "gangles21", "diavolezza21"]:
         df_c = pd.read_csv(
-            input + site + "_drone.csv",
+            input + "drone.csv",
             sep=",",
             header=0,
-            parse_dates=["When"],
+            parse_dates=["time"],
         )
-        df_c = df_c.rename(columns={"When": "time"})
+        # df_c = df_c.rename(columns={"When": "time"})
         df_c = df_c.set_index("time")
 
         if site in ["guttannen21", "guttannen20"]:
@@ -70,7 +70,7 @@ def get_calibration(site, input):
 
             return df_c, df_cam
 
-        if site in ["gangles21", "diavolezza21"]:
+        if site in ["gangles21", "diavolezza21", "guttannen22"]:
             df_c = df_c.reset_index()
             return df_c
 
@@ -91,9 +91,9 @@ def get_calibration(site, input):
             {"time": datetime(2020, 1, 1, 17), "DroneV": 0.1, "DroneVError": 0.1},
         ]
         df_c = pd.DataFrame(dataV)
-    if site in ["guttannen22"]:
-        dataV = [
-            {"time": datetime(2021, 12, 3, 12), "DroneV": 0.1, "DroneVError": 0.1},
-        ]
-        df_c = pd.DataFrame(dataV)
-        return df_c
+    # if site in ["guttannen22"]:
+    #     dataV = [
+    #         {"time": datetime(2021, 12, 3, 12), "DroneV": 0.1, "DroneVError": 0.1},
+    #     ]
+    #     df_c = pd.DataFrame(dataV)
+    #     return df_c

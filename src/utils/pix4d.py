@@ -1,5 +1,6 @@
 """Convert raw pix4d data to model input format
 """
+
 # External modules
 import sys, os
 import pandas as pd
@@ -40,8 +41,6 @@ if __name__ == "__main__":
     dfr = dfr.set_index("time")
     dfr = dfr[["rad"]]
 
-    print(dfr)
-
     dfv = pd.read_csv(
         FOLDER["raw"] + "drone_vol.csv",
         sep="\t",
@@ -52,7 +51,7 @@ if __name__ == "__main__":
     dfv["DroneVError"] = dfv["DroneV"] * 0.2
     dfv = dfv.set_index("time")
     dfv = dfv[["DroneV", "DroneVError"]]
-    print(dfv)
     df = pd.concat([dfr, dfv], axis=1)
+    df = df.sort_index()
     print(df)
     df.to_csv(FOLDER["input"] + "drone.csv")
