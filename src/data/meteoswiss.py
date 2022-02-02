@@ -30,7 +30,6 @@ def get_meteoswiss(location="schwarzsee19"):
 
     df = pd.read_csv(
         os.path.join(FOLDER["raw"], "meteoswiss.txt"),
-        # sep="\s+",
         sep=";",
         skiprows=2,
     )
@@ -43,11 +42,8 @@ def get_meteoswiss(location="schwarzsee19"):
             df = df.drop(columns=col)
     df["time"] = pd.to_datetime(df["time"], format="%Y%m%d%H%M")
 
-    # df["ppt"] = df["ppt"] / (10 * 60)  # ppt rate mm/s
     df_out = df.set_index("time").resample("H").mean().reset_index()
     df_out["ppt"] = df.set_index("time").resample("H").sum().reset_index()["ppt"]
-    # mask = (df["time"] >= SITE["start_date"]) & (df["time"] <= SITE["end_date"])
-    # df = df.loc[mask]
     return df_out
 
 

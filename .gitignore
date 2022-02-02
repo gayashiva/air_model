@@ -91,7 +91,7 @@ media/
 sdcard/
 data/tests/
 src/logs/
-# .tasks
+archive/
 *.pdf
 *.zip
 *.html

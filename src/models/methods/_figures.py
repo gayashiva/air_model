@@ -209,8 +209,8 @@ def summary_figures(self):
 
     """Ice Volume Fig"""
     if self.name in ["guttannen21", "guttannen20", "gangles21", "guttannen22"]:
-        df_c = pd.read_hdf(self.input + "model_input.h5", "df_c")
-        df_c = df_c.rename(columns={"When": "time"})
+        df_c = pd.read_hdf(self.input + "input.h5", "df_c")
+        # df_c = df_c.rename(columns={"When": "time"})
 
         df_c = df_c[["time", "DroneV", "DroneVError"]]
         if self.name in ["guttannen21", "guttannen20", "gangles21"]:
@@ -231,7 +231,7 @@ def summary_figures(self):
         self.df = self.df.reset_index()
 
         if self.name in ["guttannen21", "guttannen20"]:
-            df_cam = pd.read_hdf(self.input + "model_input.h5", "df_cam")
+            df_cam = pd.read_hdf(self.input + "input.h5", "df_cam")
             tol = pd.Timedelta("15T")
             self.df = self.df.set_index("time")
             df_cam = pd.merge_asof(

@@ -40,7 +40,7 @@ if __name__ == "__main__":
     logger.setLevel("ERROR")
 
     # locations = ["gangles21", "guttannen20", "guttannen21"]
-    locations = ["guttannen22"]
+    locations = ["gangles21"]
 
     for location in locations:
         CONSTANTS, SITE, FOLDER = config(location)
@@ -112,8 +112,8 @@ if __name__ == "__main__":
                 df_ERA5_full[column] = slope * df_ERA5_full[column] + intercept
                 if column in ["wind"]:
                     # Correct negative wind
-                    df_ERA5.wind.loc[df_ERA5.wind < 0] = 0
-                    df_ERA5_full.wind.loc[df_ERA5_full.wind < 0] = 0
+                    df_ERA5.loc[df_ERA5.wind < 0, 'wind'] = 0
+                    df_ERA5_full.loc[df_ERA5_full.wind < 0, 'wind'] = 0
 
             df_ERA5 = df_ERA5.set_index("time")
 

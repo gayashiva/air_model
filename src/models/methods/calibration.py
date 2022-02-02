@@ -30,12 +30,11 @@ def get_calibration(site, input):
             df_c = df_c.reset_index()
             df_c = df_c.set_index("time").sort_index().reset_index()
             df_cam = pd.read_csv(
-                input + site + "_cam_temp.csv",
+                input  + "cam_temp.csv",
                 sep=",",
                 header=0,
-                parse_dates=["When"],
+                parse_dates=["time"],
             )
-            df_cam = df_cam.rename(columns={"When": "time"})
 
             # Correct thermal cam temp.
             if site == "guttannen20":

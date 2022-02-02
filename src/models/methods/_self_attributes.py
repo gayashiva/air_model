@@ -45,15 +45,14 @@ def self_attributes(self):
 
     if self.name in ["guttannen21", "guttannen22", "guttannen20", "gangles21"]:
         df_c.to_hdf(
-            self.input + "model_input.h5",
+            self.input + "input.h5",
             key="df_c",
             mode="w",
         )
 
         if self.name in ["guttannen21", "guttannen20"]:
             df_cam.to_hdf(
-                self.input + "model_input.h5",
+                self.input + "input.h5",
                 key="df_cam",
                 mode="a",
             )
-            df_cam.to_csv(self.input + "measured_temp.csv")

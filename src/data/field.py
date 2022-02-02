@@ -88,7 +88,7 @@ def get_field(location="schwarzsee19"):
         df["ppt"] = 0
         df["missing_type"] = "-"
 
-        df.to_csv(FOLDER["raw"] + "field.csv", index=False)
+        df.to_csv(FOLDER["input"] + "field.csv", index=False)
         return df
 
     if location == "gangles21":
@@ -196,12 +196,12 @@ def get_field(location="schwarzsee19"):
         df["missing_type"] = "-"
         # df["cld"] = 0
 
-        df.to_csv(FOLDER["input"] + location + "_input_model.csv")
+        df.to_csv(FOLDER["input"] + "field.csv")
         return df
 
     if location == "guttannen20":
         df_in = pd.read_csv(
-            FOLDER["raw"] + SITE["name"] + "_field.txt",
+            FOLDER["raw"] + "field.txt",
             header=None,
             encoding="latin-1",
             skiprows=7,
@@ -274,11 +274,11 @@ def get_field(location="schwarzsee19"):
         )
         logger.info(df_in.head())
         logger.info(df_in.tail())
-        df.to_csv(FOLDER["input"] + SITE["name"] + "_input_field.csv")
+        df.to_csv(FOLDER["input"] + "field.csv")
 
     if location == "guttannen21":
         df_in = pd.read_csv(
-            FOLDER["raw"] + SITE["name"] + "_field.txt",
+            FOLDER["raw"] + "field.txt",
             header=None,
             encoding="latin-1",
             skiprows=7,
@@ -347,7 +347,7 @@ def get_field(location="schwarzsee19"):
             },
             inplace=True,
         )
-        df.to_csv(FOLDER["input"] + SITE["name"] + "_input_field.csv")
+        df.to_csv(FOLDER["input"] + "field.csv")
 
     if location == "schwarzsee19":
         df_in = pd.read_csv(

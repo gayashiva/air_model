@@ -24,6 +24,8 @@ from src.utils.settings import config
 
 def get_era5(location="schwarzsee19"):
 
+    CONSTANTS, SITE, FOLDER = config(location)
+
     if location in ["schwarzsee19"]:
         df_in3 = pd.read_csv(
             "../ERA5/outputs/" + location[:-2] + "_2019.csv",
@@ -34,13 +36,14 @@ def get_era5(location="schwarzsee19"):
 
     if location in ["guttannen20"]:
         df_in3 = pd.read_csv(
-            "../ERA5/outputs/" + location[:-2] + "_2019.csv",
+            FOLDER["raw"] + "era5_2019.csv",
             sep=",",
             header=0,
             parse_dates=["When"],
         )
         df_in2 = pd.read_csv(
-            "../ERA5/outputs/" + location[:-2] + "_2020.csv",
+            FOLDER["raw"] + "era5_2020.csv",
+            # "../ERA5/outputs/" + location[:-2] + "_2020.csv",
             sep=",",
             header=0,
             parse_dates=["When"],
@@ -54,19 +57,21 @@ def get_era5(location="schwarzsee19"):
 
     if location in ["guttannen21"]:
         df_in3 = pd.read_csv(
-            "../ERA5/outputs/" + location[:-2] + "_2021.csv",
+            FOLDER["raw"] + "era5_2021.csv",
+            # "../ERA5/outputs/" + location[:-2] + "_2021.csv",
             sep=",",
             header=0,
-            parse_dates=["When"],
+            parse_dates=["time"],
         )
         df_in2 = pd.read_csv(
-            "../ERA5/outputs/" + location[:-2] + "_2020.csv",
+            FOLDER["raw"] + "era5_2020.csv",
+            # "../ERA5/outputs/" + location[:-2] + "_2020.csv",
             sep=",",
             header=0,
-            parse_dates=["When"],
+            parse_dates=["time"],
         )
-        df_in2 = df_in2.rename(columns={"When": "time"})
-        df_in3 = df_in3.rename(columns={"When": "time"})
+        # df_in2 = df_in2.rename(columns={"When": "time"})
+        # df_in3 = df_in3.rename(columns={"When": "time"})
         df_in3 = df_in3.set_index("time")
         df_in2 = df_in2.set_index("time")
         df_in3 = pd.concat([df_in2, df_in3])
@@ -74,13 +79,15 @@ def get_era5(location="schwarzsee19"):
 
     if location in ["guttannen22"]:
         df_in3 = pd.read_csv(
-            "../ERA5/outputs/" + location[:-2] + "_2022.csv",
+            FOLDER["raw"] + "era5_2022.csv",
+            # "../ERA5/outputs/" + location[:-2] + "_2022.csv",
             sep=",",
             header=0,
             parse_dates=["time"],
         )
         df_in2 = pd.read_csv(
-            "../ERA5/outputs/" + location[:-2] + "_2021.csv",
+            FOLDER["raw"] + "era5_2021.csv",
+            # "../ERA5/outputs/" + location[:-2] + "_2021.csv",
             sep=",",
             header=0,
             parse_dates=["time"],
@@ -113,12 +120,6 @@ def get_era5(location="schwarzsee19"):
         df_in3 = df_in3.rename({"When": "time"})
         df_in3 = df_in3.set_index("time")
         df_in3 = df_in3.reset_index()
-
-    CONSTANTS, SITE, FOLDER = config(location)
-
-    # mask = (df_in3["When"] >= SITE["start_date"]) & (df_in3["When"] <= SITE["end_date"])
-    # df_in3 = df_in3.loc[mask]
-    # df_in3 = df_in3.reset_index(drop="True")
 
     time_steps = 60 * 60
     df_in3["ssrd"] /= time_steps
@@ -166,47 +167,9 @@ def get_era5(location="schwarzsee19"):
 
     df_in3 = df_in3.round(3)
 
-    # upsampled = df_in3.resample("15T")
-    # interpolated = upsampled.interpolate(method="linear")
-    # interpolated = interpolated.reset_index()
-
-    #     df_in3 = interpolated[
-    #         [
-    #             "When",
-    #             "temp",
-    #             "RH",
-    #             "wind",
-    #             "SW_direct",
-    #             "SW_diffuse",
-    #             "LW_in",
-    #             "press",
-    #             "ppt",
-    #         ]
-    #     ]
-    #
-    #     df_in3 = df_in3.reset_index()
-    # mask = (df_in3["When"] >= SITE["start_date"]) & (df_in3["When"] <= SITE["end_date"])
-    # df_in3 = df_in3.loc[mask]
-
     df_in3 = df_in3.reset_index()
-    df_in3.to_csv(FOLDER["raw"] + "era5.csv")
+    df_in3.to_csv(FOLDER["input"] + "era5.csv")
 
-    # df_ERA5 = interpolated[
-    #     [
-    #         "When",
-    #         "temp",
-    #         "wind",
-    #         "RH",
-    #         "SW_direct",
-    #         "SW_diffuse",
-    #         "LW_in",
-    #         "press",
-    #         "ppt",
-    #     ]
-    # ]
-
-    # logger.info(df_ERA5.head())
-    # logger.info(df_ERA5.tail())
     return df_in3
 
 
