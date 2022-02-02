@@ -22,7 +22,7 @@ def config(location="guttannen21"):
 
         SITE = dict(
             name="guttannen22",
-            start_date=datetime(2021, 12, 3, 10),
+            start_date=datetime(2021, 12, 3, 8),
             # end_date=datetime(2021, 5, 10, 1),
             expiry_date=datetime(2022, 1, 27),
             fountain_off_date=datetime(2022, 1, 27),

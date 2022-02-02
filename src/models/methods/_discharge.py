@@ -76,9 +76,23 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         self.df.loc[df_f.index, "Discharge"] = self.D_F * df_f["fountain"]
         self.df = self.df.reset_index()
 
-    if self.name in ["guttannen21", "guttannen20", "guttannen22"]:
+    if self.name in ["guttannen21", "guttannen20"]:
         self.df["Discharge"] = self.D_F
         logger.info("Discharge constant")
+
+    if self.name in ["guttannen22"]:
+        df_f = pd.read_csv(
+            os.path.join("data/" + self.name + "/interim/")
+            + "discharge.csv",
+            sep=",",
+            parse_dates=["time"],
+        )
+        df_f = df_f.set_index("time")
+        self.df = self.df.set_index("time")
+        self.df["Discharge"] = df_f["Discharge"]
+        self.df = self.df.reset_index()
+        self.df= self.df.replace(np.NaN, 0)
+        print(self.df.Discharge.tail())
 
     if self.name in ["phortse20"]:
         self.df["Discharge"] = self.D_F

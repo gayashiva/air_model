@@ -40,7 +40,7 @@ if __name__ == "__main__":
     logger.setLevel("ERROR")
 
     # locations = ["gangles21", "guttannen20", "guttannen21"]
-    locations = ["gangles21"]
+    locations = ["guttannen22"]
 
     for location in locations:
         CONSTANTS, SITE, FOLDER = config(location)
