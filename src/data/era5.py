@@ -39,17 +39,15 @@ def get_era5(location="schwarzsee19"):
             FOLDER["raw"] + "era5_2019.csv",
             sep=",",
             header=0,
-            parse_dates=["When"],
+            parse_dates=["time"],
         )
         df_in2 = pd.read_csv(
             FOLDER["raw"] + "era5_2020.csv",
             # "../ERA5/outputs/" + location[:-2] + "_2020.csv",
             sep=",",
             header=0,
-            parse_dates=["When"],
+            parse_dates=["time"],
         )
-        df_in2 = df_in2.rename(columns={"When": "time"})
-        df_in3 = df_in3.rename(columns={"When": "time"})
         df_in3 = df_in3.set_index("time")
         df_in2 = df_in2.set_index("time")
         df_in3 = pd.concat([df_in2, df_in3])

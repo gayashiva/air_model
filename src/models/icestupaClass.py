@@ -199,7 +199,7 @@ class Icestupa:
         M_ppt = self.df["snow2ice"].sum()
         M_dep = self.df["dep"].sum()
         M_water = self.df["meltwater"].iloc[-1]
-        M_runoff = self.df["wastewater"].iloc[-1]
+        M_waste = self.df["wastewater"].iloc[-1]
         M_sub = self.df["vapour"].iloc[-1]
         M_ice = self.df["ice"].iloc[-1] - self.V_dome * self.RHO_I
         last_hour = self.df.shape[0]

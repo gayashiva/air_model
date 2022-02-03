@@ -26,9 +26,9 @@ if __name__ == "__main__":
 
     # location="Schwarzsee 2019"
     # location="phortse20"
-    # location = "Guttannen 2020"
+    location = "Guttannen 2020"
     # location = "Guttannen 2021"
-    location = "Guttannen 2022"
+    # location = "Guttannen 2022"
     # location = "Gangles 2021"
 
     # Initialise icestupa object
