@@ -53,7 +53,6 @@ def get_field(location="schwarzsee19"):
 
         path = FOLDER["raw"] + "CardConvert/"
         all_files = glob.glob(path + "*.dat")
-        print(all_files)
         li = []
 
         for file in all_files:
@@ -85,11 +84,41 @@ def get_field(location="schwarzsee19"):
         """Correct data errors"""
         df= df.replace("NAN", np.NaN)
         df = df.set_index("time").resample("H").mean().reset_index()
-        df["ppt"] = 0
         df["missing_type"] = "-"
+        df.loc[df.Qs_meas > 300, "Qs_meas"] = np.NaN 
+        df.loc[df.Qs_meas < -300, "Qs_meas"] = np.NaN 
+        df.loc[:, "Qs_meas"] = df["Qs_meas"].interpolate()
+        df["alb"] = df["SW_out"]/df["SW_global"]
+        df.loc[df.alb > 1, "alb"] = np.NaN 
+        df.loc[df.alb < 0, "alb"] = np.NaN 
+        df.loc[:, "alb"] = df["alb"].interpolate()
+        # df["alb"] = CONSTANTS["A_S"]
 
-        df.to_csv(FOLDER["input"] + "field.csv", index=False)
-        return df
+        df["SW_direct"] = 0.6 * df["SW_global"]
+        df["SW_diffuse"] = 0.4 * df["SW_global"]
+
+
+        cols = [
+            "time",
+            "temp",
+            "RH",
+            "wind",
+            "SW_direct",
+            "SW_diffuse",
+            "alb",
+            "press",
+            "missing_type",
+            "LW_in",
+            "Qs_meas",
+        ]
+
+        df_out = df[cols]
+
+        if df_out.isna().values.any():
+            print(df_out.isna().sum())
+
+        df_out.to_csv(FOLDER["input"] + "field.csv", index=False)
+        return df_out
 
     if location == "gangles21":
         col_list = [

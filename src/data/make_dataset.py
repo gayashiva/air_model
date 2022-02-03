@@ -40,7 +40,7 @@ if __name__ == "__main__":
     logger.setLevel("ERROR")
 
     # locations = ["gangles21", "guttannen20", "guttannen21"]
-    locations = ["guttannen20"]
+    locations = ["guttannen22"]
 
     for location in locations:
         CONSTANTS, SITE, FOLDER = config(location)
@@ -55,10 +55,10 @@ if __name__ == "__main__":
             logger.info(df.missing_type.unique())
         else:
 
-            if location in ["schwarzsee19"]:
+            if location in ["schwarzsee19", "guttannen22"]:
                 df = get_field(location)
 
-            if location in ["guttannen21", "guttannen20", "guttannen22"]:
+            if location in ["guttannen21", "guttannen20"]:
                 df = get_meteoswiss(location)
 
             df = df.set_index("time")
@@ -72,7 +72,7 @@ if __name__ == "__main__":
             mask &= df.wind == 0
             df.wind = df.wind.mask(mask)
 
-            if location in ["schwarzsee19"]:
+            if location in ["schwarzsee19", "guttannen22"]:
                 df_swiss = get_meteoswiss(location)
                 df_swiss = df_swiss.set_index("time")
                 df_swiss = df_swiss[SITE["start_date"] : SITE["expiry_date"]]
@@ -81,7 +81,7 @@ if __name__ == "__main__":
                 df_swiss = df_swiss.set_index("time")
                 df = df.set_index("time")
 
-                for col in ["ppt"]:
+                for col in ["ppt", "vp_a"]:
                     logger.info("%s from meteoswiss" % col)
                     df[col] = df_swiss[col]
                 df_swiss = df_swiss.reset_index()
@@ -184,10 +184,9 @@ if __name__ == "__main__":
                 "missing_type",
                 # "LW_in",
             ]
-        if SITE["name"] in ["guttannen20", "guttannen21"]:
+        if SITE["name"] in ["guttannen20", "guttannen21", "guttannen22"]:
             cols = [
                 "time",
-                # "Discharge",
                 "temp",
                 "RH",
                 "wind",
@@ -198,62 +197,9 @@ if __name__ == "__main__":
                 "press",
                 "missing_type",
                 "LW_in",
-                # "tcc",
             ]
 
-        if SITE["name"] in ["guttannen22"]:
-            df_f = pd.read_csv(
-                FOLDER["raw"]+ "field.csv",
-                sep=",",
-                parse_dates=["time"],
-            )
-            df_f = df_f.set_index("time")
-            print(df_f.Qs_meas.describe())
-            df_f.loc[df_f.Qs_meas > 300, "Qs_meas"] = np.NaN 
-            df_f.loc[df_f.Qs_meas < -300, "Qs_meas"] = np.NaN 
-            df_f.loc[:, "Qs_meas"] = df_f["Qs_meas"].interpolate()
-            # df = df.replace(np.NaN, 0)
-            df_f["alb"] = df_f["SW_out"]/df_f["SW_global"]
-            df_f.loc[df_f.alb > 1, "alb"] = np.NaN 
-            df_f.loc[df_f.alb < 0, "alb"] = np.NaN 
-            df_f.loc[:, "alb"] = df_f["alb"].interpolate()
-            print(df_f.alb.describe())
-            # df["alb"] = CONSTANTS["A_S"]
 
-            df = df.set_index("time")
-            df[["SW_direct", "LW_in", "Qs_meas", "alb"]] = df_f[["SW_global", "LW_in", "Qs_meas", "alb"]]
-
-            df = df.reset_index()
-            cols = [
-                "time",
-                # "Discharge",
-                "temp",
-                "RH",
-                "wind",
-                "SW_direct",
-                "SW_diffuse",
-                "alb",
-                "ppt",
-                "vp_a",
-                "press",
-                "missing_type",
-                "LW_in",
-                "Qs_meas",
-                # "tcc",
-            ]
-
-        #     cols = [
-        #         "time",
-        #         "temp",
-        #         "RH",
-        #         "wind",
-        #         "SW_global",
-        #         "ppt",
-        #         "press",
-        #         "LW_in",
-        #         "LW_out",
-        #         "missing_type",
-        #     ]
 
         df_out = df[cols]
 

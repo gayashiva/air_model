@@ -35,6 +35,9 @@ def self_attributes(self):
 
     if self.name in ["guttannen21", "guttannen20", "gangles21"]:
         self.V_dome = df_c.loc[0, "DroneV"]
+    elif self.name in ["guttannen22"]:
+        self.V_dome = math.pi * self.R_F**2 * self.h_i 
+        logger.warning("Dome Volume initialised with ice height %0.1f" % self.h_i)
     else:
         self.V_dome = 0
 

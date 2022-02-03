@@ -218,6 +218,9 @@ if __name__ == "__main__":
             icestupa.df.Discharge != 0
         ].fountain_froze.mean() / (icestupa.DT / 60)
         fountain_duration = icestupa.df[icestupa.df.Discharge != 0].shape[0]
+        if location == "Guttannen 2022":
+            icestupa.D_F= round(icestupa.df.Discharge[icestupa.df.Discharge != 0].mean(),0)
+
         mean_melt_rate = icestupa.df.melted.mean() / (icestupa.DT / 60)
         st.markdown(
             """
@@ -296,7 +299,7 @@ if __name__ == "__main__":
                 icestupa.df["iceV"].max(),
                 icestupa.M_water / 1000,
                 icestupa.M_sub / 1000,
-                (icestupa.M_runoff + icestupa.M_sub) / icestupa.M_input * 100,
+                (icestupa.M_waste + icestupa.M_sub) / icestupa.M_input * 100,
                 SITE["expiry_date"].strftime("%b %d"),
                 # rmse_V / icestupa.df["iceV"].max() * 100,
             )

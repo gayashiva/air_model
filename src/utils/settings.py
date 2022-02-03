@@ -31,6 +31,7 @@ def config(location="guttannen21"):
             alt=1047.6,
             latitude=46.65549,
             longitude=8.29149,
+            h_i = 0.13, #Initialise ice height at start
             # h_f=3,
             # perimeter=35, # on Jan 28
 
