@@ -72,7 +72,7 @@ if __name__ == "__main__":
             mask &= df.wind == 0
             df.wind = df.wind.mask(mask)
 
-            if location in ["schwarzsee19", "guttannen22"]:
+            if location in ["guttannen22"]:
                 df_swiss = get_meteoswiss(location)
                 df_swiss = df_swiss.set_index("time")
                 df_swiss = df_swiss[SITE["start_date"] : SITE["expiry_date"]]
@@ -81,7 +81,7 @@ if __name__ == "__main__":
                 df_swiss = df_swiss.set_index("time")
                 df = df.set_index("time")
 
-                for col in ["ppt", "vp_a"]:
+                for col in ["vp_a"]:
                     logger.info("%s from meteoswiss" % col)
                     df[col] = df_swiss[col]
                 df_swiss = df_swiss.reset_index()
@@ -168,23 +168,7 @@ if __name__ == "__main__":
                 # "LW_in",
             ]
 
-        if SITE["name"] in ["schwarzsee19"]:
-            cols = [
-                "time",
-                # "Discharge",
-                "temp",
-                "RH",
-                "wind",
-                "SW_direct",
-                "SW_diffuse",
-                "SW_global",
-                "ppt",
-                # "vp_a",
-                "press",
-                "missing_type",
-                # "LW_in",
-            ]
-        if SITE["name"] in ["guttannen20", "guttannen21", "guttannen22"]:
+        if SITE["name"] in ["guttannen20", "guttannen21"]:
             cols = [
                 "time",
                 "temp",
@@ -199,6 +183,22 @@ if __name__ == "__main__":
                 "LW_in",
             ]
 
+        if SITE["name"] in ["guttannen22"]:
+            cols = [
+                "time",
+                "temp",
+                "RH",
+                "wind",
+                "SW_direct",
+                "SW_diffuse",
+                # "alb",
+                "ppt",
+                "vp_a",
+                "press",
+                "LW_in",
+                "snow_h",
+                "missing_type",
+            ]
 
 
         df_out = df[cols]

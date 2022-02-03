@@ -413,15 +413,17 @@ class Icestupa:
                     self.df.loc[i, "Ql"] * self.DT * self.df.loc[i, "A_cone"] / self.L_S
                 )
 
-            # Precipitation to ice quantity
-            if self.df.loc[i, "temp"] < self.T_PPT and self.df.loc[i, "ppt"] > 0:
-                self.df.loc[i, "snow2ice"] = (
-                    self.RHO_W
-                    * self.df.loc[i, "ppt"]
-                    / 1000
-                    * math.pi
-                    * math.pow(self.df.loc[i, "r_cone"], 2)
-                )
+            self.df.loc[i, "snow2ice"] = (
+                self.RHO_W
+                * self.df.loc[i, "ppt"]
+                / 1000
+                * math.pi
+                * math.pow(self.df.loc[i, "r_cone"], 2)
+            )
+
+            # Precipitation not from snow height and possible rain
+            if "snow_h" not in list(self.df.columns) and self.df.loc[i, "temp"] < self.T_PPT:
+                self.df.loc[i, "snow2ice"] = 0
 
             """ Quantities of all phases """
             self.df.loc[i + 1, "T_s"] = (

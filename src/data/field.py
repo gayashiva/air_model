@@ -92,11 +92,12 @@ def get_field(location="schwarzsee19"):
         df.loc[df.alb > 1, "alb"] = np.NaN 
         df.loc[df.alb < 0, "alb"] = np.NaN 
         df.loc[:, "alb"] = df["alb"].interpolate()
-        # df["alb"] = CONSTANTS["A_S"]
 
         df["SW_direct"] = 0.6 * df["SW_global"]
         df["SW_diffuse"] = 0.4 * df["SW_global"]
 
+        df['ppt'] = df.snow_h.diff()*10*CONSTANTS['RHO_S']/CONSTANTS['RHO_W'] # mm of snowfall w.e. in one hour
+        df.loc[df.ppt<1, "ppt"] = 0  # Assuming 1 mm error
 
         cols = [
             "time",
@@ -110,14 +111,36 @@ def get_field(location="schwarzsee19"):
             "missing_type",
             "LW_in",
             "Qs_meas",
+            "ppt",
+            "snow_h",
         ]
 
         df_out = df[cols]
+
 
         if df_out.isna().values.any():
             print(df_out.isna().sum())
 
         df_out.to_csv(FOLDER["input"] + "field.csv", index=False)
+
+        fig, ax = plt.subplots()
+        x = df.time
+        y = df["T_ice_6"]
+        y2 = df["T_ice_4"]
+        ax.plot(x,y)
+        ax.plot(x,y2)
+        ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax.xaxis.set_minor_locator(mdates.DayLocator())
+        fig.autofmt_xdate()
+        plt.savefig(
+            # FOLDER['fig'] + "snow.jpg",
+            FOLDER['fig'] + "T_ice_6.jpg",
+            bbox_inches="tight",
+            dpi=300,
+        )
+        plt.clf()
+
         return df_out
 
     if location == "gangles21":
