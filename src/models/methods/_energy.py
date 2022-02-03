@@ -33,21 +33,21 @@ def get_energy(self, i):
     )
 
     # Sensible Heat Qs
-    if "Qs_meas" in list(self.df.columns):
-        self.df.loc[i, "Qs"] = self.df.loc[i, "Qs_meas"]
-        logger.warning("Using measured sensible heat")
-    else:
-        self.df.loc[i, "Qs"] = (
-            self.C_A
-            * self.RHO_A
-            * self.df.loc[i, "press"]
-            / self.P0
-            * math.pow(self.VAN_KARMAN, 2)
-            * self.df.loc[i, "wind"]
-            * (self.df.loc[i, "temp"] - self.df.loc[i, "T_s"])
-            / ((np.log(self.H_AWS / self.Z)) ** 2)
-            * (1 + 0.5 * self.df.loc[i, "s_cone"])
-        )
+    # if "Qs_meas" in list(self.df.columns):
+    #     self.df.loc[i, "Qs"] = self.df.loc[i, "Qs_meas"]
+    #     logger.warning("Using measured sensible heat")
+    # else:
+    self.df.loc[i, "Qs"] = (
+        self.C_A
+        * self.RHO_A
+        * self.df.loc[i, "press"]
+        / self.P0
+        * math.pow(self.VAN_KARMAN, 2)
+        * self.df.loc[i, "wind"]
+        * (self.df.loc[i, "temp"] - self.df.loc[i, "T_s"])
+        / ((np.log(self.H_AWS / self.Z)) ** 2)
+        * (1 + 0.5 * self.df.loc[i, "s_cone"])
+    )
 
     # Short Wave Radiation SW
     self.df.loc[i, "SW"] = (1 - self.df.loc[i, "alb"]) * (

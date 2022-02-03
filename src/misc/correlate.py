@@ -20,42 +20,32 @@ if __name__ == "__main__":
 
     # Main logger
     logger = logging.getLogger(__name__)
-    coloredlogs.install(
-        fmt="%(funcName)s %(levelname)s %(message)s",
-        level=logging.INFO,
-        logger=logger,
-    )
+    logger.setLevel("WARNING")
 
-    answers = dict(
-        # location="Schwarzsee 2019",
-        location="Guttannen 2021",
-        # location="Gangles 2021",
-        trigger="Manual",
-        # trigger="None",
-        # trigger="Temperature",
-        # trigger="Weather",
-        run="yes",
-    )
-
-    # Get settings for given location and trigger
-    SITE, FOUNTAIN, FOLDER = config(answers["location"], answers["trigger"])
+    # location="Schwarzsee 2019"
+    # location="phortse20"
+    # location = "Guttannen 2020"
+    # location = "Guttannen 2021"
+    location = "Guttannen 2022"
+    # location = "Gangles 2021"
 
     # Initialise icestupa object
-    icestupa = Icestupa(answers["location"], answers["trigger"])
+    icestupa = Icestupa(location)
     icestupa.read_output()
-    # icestupa.df = icestupa.df.set_index("When").resample("H").mean().reset_index()
-    print(icestupa.df['DroneV'].corr(icestupa.df['iceV']))
-    print(icestupa.df['cam_temp'].corr(icestupa.df['T_s']))
-    print(((icestupa.df.DroneV - icestupa.df.iceV) ** 2).mean() ** .5)
+    CONSTANTS, SITE, FOLDER = config(location)
 
-    print(icestupa.df[['When', 'cam_temp']].loc[icestupa.df.cam_temp>0])
-    pp = PdfPages(FOLDER["output"] + "correlations" + ".pdf")
+    # print(icestupa.df['Qs_meas'].corr(icestupa.df['Qs']))
+    # print(icestupa.df['cam_temp'].corr(icestupa.df['T_s']))
+    # print(((icestupa.df.DroneV - icestupa.df.iceV) ** 2).mean() ** .5)
+
+    # print(icestupa.df[['When', 'cam_temp']].loc[icestupa.df.cam_temp>0])
+
     fig = plt.figure()
 
     ax1 = fig.add_subplot(111)
-    ax1.scatter(icestupa.df.T_s, icestupa.df.cam_temp, s=2)
-    ax1.set_xlabel("Modelled Temp")
-    ax1.set_ylabel("Measured Temp")
+    ax1.scatter(icestupa.df.Qs, -icestupa.df.Qs_meas, s=2)
+    ax1.set_xlabel("Modelled Qs")
+    ax1.set_ylabel("Measured Qs")
     ax1.grid()
 
     lims = [
@@ -70,6 +60,9 @@ if __name__ == "__main__":
     ax1.set_ylim(lims)
     # format the ticks
 
-    pp.savefig(bbox_inches="tight")
+    plt.savefig(
+        FOLDER['fig'] + "correlate_Qs.jpg",
+        bbox_inches="tight",
+        dpi=300,
+    )
     plt.clf()
-    pp.close()
