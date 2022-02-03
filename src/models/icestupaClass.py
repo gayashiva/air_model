@@ -184,7 +184,7 @@ class Icestupa:
             "M_ppt",
             "M_dep",
             "M_water",
-            "M_runoff",
+            "M_waste",
             "M_sub",
             "M_ice",
         ]
