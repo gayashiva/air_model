@@ -187,6 +187,9 @@ class Icestupa:
             "M_waste",
             "M_sub",
             "M_ice",
+            "last_hour",
+            "R_F",
+            "D_F",
         ]
         iceV_max = round(self.df["iceV"].max(), 1)
         M_input = round(self.df["input"].iloc[-1], 1)
@@ -203,6 +206,10 @@ class Icestupa:
         M_sub = self.df["vapour"].iloc[-1]
         M_ice = self.df["ice"].iloc[-1] - self.V_dome * self.RHO_I
         last_hour = self.df.shape[0]
+        R_F = round(self.R_F, 0)
+        D_F = round(self.D_F, 0)
+
+        # For web app
 
         for variable in results:
             results_dict[variable] = int(eval(variable))
