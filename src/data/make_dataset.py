@@ -27,6 +27,7 @@ from src.data.field import get_field
 from src.data.era5 import get_era5
 from src.data.meteoswiss import get_meteoswiss
 from src.plots.data import plot_input
+from src.utils import setup_logger
 
 def linreg(X, Y):
     mask = ~np.isnan(X) & ~np.isnan(Y)
@@ -37,7 +38,7 @@ def linreg(X, Y):
 if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
-    logger.setLevel("ERROR")
+    logger.setLevel("INFO")
 
     # locations = ["gangles21", "guttannen20", "guttannen21"]
     locations = ["guttannen22"]
@@ -107,7 +108,7 @@ if __name__ == "__main__":
                 Y = df[column].values.reshape(-1, 1)
                 X = df_ERA5[column].values.reshape(-1, 1)
                 slope, intercept, r_value = linreg(X, Y)
-                print(f"Correlation of {column} in ERA5 is {r_value} at {location}")
+                logger.info(f"Correlation of {column} in ERA5 is {r_value} at {location}")
                 df_ERA5[column] = slope * df_ERA5[column] + intercept
                 df_ERA5_full[column] = slope * df_ERA5_full[column] + intercept
                 if column in ["wind"]:
@@ -205,11 +206,18 @@ if __name__ == "__main__":
 
             
         if df_out.isna().values.any():
-            print(df_out[cols].isna().sum())
-            for column in cols:
-                if df_out[column].isna().sum() > 0 and column not in ["missing_type"]:
-                    logger.warning(" Null values interpolated in %s" % column)
-                    df_out.loc[:, column] = df_out[column].interpolate()
+            logger.warning(df_out[cols].isna().sum())
+            df = df.interpolate(method='linear', limit_direction='forward', axis=0)
+            df_out.loc[df_out.wind.isna(), "wind"] = 0
+            df_out.loc[df_out.ppt.isna(), "ppt"] = 0
+            if df_out.isna().values.any():
+                logger.error(df_out[cols].isna().sum())
+            # for column in cols:
+            #     if df_out[column].isna().sum() > 0 and column not in ["missing_type"]:
+            #         logger.warning(" Null values interpolated in %s" % column)
+            #         df_out.loc[:,column] = df_out[column].interpolate()
+                    # print(df_out.loc[df_out[column]==np.NaN, column])
+                    # df_out.loc[df_out[column]==np.NaN, column] = 0
 
         df_out = df_out.round(3)
         if len(df_out[df_out.index.duplicated()]):

@@ -22,11 +22,13 @@ def config(location="guttannen21"):
 
         SITE = dict(
             name="guttannen22",
+            spray="auto",
             start_date=datetime(2021, 12, 3, 8),
             # end_date=datetime(2021, 5, 10, 1),
             expiry_date=datetime(2022, 1, 27),
             fountain_off_date=datetime(2022, 1, 27),
             # R_F=5.57,  # Fountain mean discharge
+            D_F=7.5,  # Fountain mean discharge
             utc=2,
             alt=1047.6,
             latitude=46.65549,
