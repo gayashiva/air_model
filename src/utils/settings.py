@@ -38,7 +38,7 @@ def config(location="guttannen21"):
             # perimeter=35, # on Jan 28
 
             # Calibrated values
-            DX=45e-03,  # Surface layer thickness [m]
+            # DX=45e-03,  # Surface layer thickness [m]
         )
 
         f_heights = [

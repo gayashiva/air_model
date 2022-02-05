@@ -76,10 +76,12 @@ if __name__ == "__main__":
 
     CONSTANTS, SITE, FOLDER = config(location)
 
-    icestupa = Icestupa(location)
-    icestupa.read_output()
+    # icestupa = Icestupa(location)
+    # icestupa.read_output()
+    # df_in = icestupa.df
 
-    df_in = icestupa.df
+    df_in = pd.read_hdf(FOLDER["output"] + "output" + ".h5", "df")
+
     (
         input_cols,
         input_vars,
@@ -92,8 +94,6 @@ if __name__ == "__main__":
     # df_in = df_in[df_in.columns.drop(list(df_in.filter(regex="Unnamed")))]
     # df_in = df_in.set_index("time")
     # df = df_in
-    input_folder = os.path.join(dirname, "data/" + SITE["name"] + "/interim/")
-    output_folder = os.path.join(dirname, "data/" + SITE["name"] + "/processed/")
     row1_1, row1_2 = st.columns((2, 5))
 
     with row1_1:
@@ -214,46 +214,46 @@ if __name__ == "__main__":
         )
 
     with row3_1:
-        mean_freeze_rate = icestupa.df[
-            icestupa.df.Discharge != 0
-        ].fountain_froze.mean() / (icestupa.DT / 60)
-        fountain_duration = icestupa.df[icestupa.df.Discharge != 0].shape[0]
-        mean_melt_rate = icestupa.df.melted.mean() / (icestupa.DT / 60)
-        st.markdown(
-            """
-        | Fountain | Estimation |
-        | --- | --- |
-        | Spray Radius | %.1f $m$|
-        | Water sprayed| %i $m^3$ |
-        | Mean discharge rate | %i $l/min$ |
-        | Mean freeze rate | %.1f $l/min$ |
-        | Mean melt rate | %.1f $l/min$ |
-        | Runtime | %s $hours$ |
-        """
-            % (
-                icestupa.R_F,
-                icestupa.M_F / 1000,
-                icestupa.D_F,
-                mean_freeze_rate,
-                mean_melt_rate,
-                fountain_duration,
-            )
-        )
+        mean_freeze_rate = df_in[
+            df_in.Discharge != 0
+        ].fountain_froze.mean() / (CONSTANTS["DT"] / 60)
+        fountain_duration = df_in[df_in.Discharge != 0].shape[0]
+        mean_melt_rate = df_in.melted.mean() / (CONSTANTS["DT"] / 60)
+        # st.markdown(
+        #     """
+        # | Fountain | Estimation |
+        # | --- | --- |
+        # | Spray Radius | %.1f $m$|
+        # | Water sprayed| %i $m^3$ |
+        # | Mean discharge rate | %i $l/min$ |
+        # | Mean freeze rate | %.1f $l/min$ |
+        # | Mean melt rate | %.1f $l/min$ |
+        # | Runtime | %s $hours$ |
+        # """
+        #     % (
+        #         icestupa.R_F,
+        #         icestupa.M_F / 1000,
+        #         icestupa.D_F,
+        #         mean_freeze_rate,
+        #         mean_melt_rate,
+        #         fountain_duration,
+        #     )
+        # )
 
     with row3_2:
-        if icestupa.name == "gangles21":
+        if location == "gangles21":
             SITE["end_date"] = datetime(2021, 6, 30)
             diff = SITE["end_date"] - SITE["start_date"]
             days, seconds = diff.days, diff.seconds
             icestupa.total_hours = days * 24 + seconds // 3600
         # perf = (icestupa.total_hours - icestupa.last_hour)/24
-        if icestupa.name in ["gangles21", "guttannen21", "guttannen20"]:
-            df_c = pd.read_hdf(icestupa.input + "input.h5", "df_c")
+        if location in ["gangles21", "guttannen21", "guttannen20"]:
+            df_c = pd.read_hdf(FOLDER["input"] + "input.h5", "df_c")
             df_c = df_c.set_index("time")
-            icestupa.df = icestupa.df.set_index("time")
+            df_in = df_in.set_index("time")
             tol = pd.Timedelta("1T")
             df = pd.merge_asof(
-                left=icestupa.df,
+                left=df_in,
                 right=df_c,
                 right_index=True,
                 left_index=True,
@@ -269,7 +269,7 @@ if __name__ == "__main__":
                     % (df[df.DroneV.notnull()].shape[0])
                 )
                 df = pd.merge_asof(
-                    left=icestupa.df,
+                    left=df_in,
                     right=df_c,
                     right_index=True,
                     left_index=True,
@@ -282,25 +282,25 @@ if __name__ == "__main__":
             rmse_A = ((df.Area - df.A_cone) ** 2).mean() ** 0.5/ df.A_cone.max()
             corr_V = df["DroneV"].corr(df["iceV"])
 
-        st.markdown(
-            """
-        | Icestupa| Estimation |
-        | --- | --- |
-        | Max Ice Volume | %i $m^{3}$|
-        | Meltwater released | %i $tons$ |
-        | Vapour loss | %i $tons$ |
-        | Net Water loss | %i $percent$ |
-        | Melt-out date | %s |
-        """
-            % (
-                icestupa.iceV_max,
-                icestupa.M_water / 1000,
-                icestupa.M_sub / 1000,
-                (icestupa.M_waste + icestupa.M_sub) / icestupa.M_input * 100,
-                SITE["expiry_date"].strftime("%b %d"),
-                # rmse_V / icestupa.df["iceV"].max() * 100,
-            )
-        )
+        # st.markdown(
+        #     """
+        # | Icestupa| Estimation |
+        # | --- | --- |
+        # | Max Ice Volume | %i $m^{3}$|
+        # | Meltwater released | %i $tons$ |
+        # | Vapour loss | %i $tons$ |
+        # | Net Water loss | %i $percent$ |
+        # | Melt-out date | %s |
+        # """
+        #     % (
+        #         icestupa.iceV_max,
+        #         icestupa.M_water / 1000,
+        #         icestupa.M_sub / 1000,
+        #         (icestupa.M_waste + icestupa.M_sub) / icestupa.M_input * 100,
+        #         SITE["expiry_date"].strftime("%b %d"),
+        #         # rmse_V / df_in["iceV"].max() * 100,
+        #     )
+        # )
 
     st.markdown("---")
     if not (display):
@@ -308,10 +308,10 @@ if __name__ == "__main__":
     else:
         if "Validation" in display:
 
-            if icestupa.name in ["guttannen21", "guttannen20"]:
-                df_cam = pd.read_hdf(icestupa.input + "input.h5", "df_cam")
+            if location in ["guttannen21", "guttannen20"]:
+                df_cam = pd.read_hdf(FOLDER["input"] + "input.h5", "df_cam")
                 df = pd.merge_asof(
-                    left=icestupa.df,
+                    left=df_in,
                     right=df_cam,
                     right_index=True,
                     left_index=True,
@@ -325,9 +325,9 @@ if __name__ == "__main__":
                 corr_T = 0
 
             st.write("## Validation")
-            path = icestupa.fig + "Vol_Validation.jpg"
+            path = FOLDER["fig"] + "Vol_Validation.jpg"
             st.image(path)
-            if icestupa.name in ["gangles21", "guttannen21", "guttannen20"]:
+            if location in ["gangles21", "guttannen21", "guttannen20"]:
                 st.write(
                     """
                 Correlation of modelled with measured ice volume was **%.2f** and RMSE vol was **%.0f** $m^3$
@@ -365,7 +365,7 @@ if __name__ == "__main__":
 
         if "Data Overview" in display:
             st.write("## Input variables")
-            st.image(icestupa.fig + "Model_Input.jpg")
+            st.image(FOLDER["fig"] + "Model_Input.jpg")
             st.write(
                 """
             Measurements at the AWS of %s were used as main model input
@@ -373,10 +373,10 @@ if __name__ == "__main__":
             were obtained from ERA5 reanalysis dataset. Several data gaps
             and errors were also filled from the ERA5 dataset (shaded regions).  
             """
-                % (icestupa.name)
+                % (location)
             )
             st.write("## Output variables")
-            st.image(icestupa.fig + "Model_Output.jpg")
+            st.image(FOLDER["fig"] + "Model_Output.jpg")
             st.write(
                 """
             (a) Fountain discharge (b) energy flux components, (c) mass flux components (d)
@@ -407,9 +407,9 @@ if __name__ == "__main__":
                     st.header("%s" % (meta["name"] + " " + meta["units"]))
                     row4_1, row4_2 = st.columns((2, 5))
                     with row4_1:
-                        st.write(icestupa.df[v].describe())
+                        st.write(df_in[v].describe())
                     with row4_2:
-                        st.line_chart(icestupa.df[v], use_container_width=True)
+                        st.line_chart(df_in[v], use_container_width=True)
 
         if "Output" in display:
             st.write("## Output variables")
@@ -431,9 +431,9 @@ if __name__ == "__main__":
                     st.header("%s" % (meta["name"] + " " + meta["units"]))
                     row5_1, row5_2 = st.columns((2, 5))
                     with row5_1:
-                        st.write(icestupa.df[v].describe())
+                        st.write(df_in[v].describe())
                     with row5_2:
-                        st.line_chart(icestupa.df[v], use_container_width=True)
+                        st.line_chart(df_in[v], use_container_width=True)
 
         if "Derived" in display:
             st.write("## Derived variables")
@@ -455,6 +455,6 @@ if __name__ == "__main__":
                     st.header("%s" % (meta["name"] + " " + meta["units"]))
                     row6_1, row6_2 = st.columns((2, 5))
                     with row6_1:
-                        st.write(icestupa.df[v].describe())
+                        st.write(df_in[v].describe())
                     with row6_2:
-                        st.line_chart(icestupa.df[v], use_container_width=True)
+                        st.line_chart(df_in[v], use_container_width=True)
