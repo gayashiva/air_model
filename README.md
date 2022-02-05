@@ -1,5 +1,5 @@
 <p align="center">
-<a href="url"><img align="center" alt="screen recorder" src="https://github.com/Gayashiva/air_model/blob/dev/src/web/logos/AIR_logo_circle.png" align="left" height="148" width="148" ></a>
+<a href="url"><img align="center" alt="screen recorder" src="https://github.com/gayashiva/air_app/blob/master/logos/AIR_logo.png" align="left" height="148" width="148" ></a>
 </a>
 </p>
 <p align="center">
