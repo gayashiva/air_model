@@ -206,8 +206,8 @@ class Icestupa:
         M_sub = self.df["vapour"].iloc[-1]
         M_ice = self.df["ice"].iloc[-1] - self.V_dome * self.RHO_I
         last_hour = self.df.shape[0]
-        R_F = round(self.R_F, 0)
-        D_F = round(self.D_F, 0)
+        R_F = round(self.R_F, 1)
+        D_F = round(self.D_F, 1)
 
         # For web app
 
@@ -420,6 +420,7 @@ class Icestupa:
                     self.df.loc[i, "Ql"] * self.DT * self.df.loc[i, "A_cone"] / self.L_S
                 )
 
+            # Precipitation
             self.df.loc[i, "snow2ice"] = (
                 self.RHO_W
                 * self.df.loc[i, "ppt"]
@@ -429,7 +430,7 @@ class Icestupa:
             )
 
             # Precipitation not from snow height and possible rain
-            if "snow_h" not in list(self.df.columns) and self.df.loc[i, "temp"] < self.T_PPT:
+            if "snow_h" not in list(self.df.columns) and self.df.loc[i, "temp"] > self.T_PPT:
                 self.df.loc[i, "snow2ice"] = 0
 
             """ Quantities of all phases """
