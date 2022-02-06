@@ -19,7 +19,9 @@ def get_area(self, i):
         EB=0
 
     # s = self.df.loc[i-1, "s_cone"]
-    s = 0.5
+    # print(i, self.df.loc[i-1, "dr"])
+    # s = self.DX/self.df.loc[i-1, "dr"]
+    s = 0
     a = math.pi/3* ( 2 * s * self.df.loc[i - 1, "r_cone"] + self.df.loc[i - 1, "h_cone"])
     b = math.pi/3* ( s * self.df.loc[i - 1, "r_cone"] ** 2 + 2 * self.df.loc[i - 1, "r_cone"] * self.df.loc[i - 1, "h_cone"])
     c = - (self.df.loc[i, "iceV"] - self.df.loc[i-1, "iceV"])

@@ -9,7 +9,7 @@ import sys, os, math, json
 import numpy as np
 import logging
 import pytz
-from stqdm import stqdm
+from tqdm import tqdm
 from codetiming import Timer
 from datetime import timedelta
 
@@ -64,7 +64,7 @@ class Icestupa:
     from src.models.methods._self_attributes import self_attributes
     from src.models.methods._albedo import get_albedo
     from src.models.methods._discharge import get_discharge
-    from src.models.methods._area import get_area
+    from src.models.methods._area_new import get_area
     from src.models.methods._temp import get_temp, test_get_temp
     from src.models.methods._energy import get_energy, test_get_energy
     from src.models.methods._figures import summary_figures
@@ -98,7 +98,7 @@ class Icestupa:
                 "Total cloud cover calculated from with diffuse fraction %s" % self.tcc
             )
 
-        for row in stqdm(
+        for row in tqdm(
             self.df[1:].itertuples(),
             total=self.df.shape[0],
             desc="Creating AIR input...",
@@ -317,6 +317,7 @@ class Icestupa:
         # Initialise first model time step
         self.df.loc[0, "h_cone"] = self.h_i
         self.df.loc[0, "r_cone"] = self.R_F
+        self.df.loc[0, "dr"] = self.DX
         self.df.loc[0, "s_cone"] = self.df.loc[0, "h_cone"] / self.df.loc[0, "r_cone"]
         V_initial = math.pi / 3 * self.R_F ** 2 * self.h_i
         self.df.loc[1, "ice"] = V_initial * self.RHO_I
@@ -334,7 +335,7 @@ class Icestupa:
             )
         )
 
-        t = stqdm(
+        t = tqdm(
             self.df[1:-1].itertuples(),
             total=self.total_hours,
         )

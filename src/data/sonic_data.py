@@ -7,7 +7,6 @@ import numpy as np
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from matplotlib.backends.backend_pdf import PdfPages
 from pandas.plotting import register_matplotlib_converters
 import math
 import time
