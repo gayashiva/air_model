@@ -153,13 +153,14 @@ if __name__ == "__main__":
             autoDis(**param_values, time=6, temp=params["temp"][0], rh=params["rh"][0], v=params["wind"][1]+ 1),
         )
 
+        print(param_values)
         print(
             "y = %.5f * temp + %.5f * rh + %.5f * wind + %.5f + Gaussian(time; Amplitude = %.5f, center = %.5f, sigma = %.5f) "
             % (
-                a,
-                b,
-                c,
-                d,
+                param_values["a"],
+                param_values["b"],
+                param_values["c"],
+                param_values["d"],
                 param_values["amplitude"],
                 param_values["center"],
                 param_values["sigma"],
