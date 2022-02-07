@@ -1,14 +1,14 @@
 {
     "D_F": 2,
     "M_F": 70972,
-    "M_dep": 2157,
-    "M_ice": 182646,
-    "M_input": 270503,
-    "M_ppt": 185571,
-    "M_sub": 3924,
-    "M_waste": 29080,
-    "M_water": 49271,
+    "M_dep": 271,
+    "M_ice": 31940,
+    "M_input": 111603,
+    "M_ppt": 28557,
+    "M_sub": 413,
+    "M_waste": 68130,
+    "M_water": 5538,
     "R_F": 3,
-    "iceV_max": 217,
+    "iceV_max": 41,
     "last_hour": 1313
 }

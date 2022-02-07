@@ -64,7 +64,7 @@ class Icestupa:
     from src.models.methods._self_attributes import self_attributes
     from src.models.methods._albedo import get_albedo
     from src.models.methods._discharge import get_discharge
-    from src.models.methods._area_new import get_area
+    from src.models.methods._area import get_area
     from src.models.methods._temp import get_temp, test_get_temp
     from src.models.methods._energy import get_energy, test_get_energy
     from src.models.methods._figures import summary_figures

@@ -75,7 +75,7 @@ def get_era5(location="schwarzsee19"):
         df_in3 = pd.concat([df_in2, df_in3])
         df_in3 = df_in3.reset_index()
 
-    if location in ["guttannen22"]:
+    if location in ["guttannen22_auto"]:
         df_in3 = pd.read_csv(
             FOLDER["raw"] + "era5_2022.csv",
             # "../ERA5/outputs/" + location[:-2] + "_2022.csv",

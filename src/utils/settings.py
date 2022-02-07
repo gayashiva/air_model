@@ -49,7 +49,7 @@ def config(location="guttannen21"):
 
         SITE = dict(
             name="guttannen22_man",
-            start_date=datetime(2021, 12, 3, 8),
+            start_date=datetime(2021, 12, 8, 14),
             # end_date=datetime(2021, 5, 10, 1),
             expiry_date=datetime(2022, 1, 27),
             fountain_off_date=datetime(2022, 1, 27),
@@ -59,6 +59,7 @@ def config(location="guttannen21"):
             alt=1047.6,
             latitude=46.65549,
             longitude=8.29149,
+            #TODO correct snow height
             h_i = 0.13, #Initialise ice height at start
             # perimeter=35, # on Jan 28
 

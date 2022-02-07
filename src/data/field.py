@@ -25,7 +25,7 @@ from src.utils.settings import config
 
 def get_field(location="schwarzsee19"):
     CONSTANTS, SITE, FOLDER = config(location)
-    if location == "guttannen22":
+    if location == "guttannen22_auto":
         cols_old = [
             "TIMESTAMP",
             "T_probe_Avg",
@@ -125,17 +125,18 @@ def get_field(location="schwarzsee19"):
 
         fig, ax = plt.subplots()
         x = df.time
-        y = df["T_ice_6"]
-        y2 = df["T_ice_4"]
+        y = df["snow_h"]
+        # y = df["T_ice_6"]
+        # y2 = df["T_ice_4"]
         ax.plot(x,y)
-        ax.plot(x,y2)
+        # ax.plot(x,y2)
         ax.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
         plt.savefig(
-            # FOLDER['fig'] + "snow.jpg",
-            FOLDER['fig'] + "T_ice_6.jpg",
+            FOLDER['fig'] + "snow.jpg",
+            # FOLDER['fig'] + "T_ice_6.jpg",
             bbox_inches="tight",
             dpi=300,
         )

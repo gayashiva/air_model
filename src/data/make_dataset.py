@@ -41,7 +41,7 @@ if __name__ == "__main__":
     logger.setLevel("INFO")
 
     # locations = ["gangles21", "guttannen20", "guttannen21"]
-    locations = ["guttannen21"]
+    locations = ["guttannen22_auto"]
 
     for location in locations:
         CONSTANTS, SITE, FOLDER = config(location)
@@ -56,7 +56,7 @@ if __name__ == "__main__":
             logger.info(df.missing_type.unique())
         else:
 
-            if location in ["schwarzsee19", "guttannen22"]:
+            if location in ["schwarzsee19", "guttannen22_auto"]:
                 df = get_field(location)
 
             if location in ["guttannen21", "guttannen20"]:
@@ -73,7 +73,7 @@ if __name__ == "__main__":
             mask &= df.wind == 0
             df.wind = df.wind.mask(mask)
 
-            if location in ["guttannen22"]:
+            if location in ["guttannen22_auto"]:
                 df_swiss = get_meteoswiss(location)
                 df_swiss = df_swiss.set_index("time")
                 df_swiss = df_swiss[SITE["start_date"] : SITE["expiry_date"]]
@@ -98,7 +98,7 @@ if __name__ == "__main__":
             df_ERA5_full = df_ERA5_full.reset_index()
 
             # Fit ERA5 to field data
-            if SITE["name"] in ["guttannen21", "guttannen20", "guttannen22"]:
+            if SITE["name"] in ["guttannen21", "guttannen20", "guttannen22_auto"]:
                 fit_list = ["temp", "RH", "wind"]
 
             if SITE["name"] in ["schwarzsee19"]:
@@ -184,7 +184,7 @@ if __name__ == "__main__":
                 "LW_in",
             ]
 
-        if SITE["name"] in ["guttannen22"]:
+        if SITE["name"] in ["guttannen22_auto"]:
             cols = [
                 "time",
                 "temp",
