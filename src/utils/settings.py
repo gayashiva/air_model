@@ -18,11 +18,10 @@ sys.path.append(dirname)
 
 def config(location="guttannen21"):
 
-    if location == "Guttannen 2022" or location == "guttannen22":
+    if location == "Guttannen 2022 Auto" or location == "guttannen22_auto":
 
         SITE = dict(
-            name="guttannen22",
-            spray="auto",
+            name="guttannen22_auto",
             start_date=datetime(2021, 12, 3, 8),
             # end_date=datetime(2021, 5, 10, 1),
             expiry_date=datetime(2022, 1, 27),
@@ -33,8 +32,7 @@ def config(location="guttannen21"):
             alt=1047.6,
             latitude=46.65549,
             longitude=8.29149,
-            # h_i = 0.13, #Initialise ice height at start
-            h_i = 3, #Initialise ice height at start
+            h_i = 0.13, #Initialise ice height at start
             # h_f=3,
             # perimeter=35, # on Jan 28
 
@@ -47,6 +45,33 @@ def config(location="guttannen21"):
             {"When": datetime(2022, 12, 23, 16), "h_f": 4},
         ]
 
+    if location == "Guttannen 2022 Manual" or location == "guttannen22_man":
+
+        SITE = dict(
+            name="guttannen22_man",
+            start_date=datetime(2021, 12, 3, 8),
+            # end_date=datetime(2021, 5, 10, 1),
+            expiry_date=datetime(2022, 1, 27),
+            fountain_off_date=datetime(2022, 1, 27),
+            # R_F=5.57,  # Fountain mean discharge
+            D_F=7.5,  # Fountain mean discharge
+            utc=2,
+            alt=1047.6,
+            latitude=46.65549,
+            longitude=8.29149,
+            h_i = 0.13, #Initialise ice height at start
+            # perimeter=35, # on Jan 28
+
+            # Calibrated values
+            # DX=45e-03,  # Surface layer thickness [m]
+        )
+
+        f_heights = [
+            {"When": SITE["start_date"], "h_f": 3},
+            {"When": datetime(2022, 12, 23, 16), "h_f": 4},
+        ]
+
+
     if location == "Guttannen 2021" or location == "guttannen21":
 
         SITE = dict(
@@ -56,7 +81,7 @@ def config(location="guttannen21"):
             expiry_date=datetime(2021, 5, 10, 1),
             fountain_off_date=datetime(2021, 2, 20, 10),
             D_F=7.5,  # Fountain mean discharge
-            R_F=4.3,  # Fountain mean discharge
+            # R_F=4.3,  # Fountain mean discharge
             utc=2,
             alt=1047.6,
             latitude=46.65549,

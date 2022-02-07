@@ -35,7 +35,7 @@ def self_attributes(self):
 
     if self.name in ["guttannen21", "guttannen20", "gangles21"]:
         self.V_dome = df_c.loc[0, "DroneV"]
-    elif self.name in ["guttannen22"]:
+    elif self.name in ["guttannen22_auto"]:
         self.V_dome = math.pi * self.R_F**2 * self.h_i 
         logger.warning("Dome Volume initialised with ice height %0.1f" % self.h_i)
     else:
@@ -46,16 +46,16 @@ def self_attributes(self):
     # Get initial height
     self.h_i = self.DX + 3 * self.V_dome / (math.pi * self.R_F ** 2)
 
-    if self.name in ["guttannen21", "guttannen22", "guttannen20", "gangles21"]:
-        df_c.to_hdf(
-            self.input + "input.h5",
-            key="df_c",
-            mode="w",
-        )
+    # if self.name in ["guttannen21", "guttannen22_auto", "guttannen22_man", "guttannen20", "gangles21"]:
+    df_c.to_hdf(
+        self.input + "input.h5",
+        key="df_c",
+        mode="w",
+    )
 
-        if self.name in ["guttannen21", "guttannen20"]:
-            df_cam.to_hdf(
-                self.input + "input.h5",
-                key="df_cam",
-                mode="a",
-            )
+    if self.name in ["guttannen21", "guttannen20"]:
+        df_cam.to_hdf(
+            self.input + "input.h5",
+            key="df_cam",
+            mode="a",
+        )

@@ -80,24 +80,24 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         self.df["Discharge"] = self.D_F
         logger.info("Discharge constant")
 
-    if self.name in ["guttannen22"]:
-        if self.spray == "manual":
-            self.df["Discharge"] = self.D_F
-            logger.warning("Manual Discharge used")
-        if self.spray == "auto":
-            df_f = pd.read_csv(
-                os.path.join("data/" + self.name + "/interim/")
-                + "discharge.csv",
-                sep=",",
-                parse_dates=["time"],
-            )
-            df_f = df_f.set_index("time")
-            self.df = self.df.set_index("time")
-            self.df["Discharge"] = df_f["Discharge"]
-            self.df = self.df.reset_index()
-            self.df= self.df.replace(np.NaN, 0)
-            self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
-            logger.warning("Auto Discharge used")
+    if self.name in ["guttannen22_auto"]:
+        df_f = pd.read_csv(
+            os.path.join("data/" + self.name + "/interim/")
+            + "discharge.csv",
+            sep=",",
+            parse_dates=["time"],
+        )
+        df_f = df_f.set_index("time")
+        self.df = self.df.set_index("time")
+        self.df["Discharge"] = df_f["Discharge"]
+        self.df = self.df.reset_index()
+        self.df= self.df.replace(np.NaN, 0)
+        self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
+        logger.warning("Auto Discharge used")
+
+    if self.name in ["guttannen22_man"]:
+        self.df["Discharge"] = self.D_F
+        logger.warning("Manual Discharge used")
 
     if self.name in ["phortse20"]:
         self.df["Discharge"] = self.D_F

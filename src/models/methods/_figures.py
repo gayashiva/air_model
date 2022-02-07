@@ -208,42 +208,42 @@ def summary_figures(self):
     plt.clf()
 
     """Ice Volume Fig"""
-    if self.name in ["guttannen21", "guttannen20", "gangles21", "guttannen22"]:
-        df_c = pd.read_hdf(self.input + "input.h5", "df_c")
-        # df_c = df_c.rename(columns={"When": "time"})
+    # if self.name in ["guttannen21", "guttannen20", "gangles21", "guttannen22"]:
+    df_c = pd.read_hdf(self.input + "input.h5", "df_c")
+    # df_c = df_c.rename(columns={"When": "time"})
 
-        df_c = df_c[["time", "DroneV", "DroneVError"]]
-        if self.name in ["guttannen21", "guttannen20", "gangles21"]:
-            df_c = df_c[1:]
+    df_c = df_c[["time", "DroneV", "DroneVError"]]
+    if self.name in ["guttannen21", "guttannen20", "gangles21"]:
+        df_c = df_c[1:]
 
+    tol = pd.Timedelta("15T")
+    df_c = df_c.set_index("time")
+    self.df = self.df.set_index("time")
+    df_c = pd.merge_asof(
+        left=self.df,
+        right=df_c,
+        right_index=True,
+        left_index=True,
+        direction="nearest",
+        tolerance=tol,
+    )
+    df_c = df_c[["DroneV", "DroneVError", "iceV"]]
+    self.df = self.df.reset_index()
+
+    if self.name in ["guttannen21", "guttannen20"]:
+        df_cam = pd.read_hdf(self.input + "input.h5", "df_cam")
         tol = pd.Timedelta("15T")
-        df_c = df_c.set_index("time")
         self.df = self.df.set_index("time")
-        df_c = pd.merge_asof(
+        df_cam = pd.merge_asof(
             left=self.df,
-            right=df_c,
+            right=df_cam,
             right_index=True,
             left_index=True,
             direction="nearest",
             tolerance=tol,
         )
-        df_c = df_c[["DroneV", "DroneVError", "iceV"]]
+        df_cam = df_cam[["cam_temp", "T_s", "T_bulk"]]
         self.df = self.df.reset_index()
-
-        if self.name in ["guttannen21", "guttannen20"]:
-            df_cam = pd.read_hdf(self.input + "input.h5", "df_cam")
-            tol = pd.Timedelta("15T")
-            self.df = self.df.set_index("time")
-            df_cam = pd.merge_asof(
-                left=self.df,
-                right=df_cam,
-                right_index=True,
-                left_index=True,
-                direction="nearest",
-                tolerance=tol,
-            )
-            df_cam = df_cam[["cam_temp", "T_s", "T_bulk"]]
-            self.df = self.df.reset_index()
 
     fig, ax = plt.subplots()
     x = self.df.time
@@ -256,12 +256,12 @@ def summary_figures(self):
         linewidth=1,
         color=CB91_Blue,
     )
-    if self.name in ["guttannen21", "guttannen22", "guttannen20", "schwarzsee19", "gangles21"]:
-        y2 = df_c.DroneV
-        yerr = df_c.DroneVError
-        ax.fill_between(x, y1=self.V_dome, y2=0, color=grey, label="Dome Volume")
-        ax.scatter(x, y2, color=CB91_Green, label="Measured Volume")
-        ax.errorbar(x, y2, yerr=df_c.DroneVError, color=CB91_Green)
+    # if self.name in ["guttannen21", "guttannen22", "guttannen20", "schwarzsee19", "gangles21"]:
+    y2 = df_c.DroneV
+    yerr = df_c.DroneVError
+    ax.fill_between(x, y1=self.V_dome, y2=0, color=grey, label="Dome Volume")
+    ax.scatter(x, y2, color=CB91_Green, label="Measured Volume")
+    ax.errorbar(x, y2, yerr=df_c.DroneVError, color=CB91_Green)
 
     ax.set_ylim(bottom=0)
     plt.legend()

@@ -26,7 +26,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("INFO")
 
-    location="guttannen22"
+    location="guttannen22_man"
     CONSTANTS, SITE, FOLDER = config(location)
 
     dfr = pd.read_csv(
@@ -35,7 +35,8 @@ if __name__ == "__main__":
     )
     dfr = dfr.iloc[::2]
 
-    dfr["time"] = pd.to_datetime(dfr["Name"], format="%d-%m-%y")
+    dfr["time"] = pd.to_datetime(dfr["Name"], format="%b_%d_%y")
+    print(dfr)
 
     dfr["rad"] = round(dfr["Terrain 3D Length  (m)"].astype(float)/(2*math.pi),2)
     dfr = dfr.set_index("time")
@@ -43,10 +44,13 @@ if __name__ == "__main__":
 
     dfv = pd.read_csv(
         FOLDER["raw"] + "drone_vol.csv",
+        # names=col_names,
+        # skiprows = [3,5],
         sep="\t",
     )
     dfv = dfv.iloc[::2]
-    dfv["time"] = pd.to_datetime(dfv["Name"], format="%d-%m-%y")
+    print(dfv)
+    dfv["time"] = pd.to_datetime(dfv["Name"], format="%b_%d_%y")
     dfv["DroneV"] = round(dfv["Cut Volume  (m3)"].astype(float),2)
     dfv["DroneVError"] = dfv["DroneV"] * 0.2
     dfv = dfv.set_index("time")

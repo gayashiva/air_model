@@ -158,18 +158,18 @@ class Icestupa:
                     self.df.loc[:, column] = self.df[column].interpolate()
 
         # TODO Correct the below line
-        if self.name in ["guttannen21", "guttannen20", "guttannen22",  "gangles21"]:
-            self.df.to_hdf(
-                self.input + "input.h5",
-                key="df",
-                mode="a",
-            )
-        else:
-            self.df.to_hdf(
-                self.input + "input.h5",
-                key="df",
-                mode="w",
-            )
+        # if self.name in ["guttannen21", "guttannen20", "guttannen22_auto", "guttannen22_man", "gangles21"]:
+        self.df.to_hdf(
+            self.input + "input.h5",
+            key="df",
+            mode="a",
+        )
+        # else:
+        #     self.df.to_hdf(
+        #         self.input + "input.h5",
+        #         key="df",
+        #         mode="w",
+        #     )
         logger.debug(self.df.head())
         logger.debug(self.df.tail())
 
@@ -206,6 +206,7 @@ class Icestupa:
         M_sub = self.df["vapour"].iloc[-1]
         M_ice = self.df["ice"].iloc[-1] - self.V_dome * self.RHO_I
         last_hour = self.df.shape[0]
+        # TODO Correctrounding
         R_F = round(self.R_F, 1)
         D_F = round(self.D_F, 1)
 
@@ -487,4 +488,4 @@ class Icestupa:
                     f" time {self.df.time[i]},iceV {self.df.iceV[i+1]}, mass balance {self.df.j_cone[i]}"
                 )
         # else:
-            # print(self.df.loc[i, "time"], self.df.loc[i, "iceV"])
+        #     print(self.df.loc[i, "time"], self.df.loc[i, "iceV"])
