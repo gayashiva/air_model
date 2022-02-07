@@ -11,6 +11,11 @@ import logging
 import coloredlogs
 import pytz
 
+# Locals
+dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(dirname)
+from src.automate.projectile import get_projectile
+
 # Module logger
 logger = logging.getLogger("__main__")
 logger.propagate = False
@@ -96,8 +101,33 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         logger.warning("Auto Discharge used")
 
     if self.name in ["guttannen22_man"]:
-        self.df["Discharge"] = self.D_F
-        logger.warning("Manual Discharge used")
+        df_f = pd.read_csv(
+            os.path.join("data/" + self.name + "/interim/")
+            + "discharge.csv",
+            sep=",",
+            parse_dates=["time"],
+        )
+        df_f = df_f.set_index("time")
+
+        f_heights = [
+            {"time": self.start_date, "h_f": 3},
+            {"time": datetime(2021, 12, 23, 16), "h_f": 4},
+            {"time": datetime(2022, 1, 3, 16), "h_f": 5},
+        ]
+        df_h = pd.DataFrame(f_heights)
+
+        self.df["Discharge"] = df_f.Discharge.max()
+        dis_old= df_f.Discharge.max()
+        for i in range(1,df_h.shape[0]):
+            dis_new= get_projectile(h_f=df_h.h_f[i], dia=0.006, dis=dis_old, theta_f=60)
+            logger.warning("Manual Discharge used %.1f" % dis_new)
+            self.df.loc[self.df.time > df_h.time[i], "Discharge"] *= dis_new/dis_old
+            dis_old = dis_new
+            # df_h[i]
+        # logger.warning("Manual Discharge used %.1f" % df_f.Discharge.max())
+
+        # self.df["Discharge"] = self.D_F
+        # logger.warning("Manual Discharge used")
 
     if self.name in ["phortse20"]:
         self.df["Discharge"] = self.D_F

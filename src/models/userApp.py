@@ -23,13 +23,13 @@ if __name__ == "__main__":
     logger.setLevel("WARNING")
     # logger.setLevel("INFO")
 
-    test = True
-    # test = False
+    # test = True
+    test = False
 
     # location="Schwarzsee 2019"
     # location = "Guttannen 2020"
-    location = "Guttannen 2021"
-    # location = "Guttannen 2022 Manual"
+    # location = "Guttannen 2021"
+    location = "Guttannen 2022 Manual"
     # location = "Guttannen 2022 Auto"
     # location = "Gangles 2021"
 
@@ -50,25 +50,21 @@ if __name__ == "__main__":
         icestupa.read_output()
         df = icestupa.df
 
-        dfr = pd.read_csv(
-            icestupa.input + 'rad_cam.csv',
-            sep=",",
-        )
 
         fig, ax = plt.subplots()
         x1 = df.time
-        y1 = df.r_cone
-        x2 = dfr.time
-        y2 = dfr.rad
+        y1 = df.Discharge
+        # x2 = dfr.time
+        # y2 = dfr.rad
         ax.plot(x1,y1)
-        ax.scatter(x2,y2)
+        # ax.scatter(x2,y2)
 
         ax.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
         plt.savefig(
-            icestupa.fig + "rad_cam.jpg",
+            icestupa.fig + "discharge.jpg",
             bbox_inches="tight",
         )
         plt.clf()

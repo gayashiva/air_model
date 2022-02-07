@@ -41,8 +41,8 @@ def config(location="guttannen21"):
         )
 
         f_heights = [
-            {"When": SITE["start_date"], "h_f": 3},
-            {"When": datetime(2022, 12, 23, 16), "h_f": 4},
+            {"time": SITE["start_date"], "h_f": 3},
+            {"time": datetime(2022, 12, 23, 16), "h_f": 4},
         ]
 
     if location == "Guttannen 2022 Manual" or location == "guttannen22_man":
@@ -68,8 +68,9 @@ def config(location="guttannen21"):
         )
 
         f_heights = [
-            {"When": SITE["start_date"], "h_f": 3},
-            {"When": datetime(2022, 12, 23, 16), "h_f": 4},
+            {"time": SITE["start_date"], "h_f": 3},
+            {"time": datetime(2022, 12, 23, 16), "h_f": 4},
+            {"time": datetime(2022, 1, 3, 16), "h_f": 5},
         ]
 
 
@@ -122,9 +123,9 @@ def config(location="guttannen21"):
         )
 
         f_heights = [
-            {"When": SITE["start_date"], "h_f": 2.5},
-            {"When": datetime(2020, 1, 24, 12), "h_f": 3.5},
-            {"When": datetime(2020, 2, 5, 19), "h_f": 2.5},
+            {"time": SITE["start_date"], "h_f": 2.5},
+            {"time": datetime(2020, 1, 24, 12), "h_f": 3.5},
+            {"time": datetime(2020, 2, 5, 19), "h_f": 2.5},
         ]
 
     if location == "Gangles 2021" or location == "gangles21":
@@ -150,8 +151,8 @@ def config(location="guttannen21"):
         )
 
         f_heights = [
-            {"When": SITE["start_date"], "h_f": 5},
-            # {"When": datetime(2021, 1, 22, 16), "h_f": 9},
+            {"time": SITE["start_date"], "h_f": 5},
+            # {"time": datetime(2021, 1, 22, 16), "h_f": 9},
         ]
 
     if location == "Schwarzsee 2019" or location == "schwarzsee19":
@@ -172,7 +173,7 @@ def config(location="guttannen21"):
         )
 
         f_heights = [
-            {"When": SITE["start_date"], "h_f": 1.35},
+            {"time": SITE["start_date"], "h_f": 1.35},
         ]
 
     if location == "Phortse 2020" or location == "phortse20":
@@ -193,7 +194,7 @@ def config(location="guttannen21"):
         )
 
         f_heights = [
-            {"When": SITE["start_date"], "h_f": 5},
+            {"time": SITE["start_date"], "h_f": 5},
         ]
 
 
