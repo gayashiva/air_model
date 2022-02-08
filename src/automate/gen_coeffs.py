@@ -7,8 +7,6 @@ import json
 import math
 from datetime import datetime, timedelta
 
-from autoDischarge import TempFreeze, SunMelt
-from projectile import get_projectile
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from lmfit.models import GaussianModel
@@ -20,6 +18,8 @@ sys.path.append(dirname)
 from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
 from src.models.methods.metadata import get_parameter_metadata
+from src.automate.autoDischarge import TempFreeze, SunMelt
+from src.automate.projectile import get_projectile
 
 def line(x, a, b, c, d):
     x1 = x[:, 0]

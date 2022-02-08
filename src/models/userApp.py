@@ -28,15 +28,13 @@ if __name__ == "__main__":
 
     # location="Schwarzsee 2019"
     # location = "Guttannen 2020"
-    location = "Guttannen 2021"
-    # location = "Guttannen 2022"
-    # location = "Guttannen 2022"
+    # location = "Guttannen 2021"
+    location = "Guttannen 2022"
     # location = "Gangles 2021"
 
     # Initialise icestupa object
     icestupa = Icestupa(location, spray="auto")
-    # icestupa.DX = 12e-03
-    # print("DX change")
+    # icestupa = Icestupa(location, spray="man")
 
     if test:
         icestupa.gen_input()
@@ -51,22 +49,22 @@ if __name__ == "__main__":
         df = icestupa.df
 
 
-        fig, ax = plt.subplots()
-        x1 = df.time
-        y1 = df.Discharge
-        # x2 = dfr.time
-        # y2 = dfr.rad
-        ax.plot(x1,y1)
-        # ax.scatter(x2,y2)
+        # fig, ax = plt.subplots()
+        # x1 = df.time
+        # y1 = df.Discharge
+        # # x2 = dfr.time
+        # # y2 = dfr.rad
+        # ax.plot(x1,y1)
+        # # ax.scatter(x2,y2)
 
-        ax.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax.xaxis.set_minor_locator(mdates.DayLocator())
-        fig.autofmt_xdate()
-        plt.savefig(
-            icestupa.fig + icestupa.spray + "/discharge.jpg",
-            bbox_inches="tight",
-        )
-        plt.clf()
+        # ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+        # ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        # ax.xaxis.set_minor_locator(mdates.DayLocator())
+        # fig.autofmt_xdate()
+        # plt.savefig(
+        #     icestupa.fig + icestupa.spray + "/discharge.jpg",
+        #     bbox_inches="tight",
+        # )
+        # plt.clf()
 
-        # icestupa.summary_figures()
+        icestupa.summary_figures()

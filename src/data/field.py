@@ -25,7 +25,7 @@ from src.utils.settings import config
 
 def get_field(location="schwarzsee19"):
     CONSTANTS, SITE, FOLDER = config(location)
-    if location == "guttannen22_auto":
+    if location == "guttannen22":
         cols_old = [
             "TIMESTAMP",
             "T_probe_Avg",

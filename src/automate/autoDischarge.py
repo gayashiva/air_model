@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 from pvlib import location, atmosphere
 from datetime import datetime
-from projectile import get_projectile
 import json
 import logging
 import coloredlogs
@@ -15,6 +14,7 @@ import os, sys
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 from src.utils.settings import config
+from src.automate.projectile import get_projectile
 
 def TempFreeze(aws, loc="guttannen21"):
 
