@@ -25,19 +25,17 @@ logger.propagate = False
 
 
 class Icestupa:
-    def __init__(self, location="Guttannen 2021", params="default"):
+    def __init__(self, location="Guttannen 2021", spray="man"):
+
+        # TODO correct
+        self.spray = spray
 
         CONSTANTS, SITE, FOLDER = config(location)
         diff = SITE["expiry_date"] - SITE["start_date"]
         days, seconds = diff.days, diff.seconds
         self.total_hours = days * 24 + seconds // 3600
 
-        if params == "best":
-            with open(FOLDER["sim"] + "best_params.pkl", "rb") as f:
-                best_params = pickle.load(f)
-            initialize = [CONSTANTS, SITE, FOLDER, best_params]
-        else:
-            initialize = [CONSTANTS, SITE, FOLDER]
+        initialize = [CONSTANTS, SITE, FOLDER]
 
         for dictionary in initialize:
             for key in dictionary:
@@ -135,7 +133,6 @@ class Icestupa:
             end=self.df["time"].iloc[-1],
             DT=self.DT,
             utc=self.utc,
-            # country=self.country,
             alt=self.alt,
         )
 
@@ -160,7 +157,7 @@ class Icestupa:
         # TODO Correct the below line
         # if self.name in ["guttannen21", "guttannen20", "guttannen22_auto", "guttannen22_man", "gangles21"]:
         self.df.to_hdf(
-            self.input + "input.h5",
+            self.input + self.spray + "/input.h5",
             key="df",
             mode="a",
         )
@@ -206,7 +203,7 @@ class Icestupa:
         M_sub = self.df["vapour"].iloc[-1]
         M_ice = self.df["ice"].iloc[-1] - self.V_dome * self.RHO_I
         last_hour = self.df.shape[0]
-        # TODO Correctrounding
+        # TODO Correct rounding
         R_F = round(self.R_F, 1)
         D_F = round(self.D_F, 1)
 
@@ -221,7 +218,7 @@ class Icestupa:
             print("\t%s: %r" % (var, results_dict[var]))
         print()
 
-        with open(self.output + "results.json", "w") as fp:
+        with open(self.output + self.spray + "/results.json", "w") as fp:
             json.dump(results_dict, fp, sort_keys=True, indent=4)
 
         if last_hour > self.total_hours + 1:
@@ -240,28 +237,28 @@ class Icestupa:
         self.df = self.df.reset_index(drop=True)
 
         # Full Output
-        filename4 = self.output + "output.csv"
+        filename4 = self.output + self.spray + "/output.csv"
         self.df.to_csv(filename4, sep=",")
         self.df.to_hdf(
-            self.output + "output.h5",
+            self.output + self.spray + "/output.h5",
             key="df",
             mode="w",
         )
 
     def read_input(self):  # Use processed input dataset
 
-        self.df = pd.read_hdf(self.input + "input.h5", "df")
+        self.df = pd.read_hdf(self.input + self.spray + "/input.h5", "df")
 
         if self.df.isnull().values.any():
             logger.warning("\n Null values present\n")
 
-    def read_output(self, sim=""):  # Reads output
+    def read_output(self):  # Reads output
 
-        self.df = pd.read_hdf(self.output + "output" + sim + ".h5", "df")
+        self.df = pd.read_hdf(self.output + self.spray + "/output.h5", "df")
 
         self.self_attributes()
 
-        with open(self.output + "results.json", "r") as read_file:
+        with open(self.output + self.spray + "/results.json", "r") as read_file:
             results_dict = json.load(read_file)
 
         # Initialise all variables of dictionary

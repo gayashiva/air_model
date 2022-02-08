@@ -28,13 +28,13 @@ if __name__ == "__main__":
 
     # location="Schwarzsee 2019"
     # location = "Guttannen 2020"
-    # location = "Guttannen 2021"
-    location = "Guttannen 2022 Manual"
-    # location = "Guttannen 2022 Auto"
+    location = "Guttannen 2021"
+    # location = "Guttannen 2022"
+    # location = "Guttannen 2022"
     # location = "Gangles 2021"
 
     # Initialise icestupa object
-    icestupa = Icestupa(location)
+    icestupa = Icestupa(location, spray="auto")
     # icestupa.DX = 12e-03
     # print("DX change")
 
@@ -64,7 +64,7 @@ if __name__ == "__main__":
         ax.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
         plt.savefig(
-            icestupa.fig + "discharge.jpg",
+            icestupa.fig + icestupa.spray + "/discharge.jpg",
             bbox_inches="tight",
         )
         plt.clf()

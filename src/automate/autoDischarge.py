@@ -31,6 +31,7 @@ def TempFreeze(aws, loc="guttannen21"):
     # Derived
     press = atmosphere.alt2pres(params["alt"]) / 100
 
+    # Check eqn
     vp_a = (
         6.107
         * math.pow(
@@ -41,16 +42,19 @@ def TempFreeze(aws, loc="guttannen21"):
         / 100
     )
 
+    # Check eqn
     vp_ice = np.exp(43.494 - 6545.8 / (params["temp_i"] + 278)) / ((params["temp_i"] + 868) ** 2 * 100)
 
     e_a = (1.24 * math.pow(abs(vp_a / (temp + 273.15)), 1 / 7)) * (
         1 + 0.22 * math.pow(params["cld"], 2)
     )
 
+    # Note assumptions
     LW = e_a * constants["sigma"] * math.pow(
         temp + 273.15, 4
     ) - constants["IE"] * constants["sigma"] * math.pow(273.15 + params["temp_i"], 4)
 
+    # Check eqn
     Qs = (
         constants["C_A"]
         * constants["RHO_A"]
@@ -62,6 +66,7 @@ def TempFreeze(aws, loc="guttannen21"):
         / ((np.log(constants["H_AWS"] / constants["Z"])) ** 2)
     )
 
+    # Check eqn
     Ql = (
         0.623
         * constants["L_S"]
@@ -73,6 +78,7 @@ def TempFreeze(aws, loc="guttannen21"):
         / ((np.log(constants["H_AWS"] / constants["Z"])) ** 2)
     )
 
+    # Check eqn
     Qf = (
         constants["RHO_I"]
         * constants["DX"]

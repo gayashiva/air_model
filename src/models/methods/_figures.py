@@ -202,7 +202,7 @@ def summary_figures(self):
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.savefig(
-        self.fig + "Model_Output.jpg",
+        self.fig + self.spray + "/output.jpg",
         bbox_inches="tight",
     )
     plt.clf()
@@ -270,7 +270,7 @@ def summary_figures(self):
     ax.xaxis.set_minor_locator(mdates.DayLocator())
     fig.autofmt_xdate()
     plt.savefig(
-        self.fig + "Vol_Validation.jpg",
+        self.fig + self.spray + "/Vol_Validation.jpg",
         bbox_inches="tight",
     )
     plt.clf()
@@ -305,7 +305,7 @@ def summary_figures(self):
         ax.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
         plt.savefig(
-            self.fig + "Temp_Validation.jpg",
+            self.fig + self.spray + "/Temp_Validation.jpg",
             bbox_inches="tight",
         )
     plt.close("all")
