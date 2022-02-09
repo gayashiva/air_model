@@ -127,12 +127,10 @@ class Icestupa:
         self.self_attributes()
 
         solar_df = get_solar(
-            latitude=self.latitude,
-            longitude=self.longitude,
+            coords=self.coords,
             start=self.start_date,
             end=self.df["time"].iloc[-1],
             DT=self.DT,
-            utc=self.utc,
             alt=self.alt,
         )
 

@@ -4,17 +4,32 @@ from pvlib import location
 import numpy as np
 import pandas as pd
 import logging
-import pytz
+from datetime import datetime
+from pytz import timezone, utc
+from timezonefinder import TimezoneFinder
 from codetiming import Timer
 
 logger = logging.getLogger(__name__)
 
-# @cache_it(limit=1000, expire=None)
-def get_solar(
-    latitude, longitude, start, end, DT, utc, alt
-):  # Provides solar angle for each time step
+def get_offset(lat, lng, date):
+    """
+    returns a location's time zone offset from UTC in minutes.
+    """
+    tf = TimezoneFinder()
+    tz_target = timezone(tf.certain_timezone_at(lng=lng, lat=lat))
+    # ATTENTION: tz_target could be None! handle error case
+    today_target = tz_target.localize(date)
+    today_utc = utc.localize(date) # Note that utc is now 1 for guttannen due to winter time
+    return (today_utc - today_target).total_seconds() / (60 * 60)
 
-    site_location = location.Location(latitude, longitude, altitude=alt)
+def get_solar(coords, start, end, DT, alt):  
+    """
+    returns solar angle for each time step
+    """
+
+    site_location = location.Location(coords[0], coords[1], altitude=alt)
+
+    utc = get_offset(*coords, date=start)
 
     times = pd.date_range(
         start - pd.Timedelta(hours=utc),
@@ -37,3 +52,12 @@ def get_solar(
     solar_df = solar_df.reset_index()
     solar_df["time"] += pd.Timedelta(hours=utc)
     return solar_df
+
+if __name__ == "__main__":
+    tf = TimezoneFinder()
+    coords=[46.65549,8.29149]
+    # coords=[34.216638,77.606949]
+    # print(timezone(tf.certain_timezone_at(lat=coords[0], lng=coords[1])))
+    # print(get_offset(lat=coords[0], lng=coords[1]))
+    print(get_offset(*coords,date=datetime(2021, 12, 3, 8)))
+

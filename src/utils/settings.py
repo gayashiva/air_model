@@ -20,53 +20,41 @@ def config(location="guttannen21", spray="man"):
 
     if location == "Guttannen 2022" or location == "guttannen22":
 
+        SITE = dict(
+            name="guttannen22",
+            alt=1047.6,
+            coords=[46.65549,8.29149],
+            # Calibrated values
+            # DX=45e-03,  # Surface layer thickness [m]
+        )
+
         if spray == "auto":
-            SITE = dict(
-                name="guttannen22",
+            auto= dict(
                 start_date=datetime(2021, 12, 3, 8),
-                # end_date=datetime(2021, 5, 10, 1),
                 expiry_date=datetime(2022, 1, 27),
                 fountain_off_date=datetime(2022, 1, 27),
-                # R_F=5.57,  # Fountain mean discharge
-                D_F=7.5,  # Fountain mean discharge
-                utc=2,
-                alt=1047.6,
-                latitude=46.65549,
-                longitude=8.29149,
                 h_i = 0.13, #Initialise ice height at start
-                # h_f=3,
-                # perimeter=35, # on Jan 28
-
-                # Calibrated values
-                # DX=45e-03,  # Surface layer thickness [m]
+            # perimeter=35, # on Jan 28
             )
 
+            SITE = dict(SITE, **auto)
             f_heights = [
                 {"time": SITE["start_date"], "h_f": 3},
                 {"time": datetime(2022, 12, 23, 16), "h_f": 4},
             ]
 
         if spray == "man":
-            SITE = dict(
-                name="guttannen22",
+            man = dict(
                 start_date=datetime(2021, 12, 8, 14),
-                # end_date=datetime(2021, 5, 10, 1),
                 expiry_date=datetime(2022, 1, 27),
                 fountain_off_date=datetime(2022, 1, 27),
-                # R_F=5.57,  # Fountain mean discharge
-                D_F=7.5,  # Fountain mean discharge
-                utc=2,
                 alt=1047.6,
-                latitude=46.65549,
-                longitude=8.29149,
+                coords=[46.65549,8.29149],
                 #TODO correct snow height
                 h_i = 0.13, #Initialise ice height at start
-                # perimeter=35, # on Jan 28
-
-                # Calibrated values
-                # DX=45e-03,  # Surface layer thickness [m]
             )
 
+            SITE = dict(SITE, **man)
             f_heights = [
                 {"time": SITE["start_date"], "h_f": 3},
                 {"time": datetime(2022, 12, 23, 16), "h_f": 4},
@@ -85,8 +73,7 @@ def config(location="guttannen21", spray="man"):
             # R_F=4.3,  # Fountain mean discharge
             utc=2,
             alt=1047.6,
-            latitude=46.65549,
-            longitude=8.29149,
+            coords=[46.65549,8.29149],
             # h_f=5,
             # perimeter=45, # on Feb 11
 
@@ -138,8 +125,7 @@ def config(location="guttannen21", spray="man"):
             D_F=60,  # FOUNTAIN min discharge
             utc=5.5,
             alt=4009,
-            longitude=77.606949,
-            latitude=34.216638,
+            coords=[34.216638,77.606949],
             h_f=9,
             tcc=0,  # Total cloud cover
             # tcc=0.1,  # Total cloud cover

@@ -23,8 +23,8 @@ if __name__ == "__main__":
     logger.setLevel("WARNING")
     # logger.setLevel("INFO")
 
-    # test = True
-    test = False
+    test = True
+    # test = False
 
     # location="Schwarzsee 2019"
     # location = "Guttannen 2020"
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     # location = "Gangles 2021"
 
     # Initialise icestupa object
-    icestupa = Icestupa(location, spray="auto")
+    # icestupa = Icestupa(location, spray="auto")
     # icestupa = Icestupa(location, spray="man")
 
     if test:

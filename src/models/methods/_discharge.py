@@ -129,7 +129,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         self.df = self.df.reset_index()
         self.df= self.df.replace(np.NaN, 0)
         self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
-        logger.warning("Auto Discharge used")
+        logger.warning("Auto Discharge mean %.1f" % self.D_F)
 
     if self.name == "guttannen22" and self.spray == "man":
         df_f = pd.read_csv(
@@ -151,13 +151,12 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         dis_old= df_f.Discharge.max()
         for i in range(1,df_h.shape[0]):
             dis_new= get_projectile(h_f=df_h.h_f[i], dia=0.006, dis=dis_old, theta_f=60)
-            logger.warning("Manual Discharge used %.1f" % dis_new)
             self.df.loc[self.df.time > df_h.time[i], "Discharge"] *= dis_new/dis_old
             dis_old = dis_new
             # df_h[i]
-        # logger.warning("Manual Discharge used %.1f" % df_f.Discharge.max())
 
-        # self.df["Discharge"] = self.D_F
+        self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
+        logger.warning("Manual Discharge mean %.1f" % self.D_F)
         # logger.warning("Manual Discharge used")
 
     if self.name in ["phortse20"]:
