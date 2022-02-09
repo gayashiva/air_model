@@ -48,7 +48,7 @@ if __name__ == "__main__":
             df.loc[i, "Discharge_sim"] = 0
         if df.Discharge_sim[i] >= 13:
             df.loc[i, "Discharge_sim"] = 13
-        if df.wind[i] >= 10 or df.temp[i] > -2:
+        if df.wind[i] >= 8 or df.temp[i] > -2 or df.temp[i] < -8:
             df.loc[i, "Discharge_sim"] = 0
     logger.warning(df.Discharge_sim.describe())
     logger.warning(df.Discharge.describe())
