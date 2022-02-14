@@ -17,18 +17,12 @@ from src.utils.settings import config
 from src.automate.projectile import get_projectile
 from src.models.methods.solar import get_offset
 
-def TempFreeze(aws, loc="guttannen21"):
+def TempFreeze(aws, loc="guttannen22"):
 
     CONSTANTS, SITE, FOLDER = config(loc)
 
-    params={
-      "cld": 0.5,
-      "temp_i": 0,
-      "crit_dis": 2,
-      "spray_r": 7,
-    }
-    # with open(FOLDER["raw"] + "auto_info.json") as f:
-    #     params = json.load(f)
+    with open(FOLDER["raw"] + "auto_info.json") as f:
+        params = json.load(f)
 
     # AWS
     temp = aws[0]
@@ -102,21 +96,12 @@ def TempFreeze(aws, loc="guttannen21"):
 
     return dis
 
-def datetime_to_int(dt):
-    return int(dt.strftime("%H"))
-
-def SunMelt(loc='guttannen21'):
+def SunMelt(loc):
 
     CONSTANTS, SITE, FOLDER = config(loc)
 
-    params={
-      "cld": 0.5,
-      "solar_day": "2019-02-01",
-      "spray_r": 7,
-    }
-
-    # with open(FOLDER["raw"] + "automate_info.json") as f:
-    #     params = json.load(f)
+    with open(FOLDER["raw"] + "auto_info.json") as f:
+        params = json.load(f)
 
     times = pd.date_range(
         params["solar_day"],
@@ -145,7 +130,7 @@ def SunMelt(loc='guttannen21'):
     df.index += pd.Timedelta(hours=utc)
     df.loc[df["sea"] < 0, "sea"] = 0
     df = df.reset_index()
-    df["hour"] = df["index"].apply(lambda x: datetime_to_int(x))
+    df["hour"] = df["index"].apply(lambda x: int(x.strftime("%H")))
     df["f_cone"] = 0
 
     SA = math.pi * math.pow(params["spray_r"],2) * math.pow(2,0.5) # Assuming h=r cone
@@ -173,10 +158,18 @@ def SunMelt(loc='guttannen21'):
 
 if __name__ == "__main__":
 
+    # params={
+    #   "cld": 0.5,
+    #   "temp_i": 0,
+    #   "crit_dis": 2,
+    #   "spray_r": 5,
+    #   "solar_day": "2019-02-01",
+    # }
+
     aws = [-5,10,2]
     print(TempFreeze(aws))
 
-    result = SunMelt("guttannen21")
+    result = SunMelt("guttannen22")
     param_values = dict(result.best_values)
     print(param_values)
     # locations = ["gangles21", "guttannen21"]

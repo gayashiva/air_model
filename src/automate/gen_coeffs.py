@@ -42,7 +42,7 @@ if __name__ == "__main__":
     locations = ["guttannen21"]
 
     for loc in locations:
-        constants, SITE, FOLDER = config(loc)
+        CONSTANTS, SITE, FOLDER = config(loc)
         icestupa_sim = Icestupa(loc)
         icestupa_sim.read_output()
 
@@ -55,7 +55,7 @@ if __name__ == "__main__":
         crit_wind = df.loc[df.time < datetime(2021, 3, 1)].wind.quantile(wind_cutoff)
         freeze_when = [crit_temp,crit_rh, crit_wind]
 
-        with open(FOLDER["raw"] + "automate_info.json") as f:
+        with open(FOLDER["raw"] + "auto_info.json") as f:
             params = json.load(f)
 
         """Calculate Virtual radius"""
@@ -63,17 +63,10 @@ if __name__ == "__main__":
         dis = TempFreeze(freeze_when,loc)
         scaling_factor = params['crit_dis']/dis
 
-        # dis_real = get_projectile(h_f=params["h_f"], dia=params["dia_f"], theta_f=params["theta_f"], r=params["r_real"])
-
-        # VA = dis_real/growth_rate
-        # r_virtual = round(math.sqrt(VA/(math.pi*math.sqrt(2))),2)
-
-        # freezing_fraction = round(params['r'] ** 2/r_virtual ** 2,2)
-
-        print(f"Radius for {loc} is {params['r']}" )
+        print(f"Radius for {loc} is {params['spray_r']}" )
         # print(f"So only {freezing_fraction*100}% froze from the discharge rate" )
         print(f"Corresponding discharge for {loc} is {dis}" )
-        print(f"Recommended scaling factor is {scaling_factor} and given scaling factor is {params['scaling_factor']}" )
+        print(f"Recommended scaling factor is {scaling_factor}" )
 
         with open(FOLDER["raw"] + "automate_info.json", "w") as f:
             json.dump(params, f)
@@ -84,35 +77,51 @@ if __name__ == "__main__":
         with open(FOLDER["input"] + "sunmelt.json", "w") as f:
             json.dump(dict(result.best_values), f)
 
-        """Compute Temp coeffs"""
-        temp = list(range(params["temp"][0], params["temp"][1] + 1))
-        rh = list(range(params["rh"][0], params["rh"][1] + 1))
-        v = list(range(params["wind"][0], params["wind"][1] + 1))
+        compile = False
+        if compile:
+            """Compute Temp coeffs"""
+            # temp = list(range(params["temp"][0], params["temp"][1] + 1))
+            # rh = list(range(params["rh"][0], params["rh"][1] + 1))
+            # v = list(range(params["wind"][0], params["wind"][1] + 1))
+            temp = list(range(-30, 20))
+            rh = list(range(0, 100, 5))
+            v = list(range(0, 20, 1))
 
-        da = xr.DataArray(
-            data=np.zeros(len(temp) * len(rh) * len(v)).reshape(
-                len(temp), len(rh), len(v)
-            ),
-            dims=["temp", "rh", "v"],
-            coords=dict(
-                temp=temp,
-                rh=rh,
-                v=v,
-            ),
-            attrs=dict(
-                long_name="Freezing rate",
-                description="Max. freezing rate",
-                units="l min-1",
-            ),
-        )
+            da = xr.DataArray(
+                data=np.zeros(len(temp) * len(rh) * len(v)).reshape(
+                    len(temp), len(rh), len(v)
+                ),
+                dims=["temp", "rh", "v"],
+                coords=dict(
+                    temp=temp,
+                    rh=rh,
+                    v=v,
+                ),
+                attrs=dict(
+                    long_name="Freezing rate",
+                    description="Max. freezing rate",
+                    units="l min-1",
+                ),
+            )
 
-        da.temp.attrs["units"] = "deg C"
-        da.temp.attrs["description"] = "Air Temperature"
-        da.temp.attrs["long_name"] = "Air Temperature"
-        da.rh.attrs["units"] = "%"
-        da.rh.attrs["long_name"] = "Relative Humidity"
-        da.v.attrs["units"] = "m s-1"
-        da.v.attrs["long_name"] = "Wind Speed"
+            da.temp.attrs["units"] = "deg C"
+            da.temp.attrs["description"] = "Air Temperature"
+            da.temp.attrs["long_name"] = "Air Temperature"
+            da.rh.attrs["units"] = "%"
+            da.rh.attrs["long_name"] = "Relative Humidity"
+            da.v.attrs["units"] = "m s-1"
+            da.v.attrs["long_name"] = "Wind Speed"
+
+            for temp in da.temp.values:
+                for rh in da.rh.values:
+                    for v in da.v.values:
+                        aws = [temp, rh, v]
+                        da.sel(temp=temp, rh=rh, v=v).data+= TempFreeze(aws,
+                            loc)
+            da.to_netcdf(FOLDER["sim"] + "auto_sims.nc")
+        else:
+            da = xr.open_dataarray(FOLDER["sim"] + "auto_sims.nc")
+
 
         x = []
         y = []
@@ -120,12 +129,8 @@ if __name__ == "__main__":
             for rh in da.rh.values:
                 for v in da.v.values:
                     aws = [temp, rh, v]
-                    da.sel(temp=temp, rh=rh, v=v).data += TempFreeze(aws,
-                        loc)
                     x.append(aws)
                     y.append(da.sel(temp=temp, rh=rh, v=v).data)
-
-        da.to_netcdf(FOLDER["sim"] + "auto_sims.nc")
 
         popt, pcov = curve_fit(line, x, y)
         a, b, c, d = popt
@@ -143,17 +148,17 @@ if __name__ == "__main__":
         param_values["d"] = d
 
         # Scale all coeffs
-        param_values.update((x, y*params['scaling_factor']) for x, y in param_values.items())
+        param_values.update((x, y*scaling_factor) for x, y in param_values.items())
 
         with open(FOLDER["sim"] + "coeffs.json", "w") as f:
             json.dump(param_values, f)
 
         print(
             "Max freezing rate:",
-            autoDis(**param_values, time=6, temp=params["temp"][0], rh=params["rh"][0], v=params["wind"][1]+ 1),
+            autoDis(**param_values, time=6, temp=-20, rh=0, v=10),
         )
 
-        print(param_values)
+        # print(param_values)
         print(
             "y = %.5f * temp + %.5f * rh + %.5f * wind + %.5f + Gaussian(time; Amplitude = %.5f, center = %.5f, sigma = %.5f) "
             % (
