@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     # Initialise icestupa object
     # icestupa = Icestupa(location, spray="auto")
-    # icestupa = Icestupa(location, spray="man")
+    icestupa = Icestupa(location, spray="man")
 
     if test:
         icestupa.gen_input()

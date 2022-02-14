@@ -17,6 +17,8 @@ def self_attributes(self):
 
     if self.name in ["guttannen21", "guttannen20"]:
         df_c, df_cam = get_calibration(site=self.name, input=self.input)
+    elif self.name in ["guttannen22"]:
+        df_c = get_calibration(site=self.name , input=self.input+ self.spray + "/")
     else:
         df_c = get_calibration(site=self.name, input=self.input)
 

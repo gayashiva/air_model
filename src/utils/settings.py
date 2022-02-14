@@ -25,7 +25,7 @@ def config(location="guttannen21", spray="man"):
             alt=1047.6,
             coords=[46.65549,8.29149],
             # Calibrated values
-            # DX=45e-03,  # Surface layer thickness [m]
+            DX=45e-03,  # Surface layer thickness [m]
         )
 
         if spray == "auto":
@@ -56,9 +56,9 @@ def config(location="guttannen21", spray="man"):
 
             SITE = dict(SITE, **man)
             f_heights = [
-                {"time": SITE["start_date"], "h_f": 3},
-                {"time": datetime(2022, 12, 23, 16), "h_f": 4},
-                {"time": datetime(2022, 1, 3, 16), "h_f": 5},
+                {"time": SITE["start_date"], "h_f": 3.7},
+                {"time": datetime(2022, 12, 23, 16), "h_f": 4.7},
+                {"time": datetime(2022, 2, 12, 16), "h_f": 5.7},
             ]
 
     if location == "Guttannen 2021" or location == "guttannen21":

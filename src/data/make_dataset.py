@@ -41,7 +41,8 @@ if __name__ == "__main__":
     logger.setLevel("INFO")
 
     # locations = ["gangles21", "guttannen20", "guttannen21"]
-    locations = ["guttannen22_auto"]
+    locations = ["guttannen22"]
+    # sprays = ["man", "auto"]
 
     for location in locations:
         CONSTANTS, SITE, FOLDER = config(location)

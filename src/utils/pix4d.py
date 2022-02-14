@@ -26,36 +26,46 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("INFO")
 
-    location="guttannen22_man"
-    CONSTANTS, SITE, FOLDER = config(location)
+    location="guttannen22"
+    sprays = ["auto", "man"]
 
-    dfr = pd.read_csv(
-        FOLDER["raw"] + "drone_rad.csv",
-        sep="\t",
-    )
-    dfr = dfr.iloc[::2]
+    for spray in sprays:
 
-    dfr["time"] = pd.to_datetime(dfr["Name"], format="%b_%d_%y")
-    print(dfr)
+        CONSTANTS, SITE, FOLDER = config(location, spray)
 
-    dfr["rad"] = round(dfr["Terrain 3D Length  (m)"].astype(float)/(2*math.pi),2)
-    dfr = dfr.set_index("time")
-    dfr = dfr[["rad"]]
+        dfr = pd.read_csv(
+            FOLDER["raw"] + spray + "/drone_rad.csv",
+            sep="\t",
+        )
+        dfr = dfr.iloc[::2]
 
-    dfv = pd.read_csv(
-        FOLDER["raw"] + "drone_vol.csv",
-        # names=col_names,
-        # skiprows = [3,5],
-        sep="\t",
-    )
-    dfv = dfv.iloc[::2]
-    print(dfv)
-    dfv["time"] = pd.to_datetime(dfv["Name"], format="%b_%d_%y")
-    dfv["DroneV"] = round(dfv["Cut Volume  (m3)"].astype(float),2)
-    dfv["DroneVError"] = dfv["DroneV"] * 0.2
-    dfv = dfv.set_index("time")
-    dfv = dfv[["DroneV", "DroneVError"]]
-    df = pd.concat([dfr, dfv], axis=1)
-    df = df.sort_index()
-    print(df)
-    df.to_csv(FOLDER["input"] + "drone.csv")
+        if spray == "auto":
+            format = "%d-%m-%y"
+        if spray == "man":
+            format = "%b_%d_%y"
+
+        dfr["time"] = pd.to_datetime(dfr["Name"], format=format)
+        print(dfr)
+
+        dfr["rad"] = round(dfr["Terrain 3D Length  (m)"].astype(float)/(2*math.pi),2)
+        dfr = dfr.set_index("time")
+        dfr = dfr[["rad"]]
+
+        dfv = pd.read_csv(
+            FOLDER["raw"] + spray + "/drone_vol.csv",
+            # names=col_names,
+            # skiprows = [3,5],
+            sep="\t",
+        )
+        dfv = dfv.iloc[::2]
+        print(dfv)
+        dfv["time"] = pd.to_datetime(dfv["Name"], format=format)
+        dfv["DroneV"] = round(dfv["Cut Volume  (m3)"].astype(float),2)
+        dfv["DroneVError"] = dfv["DroneV"] * 0.2
+        dfv["Area"] = round(dfv["Terrain 3D Area  (m2)"].astype(float),2)
+        dfv = dfv.set_index("time")
+        dfv = dfv[["DroneV", "DroneVError", "Area"]]
+        df = pd.concat([dfr, dfv], axis=1)
+        df = df.sort_index()
+        print(df)
+        df.to_csv(FOLDER["input"] + spray +  "/drone.csv")

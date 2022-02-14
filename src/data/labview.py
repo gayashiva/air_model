@@ -110,7 +110,7 @@ def labview(location):
     if location == "guttannen22":
         # path = "/home/suryab/ownCloud/Sites/Diavolezza/diavolezza_sdcard/"
         CONSTANTS, SITE, FOLDER = config(location)
-        path = FOLDER["raw"] + "sdcard/"
+        path = FOLDER["raw"] + "auto/sdcard/"
         all_files = glob.glob(path + "*.txt")
         # print(all_files[0])
 
