@@ -18,7 +18,7 @@ from src.automate.projectile import get_projectile
 
 def TempFreeze(aws, loc="guttannen21"):
 
-    constants, SITE, FOLDER = config(loc)
+    CONSTANTS, SITE, FOLDER = config(loc)
 
     with open(FOLDER["raw"] + "automate_info.json") as f:
         params = json.load(f)
@@ -50,45 +50,45 @@ def TempFreeze(aws, loc="guttannen21"):
     )
 
     # Note assumptions
-    LW = e_a * constants["sigma"] * math.pow(
+    LW = e_a * CONSTANTS["sigma"] * math.pow(
         temp + 273.15, 4
-    ) - constants["IE"] * constants["sigma"] * math.pow(273.15 + params["temp_i"], 4)
+    ) - CONSTANTS["IE"] * CONSTANTS["sigma"] * math.pow(273.15 + params["temp_i"], 4)
 
     # Check eqn
     Qs = (
-        constants["C_A"]
-        * constants["RHO_A"]
+        CONSTANTS["C_A"]
+        * CONSTANTS["RHO_A"]
         * press
-        / constants["P0"]
-        * math.pow(constants["VAN_KARMAN"], 2)
+        / CONSTANTS["P0"]
+        * math.pow(CONSTANTS["VAN_KARMAN"], 2)
         * wind
         * (temp - params["temp_i"])
-        / ((np.log(constants["H_AWS"] / constants["Z"])) ** 2)
+        / ((np.log(CONSTANTS["H_AWS"] / CONSTANTS["Z"])) ** 2)
     )
 
     # Check eqn
     Ql = (
         0.623
-        * constants["L_S"]
-        * constants["RHO_A"]
-        / constants["P0"]
-        * math.pow(constants["VAN_KARMAN"], 2)
+        * CONSTANTS["L_S"]
+        * CONSTANTS["RHO_A"]
+        / CONSTANTS["P0"]
+        * math.pow(CONSTANTS["VAN_KARMAN"], 2)
         * wind
         * (vp_a - vp_ice)
-        / ((np.log(constants["H_AWS"] / constants["Z"])) ** 2)
+        / ((np.log(CONSTANTS["H_AWS"] / CONSTANTS["Z"])) ** 2)
     )
 
     # Check eqn
     Qf = (
-        constants["RHO_I"]
-        * constants["DX"]
-        * constants["C_I"]
-        / constants["DT"]
+        CONSTANTS["RHO_I"]
+        * CONSTANTS["DX"]
+        * CONSTANTS["C_W"]
+        / CONSTANTS["DT"]
         * params["temp_i"]
     )
 
     freezing_energy = Ql + Qs + LW + Qf
-    dis = -1 * freezing_energy / constants["L_F"] * 1000 / 60
+    dis = -1 * freezing_energy / CONSTANTS["L_F"] * 1000 / 60
 
     SA = math.pi * math.pow(params['r'],2) * math.pow(2,0.5) # Assuming h=r cone
     dis *= SA
@@ -110,7 +110,7 @@ def datetime_to_int(dt):
 
 def SunMelt(loc='guttannen21'):
 
-    constants, SITE, FOLDER = config(loc)
+    CONSTANTS, SITE, FOLDER = config(loc)
 
     with open(FOLDER["raw"] + "automate_info.json") as f:
         params = json.load(f)
@@ -159,7 +159,7 @@ def SunMelt(loc='guttannen21'):
         df.loc[i, "SW_diffuse"] = (
             params["cld"]  * df.loc[i, "ghi"]
         )
-    df["dis"] = -1 * (1 - params["alb"]) * (df["SW_direct"] + df["SW_diffuse"]) * SA / constants["L_F"] * 1000 / 60
+    df["dis"] = -1 * (1 - params["alb"]) * (df["SW_direct"] + df["SW_diffuse"]) * SA / CONSTANTS["L_F"] * 1000 / 60
 
     model = GaussianModel()
     gauss_params = model.guess(df.dis, df.hour)
