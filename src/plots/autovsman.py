@@ -24,18 +24,19 @@ if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
     logger.setLevel("ERROR")
-    locations = ['guttannen22_auto', 'guttannen22_man']
+    location = 'guttannen22'
+    sprays = ['auto', 'man']
 
     mypal = sns.color_palette("Set1", 2)
     fig, ax = plt.subplots(2, 1, sharex="col")
 
-    for i, location in enumerate(locations):
-        CONSTANTS, SITE, FOLDER = config(location)
-        icestupa = Icestupa(location)
+    for i, spray in enumerate(sprays):
+        CONSTANTS, SITE, FOLDER = config(location, spray)
+        icestupa = Icestupa(location, spray)
         icestupa.read_output()
         df=icestupa.df
 
-        if location == "guttannen22_auto":
+        if spray == "auto":
             spray = "Automatic "
         else:
             spray = "Manual "
@@ -78,4 +79,4 @@ if __name__ == "__main__":
     handles, labels = ax[1].get_legend_handles_labels()
     fig.legend(handles, labels, loc="upper right", prop={"size": 8})
     # plt.legend()
-    plt.savefig("data/paper3/autovsmanual.jpg", bbox_inches="tight", dpi=300)
+    plt.savefig("data/figs/paper3/autovsmanual.jpg", bbox_inches="tight", dpi=300)
