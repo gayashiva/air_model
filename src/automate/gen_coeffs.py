@@ -61,7 +61,7 @@ if __name__ == "__main__":
         """Calculate Virtual radius"""
         print(f"The temperature, humidity and wind were less/more than {freeze_when} for {temp_cutoff} of the months of Jan and Feb" )
         dis = TempFreeze(freeze_when,loc)
-        scaling_factor = params['dis_min']/dis
+        scaling_factor = params['crit_dis']/dis
 
         # dis_real = get_projectile(h_f=params["h_f"], dia=params["dia_f"], theta_f=params["theta_f"], r=params["r_real"])
 

@@ -15,13 +15,20 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 sys.path.append(dirname)
 from src.utils.settings import config
 from src.automate.projectile import get_projectile
+from src.models.methods.solar import get_offset
 
 def TempFreeze(aws, loc="guttannen21"):
 
     CONSTANTS, SITE, FOLDER = config(loc)
 
-    with open(FOLDER["raw"] + "automate_info.json") as f:
-        params = json.load(f)
+    params={
+      "cld": 0.5,
+      "temp_i": 0,
+      "crit_dis": 2,
+      "spray_r": 7,
+    }
+    # with open(FOLDER["raw"] + "auto_info.json") as f:
+    #     params = json.load(f)
 
     # AWS
     temp = aws[0]
@@ -29,7 +36,7 @@ def TempFreeze(aws, loc="guttannen21"):
     wind = aws[2]
 
     # Derived
-    press = atmosphere.alt2pres(params["alt"]) / 100
+    press = atmosphere.alt2pres(SITE["alt"]) / 100
 
     # Check eqn
     vp_a = (
@@ -90,18 +97,8 @@ def TempFreeze(aws, loc="guttannen21"):
     freezing_energy = Ql + Qs + LW + Qf
     dis = -1 * freezing_energy / CONSTANTS["L_F"] * 1000 / 60
 
-    SA = math.pi * math.pow(params['r'],2) * math.pow(2,0.5) # Assuming h=r cone
+    SA = math.pi * math.pow(params['spray_r'],2) * math.pow(2,0.5) # Assuming h=r cone
     dis *= SA
-
-    # if scaling_factor:
-    #     dis *= scaling_factor
-
-    # if r_virtual:
-    #     VA = math.pi * math.pow(r_virtual,2) * math.pow(2,0.5) # Assuming h=r cone
-    #     dis *= VA
-    # else:
-    #     SA = math.pi * math.pow(params['r'],2) * math.pow(2,0.5) # Assuming h=r cone
-    #     dis *= SA
 
     return dis
 
@@ -112,8 +109,14 @@ def SunMelt(loc='guttannen21'):
 
     CONSTANTS, SITE, FOLDER = config(loc)
 
-    with open(FOLDER["raw"] + "automate_info.json") as f:
-        params = json.load(f)
+    params={
+      "cld": 0.5,
+      "solar_day": "2019-02-01",
+      "spray_r": 7,
+    }
+
+    # with open(FOLDER["raw"] + "automate_info.json") as f:
+    #     params = json.load(f)
 
     times = pd.date_range(
         params["solar_day"],
@@ -121,11 +124,13 @@ def SunMelt(loc='guttannen21'):
         periods=1 * 24,
     )
 
-    times -= pd.Timedelta(hours=params["utc"])
+    # Derived
+    utc = get_offset(*SITE["coords"], date=SITE["start_date"])
+
+    times -= pd.Timedelta(hours=utc)
     loc = location.Location(
-        params["lat"],
-        params["long"],
-        altitude=params["alt"],
+        *SITE["coords"],
+        altitude=SITE["alt"],
     )
 
     solar_position = loc.get_solarposition(times=times, method="ephemeris")
@@ -137,18 +142,18 @@ def SunMelt(loc='guttannen21'):
             "sea": np.radians(solar_position["elevation"]),
         }
     )
-    df.index += pd.Timedelta(hours=params["utc"])
+    df.index += pd.Timedelta(hours=utc)
     df.loc[df["sea"] < 0, "sea"] = 0
     df = df.reset_index()
     df["hour"] = df["index"].apply(lambda x: datetime_to_int(x))
     df["f_cone"] = 0
 
-    SA = math.pi * math.pow(params["r"],2) * math.pow(2,0.5) # Assuming h=r cone
+    SA = math.pi * math.pow(params["spray_r"],2) * math.pow(2,0.5) # Assuming h=r cone
 
     for i in range(0, df.shape[0]):
         df.loc[i, "f_cone"] = (
-            math.pi * math.pow(params["r"], 2) * 0.5 * math.sin(df.loc[i, "sea"])
-            + 0.5 * math.pow(params["r"], 2) * math.cos(df.loc[i, "sea"])
+            math.pi * math.pow(params["spray_r"], 2) * 0.5 * math.sin(df.loc[i, "sea"])
+            + 0.5 * math.pow(params["spray_r"], 2) * math.cos(df.loc[i, "sea"])
         ) / SA
 
         df.loc[i, "SW_direct"] = (
@@ -159,7 +164,7 @@ def SunMelt(loc='guttannen21'):
         df.loc[i, "SW_diffuse"] = (
             params["cld"]  * df.loc[i, "ghi"]
         )
-    df["dis"] = -1 * (1 - params["alb"]) * (df["SW_direct"] + df["SW_diffuse"]) * SA / CONSTANTS["L_F"] * 1000 / 60
+    df["dis"] = -1 * (1 - CONSTANTS["A_I"]) * (df["SW_direct"] + df["SW_diffuse"]) * SA / CONSTANTS["L_F"] * 1000 / 60
 
     model = GaussianModel()
     gauss_params = model.guess(df.dis, df.hour)
@@ -168,12 +173,18 @@ def SunMelt(loc='guttannen21'):
 
 if __name__ == "__main__":
 
-    locations = ["gangles21", "guttannen21"]
-    for loc in locations:
-        result = SunMelt(loc)
+    aws = [-5,10,2]
+    print(TempFreeze(aws))
 
-        x = list(range(0,24))
-        param_values = dict(result.best_values)
+    result = SunMelt("guttannen21")
+    param_values = dict(result.best_values)
+    print(param_values)
+    # locations = ["gangles21", "guttannen21"]
+    # for loc in locations:
+    #     result = SunMelt(loc)
+
+    #     x = list(range(0,24))
+    #     param_values = dict(result.best_values)
 
         # plt.figure()
         # plt.plot(x, result.best_fit, "-")
@@ -183,4 +194,4 @@ if __name__ == "__main__":
         # plt.grid()
         # plt.savefig("data/" + site + "/figs/daymelt.jpg")
 
-        print(param_values)
+        # print(param_values)
