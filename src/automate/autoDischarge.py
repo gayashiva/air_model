@@ -32,7 +32,6 @@ def TempFreeze(aws, loc="guttannen22"):
     # Derived
     press = atmosphere.alt2pres(SITE["alt"]) / 100
 
-    # Check eqn
     vp_a = (
         6.107
         * math.pow(
@@ -43,19 +42,16 @@ def TempFreeze(aws, loc="guttannen22"):
         / 100
     )
 
-    # Check eqn
     vp_ice = np.exp(43.494 - 6545.8 / (params["temp_i"] + 278)) / ((params["temp_i"] + 868) ** 2 * 100)
 
     e_a = (1.24 * math.pow(abs(vp_a / (temp + 273.15)), 1 / 7)) * (
         1 + 0.22 * math.pow(params["cld"], 2)
     )
 
-    # Note assumptions
     LW = e_a * CONSTANTS["sigma"] * math.pow(
         temp + 273.15, 4
     ) - CONSTANTS["IE"] * CONSTANTS["sigma"] * math.pow(273.15 + params["temp_i"], 4)
 
-    # Check eqn
     Qs = (
         CONSTANTS["C_A"]
         * CONSTANTS["RHO_A"]
@@ -67,7 +63,6 @@ def TempFreeze(aws, loc="guttannen22"):
         / ((np.log(CONSTANTS["H_AWS"] / CONSTANTS["Z"])) ** 2)
     )
 
-    # Check eqn
     Ql = (
         0.623
         * CONSTANTS["L_S"]
@@ -79,17 +74,17 @@ def TempFreeze(aws, loc="guttannen22"):
         / ((np.log(CONSTANTS["H_AWS"] / CONSTANTS["Z"])) ** 2)
     )
 
-    # Check eqn
+    # Fountain water layer cools to 0 C
     Qf = (
-        CONSTANTS["RHO_I"]
+        CONSTANTS["RHO_W"]
         * CONSTANTS["DX"]
         * CONSTANTS["C_W"]
         / CONSTANTS["DT"]
         * params["temp_i"]
     )
 
-    freezing_energy = Ql + Qs + LW + Qf
-    dis = -1 * freezing_energy / CONSTANTS["L_F"] * 1000 / 60
+    EB = Ql + Qs + LW + Qf
+    dis = -1 * EB / CONSTANTS["L_F"] * 1000 / 60
 
     SA = math.pi * math.pow(params['spray_r'],2) * math.pow(2,0.5) # Assuming h=r cone
     dis *= SA
