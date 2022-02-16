@@ -88,8 +88,8 @@ if __name__ == "__main__":
 
     # Fill task queue
     # task_list = ["guttannen21", "guttannen20", "gangles21", "schwarzsee19"]
-    # task_list = ["guttannen22", "guttannen22", "guttannen21", "guttannen20", "gangles21"]
-    task_list = [ "guttannen20", "gangles21"]
+    task_list = ["guttannen22", "guttannen21", "guttannen20", "gangles21"]
+    # task_list = [ "guttannen20", "gangles21"]
 
     for single_task in task_list:
         tasks.put(single_task)

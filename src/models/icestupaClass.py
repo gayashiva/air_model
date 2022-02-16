@@ -6,6 +6,7 @@ import pickle
 pickle.HIGHEST_PROTOCOL = 4  # For python version 2.7
 import pandas as pd
 import sys, os, math, json
+import shutil
 import numpy as np
 import logging
 import pytz
@@ -62,7 +63,7 @@ class Icestupa:
     from src.models.methods._self_attributes import self_attributes
     from src.models.methods._albedo import get_albedo
     from src.models.methods._discharge import get_discharge
-    from src.models.methods._area_new_2 import get_area
+    from src.models.methods._area import get_area
     from src.models.methods._temp import get_temp, test_get_temp
     from src.models.methods._energy import get_energy, test_get_energy
     from src.models.methods._figures import summary_figures
@@ -206,7 +207,6 @@ class Icestupa:
         D_F = round(self.D_F, 1)
 
         # For web app
-
         for variable in results:
             results_dict[variable] = round(eval(variable), 0)
 
@@ -242,6 +242,23 @@ class Icestupa:
             key="df",
             mode="w",
         )
+        # For web app
+        src = "/home/suryab/work/air_model/data/" + self.name + "/"
+        dst = "/home/suryab/work/air_app/data/" + self.name + "/"
+        for dir in ["processed", "figs"]:
+            try:
+                #if path already exists, remove it before copying with copytree()
+                if os.path.exists(dst + dir):
+                    shutil.rmtree(dst + dir)
+                    shutil.copytree(src + dir, dst + dir)
+                else:
+                    shutil.copytree(src + dir, dst + dir)
+            except OSError as e:
+                # If the error was caused because the source wasn't a directory
+                if e.errno == errno.ENOTDIR:
+                   shutil.copy(source_dir_prompt, destination_dir_prompt)
+                else:
+                    print('Directory not copied. Error: %s' % e)
 
     def read_input(self):  # Use processed input dataset
 

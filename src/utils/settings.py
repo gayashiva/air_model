@@ -71,7 +71,7 @@ def config(location="guttannen21", spray="man"):
             fountain_off_date=datetime(2021, 2, 20, 10),
             D_F=7.5,  # Fountain mean discharge
             # R_F=4.3,  # Fountain mean discharge
-            R_F=5.4,  # First drone rad
+            # R_F=5.4,  # First drone rad
             alt=1047.6,
             coords=[46.65549,8.29149],
             # h_f=5,
@@ -97,7 +97,7 @@ def config(location="guttannen21", spray="man"):
             expiry_date=datetime(2020, 4, 6, 12),
             fountain_off_date=datetime(2020, 3, 8, 9),  # Image shows Dani switched off at 8th Mar 10 am
             D_F=7.5,  # Fountain mean discharge
-            R_F=6.68,  # First drone rad
+            # R_F=6.68,  # First drone rad
             alt=1047.6,
             coords=[46.65549,8.29149],
             # h_f=3,
@@ -122,7 +122,7 @@ def config(location="guttannen21", spray="man"):
             expiry_date=datetime(2021, 6, 20),
             fountain_off_date=datetime(2021, 3, 10, 18),
             D_F=60,  # FOUNTAIN min discharge
-            R_F=9.05,  # First drone rad
+            # R_F=9.05,  # First drone rad
             alt=4009,
             coords=[34.216638,77.606949],
             h_f=9,
@@ -138,49 +138,6 @@ def config(location="guttannen21", spray="man"):
             {"time": SITE["start_date"], "h_f": 5},
             {"time": datetime(2021, 1, 22, 16), "h_f": 9},
         ]
-
-    if location == "Schwarzsee 2019" or location == "schwarzsee19":
-        SITE = dict(
-            name="schwarzsee19",
-            start_date=datetime(2019, 1, 30, 17),
-            # end_date=datetime(2019, 3, 17),
-            expiry_date=datetime(2019, 3, 10, 19),
-            fountain_off_date=datetime(2019, 2, 16, 10),
-            utc=1,
-            longitude=7.297543,
-            latitude=46.693723,
-            R_F=1.233,
-            # discharge=3.58,  # FOUNTAIN on mean discharge from field
-            # dia_f=0.0056,  # FOUNTAIN aperture diameter
-            # DX= 50e-03,
-            # Z= 5e-03,
-        )
-
-        f_heights = [
-            {"time": SITE["start_date"], "h_f": 1.35},
-        ]
-
-    if location == "Phortse 2020" or location == "phortse20":
-
-        SITE = dict(
-            name="phortse20",
-            start_date=datetime(2019, 12, 1),
-            expiry_date=datetime(2020, 2, 1),
-            fountain_off_date=datetime(2020, 2, 1),
-            D_F=60,
-            utc=1,
-            latitude=46.649999,
-            longitude=8.283333,
-            SA_corr=1.2,
-            Z=0.001,
-            R_F=10,
-            tcc=0,
-        )
-
-        f_heights = [
-            {"time": SITE["start_date"], "h_f": 5},
-        ]
-
 
     # Define directory structure
     FOLDER = dict(
