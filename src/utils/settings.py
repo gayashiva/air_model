@@ -34,6 +34,7 @@ def config(location="guttannen21", spray="man"):
                 expiry_date=datetime(2022, 1, 27),
                 fountain_off_date=datetime(2022, 1, 27),
                 h_i = 0.13, #Initialise ice height at start
+                R_F=3,  # First drone rad
             # perimeter=35, # on Jan 28
             )
 
@@ -49,8 +50,6 @@ def config(location="guttannen21", spray="man"):
                 expiry_date=datetime(2022, 1, 27),
                 fountain_off_date=datetime(2022, 1, 27),
                 alt=1047.6,
-                coords=[46.65549,8.29149],
-                #TODO correct snow height
                 h_i = 0.13, #Initialise ice height at start
             )
 

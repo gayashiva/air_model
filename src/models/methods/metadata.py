@@ -105,6 +105,13 @@ def get_parameter_metadata(
             "kind": "parameter",
             "units": "($\\degree C$)",
         },
+        "guttannen22": {
+            "name": "Guttannen 2022",
+            "shortname": "CH22",
+            "slidename": "Swiss",
+            "kind": "site",
+            "units": "()",
+        },
         "guttannen21": {
             "name": "Guttannen 2021",
             "shortname": "CH21",

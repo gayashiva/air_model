@@ -31,7 +31,7 @@ class Icestupa:
         # TODO correct
         self.spray = spray
 
-        CONSTANTS, SITE, FOLDER = config(location)
+        CONSTANTS, SITE, FOLDER = config(location, spray)
         diff = SITE["expiry_date"] - SITE["start_date"]
         days, seconds = diff.days, diff.seconds
         self.total_hours = days * 24 + seconds // 3600

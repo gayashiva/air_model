@@ -28,12 +28,12 @@ if __name__ == "__main__":
 
     # location = "Guttannen 2020"
     # location = "Guttannen 2021"
-    # location = "Guttannen 2022"
-    location = "Gangles 2021"
+    location = "Guttannen 2022"
+    # location = "Gangles 2021"
 
     # Initialise icestupa object
-    # icestupa = Icestupa(location, spray="auto")
-    icestupa = Icestupa(location, spray="man")
+    icestupa = Icestupa(location, spray="auto")
+    # icestupa = Icestupa(location, spray="man")
 
     if test:
         icestupa.gen_input()
