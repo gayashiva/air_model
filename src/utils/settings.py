@@ -136,7 +136,7 @@ def config(location="guttannen21", spray="man"):
 
         f_heights = [
             {"time": SITE["start_date"], "h_f": 5},
-            # {"time": datetime(2021, 1, 22, 16), "h_f": 9},
+            {"time": datetime(2021, 1, 22, 16), "h_f": 9},
         ]
 
     if location == "Schwarzsee 2019" or location == "schwarzsee19":

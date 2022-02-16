@@ -86,6 +86,25 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             self.df.loc[df_f.index, "Discharge"] = self.D_F * df_f["fountain"]
             self.df = self.df.reset_index()
 
+            f_heights = [
+                {"time": self.start_date, "h_f": 5},
+                {"time": datetime(2021, 1, 22, 16), "h_f": 9},
+            ]
+
+            df_h = pd.DataFrame(f_heights)
+
+            # self.df["Discharge"] = self.df_f.Discharge.max()
+            dis_old= self.D_F
+            for i in range(1,df_h.shape[0]):
+                dis_new= get_projectile(h_f=df_h.h_f[i], dia=0.006, dis=dis_old, theta_f=60)
+                self.df.loc[self.df.time > df_h.time[i], "Discharge"] *= dis_new/dis_old
+                logger.warning("Discharge changed from %.1f to %.1f" % (dis_old, dis_new))
+                dis_old = dis_new
+                # df_h[i]
+
+            self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
+            logger.warning("Manual Discharge mean %.1f" % self.D_F)
+
         if self.spray == "auto":
             with open(self.sim + "coeffs.json") as f:
                 param_values = json.load(f)

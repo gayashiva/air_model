@@ -26,10 +26,10 @@ if __name__ == "__main__":
     test = True
     # test = False
 
-    location = "Guttannen 2020"
+    # location = "Guttannen 2020"
     # location = "Guttannen 2021"
     # location = "Guttannen 2022"
-    # location = "Gangles 2021"
+    location = "Gangles 2021"
 
     # Initialise icestupa object
     # icestupa = Icestupa(location, spray="auto")
