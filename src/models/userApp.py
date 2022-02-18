@@ -2,7 +2,7 @@
 """
 
 # External modules
-import os, sys
+import os, sys, shutil
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import pandas as pd
@@ -23,8 +23,8 @@ if __name__ == "__main__":
     logger.setLevel("WARNING")
     # logger.setLevel("INFO")
 
-    test = True
-    # test = False
+    # test = True
+    test = False
 
     # location = "Guttannen 2020"
     # location = "Guttannen 2021"
@@ -43,9 +43,28 @@ if __name__ == "__main__":
         icestupa.gen_output()
 
         icestupa.summary_figures()
+
     else:
         icestupa.read_output()
         df = icestupa.df
+
+        # For web app
+        src = "/home/suryab/work/air_model/data/" + icestupa.name + "/"
+        dst = "/home/suryab/work/air_app/data/" + icestupa.name + "/"
+        for dir in ["processed", "figs"]:
+            try:
+                #if path already exists, remove it before copying with copytree()
+                if os.path.exists(dst + dir):
+                    shutil.rmtree(dst + dir)
+                    shutil.copytree(src + dir, dst + dir)
+                else:
+                    shutil.copytree(src + dir, dst + dir)
+            except OSError as e:
+                # If the error was caused because the source wasn't a directory
+                if e.errno == errno.ENOTDIR:
+                   shutil.copy(source_dir_prompt, destination_dir_prompt)
+                else:
+                    print('Directory not copied. Error: %s' % e)
 
 
         # fig, ax = plt.subplots()

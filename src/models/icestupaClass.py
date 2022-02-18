@@ -6,7 +6,6 @@ import pickle
 pickle.HIGHEST_PROTOCOL = 4  # For python version 2.7
 import pandas as pd
 import sys, os, math, json
-import shutil
 import numpy as np
 import logging
 import pytz
@@ -242,23 +241,6 @@ class Icestupa:
             key="df",
             mode="w",
         )
-        # For web app
-        src = "/home/suryab/work/air_model/data/" + self.name + "/"
-        dst = "/home/suryab/work/air_app/data/" + self.name + "/"
-        for dir in ["processed", "figs"]:
-            try:
-                #if path already exists, remove it before copying with copytree()
-                if os.path.exists(dst + dir):
-                    shutil.rmtree(dst + dir)
-                    shutil.copytree(src + dir, dst + dir)
-                else:
-                    shutil.copytree(src + dir, dst + dir)
-            except OSError as e:
-                # If the error was caused because the source wasn't a directory
-                if e.errno == errno.ENOTDIR:
-                   shutil.copy(source_dir_prompt, destination_dir_prompt)
-                else:
-                    print('Directory not copied. Error: %s' % e)
 
     def read_input(self):  # Use processed input dataset
 
