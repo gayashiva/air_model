@@ -185,6 +185,7 @@ class Icestupa:
             "last_hour",
             "R_F",
             "D_F",
+            "WUE",
         ]
         iceV_max = round(self.df["iceV"].max(), 1)
         M_input = round(self.df["input"].iloc[-1], 1)
@@ -201,9 +202,9 @@ class Icestupa:
         M_sub = self.df["vapour"].iloc[-1]
         M_ice = self.df["ice"].iloc[-1] - self.V_dome * self.RHO_I
         last_hour = self.df.shape[0]
-        # TODO Correct rounding
         R_F = round(self.R_F, 1)
         D_F = round(self.D_F, 1)
+        WUE = round((M_ice + M_water) / M_input * 100, 1)
 
         # For web app
         for variable in results:

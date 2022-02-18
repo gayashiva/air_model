@@ -25,8 +25,7 @@ def calculate(process_name, tasks, results):
             break
         else:
             # Initialise icestupa object
-            location = new_value
-            icestupa = Icestupa(location)
+            icestupa = Icestupa(*new_value)
 
             # Derive all the input parameters
             icestupa.gen_input()
@@ -39,7 +38,7 @@ def calculate(process_name, tasks, results):
             icestupa.gen_output()
 
             # Create figures for web interface
-            icestupa.summary_figures()
+            # icestupa.summary_figures()
 
             # Compute result and mimic a long-running task
             compute = icestupa.df.iceV.max()
@@ -87,9 +86,14 @@ if __name__ == "__main__":
         new_process.start()
 
     # Fill task queue
-    # task_list = ["guttannen21", "guttannen20", "gangles21", "schwarzsee19"]
-    task_list = ["guttannen22", "guttannen21", "guttannen20", "gangles21"]
-    # task_list = [ "guttannen20", "gangles21"]
+    task_list = []
+    locations = ["guttannen22", "guttannen21", "guttannen20", "gangles21"]
+    # locations = [ "guttannen20", "gangles21"]
+    sprays = ["man", "auto"]
+    for spray in sprays:
+        for loc in locations:
+             task_list.append([loc,spray])
+
 
     for single_task in task_list:
         tasks.put(single_task)

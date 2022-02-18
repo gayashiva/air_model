@@ -8,13 +8,12 @@ import logging
 import os, sys
 import numpy as np
 
-# Spammers
-logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
-logging.getLogger("numexpr").setLevel(logging.CRITICAL)
-
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 
+# Spammers
+logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
+logging.getLogger("numexpr").setLevel(logging.CRITICAL)
 
 def config(location="guttannen21", spray="man"):
 
@@ -170,7 +169,6 @@ def config(location="guttannen21", spray="man"):
         L_S=2.848e6,  # latent heat for sublimation [J kg-1]
         K_I=2.123,  # thermal conductivity ice [W m^-1 K^-1] Waite et al. 2006
         G=9.81,  # Gravitational acceleration
-
 
         # Weather uncertainty
         IE=0.97,  # Ice Emissivity IE
