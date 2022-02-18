@@ -22,42 +22,43 @@ def config(location="guttannen21", spray="man"):
         SITE = dict(
             name="guttannen22",
             alt=1047.6,
+            cld=0.5,
             coords=[46.65549,8.29149],
             # Calibrated values
             DX=45e-03,  # Surface layer thickness [m]
         )
 
         if spray == "auto":
-            auto= dict(
+            add= dict(
                 start_date=datetime(2021, 12, 3, 8),
                 expiry_date=datetime(2022, 1, 27),
                 fountain_off_date=datetime(2022, 1, 27),
+                dis_crit = 2,
+                dis_max= 13,
                 h_i = 0.13, #Initialise ice height at start
                 # R_F=3,  # First drone rad
             # perimeter=35, # on Jan 28
             )
 
-            SITE = dict(SITE, **auto)
             f_heights = [
-                {"time": SITE["start_date"], "h_f": 3},
+                {"time": add["start_date"], "h_f": 3},
                 {"time": datetime(2022, 12, 23, 16), "h_f": 4},
             ]
 
         if spray == "man":
-            man = dict(
+            add = dict(
                 start_date=datetime(2021, 12, 8, 14),
                 expiry_date=datetime(2022, 1, 27),
                 fountain_off_date=datetime(2022, 1, 27),
-                alt=1047.6,
                 h_i = 0.13, #Initialise ice height at start
             )
 
-            SITE = dict(SITE, **man)
             f_heights = [
-                {"time": SITE["start_date"], "h_f": 3.7},
+                {"time": add["start_date"], "h_f": 3.7},
                 {"time": datetime(2022, 12, 23, 16), "h_f": 4.7},
                 {"time": datetime(2022, 2, 12, 16), "h_f": 5.7},
             ]
+        SITE = dict(SITE, **add)
 
     if location == "Guttannen 2021" or location == "guttannen21":
 
@@ -66,11 +67,11 @@ def config(location="guttannen21", spray="man"):
             start_date=datetime(2020, 11, 22, 15),
             # end_date=datetime(2021, 5, 10, 1),
             expiry_date=datetime(2021, 5, 10, 1),
-            fountain_off_date=datetime(2021, 2, 20, 10),
             D_F=7.5,  # Fountain mean discharge
             # R_F=4.3,  # Fountain mean discharge
             # R_F=5.4,  # First drone rad
             alt=1047.6,
+            cld=0.5,
             coords=[46.65549,8.29149],
             # h_f=5,
             # perimeter=45, # on Feb 11
@@ -78,6 +79,18 @@ def config(location="guttannen21", spray="man"):
             # Calibrated values
             DX=45e-03,  # Surface layer thickness [m]
         )
+
+        if spray == "auto":
+            add= dict(
+                fountain_off_date=datetime(2021, 5, 10, 1),
+                dis_crit = 2,
+                dis_max= 13,
+            )
+        if spray == "man":
+            add = dict(
+                fountain_off_date=datetime(2021, 2, 20, 10),
+            )
+        SITE = dict(SITE, **add)
 
         f_heights = [
             {"time": SITE["start_date"], "h_f": 2.68},
@@ -93,10 +106,9 @@ def config(location="guttannen21", spray="man"):
             start_date=datetime(2020, 1, 3, 16),
             # end_date=datetime(2020, 4, 6, 12),
             expiry_date=datetime(2020, 4, 6, 12),
-            fountain_off_date=datetime(2020, 3, 8, 9),  # Image shows Dani switched off at 8th Mar 10 am
-            D_F=7.5,  # Fountain mean discharge
             # R_F=6.68,  # First drone rad
             alt=1047.6,
+            cld=0.5,
             coords=[46.65549,8.29149],
             # h_f=3,
             # perimeter=28, # on 24 Jan
@@ -104,6 +116,19 @@ def config(location="guttannen21", spray="man"):
             # Calibrated values
             DX=45e-03,  # Surface layer thickness [m]
         )
+
+        if spray == "auto":
+            add= dict(
+                fountain_off_date=datetime(2020, 4, 6, 12),
+                dis_crit = 2,
+                dis_max= 13,
+            )
+        if spray == "man":
+            add = dict(
+                fountain_off_date=datetime(2020, 3, 8, 9),  # Image shows Dani switched off at 8th Mar 10 am
+                D_F=7.5,  # Fountain mean discharge
+            )
+        SITE = dict(SITE, **add)
 
         f_heights = [
             {"time": SITE["start_date"], "h_f": 2.5},
@@ -118,10 +143,9 @@ def config(location="guttannen21", spray="man"):
             start_date=datetime(2021, 1, 18),
             # end_date=datetime(2021, 7, 8),
             expiry_date=datetime(2021, 6, 20),
-            fountain_off_date=datetime(2021, 3, 10, 18),
-            D_F=60,  # FOUNTAIN min discharge
             # R_F=9.05,  # First drone rad
             alt=4009,
+            cld=0.1,
             coords=[34.216638,77.606949],
             h_f=9,
             tcc=0,  # Total cloud cover
@@ -137,13 +161,24 @@ def config(location="guttannen21", spray="man"):
             {"time": datetime(2021, 1, 22, 16), "h_f": 9},
         ]
 
+        if spray == "auto":
+            add= dict(
+                fountain_off_date=datetime(2021, 6, 20),
+                dis_crit = 2,
+                dis_max= 60,
+            )
+        if spray == "man":
+            add = dict(
+                fountain_off_date=datetime(2021, 3, 10, 18),
+                D_F=60,  # FOUNTAIN min discharge
+            )
+        SITE = dict(SITE, **add)
+
     # Define directory structure
     FOLDER = dict(
         raw="data/" + SITE["name"] + "/raw/",
         input="data/" + SITE["name"] + "/interim/",
         output="data/" + SITE["name"] + "/processed/",
-        output_auto="data/" + SITE["name"] + "/processed/auto/",
-        output_man="data/" + SITE["name"] + "/processed/man/",
         sim="data/" + SITE["name"] + "/processed/simulations/",
         fig="data/" + SITE["name"] + "/figs/",
     )

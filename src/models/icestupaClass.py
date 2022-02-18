@@ -385,6 +385,7 @@ class Icestupa:
                         "sub",
                         "melted",
                     ]
+                    # TODO Why should be zero?
                     for column in col_list:
                         self.df.loc[i - 1, column] = 0
 

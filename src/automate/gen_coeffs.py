@@ -19,7 +19,7 @@ from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
 from src.models.methods.metadata import get_parameter_metadata
 from src.automate.autoDischarge import TempFreeze, SunMelt
-from src.automate.projectile import get_projectile
+# from src.automate.projectile import get_projectile
 
 def line(x, a, b, c, d):
     x1 = x[:, 0]
@@ -36,53 +36,52 @@ def autoDis(a, b, c, d, amplitude, center, sigma, temp, time, rh, v):
 if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
-    logger.setLevel("ERROR")
+    logger.setLevel("INFO")
 
     # locations = ["gangles21", "guttannen21"]
-    locations = ["guttannen21"]
+    locations = ["guttannen21", "guttannen22", "guttannen20", "gangles21"]
 
     for loc in locations:
-        CONSTANTS, SITE, FOLDER = config(loc)
-        icestupa_sim = Icestupa(loc)
-        icestupa_sim.read_output()
-
-        df = icestupa_sim.df
-
-        temp_cutoff = 0.25
-        wind_cutoff = 0.5
-        crit_temp = df.loc[df.time < datetime(2021, 3, 1)].temp.quantile(temp_cutoff)
-        crit_rh = df.loc[df.time < datetime(2021, 3, 1)].RH.quantile(temp_cutoff)
-        crit_wind = df.loc[df.time < datetime(2021, 3, 1)].wind.quantile(wind_cutoff)
-        freeze_when = [crit_temp,crit_rh, crit_wind]
-
-        with open(FOLDER["raw"] + "auto_info.json") as f:
+        with open("data/common/info.json") as f:
             params = json.load(f)
+        CONSTANTS, SITE, FOLDER = config(loc)
 
-        """Calculate Virtual radius"""
-        print(f"The temperature, humidity and wind were less/more than {freeze_when} for {temp_cutoff} of the months of Jan and Feb" )
-        dis = TempFreeze(freeze_when,loc)
-        scaling_factor = params['crit_dis']/dis
+        # icestupa_sim = Icestupa(loc)
+        # icestupa_sim.read_output()
 
-        print(f"Radius for {loc} is {params['spray_r']}" )
+        # df = icestupa_sim.df
+
+        # temp_cutoff = 0.25
+        # wind_cutoff = 0.5
+        # crit_temp = df.loc[df.time < datetime(2021, 3, 1)].temp.quantile(temp_cutoff)
+        # crit_rh = df.loc[df.time < datetime(2021, 3, 1)].RH.quantile(temp_cutoff)
+        # crit_wind = df.loc[df.time < datetime(2021, 3, 1)].wind.quantile(wind_cutoff)
+        # freeze_when = [crit_temp,crit_rh, crit_wind]
+
+
+        # """Calculate Virtual radius"""
+        # print(f"The temperature, humidity and wind were less/more than {freeze_when} for {temp_cutoff} of the months of Jan and Feb" )
+        # dis = TempFreeze(freeze_when,loc)
+        # scaling_factor = params['crit_dis']/dis
+
+        # print(f"Radius for {loc} is {params['spray_r']}" )
         # print(f"So only {freezing_fraction*100}% froze from the discharge rate" )
-        print(f"Corresponding discharge for {loc} is {dis}" )
-        print(f"Recommended scaling factor is {scaling_factor}" )
+        # print(f"Corresponding discharge for {loc} is {dis}" )
+        # print(f"Recommended scaling factor is {scaling_factor}" )
 
-        with open(FOLDER["raw"] + "automate_info.json", "w") as f:
-            json.dump(params, f)
+        # with open(FOLDER["raw"] + "auto/auto_info.json", "w") as f:
+        #     json.dump(params, f)
 
         """Calculate Solar gaussian coeffs"""
         result = SunMelt(loc)
 
-        with open(FOLDER["input"] + "sunmelt.json", "w") as f:
+        with open(FOLDER["input"] + "auto/sunmelt.json", "w") as f:
             json.dump(dict(result.best_values), f)
 
-        compile = False
-        if compile:
+        compile = True
+        if not os.path.exists(FOLDER["input"] + "auto/sims.nc") or compile:
+            logger.warning("=> Computing temp coeffs for location {}".format(loc))
             """Compute Temp coeffs"""
-            # temp = list(range(params["temp"][0], params["temp"][1] + 1))
-            # rh = list(range(params["rh"][0], params["rh"][1] + 1))
-            # v = list(range(params["wind"][0], params["wind"][1] + 1))
             temp = list(range(-30, 20))
             rh = list(range(0, 100, 5))
             v = list(range(0, 20, 1))
@@ -118,9 +117,10 @@ if __name__ == "__main__":
                         aws = [temp, rh, v]
                         da.sel(temp=temp, rh=rh, v=v).data+= TempFreeze(aws,
                             loc)
-            da.to_netcdf(FOLDER["sim"] + "auto_sims.nc")
+            da.to_netcdf(FOLDER["input"] + "auto/sims.nc")
         else:
-            da = xr.open_dataarray(FOLDER["sim"] + "auto_sims.nc")
+            logger.info("=> Skipping temp coeffs for location {}".format(loc))
+            da = xr.open_dataarray(FOLDER["input"] + "auto/sims.nc")
 
 
         x = []
@@ -139,7 +139,7 @@ if __name__ == "__main__":
         """Combine all coeffs"""
         param_values = {}
 
-        with open(FOLDER["input"] + "sunmelt.json") as f:
+        with open(FOLDER["input"] + "auto/sunmelt.json") as f:
             param_values = json.load(f)
 
         param_values["a"] = a
@@ -147,10 +147,10 @@ if __name__ == "__main__":
         param_values["c"] = c
         param_values["d"] = d
 
-        # Scale all coeffs
-        param_values.update((x, y*scaling_factor) for x, y in param_values.items())
+        # TODO Scale all coeffs ?
+        # param_values.update((x, y*scaling_factor) for x, y in param_values.items())
 
-        with open(FOLDER["sim"] + "coeffs.json", "w") as f:
+        with open(FOLDER["output"] + "auto/coeffs.json", "w") as f:
             json.dump(param_values, f)
 
         print(

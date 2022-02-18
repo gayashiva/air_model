@@ -275,6 +275,27 @@ def summary_figures(self):
     )
     plt.clf()
 
+    fig, ax = plt.subplots()
+    x = self.df.time
+    y1 = self.df.Discharge
+    ax.set_ylabel("Discharge [$l min-1$]")
+    ax.plot(
+        x,
+        y1,
+        linewidth=1,
+        color=CB91_Blue,
+    )
+    plt.legend()
+    ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    ax.xaxis.set_minor_locator(mdates.DayLocator())
+    fig.autofmt_xdate()
+    plt.savefig(
+        self.fig + self.spray + "/Discharge.jpg",
+        bbox_inches="tight",
+    )
+    plt.clf()
+
     if self.name in ["guttannen21", "guttannen20"]:
         fig, ax = plt.subplots()
         CB91_Purple = "#9D2EC5"

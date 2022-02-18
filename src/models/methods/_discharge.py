@@ -28,33 +28,6 @@ def autoDis(a, b, c, d, amplitude, center, sigma, temp, time, rh, v):
 
 def get_discharge(self):  # Provides discharge info based on trigger setting
 
-    if self.name == "schwarzsee19":
-        self.df["Discharge"] = 0
-        logger.debug("Initialised discharge as zero")
-
-        df_f = pd.read_csv(
-            os.path.join("data/" + self.name + "/interim/")
-            + self.name
-            + "_input_field.csv"
-        )
-        df_f = df_f.rename(columns={"When": "time"})
-        df_f["time"] = pd.to_datetime(df_f["time"], format="%Y.%m.%d %H:%M:%S")
-        df_f = df_f.set_index("time").resample(str(int(self.DT / 60)) + "T").mean()
-        self.df = self.df.set_index("time")
-        mask = df_f["Discharge"] != 0
-        f_on = df_f[mask].index
-        self.df.loc[f_on, "Discharge"] = df_f["Discharge"]
-        self.df = self.df.reset_index()
-        self.df["Discharge"] = self.df.Discharge.replace(np.nan, 0)
-        self.discharge = self.df.Discharge.replace(0, np.nan).mean()
-        logger.warning(
-            f"Hours of spray : %.2f Mean Discharge:%.2f Max Discharge:%.2f"
-            % (
-                (self.df.Discharge.astype(bool).sum(axis=0) * self.DT / 3600),
-                (self.df.Discharge.replace(0, np.nan).mean()),
-                (self.df.Discharge.replace(0, np.nan).max()),
-            )
-        )
     if self.name in ["gangles21"]:
         self.df["Discharge"] = 0
         logger.debug("Initialised discharge as zero")
@@ -92,16 +65,17 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
 
             for i in range(0,self.df.shape[0]):
                 self.df.loc[i, "Discharge"] = autoDis(**param_values, time=self.df.time.dt.hour[i], temp=self.df.temp[i],rh=self.df.RH[i], v=self.df.wind[i])
-                # TODO correct with params
-                if self.df.Discharge[i] < 2:
+                if self.df.Discharge[i] < self.dis_crit:
                     self.df.loc[i, "Discharge"] = 0
-                # if self.df.Discharge[i] >= 13:
-                #     self.df.loc[i, "Discharge"] = 13
+                if self.df.Discharge[i] >= self.dis_max:
+                    self.df.loc[i, "Discharge"] = self.dis_max
             logger.warning(self.df.Discharge.describe())
+            self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
 
     if self.name in ["guttannen21", "guttannen20"]:
-        self.df["Discharge"] = self.D_F
-        logger.info("Discharge constant")
+        if self.spray == "man":
+            self.df["Discharge"] = self.D_F
+            logger.info("Discharge constant")
 
         if self.spray == "auto":
             with open(self.sim + "coeffs.json") as f:
@@ -109,12 +83,13 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
 
             for i in range(0,self.df.shape[0]):
                 self.df.loc[i, "Discharge"] = autoDis(**param_values, time=self.df.time.dt.hour[i], temp=self.df.temp[i],rh=self.df.RH[i], v=self.df.wind[i])
-                # TODO correct with params
-                if self.df.Discharge[i] < 2:
+
+                if self.df.Discharge[i] < self.dis_crit:
                     self.df.loc[i, "Discharge"] = 0
-                if self.df.Discharge[i] >= 13:
+                if self.df.Discharge[i] >= self.dis_max:
                     self.df.loc[i, "Discharge"] = 13
             logger.warning(self.df.Discharge.describe())
+            self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
 
     if self.name == "guttannen22" and self.spray == "auto":
         df_f = pd.read_csv(
@@ -150,8 +125,6 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         self.df["Discharge"] = df_f.Discharge.max()
         dis_old= df_f.Discharge.max()
         for i in range(1,df_h.shape[0]):
-            # dis_new= get_projectile(h_f=df_h.h_f[i], dia=0.006, dis=dis_old, theta_f=60)
-            # TODO Check from auto data
             dis_new = dis_old/2
             self.df.loc[self.df.time > df_h.time[i], "Discharge"] *= dis_new/dis_old
             dis_old = dis_new

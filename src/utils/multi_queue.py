@@ -29,7 +29,6 @@ def calculate(process_name, tasks, results):
 
             # Derive all the input parameters
             icestupa.gen_input()
-            # icestupa.read_input()
 
             # Generate results
             icestupa.sim_air()
@@ -38,7 +37,7 @@ def calculate(process_name, tasks, results):
             icestupa.gen_output()
 
             # Create figures for web interface
-            # icestupa.summary_figures()
+            icestupa.summary_figures()
 
             # Compute result and mimic a long-running task
             compute = icestupa.df.iceV.max()

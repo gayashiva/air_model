@@ -14,14 +14,14 @@ import os, sys
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 from src.utils.settings import config
-from src.automate.projectile import get_projectile
 from src.models.methods.solar import get_offset
+# from src.automate.projectile import get_projectile
 
 def TempFreeze(aws, loc="guttannen22"):
 
     CONSTANTS, SITE, FOLDER = config(loc)
 
-    with open(FOLDER["raw"] + "auto_info.json") as f:
+    with open("data/common/info.json") as f:
         params = json.load(f)
 
     # AWS
@@ -45,7 +45,7 @@ def TempFreeze(aws, loc="guttannen22"):
     vp_ice = np.exp(43.494 - 6545.8 / (params["temp_i"] + 278)) / ((params["temp_i"] + 868) ** 2 * 100)
 
     e_a = (1.24 * math.pow(abs(vp_a / (temp + 273.15)), 1 / 7)) * (
-        1 + 0.22 * math.pow(params["cld"], 2)
+        1 + 0.22 * math.pow(SITE["cld"], 2)
     )
 
     LW = e_a * CONSTANTS["sigma"] * math.pow(
@@ -74,19 +74,11 @@ def TempFreeze(aws, loc="guttannen22"):
         / ((np.log(CONSTANTS["H_AWS"] / CONSTANTS["Z"])) ** 2)
     )
 
-    # Fountain water layer cools to 0 C
-    Qf = (
-        CONSTANTS["RHO_W"]
-        * CONSTANTS["DX"]
-        * CONSTANTS["C_W"]
-        / CONSTANTS["DT"]
-        * params["temp_i"]
-    )
 
-    EB = Ql + Qs + LW + Qf
+    EB = Ql + Qs + LW
     dis = -1 * EB / CONSTANTS["L_F"] * 1000 / 60
 
-    SA = math.pi * math.pow(params['spray_r'],2) * math.pow(2,0.5) # Assuming h=r cone
+    SA = math.pi * math.pow(params['spray_r'],2)
     dis *= SA
 
     return dis
@@ -95,7 +87,7 @@ def SunMelt(loc):
 
     CONSTANTS, SITE, FOLDER = config(loc)
 
-    with open(FOLDER["raw"] + "auto_info.json") as f:
+    with open("data/common/info.json") as f:
         params = json.load(f)
 
     times = pd.date_range(
@@ -128,7 +120,7 @@ def SunMelt(loc):
     df["hour"] = df["index"].apply(lambda x: int(x.strftime("%H")))
     df["f_cone"] = 0
 
-    SA = math.pi * math.pow(params["spray_r"],2) * math.pow(2,0.5) # Assuming h=r cone
+    SA = math.pi * math.pow(params["spray_r"],2)
 
     for i in range(0, df.shape[0]):
         df.loc[i, "f_cone"] = (
@@ -137,12 +129,12 @@ def SunMelt(loc):
         ) / SA
 
         df.loc[i, "SW_direct"] = (
-            (1 - params["cld"])
+            (1 - SITE["cld"])
             * df.loc[i, "f_cone"]
             * df.loc[i, "ghi"]
         )
         df.loc[i, "SW_diffuse"] = (
-            params["cld"]  * df.loc[i, "ghi"]
+            SITE["cld"]  * df.loc[i, "ghi"]
         )
     df["dis"] = -1 * (1 - CONSTANTS["A_I"]) * (df["SW_direct"] + df["SW_diffuse"]) * SA / CONSTANTS["L_F"] * 1000 / 60
 
