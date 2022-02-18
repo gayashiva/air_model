@@ -78,8 +78,8 @@ def TempFreeze(aws, loc="guttannen22"):
     EB = Ql + Qs + LW
     dis = -1 * EB / CONSTANTS["L_F"] * 1000 / 60
 
-    SA = math.pi * math.pow(params['spray_r'],2)
-    dis *= SA
+    # SA = math.pi * math.pow(params['spray_r'],2)
+    # dis *= SA
 
     return dis
 
@@ -120,13 +120,14 @@ def SunMelt(loc):
     df["hour"] = df["index"].apply(lambda x: int(x.strftime("%H")))
     df["f_cone"] = 0
 
-    SA = math.pi * math.pow(params["spray_r"],2)
+    # SA = math.pi * math.pow(params["spray_r"],2)
 
     for i in range(0, df.shape[0]):
-        df.loc[i, "f_cone"] = (
-            math.pi * math.pow(params["spray_r"], 2) * 0.5 * math.sin(df.loc[i, "sea"])
-            + 0.5 * math.pow(params["spray_r"], 2) * math.cos(df.loc[i, "sea"])
-        ) / SA
+        # TODO generalise
+        df.loc[i, "f_cone"] = 0.3
+        #     math.pi * math.pow(params["spray_r"], 2) * 0.5 * math.sin(df.loc[i, "sea"])
+        #     + 0.5 * math.pow(params["spray_r"], 2) * math.cos(df.loc[i, "sea"])
+        # ) / SA
 
         df.loc[i, "SW_direct"] = (
             (1 - SITE["cld"])
@@ -136,7 +137,7 @@ def SunMelt(loc):
         df.loc[i, "SW_diffuse"] = (
             SITE["cld"]  * df.loc[i, "ghi"]
         )
-    df["dis"] = -1 * (1 - CONSTANTS["A_I"]) * (df["SW_direct"] + df["SW_diffuse"]) * SA / CONSTANTS["L_F"] * 1000 / 60
+    df["dis"] = -1 * (1 - CONSTANTS["A_I"]) * (df["SW_direct"] + df["SW_diffuse"]) / CONSTANTS["L_F"] * 1000 / 60
 
     model = GaussianModel()
     gauss_params = model.guess(df.dis, df.hour)

@@ -33,7 +33,7 @@ def config(location="guttannen21", spray="man"):
                 start_date=datetime(2021, 12, 3, 8),
                 expiry_date=datetime(2022, 1, 27),
                 fountain_off_date=datetime(2022, 1, 27),
-                dis_crit = 2,
+                dis_crit = 1,
                 dis_max= 13,
                 h_i = 0.13, #Initialise ice height at start
                 # R_F=3,  # First drone rad
@@ -82,8 +82,8 @@ def config(location="guttannen21", spray="man"):
 
         if spray == "auto":
             add= dict(
-                fountain_off_date=datetime(2021, 5, 10, 1),
-                dis_crit = 2,
+                fountain_off_date=datetime(2021, 2, 10, 1),
+                dis_crit = 1,
                 dis_max= 13,
             )
         if spray == "man":
@@ -119,8 +119,8 @@ def config(location="guttannen21", spray="man"):
 
         if spray == "auto":
             add= dict(
-                fountain_off_date=datetime(2020, 4, 6, 12),
-                dis_crit = 2,
+                fountain_off_date=datetime(2020, 3, 6, 12),
+                dis_crit = 1,
                 dis_max= 13,
             )
         if spray == "man":
@@ -163,8 +163,8 @@ def config(location="guttannen21", spray="man"):
 
         if spray == "auto":
             add= dict(
-                fountain_off_date=datetime(2021, 6, 20),
-                dis_crit = 2,
+                fountain_off_date=datetime(2021, 4, 10),
+                dis_crit = 1,
                 dis_max= 60,
             )
         if spray == "man":

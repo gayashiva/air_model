@@ -150,7 +150,7 @@ if __name__ == "__main__":
         # TODO Scale all coeffs ?
         # param_values.update((x, y*scaling_factor) for x, y in param_values.items())
 
-        with open(FOLDER["output"] + "auto/coeffs.json", "w") as f:
+        with open(FOLDER["input"] + "auto/coeffs.json", "w") as f:
             json.dump(param_values, f)
 
         print(

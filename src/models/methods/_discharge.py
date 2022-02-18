@@ -60,11 +60,12 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             self.df = self.df.reset_index()
 
         if self.spray == "auto":
-            with open(self.sim + "coeffs.json") as f:
+            with open(self.input + "auto/coeffs.json") as f:
                 param_values = json.load(f)
 
             for i in range(0,self.df.shape[0]):
                 self.df.loc[i, "Discharge"] = autoDis(**param_values, time=self.df.time.dt.hour[i], temp=self.df.temp[i],rh=self.df.RH[i], v=self.df.wind[i])
+                self.df.loc[i, "Discharge"] *= math.pi * math.pow(self.R_F,2)
                 if self.df.Discharge[i] < self.dis_crit:
                     self.df.loc[i, "Discharge"] = 0
                 if self.df.Discharge[i] >= self.dis_max:
@@ -78,12 +79,12 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
             logger.info("Discharge constant")
 
         if self.spray == "auto":
-            with open(self.sim + "coeffs.json") as f:
+            with open(self.input + "auto/coeffs.json") as f:
                 param_values = json.load(f)
 
             for i in range(0,self.df.shape[0]):
                 self.df.loc[i, "Discharge"] = autoDis(**param_values, time=self.df.time.dt.hour[i], temp=self.df.temp[i],rh=self.df.RH[i], v=self.df.wind[i])
-
+                self.df.loc[i, "Discharge"] *= math.pi * math.pow(self.R_F,2)
                 if self.df.Discharge[i] < self.dis_crit:
                     self.df.loc[i, "Discharge"] = 0
                 if self.df.Discharge[i] >= self.dis_max:
@@ -132,9 +133,6 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
         logger.warning("Manual Discharge mean %.1f" % self.D_F)
         # logger.warning("Manual Discharge used")
-
-    if self.name in ["phortse20"]:
-        self.df["Discharge"] = self.D_F
 
     if self.spray != "auto":
         mask = self.df["time"] > self.fountain_off_date

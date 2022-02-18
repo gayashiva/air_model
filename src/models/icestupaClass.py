@@ -123,8 +123,8 @@ class Icestupa:
                     self.df.loc[i, "e_a"] * self.sigma * math.pow(row.temp + 273.15, 4)
                 )
 
-        self.get_discharge()
         self.self_attributes()
+        self.get_discharge()
 
         solar_df = get_solar(
             coords=self.coords,
@@ -187,14 +187,9 @@ class Icestupa:
             "D_F",
             "WUE",
         ]
-        iceV_max = round(self.df["iceV"].max(), 1)
-        M_input = round(self.df["input"].iloc[-1], 1)
-        M_F = round(
-            self.df["Discharge"].sum() * self.DT / 60
-            + self.df.loc[0, "input"]
-            - self.V_dome * self.RHO_I,
-            1,
-        )
+        iceV_max = self.df["iceV"].max()
+        M_input = self.df["input"].iloc[-1]
+        M_F = self.df["Discharge"].sum() * self.DT / 60 + self.df.loc[0, "input"] - self.V_dome * self.RHO_I
         M_ppt = self.df["snow2ice"].sum()
         M_dep = self.df["dep"].sum()
         M_water = self.df["meltwater"].iloc[-1]
@@ -202,13 +197,13 @@ class Icestupa:
         M_sub = self.df["vapour"].iloc[-1]
         M_ice = self.df["ice"].iloc[-1] - self.V_dome * self.RHO_I
         last_hour = self.df.shape[0]
-        R_F = round(self.R_F, 1)
-        D_F = round(self.D_F, 1)
-        WUE = round((M_ice + M_water) / M_input * 100, 1)
+        R_F = self.R_F
+        D_F = self.D_F
+        WUE = int((M_ice + M_water) / M_input * 100)
 
         # For web app
         for variable in results:
-            results_dict[variable] = round(eval(variable), 0)
+            results_dict[variable] = int(round(eval(variable), 1))
 
         print("Summary of results for %s :" % self.name)
         print()
@@ -385,7 +380,6 @@ class Icestupa:
                         "sub",
                         "melted",
                     ]
-                    # TODO Why should be zero?
                     for column in col_list:
                         self.df.loc[i - 1, column] = 0
 
