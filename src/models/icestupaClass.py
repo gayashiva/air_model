@@ -84,16 +84,22 @@ class Icestupa:
                 logger.warning(" %s is unknown\n" % (unknown[i]))
                 self.df[unknown[i]] = 0
 
-        logger.error(self.df.SW_diffuse.mean())
+        # logger.error(self.df.SW_diffuse.mean())
+        # self.df = self.df.set_index("time")
+        # print(self.df.head())
+
         self.cld, solar_df = get_solar(
             coords=self.coords,
             start=self.start_date,
             end=self.df["time"].iloc[-1],
+            # end=self.df.iloc[-1],
             DT=self.DT,
             alt=self.alt,
+            ghi=self.df.set_index("time")["SW_global"],
         )
+        self.df = self.df.reset_index()
         self.df = pd.merge(solar_df, self.df, on="time", how="left")
-        logger.error(self.df.SW_diffuse_x.mean())
+        self.df["SW_direct"] = self.df["SW_global"] - self.df["SW_diffuse"]
 
         for row in tqdm(
             self.df[1:].itertuples(),

@@ -38,11 +38,11 @@ if __name__ == "__main__":
     if test:
         icestupa.gen_input()
 
-        icestupa.sim_air(test)
+        # icestupa.sim_air(test)
 
-        icestupa.gen_output()
+        # icestupa.gen_output()
 
-        icestupa.summary_figures()
+        # icestupa.summary_figures()
 
     else:
         icestupa.read_output()
