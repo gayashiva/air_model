@@ -75,7 +75,7 @@ def get_era5(location="schwarzsee19"):
         df_in3 = pd.concat([df_in2, df_in3])
         df_in3 = df_in3.reset_index()
 
-    if location in ["guttannen22_auto"]:
+    if location in ["guttannen22"]:
         df_in3 = pd.read_csv(
             FOLDER["raw"] + "era5_2022.csv",
             # "../ERA5/outputs/" + location[:-2] + "_2022.csv",
@@ -143,6 +143,7 @@ def get_era5(location="schwarzsee19"):
             "t2m": "temp",
             "sp": "press",
             # "tp": "ppt",
+            "ssrd": "SW_global",
             "fdir": "SW_direct",
             "strd": "LW_in",
         },
@@ -155,8 +156,8 @@ def get_era5(location="schwarzsee19"):
             "RH",
             # "ppt",
             "wind",
-            "SW_direct",
-            "SW_diffuse",
+            "SW_global",
+            # "SW_diffuse",
             "LW_in",
             "press",
             # "tcc",

@@ -1,6 +1,6 @@
 """Function that returns solar elevation angle
 """
-from pvlib import location
+from pvlib import location, irradiance
 import numpy as np
 import pandas as pd
 import logging
@@ -9,7 +9,8 @@ from pytz import timezone, utc
 from timezonefinder import TimezoneFinder
 from codetiming import Timer
 
-logger = logging.getLogger(__name__)
+# Module logger
+logger = logging.getLogger("__main__")
 
 def get_offset(lat, lng, date):
     """
@@ -38,20 +39,28 @@ def get_solar(coords, start, end, DT, alt):
     )
 
     solar_position = site_location.get_solarposition(times=times, method="ephemeris")
+    clearsky = site_location.get_clearsky(times=times)
+    clearness = irradiance.erbs(ghi = clearsky["ghi"], zenith = solar_position['apparent_zenith'],
+                                      datetime_or_doy= times) 
 
     solar_df = pd.DataFrame(
         {
-            # "ghics": clearsky["ghi"],
-            # "difcs": clearsky["dhi"],
-            # "zen": solar_position["zenith"],
+            "dhi": clearness["dhi"],
+            "cld": 1 - clearness["kt"],
             "sea": np.radians(solar_position["elevation"]),
         }
     )
-    solar_df.loc[solar_df["sea"] < 0, "sea"] = 0
+    bad_values = solar_df["sea"]< 0 
+    solar_df["cld"]= np.where(bad_values, np.nan, solar_df["cld"])
+    solar_df["sea"]= np.where(bad_values, 0, solar_df["sea"])
+    cld = solar_df["cld"].mean()
+    solar_df["cld"]= np.where(bad_values, cld, solar_df["cld"])
+    logger.warning("Diffuse and direct SW calculated with cld %s" % cld)
+
     solar_df.index = solar_df.index.set_names(["time"])
     solar_df = solar_df.reset_index()
     solar_df["time"] += pd.Timedelta(hours=utc)
-    return solar_df
+    return cld, solar_df
 
 if __name__ == "__main__":
     tf = TimezoneFinder()

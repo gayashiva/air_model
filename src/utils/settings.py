@@ -148,8 +148,6 @@ def config(location="guttannen21", spray="man"):
             cld=0.1,
             coords=[34.216638,77.606949],
             h_f=9,
-            tcc=0,  # Total cloud cover
-            # tcc=0.1,  # Total cloud cover
             # perimeter=82.3, # On 3 Mar
 
             # Calibrated values

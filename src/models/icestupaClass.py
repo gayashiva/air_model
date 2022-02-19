@@ -23,7 +23,6 @@ from src.utils.settings import config
 logger = logging.getLogger("__main__")
 logger.propagate = False
 
-
 class Icestupa:
     def __init__(self, location="Guttannen 2021", spray="man"):
 
@@ -76,7 +75,6 @@ class Icestupa:
             "alb",
             "vp_a",
             "LW_in",
-            "SW_diffuse",
         ]  # Possible unknown variables
 
         for i in range(len(unknown)):
@@ -86,15 +84,16 @@ class Icestupa:
                 logger.warning(" %s is unknown\n" % (unknown[i]))
                 self.df[unknown[i]] = 0
 
-        if "SW_diffuse" in unknown:
-            self.df["SW_diffuse"] = self.tcc * self.df.SW_global
-            self.df["SW_direct"] = (1 - self.tcc) * self.df.SW_global
-            logger.warning("Diffuse and direct SW calculated with tcc %s" % self.tcc)
-        else:
-            self.tcc = self.df["SW_diffuse"].mean() / self.df["SW_global"].mean()
-            logger.warning(
-                "Total cloud cover calculated from with diffuse fraction %s" % self.tcc
-            )
+        logger.error(self.df.SW_diffuse.mean())
+        self.cld, solar_df = get_solar(
+            coords=self.coords,
+            start=self.start_date,
+            end=self.df["time"].iloc[-1],
+            DT=self.DT,
+            alt=self.alt,
+        )
+        self.df = pd.merge(solar_df, self.df, on="time", how="left")
+        logger.error(self.df.SW_diffuse_x.mean())
 
         for row in tqdm(
             self.df[1:].itertuples(),
@@ -117,7 +116,7 @@ class Icestupa:
                 self.df.loc[i, "e_a"] = (
                     1.24
                     * math.pow(abs(self.df.loc[i, "vp_a"] / (row.temp + 273.15)), 1 / 7)
-                ) * (1 + 0.22 * math.pow(self.tcc, 2))
+                ) * (1 + 0.22 * math.pow(self.cld, 2))
 
                 self.df.loc[i, "LW_in"] = (
                     self.df.loc[i, "e_a"] * self.sigma * math.pow(row.temp + 273.15, 4)
@@ -126,15 +125,7 @@ class Icestupa:
         self.self_attributes()
         self.get_discharge()
 
-        solar_df = get_solar(
-            coords=self.coords,
-            start=self.start_date,
-            end=self.df["time"].iloc[-1],
-            DT=self.DT,
-            alt=self.alt,
-        )
 
-        self.df = pd.merge(solar_df, self.df, on="time", how="left")
 
         if "alb" in unknown:
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT

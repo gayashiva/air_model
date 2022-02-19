@@ -40,8 +40,8 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("INFO")
 
-    # locations = ["gangles21", "guttannen20", "guttannen21"]
-    locations = ["guttannen22"]
+    locations = ["gangles21", "guttannen20", "guttannen21"]
+    # locations = ["guttannen22"]
     # sprays = ["man", "auto"]
 
     for location in locations:
@@ -57,7 +57,7 @@ if __name__ == "__main__":
             logger.info(df.missing_type.unique())
         else:
 
-            if location in ["schwarzsee19", "guttannen22_auto"]:
+            if location in ["schwarzsee19", "guttannen22"]:
                 df = get_field(location)
 
             if location in ["guttannen21", "guttannen20"]:
@@ -74,7 +74,7 @@ if __name__ == "__main__":
             mask &= df.wind == 0
             df.wind = df.wind.mask(mask)
 
-            if location in ["guttannen22_auto"]:
+            if location in ["guttannen22"]:
                 df_swiss = get_meteoswiss(location)
                 df_swiss = df_swiss.set_index("time")
                 df_swiss = df_swiss[SITE["start_date"] : SITE["expiry_date"]]
@@ -99,7 +99,7 @@ if __name__ == "__main__":
             df_ERA5_full = df_ERA5_full.reset_index()
 
             # Fit ERA5 to field data
-            if SITE["name"] in ["guttannen21", "guttannen20", "guttannen22_auto"]:
+            if SITE["name"] in ["guttannen21", "guttannen20", "guttannen22"]:
                 fit_list = ["temp", "RH", "wind"]
 
             if SITE["name"] in ["schwarzsee19"]:
@@ -127,8 +127,8 @@ if __name__ == "__main__":
                 "wind",
                 "ppt",
                 "press",
-                "SW_direct",
-                "SW_diffuse",
+                "SW_global",
+                # "SW_diffuse",
                 "LW_in",
             ]:
                 try:
@@ -176,8 +176,8 @@ if __name__ == "__main__":
                 "temp",
                 "RH",
                 "wind",
-                "SW_direct",
-                "SW_diffuse",
+                "SW_global",
+                # "SW_diffuse",
                 "ppt",
                 "vp_a",
                 "press",
@@ -185,14 +185,14 @@ if __name__ == "__main__":
                 "LW_in",
             ]
 
-        if SITE["name"] in ["guttannen22_auto"]:
+        if SITE["name"] in ["guttannen22"]:
             cols = [
                 "time",
                 "temp",
                 "RH",
                 "wind",
-                "SW_direct",
-                "SW_diffuse",
+                "SW_global",
+                # "SW_diffuse",
                 # "alb",
                 "ppt",
                 "vp_a",
@@ -224,14 +224,14 @@ if __name__ == "__main__":
         if len(df_out[df_out.index.duplicated()]):
             logger.error("Duplicate indexes")
 
-        if "SW_global" not in df_out.columns:
-            logger.warning("SW global added")
-            df_out["SW_global"] = df_out["SW_direct"] + df_out["SW_diffuse"]
+        # if "SW_global" not in df_out.columns:
+        #     logger.warning("SW global added")
+        #     df_out["SW_global"] = df_out["SW_direct"] + df_out["SW_diffuse"]
 
-        if "SW_direct" not in df_out.columns:
-            logger.warning("SW direct added from global")
-            df_out["SW_direct"] = df_out["SW_global"]
-            df_out["SW_diffuse"] = 0
+        # if "SW_direct" not in df_out.columns:
+        #     logger.warning("SW direct added from global")
+        #     df_out["SW_direct"] = df_out["SW_global"]
+        #     df_out["SW_diffuse"] = 0
 
         logger.info(df_out.tail())
         plot_input(df_out, FOLDER['fig'], SITE["name"])

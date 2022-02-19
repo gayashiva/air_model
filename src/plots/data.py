@@ -94,16 +94,16 @@ def plot_input(df, folder, name):
     ax2.plot(x, y2_ERA5, linestyle="-", color="#284D58")
     ax2.set_ylabel("Temperature [$\\degree C$]")
 
-    y3 = df.SW_direct
-    lns2 = ax3.plot(x, y3, linestyle="-", label="Shortwave Direct", color=red)
-    lns1 = ax3.plot(
-        x,
-        df.SW_diffuse,
-        linestyle="-",
-        label="Shortwave Diffuse",
-        color=orange,
-        alpha=0.6,
-    )
+    y3 = df.SW_global
+    lns2 = ax3.plot(x, y3, linestyle="-", label="Shortwave Global", color=red)
+    # lns1 = ax3.plot(
+    #     x,
+    #     df.SW_diffuse,
+    #     linestyle="-",
+    #     label="Shortwave Diffuse",
+    #     color=orange,
+    #     alpha=0.6,
+    # )
     ax3.axvspan(
         df.time.head(1).values,
         df.time.tail(1).values,
@@ -112,7 +112,8 @@ def plot_input(df, folder, name):
     )
     ax3.set_ylabel("Radiation [$W\\,m^{-2}$]")
 
-    lns = lns1 + lns2
+    # lns = lns1 + lns2
+    lns = lns2
     labs = [l.get_label() for l in lns]
     ax3.legend(lns, labs, ncol=2, loc="best")
 
