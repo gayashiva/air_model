@@ -124,10 +124,8 @@ def SunMelt(loc):
 
     for i in range(0, df.shape[0]):
         # TODO generalise
-        df.loc[i, "f_cone"] = 0.3
-        #     math.pi * math.pow(params["spray_r"], 2) * 0.5 * math.sin(df.loc[i, "sea"])
-        #     + 0.5 * math.pow(params["spray_r"], 2) * math.cos(df.loc[i, "sea"])
-        # ) / SA
+        # df.loc[i, "f_cone"] = 0.3
+        df.loc[i, "f_cone"] = (math.pi * math.sin(df.loc[i, "sea"]) + math.cos(df.loc[i, "sea"]))/(2*math.sqrt(2)*math.pi)
 
         df.loc[i, "SW_direct"] = (
             (1 - SITE["cld"])
