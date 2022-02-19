@@ -3,7 +3,7 @@
 import math
 import numpy as np
 import pandas as pd
-from pvlib import location, atmosphere
+from pvlib import location, atmosphere, irradiance
 from datetime import datetime
 import json
 import logging
@@ -17,7 +17,7 @@ from src.utils.settings import config
 from src.models.methods.solar import get_offset
 # from src.automate.projectile import get_projectile
 
-def TempFreeze(aws, loc="guttannen22"):
+def TempFreeze(aws, cld, loc="guttannen22"):
 
     CONSTANTS, SITE, FOLDER = config(loc)
 
@@ -29,8 +29,6 @@ def TempFreeze(aws, loc="guttannen22"):
     rh = aws[1]
     wind = aws[2]
 
-    # Derived
-    press = atmosphere.alt2pres(SITE["alt"]) / 100
 
     vp_a = (
         6.107
@@ -45,12 +43,15 @@ def TempFreeze(aws, loc="guttannen22"):
     vp_ice = np.exp(43.494 - 6545.8 / (params["temp_i"] + 278)) / ((params["temp_i"] + 868) ** 2 * 100)
 
     e_a = (1.24 * math.pow(abs(vp_a / (temp + 273.15)), 1 / 7)) * (
-        1 + 0.22 * math.pow(SITE["cld"], 2)
+        1 + 0.22 * math.pow(cld, 2)
     )
 
     LW = e_a * CONSTANTS["sigma"] * math.pow(
         temp + 273.15, 4
     ) - CONSTANTS["IE"] * CONSTANTS["sigma"] * math.pow(273.15 + params["temp_i"], 4)
+
+    # Derived
+    press = atmosphere.alt2pres(SITE["alt"]) / 100
 
     Qs = (
         CONSTANTS["C_A"]
@@ -107,13 +108,22 @@ def SunMelt(loc):
 
     solar_position = loc.get_solarposition(times=times, method="ephemeris")
     clearsky = loc.get_clearsky(times=times)
+    clearness = irradiance.erbs(ghi = clearsky["ghi"], zenith = solar_position['apparent_zenith'],
+                                      datetime_or_doy= times) 
 
     df = pd.DataFrame(
         {
             "ghi": clearsky["ghi"],
+            "dhi": clearness["dhi"],
+            "cld": 1 - clearness["kt"],
             "sea": np.radians(solar_position["elevation"]),
         }
     )
+    bad_values = df["sea"]< 0 
+    df["cld"]= np.where(bad_values, np.nan, df["cld"])
+    cld = df["cld"].mean()
+    print(df.describe())
+                            
     df.index += pd.Timedelta(hours=utc)
     df.loc[df["sea"] < 0, "sea"] = 0
     df = df.reset_index()
@@ -123,7 +133,6 @@ def SunMelt(loc):
     # SA = math.pi * math.pow(params["spray_r"],2)
 
     for i in range(0, df.shape[0]):
-        # TODO generalise
         # df.loc[i, "f_cone"] = 0.3
         df.loc[i, "f_cone"] = (math.pi * math.sin(df.loc[i, "sea"]) + math.cos(df.loc[i, "sea"]))/(2*math.sqrt(2)*math.pi)
 
@@ -140,7 +149,7 @@ def SunMelt(loc):
     model = GaussianModel()
     gauss_params = model.guess(df.dis, df.hour)
     result = model.fit(df.dis, gauss_params, x=df.hour)
-    return result
+    return cld, result
 
 if __name__ == "__main__":
 
@@ -152,11 +161,12 @@ if __name__ == "__main__":
     #   "solar_day": "2019-02-01",
     # }
 
-    aws = [-5,10,2]
-    print(TempFreeze(aws))
 
-    result = SunMelt("guttannen22")
+    cld, result = SunMelt("gangles21")
     param_values = dict(result.best_values)
+
+    aws = [-5,10,2]
+    print(TempFreeze(aws, cld))
     print(param_values)
     # locations = ["gangles21", "guttannen21"]
     # for loc in locations:

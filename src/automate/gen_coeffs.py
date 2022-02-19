@@ -78,7 +78,7 @@ if __name__ == "__main__":
         with open(FOLDER["input"] + "auto/sunmelt.json", "w") as f:
             json.dump(dict(result.best_values), f)
 
-        compile = True
+        compile = False
         if not os.path.exists(FOLDER["input"] + "auto/sims.nc") or compile:
             logger.warning("=> Computing temp coeffs for location {}".format(loc))
             """Compute Temp coeffs"""
@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
         # print(param_values)
         print(
-            "y = %.5f * temp + %.5f * rh + %.5f * wind + %.5f + Gaussian(time; Amplitude = %.5f, center = %.5f, sigma = %.5f) "
+            "dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f + Gaussian(time; Amplitude = %.5f, center = %.5f, sigma = %.5f) "
             % (
                 param_values["a"],
                 param_values["b"],
