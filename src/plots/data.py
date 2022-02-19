@@ -160,7 +160,7 @@ def plot_input(df, folder, name):
     ax1.xaxis.set_minor_locator(mdates.DayLocator())
     fig.autofmt_xdate()
     plt.savefig(
-        folder + "Model_Input.jpg",
+        folder + "Model_Input.png",
         bbox_inches="tight",
     )
     plt.clf()

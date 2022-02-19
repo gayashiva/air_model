@@ -40,7 +40,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("INFO")
 
-    locations = ["gangles21", "guttannen20", "guttannen21"]
+    locations = ["gangles21", "guttannen20", "guttannen21", "guttannen22"]
     # locations = ["guttannen22"]
     # sprays = ["man", "auto"]
 

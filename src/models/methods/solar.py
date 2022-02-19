@@ -56,7 +56,7 @@ def get_solar(coords, start, end, DT, alt, ghi, press):
     bad_values = solar_df["sea"]< 0 
     solar_df["cld"]= np.where(bad_values, np.nan, solar_df["cld"])
 
-    logger.error(solar_df.cld.describe())
+    logger.info(solar_df.cld.describe())
     solar_df["sea"]= np.where(bad_values, 0, solar_df["sea"])
     cld = solar_df["cld"].mean()
     solar_df["cld"]= np.where(bad_values, cld, solar_df["cld"])
