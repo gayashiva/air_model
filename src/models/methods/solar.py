@@ -23,7 +23,7 @@ def get_offset(lat, lng, date):
     today_utc = utc.localize(date) # Note that utc is now 1 for guttannen due to winter time
     return (today_utc - today_target).total_seconds() / (60 * 60)
 
-def get_solar(coords, start, end, DT, alt, ghi):  
+def get_solar(coords, start, end, DT, alt, ghi, press):  
     """
     returns solar angle for each time step
     """
@@ -40,8 +40,9 @@ def get_solar(coords, start, end, DT, alt, ghi):
     ghi.index -= pd.Timedelta(hours=utc)
 
     solar_position = site_location.get_solarposition(times=times, method="ephemeris")
-    clearsky = site_location.get_clearsky(times=times)
-    clearness = irradiance.erbs(ghi = ghi, zenith = solar_position['apparent_zenith'],
+    clearsky = site_location.get_clearsky(times=times, model = 'simplified_solis')
+    # clearness = irradiance.erbs(ghi = clearsky["ghi"], zenith = solar_position['apparent_zenith'],
+    clearness = irradiance.erbs(ghi = ghi, zenith = solar_position['zenith'],
                                       datetime_or_doy= times) 
 
     solar_df = pd.DataFrame(
@@ -51,10 +52,11 @@ def get_solar(coords, start, end, DT, alt, ghi):
             "sea": np.radians(solar_position["elevation"]),
         }
     )
-    # logger.error(ghi.describe())
-    # logger.error(clearsky.ghi.describe())
+
     bad_values = solar_df["sea"]< 0 
     solar_df["cld"]= np.where(bad_values, np.nan, solar_df["cld"])
+
+    logger.error(solar_df.cld.describe())
     solar_df["sea"]= np.where(bad_values, 0, solar_df["sea"])
     cld = solar_df["cld"].mean()
     solar_df["cld"]= np.where(bad_values, cld, solar_df["cld"])

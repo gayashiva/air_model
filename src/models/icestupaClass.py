@@ -96,6 +96,7 @@ class Icestupa:
             DT=self.DT,
             alt=self.alt,
             ghi=self.df.set_index("time")["SW_global"],
+            press=self.df["press"].mean(),
         )
         self.df = self.df.reset_index()
         self.df = pd.merge(solar_df, self.df, on="time", how="left")
