@@ -34,9 +34,9 @@ def config(location="guttannen21", spray=None):
                 add= dict(
                     start_date=datetime(2021, 12, 3, 8),
                     fountain_off_date=datetime(2022, 1, 27),
-                    dis_crit = 1,
-                    dis_max= 13,
                     R_F = 4,
+                    # dis_crit = 1,
+                    # dis_max= 13,
                 )
                 add["expiry_date"] = add["fountain_off_date"]
 
@@ -44,26 +44,28 @@ def config(location="guttannen21", spray=None):
                 add= dict(
                     start_date=datetime(2021, 12, 3, 8),
                     fountain_off_date=datetime(2022, 1, 27),
-                    dis_crit = 1,
-                    dis_max= 13,
-                    D_F=7.5,  # Fountain mean discharge
+                    # dis_crit = 1,
+                    # dis_max= 13,
+                    # D_F=7.5,  # Fountain mean discharge
                 )
                 add["expiry_date"] = add["fountain_off_date"]
-
-            if spray == "auto_field":
-                add= dict(
-                    start_date=datetime(2021, 12, 3, 8),
-                    fountain_off_date=datetime(2022, 1, 27),
-                    dis_crit = 1,
-                    dis_max= 13,
-                    # R_F=3,  # First drone rad
-                # perimeter=35, # on Jan 28
-                )
 
                 f_heights = [
                     {"time": add["start_date"], "h_f": 3},
                     {"time": datetime(2022, 12, 23, 16), "h_f": 4},
                 ]
+
+            if spray == "auto_field":
+                add= dict(
+                    start_date=datetime(2021, 12, 3, 8),
+                    fountain_off_date=datetime(2022, 1, 27),
+                    # dis_crit = 2,
+                    # dis_max= 13,
+                    # R_F=3,  # First drone rad
+                # perimeter=35, # on Jan 28
+                )
+                add["expiry_date"] = add["fountain_off_date"]
+
 
             if spray == "man_field":
                 add = dict(

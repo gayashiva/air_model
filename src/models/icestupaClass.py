@@ -45,8 +45,6 @@ class Icestupa:
 
         # Initialize input dataset
         self.df = pd.read_csv(self.input + "aws.csv", sep=",", header=0, parse_dates=["time"])
-        logger.error(self.df.head())
-        logger.error(self.df.tail())
         df_f = pd.read_csv(self.input + "discharge_types.csv", sep=",", header=0, parse_dates=["time"])
         # if self.name == "guttannen22":
         #     df_f["Discharge"] = df_f[self.spray + "_field"]
