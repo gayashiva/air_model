@@ -39,8 +39,8 @@ def get_solar(coords, start, end, DT, alt):
     )
 
     solar_position = site_location.get_solarposition(times=times, method="ephemeris")
-    # clearsky = site_location.get_clearsky(times=times, model = 'simplified_solis')
-    clearsky = site_location.get_clearsky(times=times, model = 'ineichen')
+    clearsky = site_location.get_clearsky(times=times, model = 'simplified_solis')
+    # clearsky = site_location.get_clearsky(times=times, model = 'ineichen')
     clearness = irradiance.erbs(ghi = clearsky["ghi"], zenith = solar_position['zenith'],
                                       datetime_or_doy= times) 
 

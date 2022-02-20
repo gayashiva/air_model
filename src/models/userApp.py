@@ -23,16 +23,16 @@ if __name__ == "__main__":
     logger.setLevel("WARNING")
     # logger.setLevel("INFO")
 
-    test = True
-    # test = False
+    # test = True
+    test = False
 
-    # location = "Guttannen 2020"
-    location = "Guttannen 2021"
+    location = "Guttannen 2020"
+    # location = "Guttannen 2021"
     # location = "Guttannen 2022"
     # location = "Gangles 2021"
 
     # icestupa = Icestupa(location, spray="auto")
-    icestupa = Icestupa(location, spray="man")
+    # icestupa = Icestupa(location, spray="man")
     # icestupa = Icestupa(location, spray="auto_field")
 
     if test:
@@ -45,9 +45,6 @@ if __name__ == "__main__":
         icestupa.summary_figures()
 
     else:
-        icestupa.read_output()
-        df = icestupa.df
-
         # For web app
         src = "/home/suryab/work/air_model/data/" + icestupa.name + "/"
         dst = "/home/suryab/work/air_app/data/" + icestupa.name + "/"
@@ -65,6 +62,11 @@ if __name__ == "__main__":
                    shutil.copy(source_dir_prompt, destination_dir_prompt)
                 else:
                     print('Directory not copied. Error: %s' % e)
+
+        # icestupa.read_output()
+        # df = icestupa.df
+        # icestupa.summary_figures()
+
 
 
         # fig, ax = plt.subplots()
@@ -85,4 +87,3 @@ if __name__ == "__main__":
         # )
         # plt.clf()
 
-        icestupa.summary_figures()

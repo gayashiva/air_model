@@ -230,20 +230,20 @@ def summary_figures(self):
     df_c = df_c[["DroneV", "DroneVError", "iceV"]]
     self.df = self.df.reset_index()
 
-    if self.name in ["guttannen21", "guttannen20"]:
-        df_cam = pd.read_hdf(self.input + "input.h5", "df_cam")
-        tol = pd.Timedelta("15T")
-        self.df = self.df.set_index("time")
-        df_cam = pd.merge_asof(
-            left=self.df,
-            right=df_cam,
-            right_index=True,
-            left_index=True,
-            direction="nearest",
-            tolerance=tol,
-        )
-        df_cam = df_cam[["cam_temp", "T_s", "T_bulk"]]
-        self.df = self.df.reset_index()
+    # if self.name in ["guttannen21", "guttannen20"]:
+    #     df_cam = pd.read_hdf(self.input + "input.h5", "df_cam")
+    #     tol = pd.Timedelta("15T")
+    #     self.df = self.df.set_index("time")
+    #     df_cam = pd.merge_asof(
+    #         left=self.df,
+    #         right=df_cam,
+    #         right_index=True,
+    #         left_index=True,
+    #         direction="nearest",
+    #         tolerance=tol,
+    #     )
+    #     df_cam = df_cam[["cam_temp", "T_s", "T_bulk"]]
+    #     self.df = self.df.reset_index()
 
     fig, ax = plt.subplots()
     x = self.df.time
@@ -294,43 +294,42 @@ def summary_figures(self):
         self.fig + self.spray + "/Discharge.png",
         bbox_inches="tight",
     )
-    plt.clf()
-
-
-    if self.name in ["guttannen21", "guttannen20"]:
-        fig, ax = plt.subplots()
-        CB91_Purple = "#9D2EC5"
-        CB91_Violet = "#661D98"
-        CB91_Amber = "#F5B14C"
-        x = self.df.time
-        y1 = self.df.T_s
-        y2 = df_cam.cam_temp
-        ax.plot(
-            x,
-            y1,
-            label="Modelled Temperature",
-            linewidth=1,
-            color=CB91_Amber,
-            zorder=0,
-        )
-        ax.scatter(
-            x,
-            y2,
-            color=CB91_Violet,
-            s=1,
-            label="Measured Temperature",
-            zorder=1,
-        )
-        plt.legend()
-        ax.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax.xaxis.set_minor_locator(mdates.DayLocator())
-        fig.autofmt_xdate()
-        plt.savefig(
-            self.fig + self.spray + "/Temp_Validation.png",
-            bbox_inches="tight",
-        )
     plt.close("all")
+
+
+    # if self.name in ["guttannen21", "guttannen20"]:
+    #     fig, ax = plt.subplots()
+    #     CB91_Purple = "#9D2EC5"
+    #     CB91_Violet = "#661D98"
+    #     CB91_Amber = "#F5B14C"
+    #     x = self.df.time
+    #     y1 = self.df.T_s
+    #     y2 = df_cam.cam_temp
+    #     ax.plot(
+    #         x,
+    #         y1,
+    #         label="Modelled Temperature",
+    #         linewidth=1,
+    #         color=CB91_Amber,
+    #         zorder=0,
+    #     )
+    #     ax.scatter(
+    #         x,
+    #         y2,
+    #         color=CB91_Violet,
+    #         s=1,
+    #         label="Measured Temperature",
+    #         zorder=1,
+    #     )
+    #     plt.legend()
+    #     ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+    #     ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    #     ax.xaxis.set_minor_locator(mdates.DayLocator())
+    #     fig.autofmt_xdate()
+    #     plt.savefig(
+    #         self.fig + self.spray + "/Temp_Validation.png",
+    #         bbox_inches="tight",
+    #     )
 
     self.df = self.df.rename(
         {

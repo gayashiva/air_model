@@ -19,10 +19,7 @@ def self_attributes(self):
         logger.error("Arbitrary spray radius of %s" % self.R_F)
         self.V_dome = 0
     else:
-        if self.name in ["guttannen21", "guttannen20"]:
-            df_c, df_cam = get_calibration(site=self.name, input=self.input)
-            self.V_dome = df_c.loc[0, "DroneV"]
-        elif self.name in ["guttannen22"]:
+        if self.name in ["guttannen22"]:
             df_c = get_calibration(site=self.name , input=self.input+ self.spray + "/")
             self.V_dome = 0
         else:
@@ -43,8 +40,8 @@ def self_attributes(self):
         # ].mean()
         logger.warning("Measured spray radius from drone %0.1f" % self.R_F)
 
-        # Get initial height
-        self.h_i = self.DX + 3 * self.V_dome / (math.pi * self.R_F ** 2)
+    # Get initial height
+    self.h_i = self.DX + 3 * self.V_dome / (math.pi * self.R_F ** 2)
 
     # if self.name in ["guttannen21", "guttannen20", "gangles21"]:
     #     self.V_dome = df_c.loc[0, "DroneV"]
@@ -55,9 +52,9 @@ def self_attributes(self):
 
     logger.warning("Dome Volume %0.1f" % self.V_dome)
 
-    if self.name in ["guttannen21", "guttannen20"]:
-        df_cam.to_hdf(
-            self.input + "input.h5",
-            key="df_cam",
-            mode="a",
-        )
+    # if self.name in ["guttannen21", "guttannen20"]:
+    #     df_cam.to_hdf(
+    #         self.input + "input.h5",
+    #         key="df_cam",
+    #         mode="a",
+    #     )

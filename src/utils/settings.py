@@ -14,6 +14,7 @@ sys.path.append(dirname)
 # Spammers
 logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
 logging.getLogger("numexpr").setLevel(logging.CRITICAL)
+logging.getLogger('PIL').setLevel(logging.CRITICAL)
 
 def config(location="guttannen21", spray=None):
 
