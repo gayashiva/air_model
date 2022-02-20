@@ -33,6 +33,7 @@ class Icestupa:
             CONSTANTS = json.load(f)
 
         SITE, FOLDER = config(location, spray)
+        print(SITE)
         diff = SITE["expiry_date"] - SITE["start_date"]
         days, seconds = diff.days, diff.seconds
         self.total_hours = days * 24 + seconds // 3600

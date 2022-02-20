@@ -19,7 +19,6 @@ sys.path.append(dirname)
 
 # Module logger
 logger = logging.getLogger("__main__")
-logger.propagate = False
 
 def autoDis(a, b, c, d, amplitude, center, sigma, temp, time, rh, v):
     model = GaussianModel()
