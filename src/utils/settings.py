@@ -22,8 +22,8 @@ def config(location="guttannen21", spray="man"):
         SITE = dict(
             name="guttannen22",
             alt=1047.6,
-            cld=0.5,
             coords=[46.65549,8.29149],
+            # cld=0.5,
             # Calibrated values
             DX=45e-03,  # Surface layer thickness [m]
         )
@@ -31,7 +31,6 @@ def config(location="guttannen21", spray="man"):
         if spray == "auto":
             add= dict(
                 start_date=datetime(2021, 12, 3, 8),
-                expiry_date=datetime(2022, 1, 27),
                 fountain_off_date=datetime(2022, 1, 27),
                 dis_crit = 1,
                 dis_max= 13,
@@ -64,15 +63,11 @@ def config(location="guttannen21", spray="man"):
 
         SITE = dict(
             name="guttannen21",
-            start_date=datetime(2020, 11, 22, 15),
-            # end_date=datetime(2021, 5, 10, 1),
-            expiry_date=datetime(2021, 5, 10, 1),
-            D_F=7.5,  # Fountain mean discharge
+            alt=1047.6,
+            coords=[46.65549,8.29149],
+            # cld=0.5,
             # R_F=4.3,  # Fountain mean discharge
             # R_F=5.4,  # First drone rad
-            alt=1047.6,
-            cld=0.5,
-            coords=[46.65549,8.29149],
             # h_f=5,
             # perimeter=45, # on Feb 11
 
@@ -82,13 +77,18 @@ def config(location="guttannen21", spray="man"):
 
         if spray == "auto":
             add= dict(
+                start_date=datetime(2020, 11, 22, 15),
                 fountain_off_date=datetime(2021, 2, 10, 1),
                 dis_crit = 1,
                 dis_max= 13,
             )
+
         if spray == "man":
             add = dict(
+                start_date=datetime(2020, 11, 22, 15),
+                expiry_date=datetime(2021, 5, 10, 1),
                 fountain_off_date=datetime(2021, 2, 20, 10),
+                D_F=7.5,  # Fountain mean discharge
             )
         SITE = dict(SITE, **add)
 
@@ -103,13 +103,10 @@ def config(location="guttannen21", spray="man"):
 
         SITE = dict(
             name="guttannen20",
-            start_date=datetime(2020, 1, 3, 16),
-            # end_date=datetime(2020, 4, 6, 12),
-            expiry_date=datetime(2020, 4, 6, 12),
-            # R_F=6.68,  # First drone rad
             alt=1047.6,
-            cld=0.5,
             coords=[46.65549,8.29149],
+            # R_F=6.68,  # First drone rad
+            # cld=0.5,
             # h_f=3,
             # perimeter=28, # on 24 Jan
 
@@ -119,12 +116,15 @@ def config(location="guttannen21", spray="man"):
 
         if spray == "auto":
             add= dict(
+                start_date=datetime(2020, 1, 3, 16),
                 fountain_off_date=datetime(2020, 3, 6, 12),
                 dis_crit = 1,
                 dis_max= 13,
             )
         if spray == "man":
             add = dict(
+                start_date=datetime(2020, 1, 3, 16),
+                expiry_date=datetime(2020, 4, 6, 12),
                 fountain_off_date=datetime(2020, 3, 8, 9),  # Image shows Dani switched off at 8th Mar 10 am
                 D_F=7.5,  # Fountain mean discharge
             )
@@ -140,14 +140,11 @@ def config(location="guttannen21", spray="man"):
 
         SITE = dict(
             name="gangles21",
-            start_date=datetime(2021, 1, 18),
-            # end_date=datetime(2021, 7, 8),
-            expiry_date=datetime(2021, 6, 20),
-            # R_F=9.05,  # First drone rad
             alt=4009,
-            cld=0.1,
             coords=[34.216638,77.606949],
-            h_f=9,
+            # h_f=9,
+            # cld=0.1,
+            # R_F=9.05,  # First drone rad
             # perimeter=82.3, # On 3 Mar
 
             # Calibrated values
@@ -161,12 +158,15 @@ def config(location="guttannen21", spray="man"):
 
         if spray == "auto":
             add= dict(
+                start_date=datetime(2021, 1, 18),
                 fountain_off_date=datetime(2021, 4, 10),
                 dis_crit = 1,
                 dis_max= 60,
             )
         if spray == "man":
             add = dict(
+                start_date=datetime(2021, 1, 18),
+                expiry_date=datetime(2021, 6, 20),
                 fountain_off_date=datetime(2021, 3, 10, 18),
                 D_F=60,  # FOUNTAIN min discharge
             )
@@ -182,40 +182,4 @@ def config(location="guttannen21", spray="man"):
     )
     df_h = pd.DataFrame(f_heights)
 
-    """Model, Physical and Surface Constants"""
-    CONSTANTS = dict(
-        DT=60 * 60,  # Model time step [s]
-        H_AWS=2,  # AWS height [m]
-
-        VAN_KARMAN=0.4,  # Van Karman constant
-        sigma=5.67e-8,  # Stefan-Bolzmann constant [W m-2 K-4]
-        P0=1013,  # Standard air pressure hPa
-        RHO_S=300,  # Density of snow
-        RHO_W=1000,  # Density of water
-        RHO_I=917,  # Density of Ice RHO_I
-        RHO_A=1.29,  # air density at mean sea level
-        C_W=4186,  # specific heat of water [J Kg-1 K-1]
-        C_I=2097,  # specific heat of ice [J Kg-1 K-1]
-        C_A=1010,  # specific heat of air [J kg-1 K-1]
-        L_F=3.34e5,  # latent heat for melting [J kg-1]
-        L_V=2.5e6,  # latent heat for vaporization [J kg-1]
-        L_S=2.848e6,  # latent heat for sublimation [J kg-1]
-        K_I=2.123,  # thermal conductivity ice [W m^-1 K^-1] Waite et al. 2006
-        G=9.81,  # Gravitational acceleration
-
-        # Weather uncertainty
-        IE=0.97,  # Ice Emissivity IE
-        Z=0.003,  # Ice Momentum and Scalar roughness length
-        A_I=0.25,  # Albedo of Ice A_I
-        A_S=0.85,  # Albedo of Fresh Snow A_S
-        T_PPT=1,  # Temperature condition for liquid precipitation
-        A_DECAY=16,  # Albedo decay rate decay_t_d
-
-        # Fountain uncertainty
-        T_F=1.5,  # Fountain temp
-
-        # Fix these first with calibration step
-        DX=50e-03,  # Surface layer thickness [m]
-    )
-
-    return CONSTANTS, SITE, FOLDER
+    return SITE, FOLDER
