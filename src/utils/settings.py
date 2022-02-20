@@ -23,6 +23,7 @@ def config(location="guttannen21", spray=None):
             name="guttannen22",
             alt=1047.6,
             coords=[46.65549,8.29149],
+            h_i = 0.13, #Initialise ice height at start
             # cld=0.5,
             # Calibrated values
             DX=45e-03,  # Surface layer thickness [m]
@@ -55,7 +56,6 @@ def config(location="guttannen21", spray=None):
                     fountain_off_date=datetime(2022, 1, 27),
                     dis_crit = 1,
                     dis_max= 13,
-                    h_i = 0.13, #Initialise ice height at start
                     # R_F=3,  # First drone rad
                 # perimeter=35, # on Jan 28
                 )
@@ -70,7 +70,6 @@ def config(location="guttannen21", spray=None):
                     start_date=datetime(2021, 12, 8, 14),
                     expiry_date=datetime(2022, 1, 27),
                     fountain_off_date=datetime(2022, 1, 27),
-                    h_i = 0.13, #Initialise ice height at start
                 )
 
                 f_heights = [

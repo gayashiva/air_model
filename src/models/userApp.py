@@ -27,24 +27,23 @@ if __name__ == "__main__":
     # test = False
 
     # location = "Guttannen 2020"
-    # location = "Guttannen 2021"
+    location = "Guttannen 2021"
     # location = "Guttannen 2022"
-    location = "Gangles 2021"
+    # location = "Gangles 2021"
 
     # Initialise icestupa object
     # icestupa = Icestupa(location, spray="auto")
-    # icestupa = Icestupa(location, spray="man")
-    icestupa = Icestupa(location, spray="static")
+    icestupa = Icestupa(location, spray="man")
     # icestupa = Icestupa(location, spray=None)
 
     if test:
         icestupa.gen_input()
 
-        # icestupa.sim_air(test)
+        icestupa.sim_air(test)
 
-        # icestupa.gen_output()
+        icestupa.gen_output()
 
-        # icestupa.summary_figures()
+        icestupa.summary_figures()
 
     else:
         icestupa.read_output()

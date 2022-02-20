@@ -26,14 +26,12 @@ logger.propagate = False
 class Icestupa:
     def __init__(self, location="Guttannen 2021", spray="man"):
 
-        # TODO correct
         self.spray = spray
 
         with open("data/common/constants.json") as f:
             CONSTANTS = json.load(f)
 
         SITE, FOLDER = config(location, spray)
-        print(SITE)
         diff = SITE["expiry_date"] - SITE["start_date"]
         days, seconds = diff.days, diff.seconds
         self.total_hours = days * 24 + seconds // 3600
@@ -46,8 +44,16 @@ class Icestupa:
                 logger.info(f"%s -> %s" % (key, str(dictionary[key])))
 
         # Initialize input dataset
-        input_file = self.input + "input.csv"
-        self.df = pd.read_csv(input_file, sep=",", header=0, parse_dates=["time"])
+        self.df = pd.read_csv(self.input + "aws.csv", sep=",", header=0, parse_dates=["time"])
+        logger.error(self.df.head())
+        logger.error(self.df.tail())
+        df_f = pd.read_csv(self.input + "discharge_types.csv", sep=",", header=0, parse_dates=["time"])
+        df_f["Discharge"] = df_f[self.spray]
+        df_f = df_f[["time", "Discharge"]]
+
+        self.df = pd.merge(df_f, self.df, on="time", how="left")
+        self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
+        logger.warning("Manual Discharge mean %.1f" % self.D_F)
 
         # Drops garbage columns
         self.df = self.df[self.df.columns.drop(list(self.df.filter(regex="Unnamed")))]
@@ -64,7 +70,7 @@ class Icestupa:
     from src.models.methods._freq import change_freq
     from src.models.methods._self_attributes import self_attributes
     from src.models.methods._albedo import get_albedo
-    from src.models.methods._discharge import get_discharge
+    # from src.models.methods._discharge import get_discharge
     from src.models.methods._area import get_area
     from src.models.methods._temp import get_temp, test_get_temp
     from src.models.methods._energy import get_energy, test_get_energy
@@ -134,7 +140,7 @@ class Icestupa:
                 )
 
         self.self_attributes()
-        self.get_discharge()
+        # self.get_discharge()
 
 
 

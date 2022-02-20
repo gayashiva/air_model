@@ -164,7 +164,7 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
             mask_index = df[mask].index
             df.loc[mask_index, spray] = 0
 
-    df.to_csv(FOLDER["input"]  + "discharge_types.csv", index=False)
+    df.to_csv(FOLDER["input"]  + "discharge_types.csv", index=True)
     return df
 
 
