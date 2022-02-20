@@ -34,11 +34,6 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
 
-
-    # locations = ["guttannen21", "guttannen20", "gangles21"]
-
-    # for loc in locations:
-
     print(loc)
     SITE, FOLDER = config(loc, spray="man")
 
@@ -47,13 +42,12 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
         SITE["expiry_date"],
         freq=(str(int(CONSTANTS["DT"] / 60)) + "T"),
     )
-    sprays = ['man', 'auto', "man_field", "auto_field"]
+    sprays = ['man', 'auto', "auto_field"]
      
     df = pd.DataFrame(index=time, columns=sprays)
     df = df.fillna(0)
     df = df.reset_index()
     df.rename(columns = {'index':'time'}, inplace = True)
-    print(df.head())
 
     for spray in sprays:
 
@@ -109,14 +103,15 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                 df = df.reset_index()
 
 
-            if loc in ["guttannen21", "guttannen20", "guttannen22"]:
+            if loc in ["guttannen21", "guttannen20"]:
                 SITE, FOLDER = config(loc, spray)
                 df[spray] = SITE["D_F"]
                 logger.info("Discharge constant")
 
         if loc == "guttannen22":
             if spray == "auto_field":
-                SITE, FOLDER = config(loc, spray)
+                print(spray)
+                # SITE, FOLDER = config(loc, spray)
                 df_f = pd.read_csv(
                     os.path.join("data/" + loc + "/interim/")
                     + "discharge_labview.csv",
@@ -131,7 +126,7 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                 # D_F = self.df.Discharge[self.df.Discharge != 0].mean()
                 # logger.warning("Auto Discharge mean %.1f" % self.D_F)
 
-            if spray == "man_field":
+            if spray == "man":
                 SITE, FOLDER = config(loc, spray)
                 df_f = pd.read_csv(
                     os.path.join("data/" + loc + "/interim/")
@@ -174,16 +169,17 @@ if __name__ == "__main__":
     logger.setLevel("WARNING")
     # logger.setLevel("INFO")
 
-    locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
-    # locations = ["guttannen22"]
+    # locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
+    locations = ["guttannen22"]
 
     for loc in locations:
         df = get_discharge(loc)
         SITE, FOLDER = config(loc, spray="man")
         fig, ax1 = plt.subplots()
         x = df.time
-        y1 = df.auto_field
-        y2 = df.man_field
+        y1 = df.man
+        y2 = df.auto
+        y3 = df.auto_field
         ax1.plot(
             x,
             y1,
@@ -194,11 +190,16 @@ if __name__ == "__main__":
             y2,
             linestyle="--",
         )
+        ax1.plot(
+            x,
+            y3,
+            linestyle="--",
+        )
         ax1.set_ylabel(loc + " discharge [$l/min$]")
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
-        plt.savefig(FOLDER["input"] + "dis_types.png")
+        plt.savefig(FOLDER["fig"] + "dis_types.png")
 
 

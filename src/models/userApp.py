@@ -27,8 +27,8 @@ if __name__ == "__main__":
     # test = False
 
     # location = "Guttannen 2020"
-    location = "Guttannen 2021"
-    # location = "Guttannen 2022"
+    # location = "Guttannen 2021"
+    location = "Guttannen 2022"
     # location = "Gangles 2021"
 
     icestupa = Icestupa(location, spray="auto")

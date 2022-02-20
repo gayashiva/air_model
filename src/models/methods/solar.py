@@ -23,7 +23,7 @@ def get_offset(lat, lng, date):
     today_utc = utc.localize(date) # Note that utc is now 1 for guttannen due to winter time
     return (today_utc - today_target).total_seconds() / (60 * 60)
 
-def get_solar(coords, start, end, DT, alt, ghi, press):  
+def get_solar(coords, start, end, DT, alt):  
     """
     returns solar angle for each time step
     """
@@ -37,7 +37,6 @@ def get_solar(coords, start, end, DT, alt, ghi, press):
         end - pd.Timedelta(hours=utc),
         freq=(str(int(DT / 60)) + "T"),
     )
-    ghi.index -= pd.Timedelta(hours=utc)
 
     solar_position = site_location.get_solarposition(times=times, method="ephemeris")
     # clearsky = site_location.get_clearsky(times=times, model = 'simplified_solis')
@@ -65,7 +64,6 @@ def get_solar(coords, start, end, DT, alt, ghi, press):
     solar_df.index = solar_df.index.set_names(["time"])
     solar_df = solar_df.reset_index()
     solar_df["time"] += pd.Timedelta(hours=utc)
-    ghi.index += pd.Timedelta(hours=utc)
     return cld, solar_df
 
 if __name__ == "__main__":

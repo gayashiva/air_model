@@ -106,11 +106,10 @@ class Icestupa:
             coords=self.coords,
             start=self.start_date,
             end=self.df["time"].iloc[-1],
-            # end=self.df.iloc[-1],
             DT=self.DT,
             alt=self.alt,
-            ghi=self.df.set_index("time")["SW_global"],
-            press=self.df["press"].mean(),
+            # ghi=self.df.set_index("time")["SW_global"],
+            # press=self.df["press"].mean(),
         )
         self.df = self.df.reset_index()
         self.df = pd.merge(solar_df, self.df, on="time", how="left")
@@ -163,19 +162,11 @@ class Icestupa:
                     logger.warning(" Null values interpolated in %s" % column)
                     self.df.loc[:, column] = self.df[column].interpolate()
 
-        # TODO Correct the below line
-        # if self.name in ["guttannen21", "guttannen20", "guttannen22_auto", "guttannen22_man", "gangles21"]:
         self.df.to_hdf(
             self.input + self.spray + "/input.h5",
             key="df",
             mode="a",
         )
-        # else:
-        #     self.df.to_hdf(
-        #         self.input + "input.h5",
-        #         key="df",
-        #         mode="w",
-        #     )
         logger.debug(self.df.head())
         logger.debug(self.df.tail())
 
