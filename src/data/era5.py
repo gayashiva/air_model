@@ -1,7 +1,7 @@
 """Function that returns data from ERA5
 """
 # External modules
-import sys, os
+import sys, os, json
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -24,7 +24,10 @@ from src.utils.settings import config
 
 def get_era5(location="schwarzsee19"):
 
-    CONSTANTS, SITE, FOLDER = config(location)
+    with open("data/common/constants.json") as f:
+        CONSTANTS = json.load(f)
+
+    SITE, FOLDER = config(location)
 
     if location in ["schwarzsee19"]:
         df_in3 = pd.read_csv(

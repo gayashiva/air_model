@@ -2,7 +2,7 @@
 """
 
 # External modules
-import sys, os
+import sys, os, json
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -44,8 +44,11 @@ if __name__ == "__main__":
     # locations = ["guttannen22"]
     # sprays = ["man", "auto"]
 
+    with open("data/common/constants.json") as f:
+        CONSTANTS = json.load(f)
+
     for location in locations:
-        CONSTANTS, SITE, FOLDER = config(location)
+        SITE, FOLDER = config(location, spray="man")
 
         if location in ["gangles21"]:
             df = get_field(location)
@@ -204,7 +207,6 @@ if __name__ == "__main__":
 
 
         df_out = df[cols]
-
             
         if df_out.isna().values.any():
             logger.warning(df_out[cols].isna().sum())
@@ -224,17 +226,8 @@ if __name__ == "__main__":
         if len(df_out[df_out.index.duplicated()]):
             logger.error("Duplicate indexes")
 
-        # if "SW_global" not in df_out.columns:
-        #     logger.warning("SW global added")
-        #     df_out["SW_global"] = df_out["SW_direct"] + df_out["SW_diffuse"]
-
-        # if "SW_direct" not in df_out.columns:
-        #     logger.warning("SW direct added from global")
-        #     df_out["SW_direct"] = df_out["SW_global"]
-        #     df_out["SW_diffuse"] = 0
-
         logger.info(df_out.tail())
         plot_input(df_out, FOLDER['fig'], SITE["name"])
         df_out = df_out.drop(columns=['missing_type'])
 
-        df_out.to_csv(FOLDER["input"]  + "input.csv", index=False)
+        df_out.to_csv(FOLDER["input"]  + "aws.csv", index=False)

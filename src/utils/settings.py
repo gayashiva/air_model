@@ -104,15 +104,15 @@ def config(location="guttannen21", spray=None):
                     fountain_off_date=datetime(2021, 2, 20, 10),
                     D_F=7.5,  # Fountain mean discharge
                 )
+                f_heights = [
+                    {"time": add["start_date"], "h_f": 2.68},
+                    {"time": datetime(2020, 12, 30, 16), "h_f": 3.75},
+                    {"time": datetime(2021, 1, 7, 16), "h_f": 4.68},
+                    {"time": datetime(2021, 1, 11, 16), "h_f": 5.68},
+                ]
 
             SITE = dict(SITE, **add)
 
-            f_heights = [
-                {"time": SITE["start_date"], "h_f": 2.68},
-                {"time": datetime(2020, 12, 30, 16), "h_f": 3.75},
-                {"time": datetime(2021, 1, 7, 16), "h_f": 4.68},
-                {"time": datetime(2021, 1, 11, 16), "h_f": 5.68},
-            ]
 
     if location == "Guttannen 2020" or location == "guttannen20":
 
@@ -158,14 +158,14 @@ def config(location="guttannen21", spray=None):
                     fountain_off_date=datetime(2020, 3, 8, 9),  # Image shows Dani switched off at 8th Mar 10 am
                     D_F=7.5,  # Fountain mean discharge
                 )
+                f_heights = [
+                    {"time": add["start_date"], "h_f": 2.5},
+                    {"time": datetime(2020, 1, 24, 12), "h_f": 3.5},
+                    {"time": datetime(2020, 2, 5, 19), "h_f": 2.5},
+                ]
 
             SITE = dict(SITE, **add)
 
-            f_heights = [
-                {"time": SITE["start_date"], "h_f": 2.5},
-                {"time": datetime(2020, 1, 24, 12), "h_f": 3.5},
-                {"time": datetime(2020, 2, 5, 19), "h_f": 2.5},
-            ]
 
     if location == "Gangles 2021" or location == "gangles21":
 
@@ -212,7 +212,7 @@ def config(location="guttannen21", spray=None):
                 )
 
                 f_heights = [
-                    {"time": SITE["start_date"], "h_f": 5},
+                    {"time": add["start_date"], "h_f": 5},
                     {"time": datetime(2021, 1, 22, 16), "h_f": 9},
                 ]
             SITE = dict(SITE, **add)

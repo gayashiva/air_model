@@ -2,7 +2,7 @@
 """
 
 # External modules
-import sys, os,glob
+import sys, os, glob, json
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -24,7 +24,10 @@ from src.utils.settings import config
 
 
 def get_field(location="schwarzsee19"):
-    CONSTANTS, SITE, FOLDER = config(location)
+    with open("data/common/constants.json") as f:
+        CONSTANTS = json.load(f)
+
+    SITE, FOLDER = config(location, spray="man")
     if location == "guttannen22":
         cols_old = [
             "TIMESTAMP",
