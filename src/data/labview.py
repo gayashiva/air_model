@@ -1,4 +1,4 @@
-import sys
+import sys, json
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -21,7 +21,11 @@ import re
 
 
 def aws(location="guttannen22"):
-    CONSTANTS, SITE, FOLDER = config(location)
+
+    with open("data/common/constants.json") as f:
+        CONSTANTS = json.load(f)
+
+    SITE, FOLDER = config(location)
     # Get header colun list
     df = pd.read_csv(
         FOLDER["raw"] + location + "_aws.csv",
@@ -109,7 +113,11 @@ def aws(location="guttannen22"):
 def labview(location):
     if location == "guttannen22":
         # path = "/home/suryab/ownCloud/Sites/Diavolezza/diavolezza_sdcard/"
-        CONSTANTS, SITE, FOLDER = config(location)
+
+        with open("data/common/constants.json") as f:
+            CONSTANTS = json.load(f)
+        SITE, FOLDER = config(location)
+
         path = FOLDER["raw"] + "auto/sdcard/"
         all_files = glob.glob(path + "*.txt")
         # print(all_files[0])
@@ -223,8 +231,7 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-
-    CONSTANTS, SITE, FOLDER = config("guttannen22")
+    SITE, FOLDER = config("guttannen22", spray="auto")
     # df = aws()
 
     # sdcard = True
@@ -247,7 +254,7 @@ if __name__ == "__main__":
     df= df.replace(np.NaN, 0)
     df = df.resample("H").mean()
 
-    df.to_csv(FOLDER["input"] + "discharge.csv")
+    df.to_csv(FOLDER["input"] + "discharge_labview.csv")
 
     fig, ax = plt.subplots()
     # x = df.time

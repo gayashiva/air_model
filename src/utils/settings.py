@@ -35,6 +35,26 @@ def config(location="guttannen21", spray=None):
                     fountain_off_date=datetime(2022, 1, 27),
                     dis_crit = 1,
                     dis_max= 13,
+                    R_F = 7,
+                )
+                add["expiry_date"] = add["fountain_off_date"]
+
+            if spray == "man":
+                add= dict(
+                    start_date=datetime(2021, 12, 3, 8),
+                    fountain_off_date=datetime(2022, 1, 27),
+                    dis_crit = 1,
+                    dis_max= 13,
+                    D_F=7.5,  # Fountain mean discharge
+                )
+                add["expiry_date"] = add["fountain_off_date"]
+
+            if spray == "auto_field":
+                add= dict(
+                    start_date=datetime(2021, 12, 3, 8),
+                    fountain_off_date=datetime(2022, 1, 27),
+                    dis_crit = 1,
+                    dis_max= 13,
                     h_i = 0.13, #Initialise ice height at start
                     # R_F=3,  # First drone rad
                 # perimeter=35, # on Jan 28
@@ -45,7 +65,7 @@ def config(location="guttannen21", spray=None):
                     {"time": datetime(2022, 12, 23, 16), "h_f": 4},
                 ]
 
-            if spray == "man":
+            if spray == "man_field":
                 add = dict(
                     start_date=datetime(2021, 12, 8, 14),
                     expiry_date=datetime(2022, 1, 27),
@@ -78,16 +98,6 @@ def config(location="guttannen21", spray=None):
 
         if spray != None:
             if spray == "auto":
-                add= dict(
-                    start_date=datetime(2020, 11, 22, 15),
-                    fountain_off_date=datetime(2021, 2, 10, 1),
-                    dis_crit = 1,
-                    dis_max= 13,
-                    R_F = 7,
-                )
-                add["expiry_date"] = add["fountain_off_date"]
-
-            if spray == "static":
                 add= dict(
                     start_date=datetime(2020, 11, 22, 15),
                     fountain_off_date=datetime(2021, 2, 10, 1),
