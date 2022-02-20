@@ -96,8 +96,8 @@ def get_field(location="schwarzsee19"):
         df.loc[df.alb < 0, "alb"] = np.NaN 
         df.loc[:, "alb"] = df["alb"].interpolate()
 
-        df["SW_direct"] = 0.6 * df["SW_global"]
-        df["SW_diffuse"] = 0.4 * df["SW_global"]
+        # df["SW_direct"] = 0.6 * df["SW_global"]
+        # df["SW_diffuse"] = 0.4 * df["SW_global"]
 
         df['ppt'] = df.snow_h.diff()*10*CONSTANTS['RHO_S']/CONSTANTS['RHO_W'] # mm of snowfall w.e. in one hour
         df.loc[df.ppt<1, "ppt"] = 0  # Assuming 1 mm error
@@ -107,8 +107,8 @@ def get_field(location="schwarzsee19"):
             "temp",
             "RH",
             "wind",
-            "SW_direct",
-            "SW_diffuse",
+            "SW_global",
+            # "SW_diffuse",
             "alb",
             "press",
             "missing_type",

@@ -48,12 +48,16 @@ class Icestupa:
         logger.error(self.df.head())
         logger.error(self.df.tail())
         df_f = pd.read_csv(self.input + "discharge_types.csv", sep=",", header=0, parse_dates=["time"])
+        # if self.name == "guttannen22":
+        #     df_f["Discharge"] = df_f[self.spray + "_field"]
+        # else:
         df_f["Discharge"] = df_f[self.spray]
         df_f = df_f[["time", "Discharge"]]
 
         self.df = pd.merge(df_f, self.df, on="time", how="left")
+
         self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
-        logger.warning("Manual Discharge mean %.1f" % self.D_F)
+        logger.warning("%s Discharge mean %.1f" % (self.spray, self.D_F))
 
         # Drops garbage columns
         self.df = self.df[self.df.columns.drop(list(self.df.filter(regex="Unnamed")))]
@@ -141,7 +145,6 @@ class Icestupa:
 
         self.self_attributes()
         # self.get_discharge()
-
 
 
         if "alb" in unknown:

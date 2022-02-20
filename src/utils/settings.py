@@ -36,7 +36,7 @@ def config(location="guttannen21", spray=None):
                     fountain_off_date=datetime(2022, 1, 27),
                     dis_crit = 1,
                     dis_max= 13,
-                    R_F = 7,
+                    R_F = 4,
                 )
                 add["expiry_date"] = add["fountain_off_date"]
 
@@ -70,6 +70,7 @@ def config(location="guttannen21", spray=None):
                     start_date=datetime(2021, 12, 8, 14),
                     expiry_date=datetime(2022, 1, 27),
                     fountain_off_date=datetime(2022, 1, 27),
+                    D_F=7.5,  # Fountain mean discharge
                 )
 
                 f_heights = [

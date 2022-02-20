@@ -40,8 +40,8 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("INFO")
 
-    locations = ["gangles21", "guttannen20", "guttannen21", "guttannen22"]
-    # locations = ["guttannen22"]
+    # locations = ["gangles21", "guttannen20", "guttannen21", "guttannen22"]
+    locations = ["guttannen22"]
     # sprays = ["man", "auto"]
 
     with open("data/common/constants.json") as f:
@@ -229,5 +229,6 @@ if __name__ == "__main__":
         logger.info(df_out.tail())
         plot_input(df_out, FOLDER['fig'], SITE["name"])
         df_out = df_out.drop(columns=['missing_type'])
+
 
         df_out.to_csv(FOLDER["input"]  + "aws.csv", index=False)

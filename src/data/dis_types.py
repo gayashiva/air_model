@@ -71,7 +71,7 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                 df.loc[i, "auto"] = autoDis(**param_values, time=df_aws.time.dt.hour[i],
                                             temp=df_aws.temp[i],rh=df_aws.RH[i], v=df_aws.wind[i])
                 df.loc[i, "auto"] *= math.pi * math.pow(SITE["R_F"],2)
-                if df.auto[i] < SITE["dis_crit"]:
+                if df.auto[i] < 0:
                     df.loc[i, "auto"] = 0
                 if df.auto[i] >= SITE["dis_max"]:
                     df.loc[i, "auto"] = SITE["dis_max"]
