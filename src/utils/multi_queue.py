@@ -89,7 +89,7 @@ if __name__ == "__main__":
     locations = ["guttannen22", "guttannen21", "guttannen20", "gangles21"]
     # locations = [ "guttannen20", "gangles21"]
     # sprays = ["man", "auto"]
-    sprays = ["man"]
+    sprays = ["auto"]
     for spray in sprays:
         for loc in locations:
              task_list.append([loc,spray])

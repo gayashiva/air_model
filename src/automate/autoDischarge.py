@@ -17,12 +17,19 @@ from src.utils.settings import config
 from src.models.methods.solar import get_offset
 # from src.automate.projectile import get_projectile
 
-def TempFreeze(aws, cld, loc="guttannen22"):
+def TempFreeze(aws, cld, alt):
 
-    CONSTANTS, SITE, FOLDER = config(loc)
+    # TODO load constants from separate file
+    # CONSTANTS, SITE, FOLDER = config("guttannen21")
 
-    with open("data/common/info.json") as f:
+    with open("data/common/auto.json") as f:
         params = json.load(f)
+
+    with open("data/common/constants.json") as f:
+        constants = json.load(f)
+
+    # with open("data/common/constants.json", "w") as f:
+    #     json.dump(CONSTANTS, f, indent=4, sort_keys=True)
 
     # AWS
     temp = aws[0]
@@ -46,50 +53,53 @@ def TempFreeze(aws, cld, loc="guttannen22"):
         1 + 0.22 * math.pow(cld, 2)
     )
 
-    LW = e_a * CONSTANTS["sigma"] * math.pow(
+    LW = e_a * constants["sigma"] * math.pow(
         temp + 273.15, 4
-    ) - CONSTANTS["IE"] * CONSTANTS["sigma"] * math.pow(273.15 + params["temp_i"], 4)
+    ) - constants["IE"] * constants["sigma"] * math.pow(273.15 + params["temp_i"], 4)
 
     # Derived
-    press = atmosphere.alt2pres(SITE["alt"]) / 100
+    press = atmosphere.alt2pres(alt) / 100
 
     Qs = (
-        CONSTANTS["C_A"]
-        * CONSTANTS["RHO_A"]
+        constants["C_A"]
+        * constants["RHO_A"]
         * press
-        / CONSTANTS["P0"]
-        * math.pow(CONSTANTS["VAN_KARMAN"], 2)
+        / constants["P0"]
+        * math.pow(constants["VAN_KARMAN"], 2)
         * wind
         * (temp - params["temp_i"])
-        / ((np.log(CONSTANTS["H_AWS"] / CONSTANTS["Z"])) ** 2)
+        / ((np.log(constants["H_AWS"] / constants["Z"])) ** 2)
     )
 
     Ql = (
         0.623
-        * CONSTANTS["L_S"]
-        * CONSTANTS["RHO_A"]
-        / CONSTANTS["P0"]
-        * math.pow(CONSTANTS["VAN_KARMAN"], 2)
+        * constants["L_S"]
+        * constants["RHO_A"]
+        / constants["P0"]
+        * math.pow(constants["VAN_KARMAN"], 2)
         * wind
         * (vp_a - vp_ice)
-        / ((np.log(CONSTANTS["H_AWS"] / CONSTANTS["Z"])) ** 2)
+        / ((np.log(constants["H_AWS"] / constants["Z"])) ** 2)
     )
 
 
     EB = Ql + Qs + LW
-    dis = -1 * EB / CONSTANTS["L_F"] * 1000 / 60
+    dis = -1 * EB / constants["L_F"] * 1000 / 60
 
     # SA = math.pi * math.pow(params['spray_r'],2)
     # dis *= SA
 
     return dis
 
-def SunMelt(loc):
+def SunMelt(coords, utc):
 
-    CONSTANTS, SITE, FOLDER = config(loc)
+    # constants, SITE, FOLDER = config(loc)
 
-    with open("data/common/info.json") as f:
+    with open("data/common/auto.json") as f:
         params = json.load(f)
+
+    with open("data/common/constants.json") as f:
+        constants = json.load(f)
 
     times = pd.date_range(
         params["solar_day"],
@@ -98,7 +108,7 @@ def SunMelt(loc):
     )
 
     # Derived
-    utc = get_offset(*SITE["coords"], date=SITE["start_date"])
+    # utc = get_offset(*SITE["coords"], date=SITE["start_date"])
 
     times -= pd.Timedelta(hours=utc)
     loc = location.Location(
@@ -108,8 +118,10 @@ def SunMelt(loc):
 
     solar_position = loc.get_solarposition(times=times, method="ephemeris")
     clearsky = loc.get_clearsky(times=times)
-    clearness = irradiance.erbs(ghi = clearsky["ghi"], zenith = solar_position['apparent_zenith'],
+    # Not using measured GHI due to shading effects
+    clearness = irradiance.erbs(ghi = clearsky["ghi"], zenith = solar_position['zenith'],
                                       datetime_or_doy= times) 
+
 
     df = pd.DataFrame(
         {
@@ -144,7 +156,7 @@ def SunMelt(loc):
         df.loc[i, "SW_diffuse"] = (
             SITE["cld"]  * df.loc[i, "ghi"]
         )
-    df["dis"] = -1 * (1 - CONSTANTS["A_I"]) * (df["SW_direct"] + df["SW_diffuse"]) / CONSTANTS["L_F"] * 1000 / 60
+    df["dis"] = -1 * (1 - constants["A_I"]) * (df["SW_direct"] + df["SW_diffuse"]) / constants["L_F"] * 1000 / 60
 
     model = GaussianModel()
     gauss_params = model.guess(df.dis, df.hour)
@@ -162,11 +174,16 @@ if __name__ == "__main__":
     # }
 
 
-    cld, result = SunMelt("gangles21")
+    loc="guttannen21"
+    constants, SITE, FOLDER = config(loc)
+    utc = get_offset(*SITE["coords"], date=SITE["start_date"])
+    cld, result = SunMelt(coords = SITE["coords"], utc = utc)
     param_values = dict(result.best_values)
 
+
     aws = [-5,10,2]
-    print(TempFreeze(aws, cld))
+    alt = 1000
+    print(TempFreeze(aws, cld, alt))
     print(param_values)
     # locations = ["gangles21", "guttannen21"]
     # for loc in locations:

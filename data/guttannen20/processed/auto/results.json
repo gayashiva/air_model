@@ -1,4 +1,15 @@
 {
-    "D_F": NaN,
-    "M_F": -21926.0,
-    "M_dep": 
+    "D_F": 1,
+    "M_F": -20890,
+    "M_dep": 660,
+    "M_ice": 56,
+    "M_input": 28928,
+    "M_ppt": 3800,
+    "M_sub": 199,
+    "M_waste": 0,
+    "M_water": 6746,
+    "R_F": 7,
+    "WUE": 23,
+    "iceV_max": 30,
+    "last_hour": 1724
+}

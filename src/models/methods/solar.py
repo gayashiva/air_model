@@ -40,9 +40,9 @@ def get_solar(coords, start, end, DT, alt, ghi, press):
     ghi.index -= pd.Timedelta(hours=utc)
 
     solar_position = site_location.get_solarposition(times=times, method="ephemeris")
-    clearsky = site_location.get_clearsky(times=times, model = 'simplified_solis')
-    # clearness = irradiance.erbs(ghi = clearsky["ghi"], zenith = solar_position['apparent_zenith'],
-    clearness = irradiance.erbs(ghi = ghi, zenith = solar_position['zenith'],
+    # clearsky = site_location.get_clearsky(times=times, model = 'simplified_solis')
+    clearsky = site_location.get_clearsky(times=times, model = 'ineichen')
+    clearness = irradiance.erbs(ghi = clearsky["ghi"], zenith = solar_position['zenith'],
                                       datetime_or_doy= times) 
 
     solar_df = pd.DataFrame(
