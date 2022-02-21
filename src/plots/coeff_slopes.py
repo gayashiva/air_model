@@ -1,5 +1,4 @@
 """ Plot comparing auto and manual discharge at guttannen"""
-
 import sys, json
 import os
 import xarray as xr
@@ -40,71 +39,72 @@ if __name__ == "__main__":
 
     if compile:
 
-        temp = list(range(-30, 20))
+        # temp = list(range(-30, 20))
+        # rh = list(range(0, 100, 5))
+        # v = list(range(0, 20, 1))
+
+        # da = xr.DataArray(
+        #     data=np.zeros(len(temp) * len(rh) * len(v)).reshape(
+        #         len(temp), len(rh), len(v)
+        #     ),
+        #     dims=["temp", "rh", "v"],
+        #     coords=dict(
+        #         temp=temp,
+        #         rh=rh,
+        #         v=v,
+        #     ),
+        #     attrs=dict(
+        #         long_name="Freezing rate",
+        #         description="Max. freezing rate",
+        #         units="l min-1",
+        #     ),
+        # )
+
+        # da.temp.attrs["units"] = "deg C"
+        # da.temp.attrs["description"] = "Air Temperature"
+        # da.temp.attrs["long_name"] = "Air Temperature"
+        # da.rh.attrs["units"] = "%"
+        # da.rh.attrs["long_name"] = "Relative Humidity"
+        # da.v.attrs["units"] = "m s-1"
+        # da.v.attrs["long_name"] = "Wind Speed"
+
+        # alt_list = list(range(0,5000,250))
+        # data = []
+
+        # for alt in alt_list:
+        #     cld=0.5
+        #     logger.warning("=> Computing coeffs for altitude {} and cloudiness {}".format(alt, cld))
+
+        #     for temp in da.temp.values:
+        #         for rh in da.rh.values:
+        #             for v in da.v.values:
+        #                 aws = [temp, rh, v]
+        #                 da.sel(temp=temp, rh=rh, v=v).data+= TempFreeze(aws, cld=0.5, alt=alt)
+        #     x = []
+        #     y = []
+        #     for temp in da.temp.values:
+        #         for rh in da.rh.values:
+        #             for v in da.v.values:
+        #                 aws = [temp, rh, v]
+        #                 x.append(aws)
+        #                 y.append(da.sel(temp=temp, rh=rh, v=v).data)
+
+        #     popt, pcov = curve_fit(line, x, y)
+        #     a, b, c, d = popt
+        #     data.append([alt,cld,a,b,c,d])
+        #     # print(param_list)
+        #     print("For %s, dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f" % (alt, a, b, c, d))
+
+        # df = pd.DataFrame(data, columns=['alt', 'cld', 'temp', 'rh', 'wind', 'constant'])
+        # print(df.head())
+        # df.to_csv("data/common/alt_cld_dependence.csv")
+
+        df = pd.read_csv("data/common/alt_cld_dependence.csv")
+
+        temp = list(range(-20, 20))
         rh = list(range(0, 100, 5))
         v = list(range(0, 20, 1))
-
-        da = xr.DataArray(
-            data=np.zeros(len(temp) * len(rh) * len(v)).reshape(
-                len(temp), len(rh), len(v)
-            ),
-            dims=["temp", "rh", "v"],
-            coords=dict(
-                temp=temp,
-                rh=rh,
-                v=v,
-            ),
-            attrs=dict(
-                long_name="Freezing rate",
-                description="Max. freezing rate",
-                units="l min-1",
-            ),
-        )
-
-        da.temp.attrs["units"] = "deg C"
-        da.temp.attrs["description"] = "Air Temperature"
-        da.temp.attrs["long_name"] = "Air Temperature"
-        da.rh.attrs["units"] = "%"
-        da.rh.attrs["long_name"] = "Relative Humidity"
-        da.v.attrs["units"] = "m s-1"
-        da.v.attrs["long_name"] = "Wind Speed"
-
-        alt_list = list(range(0,5000,1000))
-        cld_list = list(np.arange(0,1,0.25))
-        data = [] 
-
-        for alt in alt_list:
-            for cld in cld_list:
-                logger.warning("=> Computing coeffs for altitude {} and cloudiness {}".format(alt, cld))
-
-                for temp in da.temp.values:
-                    for rh in da.rh.values:
-                        for v in da.v.values:
-                            aws = [temp, rh, v]
-                            da.sel(temp=temp, rh=rh, v=v).data+= TempFreeze(aws, cld=0, alt=alt)
-                x = []
-                y = []
-                for temp in da.temp.values:
-                    for rh in da.rh.values:
-                        for v in da.v.values:
-                            aws = [temp, rh, v]
-                            x.append(aws)
-                            y.append(da.sel(temp=temp, rh=rh, v=v).data)
-
-                popt, pcov = curve_fit(line, x, y)
-                a, b, c, d = popt
-                data.append([alt,cld,a,b,c,d])
-                # print(param_list)
-                print("For %s, dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f" % (alt, a, b, c, d))
-
-        df = pd.DataFrame(data, columns=['alt', 'cld', 'temp', 'rh', 'wind', 'constant'])
-        print(df.head())
-        df.to_csv("data/common/alt_cld_dependence.csv")
-
-        temp = list(range(-30, 20))
-        rh = list(range(0, 100, 5))
-        v = list(range(0, 20, 1))
-        alt = list(range(0, 5000, 1000))
+        alt = list(range(0, 5000, 250))
 
         da = xr.DataArray(
             data=np.zeros(len(temp) * len(rh) * len(v)* len(alt)).reshape(
@@ -131,22 +131,40 @@ if __name__ == "__main__":
         da.rh.attrs["long_name"] = "Relative Humidity"
         da.v.attrs["units"] = "m s-1"
         da.v.attrs["long_name"] = "Wind Speed"
+        da.alt.attrs["units"] = "m"
+        da.alt.attrs["long_name"] = "Altitude"
 
-        data = [] 
+        data = []
 
         for temp in da.temp.values:
             for rh in da.rh.values:
                 for v in da.v.values:
-                    for i in range(0, df.shape[0], 4):
+                    for i in range(0, df.shape[0]):
                         aws = [temp, rh, v]
-                        da.sel(temp=temp, rh=rh, v=v, alt = df.alt[i]).data= df.temp[i] * temp + df.rh[i] * rh +df.wind[i] * v + df.constant[i]
+                        da.sel(temp=temp, rh=rh, v=v, alt = df.alt[i]).data += df.temp[i] * temp + df.rh[i] * rh + df.wind[i] * v + df.constant[i]
                         da.sel(temp=temp, rh=rh, v=v, alt = df.alt[i]).data *= math.pi * 5 * 5
+                        # print(da.sel(temp=temp, rh=rh, v=v, alt = df.alt[i]).values)
 
         da.to_netcdf("data/common/alt_sims.nc")
     else:
         df = pd.read_csv("data/common/alt_cld_dependence.csv")
         da = xr.open_dataarray("data/common/alt_sims.nc")
 
+        df_l = pd.DataFrame(dict(x=[4000,1000], y=[0, 2], text=['Ladakh', 'Swiss']))
+
+
+        a = pd.concat({'x': df_l.x, 'y': df_l.y, 'text': df_l.text}, axis=1)
+
+        fig, ax = plt.subplots(1, 1)
+        ax = df_l.set_index('x')['y'].plot(style='.', color='k', ms=10)
+        for i, point in a.iterrows():
+            print(i,point)
+            ax.text(point['x']+0.125, point['y'], str(point['text']))
+        da.sel(rh=50, v=2).plot()
+        # ax.legend(title = "Altitude")
+        # ax.set_ylabel("Night freezing with 5m spray radius [$l/min$]")
+        # ax.set_xlabel("Air Temperature [$C$]")
+        plt.savefig("data/figs/paper3/alt_temp.png", bbox_inches="tight", dpi=300)
         # x_vals = list(range(-10, 10))
         # df = df.round(4)
         # print(df.tail())
