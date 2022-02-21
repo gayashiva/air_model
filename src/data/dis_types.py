@@ -43,6 +43,7 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
         freq=(str(int(CONSTANTS["DT"] / 60)) + "T"),
     )
     sprays = ['man', 'auto', "auto_field"]
+    # sprays = ['man']
      
     df = pd.DataFrame(index=time, columns=sprays)
     df = df.fillna(0)
@@ -98,15 +99,42 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                 df_f = df_f.reset_index(drop=True)
                 df_f = df_f.set_index("time")
 
+                # df_h = pd.DataFrame(SITE["f_heights"])
+                # df[spray] = SITE["dis_max"]
+                # dis_old= SITE["dis_max"]
+                # for i in range(1,df_h.shape[0]):
+                #     h_change = round(df_h.h_f[i] - df_h.h_f[i-1],0)
+                #     print(h_change)
+                #     dis_new = dis_old/math.pow(2, h_change)
+                #     df.loc[df.time > df_h.time[i], spray] *= dis_new/dis_old
+                #     dis_old = dis_new
+
                 df = df.set_index("time")
                 df.loc[df_f.index, spray] = SITE["D_F"] * df_f["fountain"]
                 df = df.reset_index()
 
-
-            if loc in ["guttannen21", "guttannen20"]:
+            if loc in ["guttannen22", "guttannen21", "guttannen20"]:
                 SITE, FOLDER = config(loc, spray)
-                df[spray] = SITE["D_F"]
-                logger.info("Discharge constant")
+                # df_f = pd.read_csv(
+                #     os.path.join("data/" + loc + "/interim/")
+                #     + "discharge_labview.csv",
+                #     sep=",",
+                #     parse_dates=["time"],
+                # )
+                # df_f = df_f.set_index("time")
+
+                df_h = pd.DataFrame(SITE["f_heights"])
+                df[spray] = SITE["dis_max"]
+                dis_old= SITE["dis_max"]
+                for i in range(1,df_h.shape[0]):
+                    h_change = round(df_h.h_f[i] - df_h.h_f[i-1],0)
+                    print(h_change)
+                    dis_new = dis_old/math.pow(2, h_change)
+                    df.loc[df.time > df_h.time[i], spray] *= dis_new/dis_old
+                    dis_old = dis_new
+                # SITE, FOLDER = config(loc, spray)
+                # df[spray] = SITE["D_F"]
+                # logger.info("Discharge constant")
 
         if loc == "guttannen22":
             if spray == "auto_field":
@@ -126,29 +154,6 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                 # D_F = self.df.Discharge[self.df.Discharge != 0].mean()
                 # logger.warning("Auto Discharge mean %.1f" % self.D_F)
 
-            if spray == "man":
-                SITE, FOLDER = config(loc, spray)
-                df_f = pd.read_csv(
-                    os.path.join("data/" + loc + "/interim/")
-                    + "discharge_labview.csv",
-                    sep=",",
-                    parse_dates=["time"],
-                )
-                df_f = df_f.set_index("time")
-
-                f_heights = [
-                    {"time": SITE["start_date"], "h_f": 3},
-                    {"time": datetime(2021, 12, 23, 16), "h_f": 4},
-                    {"time": datetime(2022, 1, 3, 16), "h_f": 5},
-                ]
-                df_h = pd.DataFrame(f_heights)
-
-                df[spray] = df_f.Discharge.max()
-                dis_old= df_f.Discharge.max()
-                for i in range(1,df_h.shape[0]):
-                    dis_new = dis_old/2
-                    df.loc[df.time > df_h.time[i], spray] *= dis_new/dis_old
-                    dis_old = dis_new
 
                 # D_F = self.df.Discharge[self.df.Discharge != 0].mean()
                 # logger.warning("Manual Discharge mean %.1f" % self.D_F)
@@ -170,7 +175,8 @@ if __name__ == "__main__":
     # logger.setLevel("INFO")
 
     # locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
-    locations = ["guttannen22"]
+    # locations = ["guttannen22"]
+    locations = ["gangles21"]
 
     for loc in locations:
         df = get_discharge(loc)

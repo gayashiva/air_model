@@ -37,7 +37,7 @@ def config(location="guttannen21", spray=None):
                     fountain_off_date=datetime(2022, 1, 27),
                     R_F = 4,
                     # dis_crit = 1,
-                    # dis_max= 13,
+                    dis_max= 11,
                 )
                 add["expiry_date"] = add["fountain_off_date"]
 
@@ -45,16 +45,17 @@ def config(location="guttannen21", spray=None):
                 add= dict(
                     start_date=datetime(2021, 12, 3, 8),
                     fountain_off_date=datetime(2022, 1, 27),
+                    D_F=7.5,  # Fountain mean discharge
+                    f_heights = [
+                        {"time": datetime(2021, 12, 3, 8), "h_f": 3.7},
+                        {"time": datetime(2022, 12, 23, 16), "h_f": 4.7},
+                        {"time": datetime(2022, 2, 12, 16), "h_f": 5.7},
+                    ],
+                    dis_max= 11,
                     # dis_crit = 1,
-                    # dis_max= 13,
                     # D_F=7.5,  # Fountain mean discharge
                 )
                 add["expiry_date"] = add["fountain_off_date"]
-
-                f_heights = [
-                    {"time": add["start_date"], "h_f": 3},
-                    {"time": datetime(2022, 12, 23, 16), "h_f": 4},
-                ]
 
             if spray == "auto_field":
                 add= dict(
@@ -68,19 +69,6 @@ def config(location="guttannen21", spray=None):
                 add["expiry_date"] = add["fountain_off_date"]
 
 
-            if spray == "man_field":
-                add = dict(
-                    start_date=datetime(2021, 12, 8, 14),
-                    expiry_date=datetime(2022, 1, 27),
-                    fountain_off_date=datetime(2022, 1, 27),
-                    D_F=7.5,  # Fountain mean discharge
-                )
-
-                f_heights = [
-                    {"time": add["start_date"], "h_f": 3.7},
-                    {"time": datetime(2022, 12, 23, 16), "h_f": 4.7},
-                    {"time": datetime(2022, 2, 12, 16), "h_f": 5.7},
-                ]
             SITE = dict(SITE, **add)
 
     if location == "Guttannen 2021" or location == "guttannen21":
@@ -105,7 +93,7 @@ def config(location="guttannen21", spray=None):
                     start_date=datetime(2020, 11, 22, 15),
                     fountain_off_date=datetime(2021, 2, 10, 1),
                     dis_crit = 1,
-                    dis_max= 13,
+                    dis_max= 11,
                     R_F = 7,
                 )
                 add["expiry_date"] = add["fountain_off_date"]
@@ -115,14 +103,15 @@ def config(location="guttannen21", spray=None):
                     start_date=datetime(2020, 11, 22, 15),
                     expiry_date=datetime(2021, 5, 10, 1),
                     fountain_off_date=datetime(2021, 2, 20, 10),
+                    dis_max= 11,
                     D_F=7.5,  # Fountain mean discharge
+                    f_heights = [
+                        {"time": datetime(2020, 11, 22, 15), "h_f": 2.68},
+                        {"time": datetime(2020, 12, 30, 16), "h_f": 3.75},
+                        {"time": datetime(2021, 1, 7, 16), "h_f": 4.68},
+                        {"time": datetime(2021, 1, 11, 16), "h_f": 5.68},
+                    ],
                 )
-                f_heights = [
-                    {"time": add["start_date"], "h_f": 2.68},
-                    {"time": datetime(2020, 12, 30, 16), "h_f": 3.75},
-                    {"time": datetime(2021, 1, 7, 16), "h_f": 4.68},
-                    {"time": datetime(2021, 1, 11, 16), "h_f": 5.68},
-                ]
 
             SITE = dict(SITE, **add)
 
@@ -149,17 +138,7 @@ def config(location="guttannen21", spray=None):
                     start_date=datetime(2020, 1, 3, 16),
                     fountain_off_date=datetime(2020, 3, 6, 12),
                     dis_crit = 1,
-                    dis_max= 13,
-                    R_F = 7,
-                )
-                add["expiry_date"] = add["fountain_off_date"]
-
-            if spray == "static":
-                add= dict(
-                    start_date=datetime(2020, 1, 3, 16),
-                    fountain_off_date=datetime(2020, 3, 6, 12),
-                    dis_crit = 1,
-                    dis_max= 13,
+                    dis_max= 11,
                     R_F = 7,
                 )
                 add["expiry_date"] = add["fountain_off_date"]
@@ -169,13 +148,14 @@ def config(location="guttannen21", spray=None):
                     start_date=datetime(2020, 1, 3, 16),
                     expiry_date=datetime(2020, 4, 6, 12),
                     fountain_off_date=datetime(2020, 3, 8, 9),  # Image shows Dani switched off at 8th Mar 10 am
+                    dis_max= 11,
                     D_F=7.5,  # Fountain mean discharge
+                    f_heights = [
+                        {"time": datetime(2020, 1, 3, 16), "h_f": 2.5},
+                        {"time": datetime(2020, 1, 24, 12), "h_f": 3.5},
+                        {"time": datetime(2020, 2, 5, 19), "h_f": 2.5},
+                    ],
                 )
-                f_heights = [
-                    {"time": add["start_date"], "h_f": 2.5},
-                    {"time": datetime(2020, 1, 24, 12), "h_f": 3.5},
-                    {"time": datetime(2020, 2, 5, 19), "h_f": 2.5},
-                ]
 
             SITE = dict(SITE, **add)
 
@@ -221,13 +201,14 @@ def config(location="guttannen21", spray=None):
                     start_date=datetime(2021, 1, 18),
                     fountain_off_date=datetime(2021, 3, 10, 18),
                     expiry_date=datetime(2021, 6, 20),
-                    D_F=60,  # FOUNTAIN min discharge
+                    D_F=60,  # FOUNTAIN infinite water
+                    # dis_max=60,  # FOUNTAIN min discharge
+                    f_heights = [
+                        {"time": datetime(2021, 1, 18), "h_f": 5},
+                        {"time": datetime(2021, 1, 22, 16), "h_f": 9},
+                    ],
                 )
 
-                f_heights = [
-                    {"time": add["start_date"], "h_f": 5},
-                    {"time": datetime(2021, 1, 22, 16), "h_f": 9},
-                ]
             SITE = dict(SITE, **add)
 
     # Define directory structure
