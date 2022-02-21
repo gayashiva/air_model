@@ -19,6 +19,7 @@ from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
 from src.models.methods.metadata import get_parameter_metadata
 from src.automate.autoDischarge import TempFreeze, SunMelt
+from src.models.methods.solar import get_offset
 # from src.automate.projectile import get_projectile
 
 def line(x, a, b, c, d):
@@ -42,9 +43,12 @@ if __name__ == "__main__":
     locations = ["guttannen21", "guttannen22", "guttannen20", "gangles21"]
 
     for loc in locations:
-        with open("data/common/info.json") as f:
+        with open("data/common/auto.json") as f:
             params = json.load(f)
-        CONSTANTS, SITE, FOLDER = config(loc)
+        with open("data/common/constants.json") as f:
+            CONSTANTS= json.load(f)
+
+        SITE, FOLDER = config(loc, spray="man")
 
         # icestupa_sim = Icestupa(loc)
         # icestupa_sim.read_output()
@@ -73,12 +77,13 @@ if __name__ == "__main__":
         #     json.dump(params, f)
 
         """Calculate Solar gaussian coeffs"""
-        result = SunMelt(loc)
+        utc = get_offset(*SITE["coords"], date=SITE["start_date"])
+        cld, result = SunMelt(coords = SITE["coords"], utc = utc, alt = SITE["alt"])
 
         with open(FOLDER["input"] + "auto/sunmelt.json", "w") as f:
             json.dump(dict(result.best_values), f)
 
-        compile = False
+        compile = True
         if not os.path.exists(FOLDER["input"] + "auto/sims.nc") or compile:
             logger.warning("=> Computing temp coeffs for location {}".format(loc))
             """Compute Temp coeffs"""
@@ -115,8 +120,7 @@ if __name__ == "__main__":
                 for rh in da.rh.values:
                     for v in da.v.values:
                         aws = [temp, rh, v]
-                        da.sel(temp=temp, rh=rh, v=v).data+= TempFreeze(aws,
-                            loc)
+                        da.sel(temp=temp, rh=rh, v=v).data+= TempFreeze(aws, cld, SITE["alt"])
             da.to_netcdf(FOLDER["input"] + "auto/sims.nc")
         else:
             logger.info("=> Skipping temp coeffs for location {}".format(loc))

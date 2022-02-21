@@ -14,21 +14,17 @@ import os, sys
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 from src.utils.settings import config
-from src.models.methods.solar import get_offset
 # from src.automate.projectile import get_projectile
 
 def TempFreeze(aws, cld, alt):
-
-    # TODO load constants from separate file
-    # CONSTANTS, SITE, FOLDER = config("guttannen21")
 
     with open("data/common/auto.json") as f:
         params = json.load(f)
 
     with open("data/common/constants.json") as f:
-        constants = json.load(f)
+        CONSTANTS = json.load(f)
 
-    # with open("data/common/constants.json", "w") as f:
+    # with open("data/common/CONSTANTS.json", "w") as f:
     #     json.dump(CONSTANTS, f, indent=4, sort_keys=True)
 
     # AWS
@@ -53,53 +49,53 @@ def TempFreeze(aws, cld, alt):
         1 + 0.22 * math.pow(cld, 2)
     )
 
-    LW = e_a * constants["sigma"] * math.pow(
+    LW = e_a * CONSTANTS["sigma"] * math.pow(
         temp + 273.15, 4
-    ) - constants["IE"] * constants["sigma"] * math.pow(273.15 + params["temp_i"], 4)
+    ) - CONSTANTS["IE"] * CONSTANTS["sigma"] * math.pow(273.15 + params["temp_i"], 4)
 
     # Derived
     press = atmosphere.alt2pres(alt) / 100
 
     Qs = (
-        constants["C_A"]
-        * constants["RHO_A"]
+        CONSTANTS["C_A"]
+        * CONSTANTS["RHO_A"]
         * press
-        / constants["P0"]
-        * math.pow(constants["VAN_KARMAN"], 2)
+        / CONSTANTS["P0"]
+        * math.pow(CONSTANTS["VAN_KARMAN"], 2)
         * wind
         * (temp - params["temp_i"])
-        / ((np.log(constants["H_AWS"] / constants["Z"])) ** 2)
+        / ((np.log(CONSTANTS["H_AWS"] / CONSTANTS["Z"])) ** 2)
     )
 
     Ql = (
         0.623
-        * constants["L_S"]
-        * constants["RHO_A"]
-        / constants["P0"]
-        * math.pow(constants["VAN_KARMAN"], 2)
+        * CONSTANTS["L_S"]
+        * CONSTANTS["RHO_A"]
+        / CONSTANTS["P0"]
+        * math.pow(CONSTANTS["VAN_KARMAN"], 2)
         * wind
         * (vp_a - vp_ice)
-        / ((np.log(constants["H_AWS"] / constants["Z"])) ** 2)
+        / ((np.log(CONSTANTS["H_AWS"] / CONSTANTS["Z"])) ** 2)
     )
 
 
     EB = Ql + Qs + LW
-    dis = -1 * EB / constants["L_F"] * 1000 / 60
+    dis = -1 * EB / CONSTANTS["L_F"] * 1000 / 60
 
     # SA = math.pi * math.pow(params['spray_r'],2)
     # dis *= SA
 
     return dis
 
-def SunMelt(coords, utc):
+def SunMelt(coords, utc, alt):
 
-    # constants, SITE, FOLDER = config(loc)
+    # CONSTANTS, SITE, FOLDER = config(loc)
 
     with open("data/common/auto.json") as f:
         params = json.load(f)
 
     with open("data/common/constants.json") as f:
-        constants = json.load(f)
+        CONSTANTS = json.load(f)
 
     times = pd.date_range(
         params["solar_day"],
@@ -112,8 +108,8 @@ def SunMelt(coords, utc):
 
     times -= pd.Timedelta(hours=utc)
     loc = location.Location(
-        *SITE["coords"],
-        altitude=SITE["alt"],
+        *coords,
+        altitude=alt,
     )
 
     solar_position = loc.get_solarposition(times=times, method="ephemeris")
@@ -125,19 +121,18 @@ def SunMelt(coords, utc):
 
     df = pd.DataFrame(
         {
-            "ghi": clearsky["ghi"],
-            "dhi": clearness["dhi"],
+            "SW_diffuse": clearness["dhi"],
+            "SW_global": clearsky["ghi"],
             "cld": 1 - clearness["kt"],
             "sea": np.radians(solar_position["elevation"]),
         }
     )
     bad_values = df["sea"]< 0 
+    df["sea"]= np.where(bad_values, 0, df["sea"])
     df["cld"]= np.where(bad_values, np.nan, df["cld"])
     cld = df["cld"].mean()
-    print(df.describe())
                             
     df.index += pd.Timedelta(hours=utc)
-    df.loc[df["sea"] < 0, "sea"] = 0
     df = df.reset_index()
     df["hour"] = df["index"].apply(lambda x: int(x.strftime("%H")))
     df["f_cone"] = 0
@@ -145,18 +140,10 @@ def SunMelt(coords, utc):
     # SA = math.pi * math.pow(params["spray_r"],2)
 
     for i in range(0, df.shape[0]):
-        # df.loc[i, "f_cone"] = 0.3
         df.loc[i, "f_cone"] = (math.pi * math.sin(df.loc[i, "sea"]) + math.cos(df.loc[i, "sea"]))/(2*math.sqrt(2)*math.pi)
 
-        df.loc[i, "SW_direct"] = (
-            (1 - SITE["cld"])
-            * df.loc[i, "f_cone"]
-            * df.loc[i, "ghi"]
-        )
-        df.loc[i, "SW_diffuse"] = (
-            SITE["cld"]  * df.loc[i, "ghi"]
-        )
-    df["dis"] = -1 * (1 - constants["A_I"]) * (df["SW_direct"] + df["SW_diffuse"]) / constants["L_F"] * 1000 / 60
+    df["SW_direct"]= df["SW_global"] - df["SW_diffuse"]
+    df["dis"] = -1 * (1 - CONSTANTS["A_I"]) * (df["SW_direct"] * df["f_cone"] + df["SW_diffuse"]) / CONSTANTS["L_F"] * 1000 / 60
 
     model = GaussianModel()
     gauss_params = model.guess(df.dis, df.hour)
@@ -173,11 +160,10 @@ if __name__ == "__main__":
     #   "solar_day": "2019-02-01",
     # }
 
-
     loc="guttannen21"
-    constants, SITE, FOLDER = config(loc)
+    SITE, FOLDER = config(loc)
     utc = get_offset(*SITE["coords"], date=SITE["start_date"])
-    cld, result = SunMelt(coords = SITE["coords"], utc = utc)
+    cld, result = SunMelt(coords = SITE["coords"], utc = utc, alt=SITE["alt"])
     param_values = dict(result.best_values)
 
 
