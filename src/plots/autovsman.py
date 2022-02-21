@@ -1,6 +1,6 @@
 """ Plot comparing auto and manual discharge at guttannen"""
 
-import sys
+import sys, json
 import os
 import seaborn as sns
 import numpy as np
@@ -18,25 +18,27 @@ sys.path.append(
 )
 from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
-from src.models.methods.metadata import get_parameter_metadata
+# from src.models.methods.metadata import get_parameter_metadata
 
 if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
     logger.setLevel("ERROR")
     location = 'guttannen22'
-    sprays = ['auto', 'man']
+    sprays = ['auto_field', 'man']
 
     mypal = sns.color_palette("Set1", 2)
     fig, ax = plt.subplots(2, 1, sharex="col")
 
+    with open("data/common/constants.json") as f:
+        CONSTANTS = json.load(f)
     for i, spray in enumerate(sprays):
-        CONSTANTS, SITE, FOLDER = config(location, spray)
+        SITE, FOLDER = config(location, spray)
         icestupa = Icestupa(location, spray)
         icestupa.read_output()
         df=icestupa.df
 
-        if spray == "auto":
+        if spray == "auto_field":
             spray = "Automatic "
         else:
             spray = "Manual "
@@ -79,4 +81,4 @@ if __name__ == "__main__":
     handles, labels = ax[1].get_legend_handles_labels()
     fig.legend(handles, labels, loc="upper right", prop={"size": 8})
     # plt.legend()
-    plt.savefig("data/figs/paper3/autovsmanual.jpg", bbox_inches="tight", dpi=300)
+    plt.savefig("data/figs/paper3/autovsmanual.png", bbox_inches="tight", dpi=300)

@@ -53,6 +53,8 @@ class Icestupa:
         df_f = df_f[["time", "Discharge"]]
 
         self.df = pd.merge(df_f, self.df, on="time", how="left")
+        if 'index' in self.df.columns:
+            logger.error("Index present")
 
         self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
         logger.warning("%s Discharge mean %.1f" % (self.spray, self.D_F))
@@ -109,7 +111,7 @@ class Icestupa:
             # ghi=self.df.set_index("time")["SW_global"],
             # press=self.df["press"].mean(),
         )
-        self.df = self.df.reset_index()
+
         self.df = pd.merge(solar_df, self.df, on="time", how="left")
         self.df["SW_direct"] = self.df["SW_global"] - self.df["SW_diffuse"]
 
@@ -167,6 +169,8 @@ class Icestupa:
         )
         logger.debug(self.df.head())
         logger.debug(self.df.tail())
+        if 'index' in self.df.columns:
+            logger.error("Index present")
 
     def gen_output(self):  # Use processed input dataset
 
