@@ -40,6 +40,7 @@ def TempFreeze(temp,rh,wind,alt):
     ) - CONSTANTS["IE"] * CONSTANTS["sigma"] * math.pow(273.15 + params["temp_i"], 4)
 
     # Derived
+    alt *= 1000
     press = atmosphere.alt2pres(alt) / 100
 
     Qs = (

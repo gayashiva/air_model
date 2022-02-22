@@ -36,7 +36,8 @@ if __name__ == "__main__":
     logger.setLevel("INFO")
 
     opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
-    # opts = opts.append("-c")
+    # opts = opts.append("-png")
+    # opts = ["-png"]
 
     if "-nc" in opts:
         logger.info("=> Calculation of coeffs")
@@ -81,7 +82,7 @@ if __name__ == "__main__":
             for rh in da.rh.values:
                 for v in da.v.values:
                     for alt in da.alt.values:
-                        da.sel(temp=temp, rh=rh, v=v, alt = alt).data += TempFreeze(temp, rh, v, alt*1000)
+                        da.sel(temp=temp, rh=rh, v=v, alt=alt).data += TempFreeze(temp, rh, v, alt)
 
         da.to_netcdf("data/common/alt_sims.nc")
 
@@ -108,11 +109,6 @@ if __name__ == "__main__":
         with open("data/common/alt_coeffs.json", "w") as f:
             json.dump(param_values, f)
 
-        # print(
-        #     "Max freezing rate:",
-        #     autoDis(**param_values, time=6, temp=-20, rh=0, v=10, alt=1000),
-        # )
-
     if "-png" in opts:
         logger.info("=> Producing figs")
 
@@ -126,7 +122,7 @@ if __name__ == "__main__":
         for i, point in a.iterrows():
             print(i,point)
             ax.text(point['x']+0.125, point['y'], str(point['text']))
-        da.sel(rh=50, v=2, temp=-10).plot()
+        da.sel(rh=50, v=2).plot()
         # ax.legend(title = "Altitude")
         # ax.set_ylabel("Night freezing with 5m spray radius [$l/min$]")
         # ax.set_xlabel("Air Temperature [$C$]")
