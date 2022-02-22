@@ -112,6 +112,7 @@ if __name__ == "__main__":
         param_values["c"] = c
         param_values["d"] = d
         param_values["e"] = e
+        param_values["f"] = f
 
         with open("data/common/alt_coeffs.json", "w") as f:
             json.dump(param_values, f)
