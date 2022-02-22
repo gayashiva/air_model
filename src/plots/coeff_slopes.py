@@ -21,7 +21,6 @@ from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
 from src.automate.autoDischarge import TempFreeze, SunMelt
 from src.automate.gen_coeffs import line
-# from src.models.methods.metadata import get_parameter_metadata
 
 def abline(slope, intercept):
     """Plot a line from slope and intercept"""
@@ -31,14 +30,15 @@ def abline(slope, intercept):
     plt.plot(x_vals, y_vals, '--')
 
 if __name__ == "__main__":
+
     # Main logger
     logger = logging.getLogger(__name__)
     logger.setLevel("INFO")
 
-    compile = True
-    # compile = False
+    opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
+    # opts = ["-c"]
 
-    if compile:
+    if "-c" in opts:
 
         # temp = list(range(-20, 20,10))
         # rh = list(range(0, 100, 50))
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         temp = list(range(-20, 20))
         rh = list(range(0, 100, 5))
         v = list(range(0, 20, 1))
-        alt = list(range(0, 5000, 250))
+        alt = list(range(0, 5, 0.25))
         spray_r = 7
 
         da = xr.DataArray(
@@ -76,7 +76,7 @@ if __name__ == "__main__":
         da.rh.attrs["long_name"] = "Relative Humidity"
         da.v.attrs["units"] = "m s-1"
         da.v.attrs["long_name"] = "Wind Speed"
-        da.alt.attrs["units"] = "m"
+        da.alt.attrs["units"] = "km"
         da.alt.attrs["long_name"] = "Altitude"
 
         data = []
@@ -85,6 +85,7 @@ if __name__ == "__main__":
             for rh in da.rh.values:
                 for v in da.v.values:
                     for alt in da.alt.values:
+                        alt *= 1000
                         da.sel(temp=temp, rh=rh, v=v, alt = alt).data += TempFreeze(temp, rh, v, alt)
 
         da.to_netcdf("data/common/alt_sims.nc")
@@ -106,18 +107,17 @@ if __name__ == "__main__":
         a, b, c, d, e = popt
         print("dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f * alt + %.5f" % (a, b, c, d, e))
 
-                        # da.sel(temp=temp, rh=rh, v=v, alt = df.alt[i]).data += TempFreeze(aws, cld=0.5, alt=alt) df.temp[i] * temp + df.rh[i] * rh + df.wind[i] * v + df.constant[i]
-                        # da.sel(temp=temp, rh=rh, v=v, alt = df.alt[i]).data *= math.pi * math.pow(spray_r, 2)
-                        # print(da.sel(temp=temp, rh=rh, v=v, alt = df.alt[i]).values)
-            # for temp in da.temp.values:
-            #     for rh in da.rh.values:
-            #         for v in da.v.values:
-            #             aws = [temp, rh, v]
-            #             x.append(aws)
-            #             y.append(da.sel(temp=temp, rh=rh, v=v).data)
+        """Combine all coeffs"""
+        param_values = {}
 
-        popt, pcov = curve_fit(line, x, y)
-        a, b, c, d, e = popt
+        with open("data/common/alt_coeffs.nc", "w") as f:
+            json.dump(param_values, f)
+
+        print(
+            "Max freezing rate:",
+            autoDis(**param_values, time=6, temp=-20, rh=0, v=10),
+        )
+
 
     # else:
     #     df = pd.read_csv("data/common/alt_cld_dependence.csv")
