@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
     # opts = opts.append("-png")
-    opts = ["-nc"]
+    # opts = ["-nc"]
 
     if "-nc" in opts:
         logger.info("=> Calculation of coeffs")
