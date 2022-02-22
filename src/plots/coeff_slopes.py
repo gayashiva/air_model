@@ -39,11 +39,12 @@ if __name__ == "__main__":
     if "-nc" in opts:
         logger.info("=> Calculation of coeffs")
 
-        temp = list(range(-10, 10))
+        temp = list(range(-15, 15))
         rh = list(range(0, 100, 10))
         v = list(range(0, 15, 1))
         alt = list(np.arange(0, 5.1, 0.5))
         cld = list(np.arange(0, 1.1, 0.5))
+        spray_r = 7
 
         da = xr.DataArray(
             data=np.zeros(len(temp) * len(rh) * len(v)* len(alt)* len(cld)).reshape(
@@ -60,21 +61,21 @@ if __name__ == "__main__":
             attrs=dict(
                 long_name="Freezing rate",
                 description="Max. freezing rate",
-                units="l min-1",
+                units="$l\\, min^{-1}$",
             ),
         )
 
-        da.temp.attrs["units"] = "deg C"
+        da.temp.attrs["units"] = "$\\degree C$"
         da.temp.attrs["description"] = "Air Temperature"
         da.temp.attrs["long_name"] = "Air Temperature"
         da.rh.attrs["units"] = "%"
         da.rh.attrs["long_name"] = "Relative Humidity"
-        da.v.attrs["units"] = "m s-1"
+        da.v.attrs["units"] = "$m\\, s^{-1}$"
         da.v.attrs["long_name"] = "Wind Speed"
-        da.alt.attrs["units"] = "km"
+        da.alt.attrs["units"] = "$km$"
         da.alt.attrs["long_name"] = "Altitude"
-        da.alt.attrs["units"] = " "
-        da.alt.attrs["long_name"] = "Cloudiness"
+        da.cld.attrs["units"] = " "
+        da.cld.attrs["long_name"] = "Cloudiness"
 
         data = []
 
@@ -84,6 +85,7 @@ if __name__ == "__main__":
                     for alt in da.alt.values:
                         for cld in da.cld.values:
                             da.sel(temp=temp, rh=rh, v=v, alt=alt, cld=cld).data += TempFreeze(temp, rh, v, alt, cld)
+                            da.sel(temp=temp, rh=rh, v=v, alt=alt, cld=cld).data *= math.pi * spray_r * spray_r
 
         da.to_netcdf("data/common/alt_sims.nc")
 
@@ -132,24 +134,3 @@ if __name__ == "__main__":
             ax.text(point['x']+0.125, point['y'], str(point['text']))
         da.sel(rh=50, v=2,cld=0.5).plot()
         plt.savefig("data/figs/paper3/alt_temp.png", bbox_inches="tight", dpi=300)
-
-        # ax.legend(title = "Altitude")
-        # ax.set_ylabel("Night freezing with 5m spray radius [$l/min$]")
-        # ax.set_xlabel("Air Temperature [$C$]")
-    #     # x_vals = list(range(-10, 10))
-    #     # df = df.round(4)
-    #     # print(df.tail())
-    #     # fig, ax = plt.subplots(1, 1)
-    #     # for i in range(0, df.shape[0], 4):
-    #     #     y_vals = []
-    #     #     intercept = df.constant[i]
-    #     #     slope = df.temp[i]
-    #     #     for x in x_vals:
-    #     #         y_vals.append((intercept + slope * x) * math.pi * 25)
-    #     #     ax.plot(x_vals, y_vals, '--', label = str(df.alt[i]))
-    #     # # ax.scatter(df.alt, df.dis, s=100, c=df.cld, cmap='Blues')
-    #     # ax.legend(title = "Altitude")
-    #     # ax.set_ylabel("Night freezing with 5m spray radius [$l/min$]")
-    #     # ax.set_xlabel("Air Temperature [$C$]")
-    #     # plt.savefig("data/figs/paper3/coeff_slopes.png", bbox_inches="tight", dpi=300)
-
