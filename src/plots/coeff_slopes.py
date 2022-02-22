@@ -47,8 +47,8 @@ if __name__ == "__main__":
 
         temp = list(range(-20, 20))
         rh = list(range(0, 100, 5))
-        v = list(range(0, 20, 1))
-        alt = list(range(0, 5, 0.25))
+        v = list(range(0, 15, 1))
+        alt = list(arange(0, 5, 0.25))
         spray_r = 7
 
         da = xr.DataArray(
