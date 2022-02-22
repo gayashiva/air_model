@@ -17,6 +17,7 @@ from src.utils.settings import config
 # from src.automate.projectile import get_projectile
 
 def TempFreeze(temp,rh,wind,alt):
+    print(temp,rh,wind,alt)
 
     with open("data/common/auto.json") as f:
         params = json.load(f)
@@ -41,6 +42,7 @@ def TempFreeze(temp,rh,wind,alt):
 
     # Derived
     press = atmosphere.alt2pres(alt) / 100
+    print(press)
 
     Qs = (
         CONSTANTS["C_A"]
@@ -67,14 +69,12 @@ def TempFreeze(temp,rh,wind,alt):
 
     dis = -1 * (Ql / CONSTANTS["L_V"] + (Qs+LW) / CONSTANTS["L_F"]) * 1000 / 60
 
-    # SA = math.pi * math.pow(params['spray_r'],2)
-    # dis *= SA
+    SA = math.pi * math.pow(params['spray_r'],2)
+    dis *= SA
 
     return dis
 
 def SunMelt(coords, utc, alt):
-
-    # CONSTANTS, SITE, FOLDER = config(loc)
 
     with open("data/common/auto.json") as f:
         params = json.load(f)
@@ -87,9 +87,6 @@ def SunMelt(coords, utc, alt):
         freq="H",
         periods=1 * 24,
     )
-
-    # Derived
-    # utc = get_offset(*SITE["coords"], date=SITE["start_date"])
 
     times -= pd.Timedelta(hours=utc)
     loc = location.Location(
@@ -146,16 +143,17 @@ if __name__ == "__main__":
     # }
 
     loc="guttannen21"
-    SITE, FOLDER = config(loc)
-    utc = get_offset(*SITE["coords"], date=SITE["start_date"])
-    cld, result = SunMelt(coords = SITE["coords"], utc = utc, alt=SITE["alt"])
-    param_values = dict(result.best_values)
+    # SITE, FOLDER = config(loc)
+    # utc = get_offset(*SITE["coords"], date=SITE["start_date"])
+    # result = SunMelt(coords = SITE["coords"], utc = utc, alt=SITE["alt"])
+    # param_values = dict(result.best_values)
 
 
-    aws = [-5,10,2]
-    alt = 1000
-    print(TempFreeze(aws, cld, alt))
-    print(param_values)
+    aws1 = [-5,10,2,4000]
+    aws2 = [-5,10,2,0]
+    print(TempFreeze(*aws1))
+    print(TempFreeze(*aws2))
+    # print(param_values)
     # locations = ["gangles21", "guttannen21"]
     # for loc in locations:
     #     result = SunMelt(loc)

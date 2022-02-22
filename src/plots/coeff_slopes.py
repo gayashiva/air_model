@@ -36,15 +36,12 @@ if __name__ == "__main__":
     logger.setLevel("INFO")
 
     opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
-    opts = ["-c"]
+    # opts = ["-c"]
+    opts = ["-png"]
 
-    if "-c" in opts:
+    if "-nc" in opts:
 
-        # temp = list(range(-20, 20,10))
-        # rh = list(range(0, 100, 50))
-        # v = list(range(0, 20, 10))
-        # alt = list(range(0, 5000, 1000))
-
+        logger.info("=> Calculation of coeffs")
         temp = list(range(-20, 20))
         rh = list(range(0, 100, 5))
         v = list(range(0, 15, 1))
@@ -89,7 +86,7 @@ if __name__ == "__main__":
 
         da.to_netcdf("data/common/alt_sims.nc")
 
-    else:
+    if "-json" in opts:
         logger.info("=> Skipping calculation of coeffs")
         da = xr.open_dataarray("data/common/alt_sims.nc")
         x = []
@@ -109,34 +106,31 @@ if __name__ == "__main__":
         """Combine all coeffs"""
         param_values = {}
 
-        with open("data/common/alt_coeffs.nc", "w") as f:
+        with open("data/common/alt_coeffs.json", "w") as f:
             json.dump(param_values, f)
 
         print(
             "Max freezing rate:",
-            autoDis(**param_values, time=6, temp=-20, rh=0, v=10),
+            autoDis(**param_values, time=6, temp=-20, rh=0, v=10, alt=1000),
         )
 
+    if "-png" in opts:
 
-    # else:
-    #     df = pd.read_csv("data/common/alt_cld_dependence.csv")
-    #     da = xr.open_dataarray("data/common/alt_sims.nc")
+        da = xr.open_dataarray("data/common/alt_sims.nc")
+        df_l = pd.DataFrame(dict(x=[4,1], y=[0, 2], text=['Ladakh', 'Swiss']))
+        a = pd.concat({'x': df_l.x, 'y': df_l.y, 'text': df_l.text}, axis=1)
+        print(da)
 
-    #     df_l = pd.DataFrame(dict(x=[4000,1000], y=[0, 2], text=['Ladakh', 'Swiss']))
-
-
-    #     a = pd.concat({'x': df_l.x, 'y': df_l.y, 'text': df_l.text}, axis=1)
-
-    #     fig, ax = plt.subplots(1, 1)
-    #     ax = df_l.set_index('x')['y'].plot(style='.', color='k', ms=10)
-    #     for i, point in a.iterrows():
-    #         print(i,point)
-    #         ax.text(point['x']+0.125, point['y'], str(point['text']))
-    #     da.sel(rh=50, v=2).plot()
-    #     # ax.legend(title = "Altitude")
-    #     # ax.set_ylabel("Night freezing with 5m spray radius [$l/min$]")
-    #     # ax.set_xlabel("Air Temperature [$C$]")
-    #     plt.savefig("data/figs/paper3/alt_temp.png", bbox_inches="tight", dpi=300)
+        fig, ax = plt.subplots(1, 1)
+        ax = df_l.set_index('x')['y'].plot(style='.', color='k', ms=10)
+        for i, point in a.iterrows():
+            print(i,point)
+            ax.text(point['x']+0.125, point['y'], str(point['text']))
+        da.sel(rh=50, v=2, temp=-10).plot()
+        # ax.legend(title = "Altitude")
+        # ax.set_ylabel("Night freezing with 5m spray radius [$l/min$]")
+        # ax.set_xlabel("Air Temperature [$C$]")
+        plt.savefig("data/figs/paper3/alt_temp.png", bbox_inches="tight", dpi=300)
     #     # x_vals = list(range(-10, 10))
     #     # df = df.round(4)
     #     # print(df.tail())
