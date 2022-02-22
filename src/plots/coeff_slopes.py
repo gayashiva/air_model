@@ -36,8 +36,7 @@ if __name__ == "__main__":
     logger.setLevel("INFO")
 
     opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
-    # opts = ["-c"]
-    opts = ["-png"]
+    # opts = opts.append("-c")
 
     if "-nc" in opts:
 
