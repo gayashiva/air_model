@@ -36,7 +36,7 @@ if __name__ == "__main__":
     logger.setLevel("INFO")
 
     compile = True
-    compile = False
+    # compile = False
 
     if compile:
 
