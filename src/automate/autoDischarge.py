@@ -17,7 +17,6 @@ from src.utils.settings import config
 # from src.automate.projectile import get_projectile
 
 def TempFreeze(temp,rh,wind,alt):
-    print(temp,rh,wind,alt)
 
     with open("data/common/auto.json") as f:
         params = json.load(f)
@@ -42,7 +41,6 @@ def TempFreeze(temp,rh,wind,alt):
 
     # Derived
     press = atmosphere.alt2pres(alt) / 100
-    print(press)
 
     Qs = (
         CONSTANTS["C_A"]
