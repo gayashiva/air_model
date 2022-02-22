@@ -40,8 +40,8 @@ if __name__ == "__main__":
     opts = ["-png"]
 
     if "-nc" in opts:
-
         logger.info("=> Calculation of coeffs")
+
         temp = list(range(-20, 20))
         rh = list(range(0, 100, 5))
         v = list(range(0, 15, 1))
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         da.to_netcdf("data/common/alt_sims.nc")
 
     if "-json" in opts:
-        logger.info("=> Skipping calculation of coeffs")
+        logger.info("=> Performing regression analysis")
         da = xr.open_dataarray("data/common/alt_sims.nc")
         x = []
         y = []
@@ -109,12 +109,13 @@ if __name__ == "__main__":
         with open("data/common/alt_coeffs.json", "w") as f:
             json.dump(param_values, f)
 
-        print(
-            "Max freezing rate:",
-            autoDis(**param_values, time=6, temp=-20, rh=0, v=10, alt=1000),
-        )
+        # print(
+        #     "Max freezing rate:",
+        #     autoDis(**param_values, time=6, temp=-20, rh=0, v=10, alt=1000),
+        # )
 
     if "-png" in opts:
+        logger.info("=> Producing figs")
 
         da = xr.open_dataarray("data/common/alt_sims.nc")
         df_l = pd.DataFrame(dict(x=[4,1], y=[0, 2], text=['Ladakh', 'Swiss']))
