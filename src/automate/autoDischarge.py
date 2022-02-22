@@ -73,7 +73,7 @@ def TempFreeze(temp,rh,wind,alt):
 
     return dis
 
-def SunMelt(coords, utc, alt):
+def SunMelt(day, coords, utc, alt):
 
     with open("data/common/auto.json") as f:
         params = json.load(f)
@@ -82,7 +82,7 @@ def SunMelt(coords, utc, alt):
         CONSTANTS = json.load(f)
 
     times = pd.date_range(
-        params["solar_day"],
+        day,
         freq="H",
         periods=1 * 24,
     )
