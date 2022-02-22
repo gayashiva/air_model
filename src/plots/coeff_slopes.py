@@ -32,8 +32,9 @@ if __name__ == "__main__":
     logger.setLevel("INFO")
 
     opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
-    # opts = opts.append("-png")
-    # opts = ["-nc"]
+
+    if opts==[]:
+        opts = ["-nc"]
 
     if "-nc" in opts:
         logger.info("=> Calculation of coeffs")
@@ -95,9 +96,10 @@ if __name__ == "__main__":
             for rh in da.rh.values:
                 for v in da.v.values:
                     for alt in da.alt.values:
-                        aws = [temp, rh, v, alt, cld]
-                        x.append(aws)
-                        y.append(da.sel(temp=temp, rh=rh, v=v, alt=alt, cld=cld).data)
+                        for cld in da.cld.values:
+                            aws = [temp, rh, v, alt, cld]
+                            x.append(aws)
+                            y.append(da.sel(temp=temp, rh=rh, v=v, alt=alt, cld=cld).data)
 
         popt, pcov = curve_fit(line, x, y)
         a, b, c, d, e, f = popt
@@ -127,7 +129,7 @@ if __name__ == "__main__":
         for i, point in a.iterrows():
             print(i,point)
             ax.text(point['x']+0.125, point['y'], str(point['text']))
-        da.sel(rh=50, v=2).plot()
+        da.sel(rh=50, v=2,cld=0.5).plot()
         plt.savefig("data/figs/paper3/alt_temp.png", bbox_inches="tight", dpi=300)
 
         # ax.legend(title = "Altitude")
