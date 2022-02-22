@@ -36,7 +36,7 @@ if __name__ == "__main__":
     logger.setLevel("INFO")
 
     opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
-    # opts = ["-c"]
+    opts = ["-c"]
 
     if "-c" in opts:
 
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         temp = list(range(-20, 20))
         rh = list(range(0, 100, 5))
         v = list(range(0, 15, 1))
-        alt = list(arange(0, 5, 0.25))
+        alt = list(np.arange(0, 5, 0.25))
         spray_r = 7
 
         da = xr.DataArray(
@@ -85,8 +85,7 @@ if __name__ == "__main__":
             for rh in da.rh.values:
                 for v in da.v.values:
                     for alt in da.alt.values:
-                        alt *= 1000
-                        da.sel(temp=temp, rh=rh, v=v, alt = alt).data += TempFreeze(temp, rh, v, alt)
+                        da.sel(temp=temp, rh=rh, v=v, alt = alt).data += TempFreeze(temp, rh, v, alt*1000)
 
         da.to_netcdf("data/common/alt_sims.nc")
 
