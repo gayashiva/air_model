@@ -105,6 +105,11 @@ if __name__ == "__main__":
 
         """Combine all coeffs"""
         param_values = {}
+        param_values["a"] = a
+        param_values["b"] = b
+        param_values["c"] = c
+        param_values["d"] = d
+        param_values["e"] = e
 
         with open("data/common/alt_coeffs.json", "w") as f:
             json.dump(param_values, f)
@@ -123,10 +128,11 @@ if __name__ == "__main__":
             print(i,point)
             ax.text(point['x']+0.125, point['y'], str(point['text']))
         da.sel(rh=50, v=2).plot()
+        plt.savefig("data/figs/paper3/alt_temp.png", bbox_inches="tight", dpi=300)
+
         # ax.legend(title = "Altitude")
         # ax.set_ylabel("Night freezing with 5m spray radius [$l/min$]")
         # ax.set_xlabel("Air Temperature [$C$]")
-        plt.savefig("data/figs/paper3/alt_temp.png", bbox_inches="tight", dpi=300)
     #     # x_vals = list(range(-10, 10))
     #     # df = df.round(4)
     #     # print(df.tail())
