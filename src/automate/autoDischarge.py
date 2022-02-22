@@ -16,7 +16,7 @@ sys.path.append(dirname)
 from src.utils.settings import config
 # from src.automate.projectile import get_projectile
 
-def TempFreeze(aws, cld, alt):
+def TempFreeze(temp,rh,wind,alt):
 
     with open("data/common/auto.json") as f:
         params = json.load(f)
@@ -24,29 +24,15 @@ def TempFreeze(aws, cld, alt):
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
 
-    # with open("data/common/CONSTANTS.json", "w") as f:
-    #     json.dump(CONSTANTS, f, indent=4, sort_keys=True)
-
-    # AWS
-    temp = aws[0]
-    rh = aws[1]
-    wind = aws[2]
-
-
-    vp_a = (
-        6.107
-        * math.pow(
-            10,
-            7.5 * temp / (temp + 237.3),
-        )
-        * rh
-        / 100
-    )
+    vp_a = np.exp(
+        34.494 - 4924.99/ (temp + 237.1)
+    ) / ((temp + 105) ** 1.57 * 100)
+    vp_a *= rh/100
 
     vp_ice = np.exp(43.494 - 6545.8 / (params["temp_i"] + 278)) / ((params["temp_i"] + 868) ** 2 * 100)
 
     e_a = (1.24 * math.pow(abs(vp_a / (temp + 273.15)), 1 / 7)) * (
-        1 + 0.22 * math.pow(cld, 2)
+        1 + 0.22 * math.pow(params["cld"], 2)
     )
 
     LW = e_a * CONSTANTS["sigma"] * math.pow(
@@ -79,8 +65,7 @@ def TempFreeze(aws, cld, alt):
     )
 
 
-    EB = Ql + Qs + LW
-    dis = -1 * EB / CONSTANTS["L_F"] * 1000 / 60
+    dis = -1 * (Ql / CONSTANTS["L_V"] + (Qs+LW) / CONSTANTS["L_F"]) * 1000 / 60
 
     # SA = math.pi * math.pow(params['spray_r'],2)
     # dis *= SA
@@ -123,14 +108,14 @@ def SunMelt(coords, utc, alt):
         {
             "SW_diffuse": clearness["dhi"],
             "SW_global": clearsky["ghi"],
-            "cld": 1 - clearness["kt"],
             "sea": np.radians(solar_position["elevation"]),
+            # "cld": 1 - clearness["kt"],
         }
     )
     bad_values = df["sea"]< 0 
     df["sea"]= np.where(bad_values, 0, df["sea"])
-    df["cld"]= np.where(bad_values, np.nan, df["cld"])
-    cld = df["cld"].mean()
+    # df["cld"]= np.where(bad_values, np.nan, df["cld"])
+    # cld = df["cld"].mean()
                             
     df.index += pd.Timedelta(hours=utc)
     df = df.reset_index()
@@ -148,7 +133,7 @@ def SunMelt(coords, utc, alt):
     model = GaussianModel()
     gauss_params = model.guess(df.dis, df.hour)
     result = model.fit(df.dis, gauss_params, x=df.hour)
-    return cld, result
+    return result
 
 if __name__ == "__main__":
 

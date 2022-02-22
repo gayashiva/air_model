@@ -22,16 +22,17 @@ from src.automate.autoDischarge import TempFreeze, SunMelt
 from src.models.methods.solar import get_offset
 # from src.automate.projectile import get_projectile
 
-def line(x, a, b, c, d):
+def line(x, a, b, c, d, e):
     x1 = x[:, 0]
     x2 = x[:, 1]
     x3 = x[:, 2]
-    return a * x1 + b * x2 + c * x3 + d
+    x4 = x[:, 3]
+    return a * x1 + b * x2 + c * x3 + d * x4 + e
 
-def autoDis(a, b, c, d, amplitude, center, sigma, temp, time, rh, v):
+def autoDis(a, b, c, d, e, amplitude, center, sigma, temp, time, rh, v, alt):
     model = GaussianModel()
     params = {"amplitude": amplitude, "center": center, "sigma": sigma}
-    return a * temp + b * rh + c * v + d + model.eval(x=time, **params)
+    return a * temp + b * rh + c * v + d * alt + e + model.eval(x=time, **params)
 
 
 if __name__ == "__main__":
