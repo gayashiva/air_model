@@ -22,12 +22,8 @@ from src.models.icestupaClass import Icestupa
 from src.automate.autoDischarge import TempFreeze, SunMelt
 from src.automate.gen_coeffs import line
 
-def abline(slope, intercept):
-    """Plot a line from slope and intercept"""
-    axes = plt.gca()
-    x_vals = np.array(axes.get_xlim())
-    y_vals = intercept + slope * x_vals
-    plt.plot(x_vals, y_vals, '--')
+def autoDis(a, b, c, d, e, f, temp, time, rh, v, alt, cld):
+    return a * temp + b * rh + c * v + d * alt + e * cld + f
 
 if __name__ == "__main__":
 
@@ -37,27 +33,28 @@ if __name__ == "__main__":
 
     opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
     # opts = opts.append("-png")
-    # opts = ["-png"]
+    opts = ["-nc"]
 
     if "-nc" in opts:
         logger.info("=> Calculation of coeffs")
 
-        temp = list(range(-20, 20))
-        rh = list(range(0, 100, 5))
+        temp = list(range(-10, 10))
+        rh = list(range(0, 100, 10))
         v = list(range(0, 15, 1))
-        alt = list(np.arange(0, 5, 0.25))
-        spray_r = 7
+        alt = list(np.arange(0, 5.1, 0.5))
+        cld = list(np.arange(0, 1.1, 0.5))
 
         da = xr.DataArray(
-            data=np.zeros(len(temp) * len(rh) * len(v)* len(alt)).reshape(
-                len(temp), len(rh), len(v), len(alt)
+            data=np.zeros(len(temp) * len(rh) * len(v)* len(alt)* len(cld)).reshape(
+                len(temp), len(rh), len(v), len(alt), len(cld)
             ),
-            dims=["temp", "rh", "v", "alt"],
+            dims=["temp", "rh", "v", "alt", "cld"],
             coords=dict(
                 temp=temp,
                 rh=rh,
                 v=v,
                 alt=alt,
+                cld=cld,
             ),
             attrs=dict(
                 long_name="Freezing rate",
@@ -75,6 +72,8 @@ if __name__ == "__main__":
         da.v.attrs["long_name"] = "Wind Speed"
         da.alt.attrs["units"] = "km"
         da.alt.attrs["long_name"] = "Altitude"
+        da.alt.attrs["units"] = " "
+        da.alt.attrs["long_name"] = "Cloudiness"
 
         data = []
 
@@ -82,7 +81,8 @@ if __name__ == "__main__":
             for rh in da.rh.values:
                 for v in da.v.values:
                     for alt in da.alt.values:
-                        da.sel(temp=temp, rh=rh, v=v, alt=alt).data += TempFreeze(temp, rh, v, alt)
+                        for cld in da.cld.values:
+                            da.sel(temp=temp, rh=rh, v=v, alt=alt, cld=cld).data += TempFreeze(temp, rh, v, alt, cld)
 
         da.to_netcdf("data/common/alt_sims.nc")
 
@@ -95,13 +95,13 @@ if __name__ == "__main__":
             for rh in da.rh.values:
                 for v in da.v.values:
                     for alt in da.alt.values:
-                        aws = [temp, rh, v, alt]
+                        aws = [temp, rh, v, alt, cld]
                         x.append(aws)
-                        y.append(da.sel(temp=temp, rh=rh, v=v,alt=alt).data)
+                        y.append(da.sel(temp=temp, rh=rh, v=v, alt=alt, cld=cld).data)
 
         popt, pcov = curve_fit(line, x, y)
-        a, b, c, d, e = popt
-        print("dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f * alt + %.5f" % (a, b, c, d, e))
+        a, b, c, d, e, f = popt
+        print("dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f * alt + %.5f * cld + %.5f" % (a, b, c, d, e, f))
 
         """Combine all coeffs"""
         param_values = {}

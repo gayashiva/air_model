@@ -16,7 +16,7 @@ sys.path.append(dirname)
 from src.utils.settings import config
 # from src.automate.projectile import get_projectile
 
-def TempFreeze(temp,rh,wind,alt):
+def TempFreeze(temp,rh,wind,alt,cld):
 
     with open("data/common/auto.json") as f:
         params = json.load(f)
@@ -32,7 +32,7 @@ def TempFreeze(temp,rh,wind,alt):
     vp_ice = np.exp(43.494 - 6545.8 / (params["temp_i"] + 278)) / ((params["temp_i"] + 868) ** 2 * 100)
 
     e_a = (1.24 * math.pow(abs(vp_a / (temp + 273.15)), 1 / 7)) * (
-        1 + 0.22 * math.pow(params["cld"], 2)
+        1 + 0.22 * math.pow(cld, 2)
     )
 
     LW = e_a * CONSTANTS["sigma"] * math.pow(
@@ -68,8 +68,8 @@ def TempFreeze(temp,rh,wind,alt):
 
     dis = -1 * (Ql / CONSTANTS["L_V"] + (Qs+LW) / CONSTANTS["L_F"]) * 1000 / 60
 
-    SA = math.pi * math.pow(params['spray_r'],2)
-    dis *= SA
+    # SA = math.pi * math.pow(params['spray_r'],2)
+    # dis *= SA
 
     return dis
 
