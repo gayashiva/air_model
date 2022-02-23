@@ -49,7 +49,7 @@ def get_solar(coords, start, end, DT, alt):
 
     solar_df = pd.DataFrame(
         {
-            "SW_global": clearsky["ghi"],
+            "ghi": clearsky["ghi"],
             "SW_diffuse": clearness["dhi"],
             "cld": 1 - clearness["kt"],
             "sea": np.radians(solar_position["elevation"]),
@@ -73,7 +73,7 @@ def get_solar(coords, start, end, DT, alt):
     for i in range(0, solar_df.shape[0]):
         solar_df.loc[i, "f_cone"] = (math.pi * math.sin(solar_df.loc[i, "sea"]) + math.cos(solar_df.loc[i, "sea"]))/(2*math.sqrt(2)*math.pi)
 
-    solar_df["SW_direct"]= solar_df["SW_global"] - solar_df["SW_diffuse"]
+    solar_df["SW_direct"]= solar_df["ghi"] - solar_df["SW_diffuse"]
     solar_df["dis"] = -1 * (1 - CONSTANTS["A_I"]) * (solar_df["SW_direct"] * solar_df["f_cone"] + solar_df["SW_diffuse"]) / CONSTANTS["L_F"] * 1000 / 60
 
     return cld, solar_df

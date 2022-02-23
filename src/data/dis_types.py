@@ -227,11 +227,11 @@ if __name__ == "__main__":
             y2,
             linestyle="--",
         )
-        ax1.plot(
-            x,
-            y3,
-            linestyle="--",
-        )
+        # ax1.plot(
+        #     x,
+        #     y3,
+        #     linestyle="--",
+        # )
         ax1.set_ylabel(loc + " discharge [$l/min$]")
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
