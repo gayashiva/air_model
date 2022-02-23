@@ -14,6 +14,7 @@ import os, sys
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 from src.utils.settings import config
+from src.models.methods.solar import get_offset
 # from src.automate.projectile import get_projectile
 
 def TempFreeze(temp,rh,wind,alt,cld):
@@ -73,7 +74,7 @@ def TempFreeze(temp,rh,wind,alt,cld):
 
     return dis
 
-def SunMelt(day, coords, utc, alt):
+def SunMelt(time, coords, utc, alt):
 
     with open("data/common/auto.json") as f:
         params = json.load(f)
@@ -82,7 +83,7 @@ def SunMelt(day, coords, utc, alt):
         CONSTANTS = json.load(f)
 
     times = pd.date_range(
-        day,
+        time,
         freq="H",
         periods=1 * 24,
     )
@@ -94,11 +95,10 @@ def SunMelt(day, coords, utc, alt):
     )
 
     solar_position = loc.get_solarposition(times=times, method="ephemeris")
-    clearsky = loc.get_clearsky(times=times)
+    clearsky = site_location.get_clearsky(times=times, model = 'simplified_solis')
     # Not using measured GHI due to shading effects
     clearness = irradiance.erbs(ghi = clearsky["ghi"], zenith = solar_position['zenith'],
                                       datetime_or_doy= times) 
-
 
     df = pd.DataFrame(
         {
@@ -131,6 +131,48 @@ def SunMelt(day, coords, utc, alt):
     result = model.fit(df.dis, gauss_params, x=df.hour)
     return result
 
+def dayMelt(times, coords, alt, utc, opt="auto"):
+    with open("data/common/auto.json") as f:
+        params = json.load(f)
+
+    with open("data/common/constants.json") as f:
+        CONSTANTS = json.load(f)
+
+    times -= pd.Timedelta(hours=utc)
+
+    loc = location.Location(*coords, altitude=alt)
+
+    solar_position = loc.get_solarposition(times=times, method="ephemeris")
+    clearsky = loc.get_clearsky(times=times, model = 'simplified_solis')
+    clearness = irradiance.erbs(ghi = clearsky["ghi"], zenith = solar_position['zenith'],
+                                      datetime_or_doy= times) 
+    df = pd.DataFrame(
+        {
+            "SW_diffuse": clearness["dhi"],
+            "SW_global": clearsky["ghi"],
+            "sea": np.radians(solar_position["elevation"]),
+            "cld": 1 - clearness["kt"],
+        }
+    )
+
+    bad_values = df["sea"] < 0 
+    df["sea"]= np.where(bad_values, 0, df["sea"])
+    df["cld"]= np.where(bad_values, np.nan, df["cld"])
+    cld = df["cld"].mean()
+
+    times += pd.Timedelta(hours=utc)
+
+    if sea < 0:
+        SW_diffuse, SW_global = 0
+        dis = 0
+    else:
+        f_cone = (math.pi * math.sin(sea) + math.cos(sea))/(2*math.sqrt(2)*math.pi)
+        SW_direct= SW_global - SW_diffuse
+        dis = -1 * (1 - CONSTANTS["A_I"]) * (SW_direct * f_cone + SW_diffuse) / CONSTANTS["L_F"] * 1000 / 60
+
+    return dis
+
+
 if __name__ == "__main__":
 
     # params={
@@ -142,8 +184,9 @@ if __name__ == "__main__":
     # }
 
     loc="guttannen21"
-    # SITE, FOLDER = config(loc)
-    # utc = get_offset(*SITE["coords"], date=SITE["start_date"])
+    SITE, FOLDER = config(loc,spray="man")
+    utc = get_offset(*SITE["coords"], date=SITE["start_date"])
+    print(dayMelt(time=SITE["start_date"], coords = SITE["coords"], utc = utc, alt=SITE["alt"]))
     # result = SunMelt(coords = SITE["coords"], utc = utc, alt=SITE["alt"])
     # param_values = dict(result.best_values)
 

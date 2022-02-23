@@ -13,21 +13,24 @@ import logging
 import coloredlogs
 from lmfit.models import GaussianModel
 import pytz
+import logging, coloredlogs
 
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.append(dirname)
 from src.utils.settings import config
 from src.utils import setup_logger
-import logging, coloredlogs
+# from src.automate.autoDischarge import dayMelt
+from src.automate.gen_auto_eqn import autoLinear
+from src.models.methods.solar import get_solar
 
 # Module logger
 # logger = logging.getLogger("__main__")
 
-def autoDis(a, b, c, d, amplitude, center, sigma, temp, time, rh, v):
-    model = GaussianModel()
-    params = {"amplitude": amplitude, "center": center, "sigma": sigma}
-    return a * temp + b * rh + c * v + d + model.eval(x=time, **params)
+# def autoDis(a, b, c, d, amplitude, center, sigma, temp, time, rh, v):
+#     model = GaussianModel()
+#     params = {"amplitude": amplitude, "center": center, "sigma": sigma}
+#     return a * temp + b * rh + c * v + d + model.eval(x=time, **params)
 
 def get_discharge(loc):  # Provides discharge info based on trigger setting
 
@@ -37,7 +40,7 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
     print(loc)
     SITE, FOLDER = config(loc, spray="man")
 
-    time = pd.date_range(
+    times = pd.date_range(
         SITE["start_date"],
         SITE["expiry_date"],
         freq=(str(int(CONSTANTS["DT"] / 60)) + "T"),
@@ -45,10 +48,18 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
     sprays = ['man', 'auto', "auto_field"]
     # sprays = ['man']
      
-    df = pd.DataFrame(index=time, columns=sprays)
+    df = pd.DataFrame(index=times, columns=sprays)
     df = df.fillna(0)
     df = df.reset_index()
     df.rename(columns = {'index':'time'}, inplace = True)
+
+    cld, df_solar = get_solar(
+        coords=SITE["coords"],
+        start=SITE["start_date"],
+        end=SITE["expiry_date"],
+        DT=CONSTANTS["DT"],
+        alt=SITE["alt"],
+    )
 
     for spray in sprays:
 
@@ -56,15 +67,30 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
         if spray == "auto":
             SITE, FOLDER = config(loc, spray)
 
-            with open(FOLDER["input"] + "auto/coeffs.json") as f:
+            with open("data/common/alt_coeffs.json") as f:
                 param_values = json.load(f)
+            print(
+                "dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f * alt + %.5f * cld + %.5f "
+                % (
+                    param_values['a'],
+                    param_values["b"],
+                    param_values["c"],
+                    param_values["d"],
+                    param_values["e"],
+                    param_values["f"],
+                )
+            )
+
+            # with open(FOLDER["input"] + "auto/coeffs.json") as f:
+            #     param_values = json.load(f)
 
             input_file = FOLDER["input"] + "aws.csv"
             df_aws = pd.read_csv(input_file, sep=",", header=0, parse_dates=["time"])
 
             for i in range(0,df_aws.shape[0]):
-                df.loc[i, "auto"] = autoDis(**param_values, time=df_aws.time.dt.hour[i],
-                                            temp=df_aws.temp[i],rh=df_aws.RH[i], v=df_aws.wind[i])
+                df.loc[i, "auto"] = autoLinear(**param_values, temp=df_aws.temp[i],rh=df_aws.RH[i],
+                                               wind=df_aws.wind[i], alt=SITE["alt"]/1000, cld=cld)
+                df.loc[i, "auto"] += df_solar[df_solar.time == df_aws.time[i]].dis.values[0]
                 df.loc[i, "auto"] *= math.pi * math.pow(SITE["R_F"],2)
                 if df.auto[i] < 0:
                     df.loc[i, "auto"] = 0
@@ -174,9 +200,14 @@ if __name__ == "__main__":
     logger.setLevel("WARNING")
     # logger.setLevel("INFO")
 
+
+    with open("data/common/alt_coeffs.json") as f:
+        param_values = json.load(f)
+    print(autoLinear(**param_values, temp=-0,rh=10, wind=2, alt=1, cld=0))
+
     # locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
-    # locations = ["guttannen22"]
-    locations = ["gangles21"]
+    locations = ["guttannen22"]
+    # locations = ["gangles21"]
 
     for loc in locations:
         df = get_discharge(loc)
@@ -186,11 +217,11 @@ if __name__ == "__main__":
         y1 = df.man
         y2 = df.auto
         y3 = df.auto_field
-        ax1.plot(
-            x,
-            y1,
-            linestyle="-",
-        )
+        # ax1.plot(
+        #     x,
+        #     y1,
+        #     linestyle="-",
+        # )
         ax1.plot(
             x,
             y2,

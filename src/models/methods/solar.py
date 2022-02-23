@@ -3,7 +3,7 @@
 from pvlib import location, irradiance
 import numpy as np
 import pandas as pd
-import logging
+import logging, json, math
 from datetime import datetime
 from pytz import timezone, utc
 from timezonefinder import TimezoneFinder
@@ -28,6 +28,9 @@ def get_solar(coords, start, end, DT, alt):
     returns solar angle for each time step
     """
 
+    with open("data/common/constants.json") as f:
+        CONSTANTS = json.load(f)
+
     site_location = location.Location(coords[0], coords[1], altitude=alt)
 
     utc = get_offset(*coords, date=start)
@@ -46,6 +49,7 @@ def get_solar(coords, start, end, DT, alt):
 
     solar_df = pd.DataFrame(
         {
+            "SW_global": clearsky["ghi"],
             "SW_diffuse": clearness["dhi"],
             "cld": 1 - clearness["kt"],
             "sea": np.radians(solar_position["elevation"]),
@@ -64,6 +68,14 @@ def get_solar(coords, start, end, DT, alt):
     solar_df.index = solar_df.index.set_names(["time"])
     solar_df = solar_df.reset_index()
     solar_df["time"] += pd.Timedelta(hours=utc)
+    # For discharge output
+
+    for i in range(0, solar_df.shape[0]):
+        solar_df.loc[i, "f_cone"] = (math.pi * math.sin(solar_df.loc[i, "sea"]) + math.cos(solar_df.loc[i, "sea"]))/(2*math.sqrt(2)*math.pi)
+
+    solar_df["SW_direct"]= solar_df["SW_global"] - solar_df["SW_diffuse"]
+    solar_df["dis"] = -1 * (1 - CONSTANTS["A_I"]) * (solar_df["SW_direct"] * solar_df["f_cone"] + solar_df["SW_diffuse"]) / CONSTANTS["L_F"] * 1000 / 60
+
     return cld, solar_df
 
 if __name__ == "__main__":

@@ -183,7 +183,7 @@ def config(location="guttannen21", spray=None):
                     fountain_off_date=datetime(2021, 4, 10),
                     dis_crit = 1,
                     dis_max= 60,
-                    R_F = 7,
+                    R_F = 10,
                 )
                 add["expiry_date"] = add["fountain_off_date"]
 

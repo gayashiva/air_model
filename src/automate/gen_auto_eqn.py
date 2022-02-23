@@ -1,4 +1,4 @@
-""" Plot comparing auto and manual discharge at guttannen"""
+""" Generate auto equation"""
 import sys, json
 import os
 import xarray as xr
@@ -22,8 +22,11 @@ from src.models.icestupaClass import Icestupa
 from src.automate.autoDischarge import TempFreeze, SunMelt
 from src.automate.gen_coeffs import line
 
-def autoDis(a, b, c, d, e, f, temp, time, rh, v, alt, cld):
-    return a * temp + b * rh + c * v + d * alt + e * cld + f
+def autoLinear(a, b, c, d, e, f, temp, rh, wind, alt, cld):
+    return a * temp + b * rh + c * wind + d * alt + e * cld + f
+
+# def autoLinear(a, b, c, d, e, f, temp, time, rh, v, alt, cld):
+#     return a * temp + b * rh + c * v + d * alt + e * cld + f
 
 if __name__ == "__main__":
 
@@ -34,7 +37,7 @@ if __name__ == "__main__":
     opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
 
     if opts==[]:
-        opts = ["-json", "-png"]
+        opts = ["-png"]
 
     if "-nc" in opts:
         logger.info("=> Calculation of coeffs")
