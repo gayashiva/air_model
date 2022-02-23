@@ -34,7 +34,7 @@ if __name__ == "__main__":
     opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
 
     if opts==[]:
-        opts = ["-png"]
+        opts = ["-json", "-png"]
 
     if "-nc" in opts:
         logger.info("=> Calculation of coeffs")
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         v = list(range(0, 15, 1))
         alt = list(np.arange(0, 5.1, 0.5))
         cld = list(np.arange(0, 1.1, 0.5))
-        spray_r = list(np.arange(5, 10, 1))
+        spray_r = list(np.arange(5, 11, 1))
 
         da = xr.DataArray(
             data=np.zeros(len(temp) * len(rh) * len(v)* len(alt) * len(cld) * len(spray_r)).reshape(
@@ -77,6 +77,8 @@ if __name__ == "__main__":
         da.alt.attrs["long_name"] = "Altitude"
         da.cld.attrs["units"] = " "
         da.cld.attrs["long_name"] = "Cloudiness"
+        da.spray_r.attrs["units"] = "$m$"
+        da.spray_r.attrs["long_name"] = "Spray radius"
 
         data = []
 
@@ -103,7 +105,7 @@ if __name__ == "__main__":
                         for cld in da.cld.values:
                             aws = [temp, rh, v, alt, cld]
                             x.append(aws)
-                            y.append(da.sel(temp=temp, rh=rh, v=v, alt=alt, cld=cld).data)
+                            y.append(da.sel(temp=temp, rh=rh, v=v, alt=alt, cld=cld, spray_r=7).data/(math.pi * 7 * 7))
 
         popt, pcov = curve_fit(line, x, y)
         a, b, c, d, e, f = popt
@@ -144,10 +146,10 @@ if __name__ == "__main__":
         a = pd.concat({'x': df_l.x, 'y': df_l.y, 'text': df_l.text}, axis=1)
 
         fig, ax = plt.subplots(1, 1)
-        ax = df_l.set_index('x')['y'].plot(style='.', color='k', ms=10)
-        for i, point in a.iterrows():
-            print(i,point)
-            ax.text(point['x']+0.125, point['y'], str(point['text']))
-        da.sel(v=3, cld =0, spray_r=7, alt=4 ).plot()
+        # ax = df_l.set_index('x')['y'].plot(style='.', color='k', ms=10)
+        # for i, point in a.iterrows():
+        #     print(i,point)
+        #     ax.text(point['x']+0.125, point['y'], str(point['text']))
+        da.sel(rh = 30, v=2, cld =0, alt=1 ).plot()
         # ax.set_ylim([0,3])
         plt.savefig("data/figs/paper3/alt_temp.png", bbox_inches="tight", dpi=300)
