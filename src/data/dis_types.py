@@ -27,11 +27,6 @@ from src.models.methods.solar import get_solar
 # Module logger
 # logger = logging.getLogger("__main__")
 
-# def autoDis(a, b, c, d, amplitude, center, sigma, temp, time, rh, v):
-#     model = GaussianModel()
-#     params = {"amplitude": amplitude, "center": center, "sigma": sigma}
-#     return a * temp + b * rh + c * v + d + model.eval(x=time, **params)
-
 def get_discharge(loc):  # Provides discharge info based on trigger setting
 
     with open("data/common/constants.json") as f:
