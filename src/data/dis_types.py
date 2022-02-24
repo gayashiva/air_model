@@ -23,6 +23,7 @@ from src.utils import setup_logger
 # from src.automate.autoDischarge import dayMelt
 from src.automate.gen_auto_eqn import autoLinear
 from src.models.methods.solar import get_solar
+from src.models.icestupaClass import Icestupa
 
 # Module logger
 # logger = logging.getLogger("__main__")
@@ -40,7 +41,8 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
         SITE["expiry_date"],
         freq=(str(int(CONSTANTS["DT"] / 60)) + "T"),
     )
-    sprays = ['man', 'auto', "auto_field"]
+    # sprays = ['man', 'auto', "auto_field"]
+    sprays = ['auto', 'man']
     # sprays = ['man']
      
     df = pd.DataFrame(index=times, columns=sprays)
@@ -89,8 +91,8 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                 df.loc[i, "auto"] *= math.pi * math.pow(SITE["R_F"],2) * math.sqrt(2)
                 if df.auto[i] < 0:
                     df.loc[i, "auto"] = 0
-                if df.auto[i] >= SITE["dis_max"]:
-                    df.loc[i, "auto"] = SITE["dis_max"]
+                # if df.auto[i] >= SITE["dis_max"]:
+                #     df.loc[i, "auto"] = SITE["dis_max"]
             logger.warning(df.auto.describe())
             # SITE["D_F"] = df.auto[df.auto != 0].mean()
 
@@ -207,16 +209,23 @@ if __name__ == "__main__":
     for loc in locations:
         df = get_discharge(loc)
         SITE, FOLDER = config(loc, spray="man")
+        icestupa = Icestupa(loc, spray="man")
+        icestupa.read_output()
+        dfi = icestupa.df
+        print(dfi.fountain_froze.describe()/60)
+
         fig, ax1 = plt.subplots()
         x = df.time
-        y1 = df.man
+        x1 = dfi.time
+        # y1 = df.man
+        y1 = dfi.fountain_froze /60
         y2 = df.auto
-        y3 = df.auto_field
-        # ax1.plot(
-        #     x,
-        #     y1,
-        #     linestyle="-",
-        # )
+        # y3 = df.auto_field
+        ax1.plot(
+            x1,
+            y1,
+            linestyle="-",
+        )
         ax1.plot(
             x,
             y2,
