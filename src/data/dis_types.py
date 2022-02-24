@@ -86,7 +86,7 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                 df.loc[i, "auto"] = autoLinear(**param_values, temp=df_aws.temp[i],rh=df_aws.RH[i],
                                                wind=df_aws.wind[i], alt=SITE["alt"]/1000, cld=cld)
                 df.loc[i, "auto"] += df_solar[df_solar.time == df_aws.time[i]].dis.values[0]
-                df.loc[i, "auto"] *= math.pi * math.pow(SITE["R_F"],2)
+                df.loc[i, "auto"] *= math.pi * math.pow(SITE["R_F"],2) * math.sqrt(2)
                 if df.auto[i] < 0:
                     df.loc[i, "auto"] = 0
                 if df.auto[i] >= SITE["dis_max"]:
@@ -200,8 +200,8 @@ if __name__ == "__main__":
         param_values = json.load(f)
     print(autoLinear(**param_values, temp=-0,rh=10, wind=2, alt=1, cld=0))
 
-    # locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
-    locations = ["guttannen22"]
+    locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
+    # locations = ["guttannen22"]
     # locations = ["gangles21"]
 
     for loc in locations:
