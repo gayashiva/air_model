@@ -87,7 +87,7 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
             for i in range(0,df_aws.shape[0]):
                 df.loc[i, "auto"] = autoLinear(**param_values, temp=df_aws.temp[i],rh=df_aws.RH[i],
                                                wind=df_aws.wind[i], alt=SITE["alt"]/1000, cld=cld)
-                # df.loc[i, "auto"] += df_solar[df_solar.time == df_aws.time[i]].dis.values[0]
+                df.loc[i, "auto"] += df_solar[df_solar.time == df_aws.time[i]].dis.values[0]
                 df.loc[i, "auto"] *= math.pi * math.pow(SITE["R_F"],2) * math.sqrt(2)
                 if df.auto[i] < 0:
                     df.loc[i, "auto"] = 0
