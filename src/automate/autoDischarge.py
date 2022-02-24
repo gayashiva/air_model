@@ -66,7 +66,7 @@ def TempFreeze(temp,rh,wind,alt,cld):
         / ((np.log(CONSTANTS["H_AWS"] / CONSTANTS["Z"])) ** 2)
     )
 
-    dis = -1 * (Ql / CONSTANTS["L_V"] + (Qs+LW+Qo) / CONSTANTS["L_F"]) * CONSTANTS["DT"] * 1000 / 60
+    dis = -1 * (Ql / CONSTANTS["L_V"] + (Qs+LW) / CONSTANTS["L_F"]) * CONSTANTS["DT"] * 1000 / 60
 
     # if dis > 0:
     #     Qo = (params["temp_i"]) * CONSTANTS["RHO_I"] * CONSTANTS["DX"] * CONSTANTS["C_I"] / CONSTANTS["DT"]
