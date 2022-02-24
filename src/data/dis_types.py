@@ -202,9 +202,9 @@ if __name__ == "__main__":
         param_values = json.load(f)
     print(autoLinear(**param_values, temp=-0,rh=10, wind=2, alt=1, cld=0))
 
-    # locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
+    locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
     # locations = ["guttannen22"]
-    locations = ["gangles21"]
+    # locations = ["gangles21"]
 
     for loc in locations:
         df = get_discharge(loc)

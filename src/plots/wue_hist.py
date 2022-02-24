@@ -52,6 +52,12 @@ if __name__ == "__main__":
             print(loc,spray, results["WUE"], results["iceV_max"])
             ax.scatter(results["WUE"], results["iceV_max"], label=loc+spray, color=mypal[i], marker=styles[j])
 
+            if loc == 'guttannen22':
+                with open(FOLDER["output"] + "auto_field/results.json") as f:
+                    results = json.load(f)
+                print(loc,"auto_field", results["WUE"], results["iceV_max"])
+                ax.scatter(results["WUE"], results["iceV_max"], color=mypal[i], marker=styles[j])
+
         # ax = df_l.set_index('x')['y'].plot(style='.', color='k', ms=10)
 
     ax.set_ylabel("Max Ice Volume [$m^3$]")
