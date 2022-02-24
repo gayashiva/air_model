@@ -37,7 +37,7 @@ if __name__ == "__main__":
     opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
 
     if opts==[]:
-        opts = ["-png"]
+        opts = ["-nc"]
 
     if "-nc" in opts:
         logger.info("=> Calculation of coeffs")
@@ -49,39 +49,59 @@ if __name__ == "__main__":
         cld = list(np.arange(0, 1.1, 0.5))
         spray_r = list(np.arange(5, 11, 1))
 
-        da = xr.DataArray(
-            data=np.zeros(len(temp) * len(rh) * len(v)* len(alt) * len(cld) * len(spray_r)).reshape(
-                len(temp), len(rh), len(v), len(alt), len(cld), len(spray_r)
-            ),
-            dims=["temp", "rh", "v", "alt", "cld", "spray_r"],
-            coords=dict(
-                temp=temp,
-                rh=rh,
-                v=v,
-                alt=alt,
-                cld=cld,
-                spray_r=spray_r,
-            ),
-            attrs=dict(
-                long_name="Freezing rate",
-                description="Mean freezing rate",
-                units="$l\\, min^{-1}$",
-            ),
-        )
+        f = TempFreeze(temp, rh, v, alt, cld) * math.pi * math.pow(spray_r,2)
 
-        da.temp.attrs["units"] = "$\\degree C$"
-        da.temp.attrs["description"] = "Air Temperature"
-        da.temp.attrs["long_name"] = "Air Temperature"
-        da.rh.attrs["units"] = "%"
-        da.rh.attrs["long_name"] = "Relative Humidity"
-        da.v.attrs["units"] = "$m\\, s^{-1}$"
-        da.v.attrs["long_name"] = "Wind Speed"
-        da.alt.attrs["units"] = "$km$"
-        da.alt.attrs["long_name"] = "Altitude"
-        da.cld.attrs["units"] = " "
-        da.cld.attrs["long_name"] = "Cloudiness"
-        da.spray_r.attrs["units"] = "$m$"
-        da.spray_r.attrs["long_name"] = "Spray radius"
+        da_f = xr.DataArray(f, 
+                            dims=["temp", "rh", "v", "alt", "cld", "spray_r"],
+                            coords=dict(
+                                temp=temp,
+                                rh=rh,
+                                v=v,
+                                alt=alt,
+                                cld=cld,
+                                spray_r=spray_r,
+                            ),
+                            attrs=dict(
+                                long_name="Freezing rate",
+                                description="Mean freezing rate",
+                                units="$l\\, min^{-1}$",
+                            ),
+                            )
+        print(da_f)
+
+        # da = xr.DataArray(
+        #     data=np.zeros(len(temp) * len(rh) * len(v)* len(alt) * len(cld) * len(spray_r)).reshape(
+        #         len(temp), len(rh), len(v), len(alt), len(cld), len(spray_r)
+        #     ),
+        #     dims=["temp", "rh", "v", "alt", "cld", "spray_r"],
+        #     coords=dict(
+        #         temp=temp,
+        #         rh=rh,
+        #         v=v,
+        #         alt=alt,
+        #         cld=cld,
+        #         spray_r=spray_r,
+        #     ),
+        #     attrs=dict(
+        #         long_name="Freezing rate",
+        #         description="Mean freezing rate",
+        #         units="$l\\, min^{-1}$",
+        #     ),
+        # )
+
+        # da.temp.attrs["units"] = "$\\degree C$"
+        # da.temp.attrs["description"] = "Air Temperature"
+        # da.temp.attrs["long_name"] = "Air Temperature"
+        # da.rh.attrs["units"] = "%"
+        # da.rh.attrs["long_name"] = "Relative Humidity"
+        # da.v.attrs["units"] = "$m\\, s^{-1}$"
+        # da.v.attrs["long_name"] = "Wind Speed"
+        # da.alt.attrs["units"] = "$km$"
+        # da.alt.attrs["long_name"] = "Altitude"
+        # da.cld.attrs["units"] = " "
+        # da.cld.attrs["long_name"] = "Cloudiness"
+        # da.spray_r.attrs["units"] = "$m$"
+        # da.spray_r.attrs["long_name"] = "Spray radius"
 
         data = []
 
