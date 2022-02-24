@@ -84,9 +84,15 @@ if __name__ == "__main__":
         da.spray_r.attrs["units"] = "$m$"
         da.spray_r.attrs["long_name"] = "Spray radius"
 
-        for temp, rh, v, alt, cld, spray_r in zip(da.temp.values,da.rh.values,da.v.values,da.alt.values,da.cld.values,da.spray_r.values) :
-            da.sel(temp=temp, rh=rh, v=v, alt=alt, cld=cld, spray_r = spray_r).data += TempFreeze(temp, rh, v, alt, cld)
-            da.sel(temp=temp, rh=rh, v=v, alt=alt, cld=cld, spray_r = spray_r).data *= math.pi * spray_r * spray_r
+
+        for temp in temp: 
+            for rh in rh:
+                for v in v:
+                    for alt in alt:
+                        for cld in cld:
+                            for spray_r in spray_r: 
+                                da.sel(temp=temp, rh=rh, v=v, alt=alt, cld=cld, spray_r = spray_r).data += TempFreeze(temp, rh, v, alt, cld)
+                                da.sel(temp=temp, rh=rh, v=v, alt=alt, cld=cld, spray_r = spray_r).data *= math.pi * spray_r * spray_r
 
         da.to_netcdf("data/common/alt_sims.nc")
 
