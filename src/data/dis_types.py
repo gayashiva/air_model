@@ -91,8 +91,8 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                 df.loc[i, "auto"] *= math.pi * math.pow(SITE["R_F"],2) * math.sqrt(2)
                 if df.auto[i] < 0:
                     df.loc[i, "auto"] = 0
-                # if df.auto[i] >= SITE["dis_max"]:
-                #     df.loc[i, "auto"] = SITE["dis_max"]
+                if df.auto[i] >= SITE["dis_max"]:
+                    df.loc[i, "auto"] = SITE["dis_max"]
             logger.warning(df.auto.describe())
             # SITE["D_F"] = df.auto[df.auto != 0].mean()
 
