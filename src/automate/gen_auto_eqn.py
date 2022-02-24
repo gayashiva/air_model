@@ -45,20 +45,20 @@ if __name__ == "__main__":
 
         temp = list(range(-20, 5))
         rh = list(range(0, 100, 10))
-        v = list(range(0, 15, 1))
+        wind = list(range(0, 15, 1))
         alt = list(np.arange(0, 5.1, 0.5))
         cld = list(np.arange(0, 1.1, 0.5))
         spray_r = list(np.arange(5, 11, 1))
 
         da = xr.DataArray(
-            data=np.zeros(len(temp) * len(rh) * len(v)* len(alt) * len(cld) * len(spray_r)).reshape(
-                len(temp), len(rh), len(v), len(alt), len(cld), len(spray_r)
+            data=np.zeros(len(temp) * len(rh) * len(wind)* len(alt) * len(cld) * len(spray_r)).reshape(
+                len(temp), len(rh), len(wind), len(alt), len(cld), len(spray_r)
             ),
-            dims=["temp", "rh", "v", "alt", "cld", "spray_r"],
+            dims=["temp", "rh", "wind", "alt", "cld", "spray_r"],
             coords=dict(
                 temp=temp,
                 rh=rh,
-                v=v,
+                wind=wind,
                 alt=alt,
                 cld=cld,
                 spray_r=spray_r,
@@ -75,8 +75,8 @@ if __name__ == "__main__":
         da.temp.attrs["long_name"] = "Air Temperature"
         da.rh.attrs["units"] = "%"
         da.rh.attrs["long_name"] = "Relative Humidity"
-        da.v.attrs["units"] = "$m\\, s^{-1}$"
-        da.v.attrs["long_name"] = "Wind Speed"
+        da.wind.attrs["units"] = "$m\\, s^{-1}$"
+        da.wind.attrs["long_name"] = "Wind Speed"
         da.alt.attrs["units"] = "$km$"
         da.alt.attrs["long_name"] = "Altitude"
         da.cld.attrs["units"] = " "
@@ -85,14 +85,14 @@ if __name__ == "__main__":
         da.spray_r.attrs["long_name"] = "Spray radius"
 
 
-        for temp in temp: 
-            for rh in rh:
-                for v in v:
-                    for alt in alt:
-                        for cld in cld:
-                            for spray_r in spray_r: 
-                                da.sel(temp=temp, rh=rh, v=v, alt=alt, cld=cld, spray_r = spray_r).data += TempFreeze(temp, rh, v, alt, cld)
-                                da.sel(temp=temp, rh=rh, v=v, alt=alt, cld=cld, spray_r = spray_r).data *= math.pi * spray_r * spray_r
+        for temp in da.temp.values: 
+            for rh in da.rh.values:
+                for wind in da.wind.values:
+                    for alt in da.alt.values:
+                        for cld in da.cld.values:
+                            for spray_r in da.spray_r.values: 
+                                da.sel(temp=temp, rh=rh, wind=wind, alt=alt, cld=cld, spray_r = spray_r).data +=TempFreeze(temp, rh, wind, alt, cld)
+                                da.sel(temp=temp, rh=rh, wind=wind, alt=alt, cld=cld, spray_r = spray_r).data *= math.pi * spray_r * spray_r
 
         da.to_netcdf("data/common/alt_sims.nc")
 
