@@ -103,9 +103,9 @@ if __name__ == "__main__":
                 for wind in da.wind.values:
                     for alt in da.alt.values:
                         for cld in da.cld.values:
-                            aws = [temp, rh, v, alt, cld]
+                            aws = [temp, rh, wind, alt, cld]
                             x.append(aws)
-                            y.append(da.sel(temp=temp, rh=rh, v=v, alt=alt, cld=cld, spray_r=7).data/(math.pi * 7 * 7))
+                            y.append(da.sel(temp=temp, rh=rh, wind=wind, alt=alt, cld=cld, spray_r=7).data/(math.pi * 7 * 7))
 
         popt, pcov = curve_fit(line, x, y)
         a, b, c, d, e, f = popt
