@@ -19,18 +19,18 @@ from src.models.methods.solar import get_offset
 
 def TempFreeze(temp,rh,wind,alt,cld):
 
-    with open("data/common/auto.json") as f:
-        params = json.load(f)
-
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
+
+    #Assumptions
+    temp_i = 0
 
     vp_a = np.exp(
         34.494 - 4924.99/ (temp + 237.1)
     ) / ((temp + 105) ** 1.57 * 100)
     vp_a *= rh/100
 
-    vp_ice = np.exp(43.494 - 6545.8 / (params["temp_i"] + 278)) / ((params["temp_i"] + 868) ** 2 * 100)
+    vp_ice = np.exp(43.494 - 6545.8 / (temp_i + 278)) / ((temp_i + 868) ** 2 * 100)
 
     e_a = (1.24 * math.pow(abs(vp_a / (temp + 273.15)), 1 / 7)) * (
         1 + 0.22 * math.pow(cld, 2)
@@ -38,7 +38,7 @@ def TempFreeze(temp,rh,wind,alt,cld):
 
     LW = e_a * CONSTANTS["sigma"] * math.pow(
         temp + 273.15, 4
-    ) - CONSTANTS["IE"] * CONSTANTS["sigma"] * math.pow(273.15 + params["temp_i"], 4)
+    ) - CONSTANTS["IE"] * CONSTANTS["sigma"] * math.pow(273.15 + temp_i, 4)
 
     # Derived
     alt *= 1000
@@ -51,7 +51,7 @@ def TempFreeze(temp,rh,wind,alt,cld):
         / CONSTANTS["P0"]
         * math.pow(CONSTANTS["VAN_KARMAN"], 2)
         * wind
-        * (temp - params["temp_i"])
+        * (temp - temp_i)
         / ((np.log(CONSTANTS["H_AWS"] / CONSTANTS["Z"])) ** 2)
     )
 
@@ -68,10 +68,6 @@ def TempFreeze(temp,rh,wind,alt,cld):
 
     dis = -1 * (Ql / CONSTANTS["L_V"] + (Qs+LW) / CONSTANTS["L_F"]) * CONSTANTS["DT"] / 60
 
-    # if dis > 0:
-    #     Qo = (params["temp_i"]) * CONSTANTS["RHO_I"] * CONSTANTS["DX"] * CONSTANTS["C_I"] / CONSTANTS["DT"]
-    #     dis += -1 * Qo / CONSTANTS["L_F"] * 1000 / 60 * CONSTANTS["DT"]
-
     # SA = math.pi * math.pow(params['spray_r'],2)
     # dis *= SA
 
@@ -79,8 +75,8 @@ def TempFreeze(temp,rh,wind,alt,cld):
 
 def SunMelt(time, coords, utc, alt):
 
-    with open("data/common/auto.json") as f:
-        params = json.load(f)
+    # with open("data/common/auto.json") as f:
+    #     params = json.load(f)
 
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
@@ -177,14 +173,6 @@ def dayMelt(times, coords, alt, utc, opt="auto"):
 
 
 if __name__ == "__main__":
-
-    # params={
-    #   "cld": 0.5,
-    #   "temp_i": 0,
-    #   "crit_dis": 2,
-    #   "spray_r": 5,
-    #   "solar_day": "2019-02-01",
-    # }
 
     loc="guttannen21"
     SITE, FOLDER = config(loc,spray="man")
