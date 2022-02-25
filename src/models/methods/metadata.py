@@ -1,10 +1,5 @@
 """Returns Parameter metadata for web app
 """
-
-import streamlit as st
-
-
-@st.cache
 def get_parameter_metadata(
     parameter,
 ):  # Provides Metadata of all input and Output variables

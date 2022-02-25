@@ -57,7 +57,7 @@ class Icestupa:
             logger.error("Index present")
 
         self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
-        logger.warning("%s Discharge mean %.1f" % (self.spray, self.D_F))
+        logger.warning("Discharge mean of %s method is %.1f\n" % (self.spray, self.D_F))
 
         # Drops garbage columns
         self.df = self.df[self.df.columns.drop(list(self.df.filter(regex="Unnamed")))]

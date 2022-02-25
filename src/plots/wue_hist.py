@@ -64,7 +64,7 @@ if __name__ == "__main__":
     ax.set_xlabel("Water Use Efficiency [%]")
     # plt.legend()
     ax.legend(handles=legend_elements)
-    plt.savefig("data/figs/paper3/wue.png", bbox_inches="tight", dpi=300)
+    plt.savefig("data/figs/slides/wue.png", bbox_inches="tight", dpi=300)
 
 
     #     ax[0].spines["right"].set_visible(False)

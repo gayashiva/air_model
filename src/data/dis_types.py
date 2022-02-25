@@ -151,9 +151,9 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                 dis_old= SITE["dis_max"]
                 for i in range(1,df_h.shape[0]):
                     h_change = round(df_h.h_f[i] - df_h.h_f[i-1],0)
-                    print(h_change)
                     dis_new = dis_old/math.pow(2, h_change)
                     df.loc[df.time > df_h.time[i], spray] *= dis_new/dis_old
+                    logger.warning("Discharge changed from %s to %s"%(dis_old,dis_new))
                     dis_old = dis_new
                 # SITE, FOLDER = config(loc, spray)
                 # df[spray] = SITE["D_F"]
@@ -202,27 +202,20 @@ if __name__ == "__main__":
         param_values = json.load(f)
     print(autoLinear(**param_values, temp=-0,rh=10, wind=2, alt=1, cld=0))
 
-    locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
-    # locations = ["guttannen22"]
+    # locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
+    locations = ["guttannen21"]
     # locations = ["gangles21"]
 
     for loc in locations:
         df = get_discharge(loc)
-        SITE, FOLDER = config(loc, spray="man")
-        icestupa = Icestupa(loc, spray="man")
-        icestupa.read_output()
-        dfi = icestupa.df
-        print(dfi.fountain_froze.describe()/60)
+        SITE, FOLDER = config(loc)
 
         fig, ax1 = plt.subplots()
         x = df.time
-        x1 = dfi.time
-        # y1 = df.man
-        y1 = dfi.fountain_froze /60
+        y1 = df.man
         y2 = df.auto
-        # y3 = df.auto_field
         ax1.plot(
-            x1,
+            x,
             y1,
             linestyle="-",
         )
@@ -231,16 +224,45 @@ if __name__ == "__main__":
             y2,
             linestyle="--",
         )
-        # ax1.plot(
-        #     x,
-        #     y3,
-        #     linestyle="--",
-        # )
         ax1.set_ylabel(loc + " discharge [$l/min$]")
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
         plt.savefig(FOLDER["fig"] + "dis_types.png")
+
+        # SITE, FOLDER = config(loc, spray="man")
+        # icestupa = Icestupa(loc, spray="man")
+        # icestupa.read_output()
+        # dfi = icestupa.df
+        # print(dfi.fountain_froze.describe()/60)
+        # fig, ax1 = plt.subplots()
+        # x = df.time
+        # x1 = dfi.time
+        # # y1 = df.man
+        # y1 = dfi.fountain_froze /60
+        # y2 = df.auto
+        # # y3 = df.auto_field
+        # ax1.plot(
+        #     x1,
+        #     y1,
+        #     linestyle="-",
+        # )
+        # ax1.plot(
+        #     x,
+        #     y2,
+        #     linestyle="--",
+        # )
+        # # ax1.plot(
+        # #     x,
+        # #     y3,
+        # #     linestyle="--",
+        # # )
+        # ax1.set_ylabel(loc + " discharge [$l/min$]")
+        # ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+        # ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        # ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        # fig.autofmt_xdate()
+        # plt.savefig(FOLDER["fig"] + "dis_types.png")
 
 

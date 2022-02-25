@@ -150,6 +150,6 @@ if __name__ == "__main__":
         # for i, point in a.iterrows():
         #     print(i,point)
         #     ax.text(point['x']+0.125, point['y'], str(point['text']))
-        da.sel(rh = 30, wind=2, cld=0.5,  spray_r=7 ).plot()
+        da.sel(rh = 30, wind=2, cld=0.5, alt=1, ).plot()
         # ax.set_ylim([0,3])
         plt.savefig("data/figs/paper3/alt_temp.png", bbox_inches="tight", dpi=300)

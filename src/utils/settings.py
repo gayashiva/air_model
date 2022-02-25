@@ -48,7 +48,7 @@ def config(location="guttannen21", spray=None):
                     D_F=7.5,  # Fountain mean discharge
                     f_heights = [
                         {"time": datetime(2021, 12, 3, 8), "h_f": 3.7},
-                        {"time": datetime(2022, 12, 23, 16), "h_f": 4.7},
+                        {"time": datetime(2021, 12, 23, 16), "h_f": 4.7},
                         {"time": datetime(2022, 2, 12, 16), "h_f": 5.7},
                     ],
                     dis_max= 11,
@@ -103,7 +103,7 @@ def config(location="guttannen21", spray=None):
                     start_date=datetime(2020, 11, 22, 15),
                     expiry_date=datetime(2021, 5, 10, 1),
                     fountain_off_date=datetime(2021, 2, 20, 10),
-                    dis_max= 11,
+                    dis_max= 18,
                     D_F=7.5,  # Fountain mean discharge
                     f_heights = [
                         {"time": datetime(2020, 11, 22, 15), "h_f": 2.68},
