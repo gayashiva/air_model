@@ -26,9 +26,6 @@ from src.automate.gen_coeffs import line
 def autoLinear(a, b, c, d, e, f, temp, rh, wind, alt, cld):
     return a * temp + b * rh + c * wind + d * alt + e * cld + f
 
-# def autoLinear(a, b, c, d, e, f, temp, time, rh, v, alt, cld):
-#     return a * temp + b * rh + c * v + d * alt + e * cld + f
-
 if __name__ == "__main__":
 
     # Main logger
@@ -38,7 +35,7 @@ if __name__ == "__main__":
     opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
 
     if opts==[]:
-        opts = ["-nc", "-json"]
+        opts = ["-png"]
 
     if "-nc" in opts:
         logger.info("=> Calculation of coeffs")
@@ -103,7 +100,7 @@ if __name__ == "__main__":
         y = []
         for temp in da.temp.values:
             for rh in da.rh.values:
-                for v in da.v.values:
+                for wind in da.wind.values:
                     for alt in da.alt.values:
                         for cld in da.cld.values:
                             aws = [temp, rh, v, alt, cld]
@@ -153,6 +150,6 @@ if __name__ == "__main__":
         # for i, point in a.iterrows():
         #     print(i,point)
         #     ax.text(point['x']+0.125, point['y'], str(point['text']))
-        da.sel(rh = 30, v=2, cld =0, alt=1 ).plot()
+        da.sel(rh = 30, v=2, cld =1, spray_r=7 ).plot()
         # ax.set_ylim([0,3])
         plt.savefig("data/figs/paper3/alt_temp.png", bbox_inches="tight", dpi=300)
