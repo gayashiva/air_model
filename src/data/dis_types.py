@@ -34,16 +34,16 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
         CONSTANTS = json.load(f)
 
     print(loc)
-    SITE, FOLDER = config(loc, spray="man")
+    SITE, FOLDER = config(loc, spray="manual")
 
     times = pd.date_range(
         SITE["start_date"],
         SITE["expiry_date"],
         freq=(str(int(CONSTANTS["DT"] / 60)) + "T"),
     )
-    # sprays = ['man', 'auto', "auto_field"]
-    sprays = ['auto', 'man']
-    # sprays = ['man']
+    # sprays = ['man', 'dynamic', "dynamic_field"]
+    sprays = ['dynamic', 'manual', "dynamic_field"]
+    # sprays = ['manual']
      
     df = pd.DataFrame(index=times, columns=sprays)
     df = df.fillna(0)
@@ -61,8 +61,8 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
     for spray in sprays:
 
         print(spray)
-        if spray == "auto":
-            SITE, FOLDER = config(loc, spray)
+        if spray == "dynamic":
+            SITE, FOLDER = config(loc, "dynamic")
 
             with open("data/common/alt_coeffs.json") as f:
                 param_values = json.load(f)
@@ -78,25 +78,26 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                 )
             )
 
-            # with open(FOLDER["input"] + "auto/coeffs.json") as f:
-            #     param_values = json.load(f)
-
             input_file = FOLDER["input"] + "aws.csv"
             df_aws = pd.read_csv(input_file, sep=",", header=0, parse_dates=["time"])
 
             for i in range(0,df_aws.shape[0]):
-                df.loc[i, "auto"] = autoLinear(**param_values, temp=df_aws.temp[i],rh=df_aws.RH[i],
+                df.loc[i, "dynamic"] = autoLinear(**param_values, temp=df_aws.temp[i],rh=df_aws.RH[i],
                                                wind=df_aws.wind[i], alt=SITE["alt"]/1000, cld=cld)
-                df.loc[i, "auto"] += df_solar[df_solar.time == df_aws.time[i]].dis.values[0]
-                df.loc[i, "auto"] *= math.pi * math.pow(SITE["R_F"],2) * math.sqrt(2)
-                if df.auto[i] < 0:
-                    df.loc[i, "auto"] = 0
-                if df.auto[i] >= SITE["dis_max"]:
-                    df.loc[i, "auto"] = SITE["dis_max"]
-            logger.warning(df.auto.describe())
-            # SITE["D_F"] = df.auto[df.auto != 0].mean()
+                df.loc[i, "dynamic"] += df_solar[df_solar.time == df_aws.time[i]].dis.values[0]
+                df.loc[i, "dynamic"] *= math.pi * math.pow(SITE["R_F"],2) * math.sqrt(2)
+                if df.dynamic[i] < 0:
+                    df.loc[i, "dynamic"] = 0
+                # if df.dynamic[i] >= SITE["dis_max"]:
+                #     df.loc[i, "dynamic"] = SITE["dis_max"]
 
-        if spray == "man":
+            df["static"] = df["dynamic"].max()
+            
+            logger.warning("Static discharge is %s" %df.dynamic.max())
+            # logger.warning("Dynamic discharge varies from %s to %s" %(df.dynamic.min(), df.dynamic.max()))
+            # SITE["D_F"] = df.dynamic[df.dynamic != 0].mean()
+
+        if spray == "manual":
             if loc  == "gangles21":
                 SITE, FOLDER = config(loc, spray)
                 df_f = pd.read_csv(
@@ -159,30 +160,29 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                 # df[spray] = SITE["D_F"]
                 # logger.info("Discharge constant")
 
-        if loc == "guttannen22":
-            if spray == "auto_field":
-                print(spray)
-                # SITE, FOLDER = config(loc, spray)
-                df_f = pd.read_csv(
-                    os.path.join("data/" + loc + "/interim/")
-                    + "discharge_labview.csv",
-                    sep=",",
-                    parse_dates=["time"],
-                )
-                df_f = df_f.set_index("time")
-                df = df.set_index("time")
-                df[spray] = df_f["Discharge"]
-                df = df.reset_index()
-                df= df.replace(np.NaN, 0)
-                # D_F = self.df.Discharge[self.df.Discharge != 0].mean()
-                # logger.warning("Auto Discharge mean %.1f" % self.D_F)
+        if spray == "dynamic_field":
+            print(spray)
+            # SITE, FOLDER = config(loc, spray)
+            df_f = pd.read_csv(
+                os.path.join("data/" + loc + "/interim/")
+                + "discharge_labview.csv",
+                sep=",",
+                parse_dates=["time"],
+            )
+            df_f = df_f.set_index("time")
+            df = df.set_index("time")
+            df[spray] = df_f["Discharge"]
+            df = df.reset_index()
+            df= df.replace(np.NaN, 0)
+            # D_F = self.df.Discharge[self.df.Discharge != 0].mean()
+            # logger.warning("dynamic Discharge mean %.1f" % self.D_F)
 
 
-                # D_F = self.df.Discharge[self.df.Discharge != 0].mean()
-                # logger.warning("Manual Discharge mean %.1f" % self.D_F)
-                # logger.warning("Manual Discharge used")
+            # D_F = self.df.Discharge[self.df.Discharge != 0].mean()
+            # logger.warning("Manual Discharge mean %.1f" % self.D_F)
+            # logger.warning("Manual Discharge used")
 
-        if spray != "auto":
+        if spray != "dynamic":
             mask = df["time"] > SITE["fountain_off_date"]
             mask_index = df[mask].index
             df.loc[mask_index, spray] = 0
@@ -200,10 +200,9 @@ if __name__ == "__main__":
 
     with open("data/common/alt_coeffs.json") as f:
         param_values = json.load(f)
-    print(autoLinear(**param_values, temp=-0,rh=10, wind=2, alt=1, cld=0))
 
     # locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
-    locations = ["guttannen21"]
+    locations = ["guttannen22"]
     # locations = ["gangles21"]
 
     for loc in locations:
@@ -212,37 +211,47 @@ if __name__ == "__main__":
 
         fig, ax1 = plt.subplots()
         x = df.time
-        y1 = df.man
-        y2 = df.auto
+        y1 = df.manual
+        y2 = df.dynamic
+        y3 = df.static
         ax1.plot(
             x,
             y1,
             linestyle="-",
+            label = "Manual"
         )
         ax1.plot(
             x,
             y2,
             linestyle="--",
+            label = "Dynamic"
         )
-        ax1.set_ylabel(loc + " discharge [$l/min$]")
+        ax1.plot(
+            x,
+            y3,
+            linestyle="-.",
+            label = "Static"
+        )
+        ax1.set_ylabel(loc + " fountain schedules[$l/min$]")
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        ax1.legend()
         fig.autofmt_xdate()
-        plt.savefig(FOLDER["fig"] + "dis_types.png")
+        plt.savefig(FOLDER["fig"] + "dis_types.png", dpi=300)
 
-        # SITE, FOLDER = config(loc, spray="man")
-        # icestupa = Icestupa(loc, spray="man")
+        # SITE, FOLDER = config(loc, spray="manual")
+        # icestupa = Icestupa(loc, spray="manual")
         # icestupa.read_output()
         # dfi = icestupa.df
         # print(dfi.fountain_froze.describe()/60)
         # fig, ax1 = plt.subplots()
         # x = df.time
         # x1 = dfi.time
-        # # y1 = df.man
+        # # y1 = df.manual
         # y1 = dfi.fountain_froze /60
-        # y2 = df.auto
-        # # y3 = df.auto_field
+        # y2 = df.dynamic
+        # # y3 = df.dynamic_field
         # ax1.plot(
         #     x1,
         #     y1,

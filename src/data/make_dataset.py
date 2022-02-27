@@ -42,13 +42,13 @@ if __name__ == "__main__":
 
     # locations = ["gangles21", "guttannen20", "guttannen21", "guttannen22"]
     locations = ["guttannen22"]
-    # sprays = ["man", "auto"]
+    sprays = ["manual", "dynamic"]
 
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
 
     for location in locations:
-        SITE, FOLDER = config(location, spray="man")
+        SITE, FOLDER = config(location, spray="manual")
 
         if location in ["gangles21"]:
             df = get_field(location)

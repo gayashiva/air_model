@@ -25,7 +25,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("ERROR")
     location = 'guttannen22'
-    sprays = ['auto_field', 'man']
+    sprays = ['dynamic_field', 'manual']
 
     mypal = sns.color_palette("Set1", 2)
     fig, ax = plt.subplots(2, 1, sharex="col")
@@ -38,10 +38,10 @@ if __name__ == "__main__":
         icestupa.read_output()
         df=icestupa.df
 
-        if spray == "auto_field":
-            spray = "Automatic "
+        if spray == "dynamic_field":
+            spray = "Dynamic"
         else:
-            spray = "Manual "
+            spray = "Manual"
 
         x = df.time[1:]
         y1 = df.Discharge[1:]
@@ -49,7 +49,6 @@ if __name__ == "__main__":
         ax[0].plot(
             x,
             y1,
-            # label= spray + "Discharge",
             linewidth=1,
             color=mypal[i],
         )
@@ -75,10 +74,7 @@ if __name__ == "__main__":
 
     ax[1].xaxis.set_major_locator(mdates.WeekdayLocator())
     ax[1].xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    # ax[1].xaxis.set_minor_locator(mdates.DayLocator())
     fig.autofmt_xdate()
-    # fig.text(0.04, 0.5, "Ice Volume[$m^3$]", va="center", rotation="vertical")
     handles, labels = ax[1].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="upper right", prop={"size": 8})
-    # plt.legend()
+    ax[0].legend(handles, labels, loc="upper right", prop={"size": 8}, title="Method")
     plt.savefig("data/figs/paper3/autovsmanual.png", bbox_inches="tight", dpi=300)

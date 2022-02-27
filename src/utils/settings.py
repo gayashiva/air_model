@@ -31,17 +31,17 @@ def config(location="guttannen21", spray=None):
         )
 
         if spray != None:
-            if spray == "auto":
+            if spray == "dynamic" or spray == "static":
                 add= dict(
                     start_date=datetime(2021, 12, 3, 8),
                     fountain_off_date=datetime(2022, 1, 27),
-                    R_F = 4,
+                    # R_F = 4,
                     # dis_crit = 1,
                     dis_max= 11,
                 )
                 add["expiry_date"] = add["fountain_off_date"]
 
-            if spray == "man":
+            if spray == "manual":
                 add= dict(
                     start_date=datetime(2021, 12, 3, 8),
                     fountain_off_date=datetime(2022, 1, 27),
@@ -57,7 +57,7 @@ def config(location="guttannen21", spray=None):
                 )
                 add["expiry_date"] = add["fountain_off_date"]
 
-            if spray == "auto_field":
+            if spray == "dynamic_field":
                 add= dict(
                     start_date=datetime(2021, 12, 3, 8),
                     fountain_off_date=datetime(2022, 1, 27),
@@ -88,17 +88,17 @@ def config(location="guttannen21", spray=None):
         )
 
         if spray != None:
-            if spray == "auto":
+            if spray == "dynamic" or spray == "static":
                 add= dict(
                     start_date=datetime(2020, 11, 22, 15),
                     fountain_off_date=datetime(2021, 2, 10, 1),
                     dis_crit = 1,
                     dis_max= 11,
-                    R_F = 7,
+                    # R_F = 7,
                 )
                 add["expiry_date"] = add["fountain_off_date"]
 
-            if spray == "man":
+            if spray == "manual":
                 add = dict(
                     start_date=datetime(2020, 11, 22, 15),
                     expiry_date=datetime(2021, 5, 10, 1),
@@ -133,17 +133,17 @@ def config(location="guttannen21", spray=None):
 
         if spray != None:
 
-            if spray == "auto":
+            if spray == "dynamic" or spray == "static":
                 add= dict(
                     start_date=datetime(2020, 1, 3, 16),
                     fountain_off_date=datetime(2020, 3, 6, 12),
                     dis_crit = 1,
                     dis_max= 11,
-                    R_F = 7,
+                    # R_F = 7,
                 )
                 add["expiry_date"] = add["fountain_off_date"]
 
-            if spray == "man":
+            if spray == "manual":
                 add = dict(
                     start_date=datetime(2020, 1, 3, 16),
                     expiry_date=datetime(2020, 4, 6, 12),
@@ -177,13 +177,13 @@ def config(location="guttannen21", spray=None):
 
         if spray != None:
 
-            if spray == "auto":
+            if spray == "dynamic" or spray == "static":
                 add= dict(
                     start_date=datetime(2021, 1, 18),
                     fountain_off_date=datetime(2021, 4, 10),
                     dis_crit = 1,
                     dis_max= 60,
-                    R_F = 10,
+                    # R_F = 10,
                 )
                 add["expiry_date"] = add["fountain_off_date"]
 
@@ -192,11 +192,11 @@ def config(location="guttannen21", spray=None):
                     start_date=datetime(2021, 1, 18),
                     fountain_off_date=datetime(2021, 4, 10),
                     dis_crit = 1,
-                    R_F = 7,
+                    # R_F = 10,
                 )
                 add["expiry_date"] = add["fountain_off_date"]
 
-            if spray == "man":
+            if spray == "manual":
                 add = dict(
                     start_date=datetime(2021, 1, 18),
                     fountain_off_date=datetime(2021, 3, 10, 18),

@@ -24,7 +24,7 @@ logger = logging.getLogger("__main__")
 logger.propagate = False
 
 class Icestupa:
-    def __init__(self, location="Guttannen 2021", spray="man"):
+    def __init__(self, location="Guttannen 2021", spray="manual"):
 
         self.spray = spray
 
@@ -46,21 +46,15 @@ class Icestupa:
         # Initialize input dataset
         self.df = pd.read_csv(self.input + "aws.csv", sep=",", header=0, parse_dates=["time"])
         df_f = pd.read_csv(self.input + "discharge_types.csv", sep=",", header=0, parse_dates=["time"])
-        # if self.name == "guttannen22":
-        #     df_f["Discharge"] = df_f[self.spray + "_field"]
-        # else:
+
         df_f["Discharge"] = df_f[self.spray]
         df_f = df_f[["time", "Discharge"]]
 
         self.df = pd.merge(df_f, self.df, on="time", how="left")
-        if 'index' in self.df.columns:
-            logger.error("Index present")
 
         self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
+        print("\n") 
         logger.warning("Discharge mean of %s method is %.1f\n" % (self.spray, self.D_F))
-
-        # Drops garbage columns
-        self.df = self.df[self.df.columns.drop(list(self.df.filter(regex="Unnamed")))]
 
         # Reset date range
         self.df = self.df.set_index("time")
