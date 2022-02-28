@@ -202,13 +202,15 @@ if __name__ == "__main__":
         param_values = json.load(f)
 
     # locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
-    locations = ["guttannen22"]
+    locations = ["guttannen21"]
     # locations = ["gangles21"]
 
     for loc in locations:
         df = get_discharge(loc)
         SITE, FOLDER = config(loc)
 
+        df= df[df.time <= SITE["fountain_off_date"]]
+        
         fig, ax1 = plt.subplots()
         x = df.time
         y1 = df.manual
@@ -232,7 +234,7 @@ if __name__ == "__main__":
             linestyle="-.",
             label = "Static"
         )
-        ax1.set_ylabel(loc + " fountain schedules[$l/min$]")
+        ax1.set_ylabel("Discharge [$l/min$]")
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
