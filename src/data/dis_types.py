@@ -42,7 +42,8 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
         freq=(str(int(CONSTANTS["DT"] / 60)) + "T"),
     )
     # sprays = ['man', 'dynamic', "dynamic_field"]
-    sprays = ['dynamic', 'manual', "dynamic_field"]
+    sprays = ['dynamic', 'static', 'manual']
+    # sprays = ['dynamic', 'manual', "dynamic_field"]
     # sprays = ['manual']
      
     df = pd.DataFrame(index=times, columns=sprays)
@@ -207,7 +208,7 @@ if __name__ == "__main__":
 
     for loc in locations:
         df = get_discharge(loc)
-        SITE, FOLDER = config(loc)
+        SITE, FOLDER = config(loc, "manual")
 
         df= df[df.time <= SITE["fountain_off_date"]]
         
@@ -240,7 +241,7 @@ if __name__ == "__main__":
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
         ax1.legend()
         fig.autofmt_xdate()
-        plt.savefig(FOLDER["fig"] + "dis_types.png", dpi=300)
+        plt.savefig(FOLDER["fig"] + "dis_types.png")
 
         # SITE, FOLDER = config(loc, spray="manual")
         # icestupa = Icestupa(loc, spray="manual")

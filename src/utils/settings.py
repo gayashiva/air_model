@@ -35,7 +35,7 @@ def config(location="guttannen21", spray=None):
                 add= dict(
                     start_date=datetime(2021, 12, 3, 8),
                     fountain_off_date=datetime(2022, 1, 27),
-                    # R_F = 4,
+                    R_F = 4,
                     # dis_crit = 1,
                     dis_max= 11,
                 )
@@ -91,10 +91,10 @@ def config(location="guttannen21", spray=None):
             if spray == "dynamic" or spray == "static":
                 add= dict(
                     start_date=datetime(2020, 11, 22, 15),
-                    fountain_off_date=datetime(2021, 2, 10, 1),
+                    fountain_off_date=datetime(2021, 2, 20, 1),
                     dis_crit = 1,
                     dis_max= 11,
-                    # R_F = 7,
+                    R_F = 6.9,
                 )
                 add["expiry_date"] = add["fountain_off_date"]
 
