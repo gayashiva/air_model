@@ -21,15 +21,17 @@ from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
 # from src.models.methods.metadata import get_parameter_metadata
 
+def keystoint(x):
+    return {k: float(v) for k, v in x.items()}
+
 if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
     logger.setLevel("INFO")
 
-    loc = 'guttannen22'
     locations = ["guttannen22", "guttannen21", "gangles21"]
-    sprays = ['manual', 'dynamic', 'static']
-    styles=['.', '*' , 'x']
+    sprays = ['manual', 'static', 'dynamic']
+    styles=['.', 'x' , '*']
 
     mypal = sns.color_palette("Set1", 3)
     legend_elements = [Line2D([0], [0], color=mypal[0], lw=4, label='CH22'),
@@ -45,18 +47,18 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(1, 1, sharex="col")
 
     for i, loc in enumerate(locations):
-        for j, spray in enumerate(sprays[:1]):
+        for j, spray in enumerate(sprays):
 
             SITE, FOLDER = config(loc)
 
             with open(FOLDER["output"] + spray +  "/results.json") as f:
-                results = json.load(f)
+                results = json.load(f, object_hook=keystoint)
             print(loc,spray, results["WUE"], results["iceV_max"])
             ax.scatter(results["WUE"], results["iceV_max"], label=loc+spray, color=mypal[i], marker=styles[j])
 
             if loc == 'guttannen22' and spray == "dynamic":
                 with open(FOLDER["output"] + "dynamic_field/results.json") as f:
-                    results = json.load(f)
+                    results = json.load(f, object_hook=keystoint)
                 print(loc,"dynamic_field", results["WUE"], results["iceV_max"])
                 ax.scatter(results["WUE"], results["iceV_max"], color=mypal[i], marker=styles[j])
 
@@ -68,9 +70,8 @@ if __name__ == "__main__":
     ax.set_ylim([0,1200])
     ax.spines["right"].set_visible(False)
     ax.spines["top"].set_visible(False)
-    # plt.legend()
     ax.legend(handles=legend_elements)
-    plt.savefig("data/figs/slides/wue.png", bbox_inches="tight", dpi=300)
+    plt.savefig("data/figs/slides/wue.png", bbox_inches="tight")
 
 
     #     ax[0].spines["left"].set_color("grey")

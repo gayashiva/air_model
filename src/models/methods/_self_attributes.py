@@ -22,15 +22,20 @@ def self_attributes(self):
         if self.name in ["guttannen22"]:
             df_c = get_calibration(site=self.name , input=self.input+ self.spray + "/")
             self.V_dome = 0
+            df_c.to_hdf(
+                self.input + self.spray+ "/input.h5",
+                key="df_c",
+                mode="w",
+            )
         else:
             df_c = get_calibration(site=self.name, input=self.input)
             self.V_dome = df_c.loc[0, "DroneV"]
 
-        df_c.to_hdf(
-            self.input + "input.h5",
-            key="df_c",
-            mode="w",
-        )
+            df_c.to_hdf(
+                self.input + "input.h5",
+                key="df_c",
+                mode="w",
+            )
 
         self.R_F = df_c.loc[
             (df_c.time < self.fountain_off_date) & (df_c.index != 0), "rad"

@@ -147,7 +147,6 @@ def summary_figures(self):
     ax1.grid(color="black", alpha=0.3, linewidth=0.5, which="major")
     plt.ylabel("Energy Flux [$W\\,m^{-2}$]")
     plt.legend(loc="upper center", ncol=8)
-    # plt.ylim(-125, 125)
     x_axis = ax1.axes.get_xaxis()
     x_axis.set_visible(False)
     at = AnchoredText("(a)", prop=dict(size=10), frameon=True, loc="upper left")
@@ -204,13 +203,12 @@ def summary_figures(self):
     plt.savefig(
         self.fig + self.spray + "/output.png",
         bbox_inches="tight",
+        dpi=300,
     )
     plt.clf()
 
     """Ice Volume Fig"""
-    # if self.name in ["guttannen21", "guttannen20", "gangles21", "guttannen22"]:
     df_c = pd.read_hdf(self.input + "input.h5", "df_c")
-    # df_c = df_c.rename(columns={"When": "time"})
 
     df_c = df_c[["time", "DroneV", "DroneVError"]]
     if self.name in ["guttannen21", "guttannen20", "gangles21"]:
@@ -256,13 +254,11 @@ def summary_figures(self):
         linewidth=1,
         color=CB91_Blue,
     )
-    # if self.name in ["guttannen21", "guttannen22", "guttannen20", "schwarzsee19", "gangles21"]:
     y2 = df_c.DroneV
     yerr = df_c.DroneVError
     ax.fill_between(x, y1=self.V_dome, y2=0, color=grey, label="Dome Volume")
     ax.scatter(x, y2, color=CB91_Green, label="Measured Volume")
     ax.errorbar(x, y2, yerr=df_c.DroneVError, color=CB91_Green)
-
     ax.set_ylim(bottom=0)
     plt.legend()
     ax.xaxis.set_major_locator(mdates.WeekdayLocator())
@@ -272,6 +268,7 @@ def summary_figures(self):
     plt.savefig(
         self.fig + self.spray + "/Vol_Validation.png",
         bbox_inches="tight",
+        dpi=300,
     )
     plt.clf()
 
@@ -293,6 +290,7 @@ def summary_figures(self):
     plt.savefig(
         self.fig + self.spray + "/Discharge.png",
         bbox_inches="tight",
+        dpi=300,
     )
     plt.close("all")
 

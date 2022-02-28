@@ -201,7 +201,7 @@ class Icestupa:
 
         # For web app
         for variable in results:
-            results_dict[variable] = int(round(eval(variable), 1))
+            results_dict[variable] = float(round(eval(variable), 1))
 
         print("Summary of results for %s :" % self.name)
         print()
