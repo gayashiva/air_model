@@ -43,15 +43,16 @@ if __name__ == "__main__":
     opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
 
     if opts==[]:
-        opts = ["-nc", "-solar", "-json", "-test"]
+        # opts = ["-nc", "-solar", "-json", "-test"]
+        opts = ["-test"]
 
     if "-nc" in opts:
         logger.info("=> Calculation of temp coeffs")
         temp = list(range(-20, 5))
-        rh = list(range(0, 100, 5))
+        rh = list(range(0, 100, 10))
         wind = list(range(0, 15, 1))
-        alt = list(np.arange(0, 5.1, 0.1))
-        cld = list(np.arange(0, 1.1, 0.1))
+        alt = list(np.arange(0, 5.1, 1))
+        cld = list(np.arange(0, 1.1, 0.5))
         spray_r = list(np.arange(5, 11, 1))
 
         da = xr.DataArray(
@@ -139,7 +140,7 @@ if __name__ == "__main__":
                     for wind in da.wind.values:
                         aws = [temp, rh, wind]
                         x.append(aws)
-                        y.append(da.sel(temp=temp, rh=rh, wind=wind, alt=round(SITE["alt"]/1000,1),cld=SITE["cld"], spray_r=SITE["R_F"]).data
+                        y.append(da.sel(temp=temp, rh=rh, wind=wind, alt=round(SITE["alt"]/1000,1),cld=SITE["cld"], spray_r=round(SITE["R_F"],0)).data
 
             popt, pcov = curve_fit(line, x, y)
             a, b, c, d = popt
@@ -161,6 +162,10 @@ if __name__ == "__main__":
                 json.dump(params, f, indent=4)
 
         if "-test" in opts:
+            pool = multiprocessing.Pool(num_procs)
+            results = pool.map(the_function, list_of_objects)
+            pool.close()
+
             # TODO Scale all coeffs ?
             # param_values.update((x, y*scaling_factor) for x, y in param_values.items())
 
