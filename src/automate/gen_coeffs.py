@@ -26,13 +26,12 @@ def line(x, a, b, c, d, e):
     x1 = x[:, 0]
     x2 = x[:, 1]
     x3 = x[:, 2]
-    x4 = x[:, 3]
-    return a * x1 + b * x2 + c * x3 + d * x4 + e
+    return a * x1 + b * x2 + c * x3 + d 
 
-def autoDis(a, b, c, d, e, amplitude, center, sigma, time, temp, rh, wind, alt):
+def autoDis(a, b, c, d, e, amplitude, center, sigma, time, temp, rh, wind):
     model = GaussianModel()
     params = {"amplitude": amplitude, "center": center, "sigma": sigma}
-    return a * temp + b * rh + c * wind + d * alt + e + model.eval(x=time, **params)
+    return a * temp + b * rh + c * wind + d + model.eval(x=time, **params)
 
 
 if __name__ == "__main__":
@@ -128,6 +127,74 @@ if __name__ == "__main__":
                     loc,
                 )
             )
+
+
+        if "-json" in opts:
+            logger.info("=> Performing regression analysis")
+            da = xr.open_dataarray("data/common/alt_cld_sims.nc")
+            x = []
+            y = []
+            for temp in da.temp.values:
+                for rh in da.rh.values:
+                    for wind in da.wind.values:
+                        aws = [temp, rh, wind]
+                        x.append(aws)
+                        y.append(da.sel(temp=temp, rh=rh, wind=wind, alt=round(SITE["alt"]/1000,1),cld=SITE["cld"], spray_r=SITE["R_F"]).data
+
+            popt, pcov = curve_fit(line, x, y)
+            a, b, c, d = popt
+            print("dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f" % (a, b, c, d))
+
+            """Combine all coeffs"""
+            params= {}
+            params["a"] = a
+            params["b"] = b
+            params["c"] = c
+            params["d"] = d
+
+            with open(FOLDER["input"] + "dynamic/sun_coeffs.json") as f:
+                sun_params = json.load(f)
+
+            params = dict(params, **sun_params)
+
+            with open(FOLDER["input"] + "dynamic/coeffs.json", "w") as f:
+                json.dump(params, f, indent=4)
+
+        if "-test" in opts:
+            # TODO Scale all coeffs ?
+            # param_values.update((x, y*scaling_factor) for x, y in param_values.items())
+
+            for loc in locations:
+
+                SITE, FOLDER = config(loc, spray="manual")
+
+                with open(FOLDER["input"] + "dynamic/coeffs.json", "w") as f:
+                    json.dump(params, f)
+                print(params)
+
+                max_freeze = autoDis(**params, time=6, temp=-20, rh=0, wind=10, alt=SITE["alt"]/1000) * math.pi * 7 **2
+                print(
+                    "Max freezing rate: %0.1f for loc %s"%(max_freeze, loc)
+                )
+
+                # print(param_values)
+                # print(
+                #     "dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f + Gaussian(time; Amplitude = %.5f, center = %.5f, sigma = %.5f) "
+                #     % (
+                #         params["a"],
+                #         params["b"],
+                #         params["c"],
+                #         params["d"],
+                #         params["amplitude"],
+                #         params["center"],
+                #         params["sigma"],
+                #     )
+                # )
+
+        if "-png" in opts:
+            logger.info("=> Producing figs")
+
+
         # icestupa_sim = Icestupa(loc)
         # icestupa_sim.read_output()
 
@@ -153,76 +220,3 @@ if __name__ == "__main__":
 
         # with open(FOLDER["raw"] + "auto/auto_info.json", "w") as f:
         #     json.dump(params, f)
-
-
-    if "-json" in opts:
-        logger.info("=> Performing regression analysis")
-        da = xr.open_dataarray("data/common/temp_sims.nc")
-        x = []
-        y = []
-        for temp in da.temp.values:
-            for rh in da.rh.values:
-                for wind in da.wind.values:
-                    for alt in da.alt.values:
-                        aws = [temp, rh, wind, alt]
-                        x.append(aws)
-                        y.append(da.sel(temp=temp, rh=rh, wind=wind, alt=alt, spray_r=7).data/(math.pi * 7 * 7))
-
-        popt, pcov = curve_fit(line, x, y)
-        a, b, c, d, e = popt
-        print("dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f * alt + %.5f" % (a, b, c, d, e))
-
-        """Combine all coeffs"""
-        params= {}
-        params["a"] = a
-        params["b"] = b
-        params["c"] = c
-        params["d"] = d
-        params["e"] = e
-
-        with open("data/common/temp_coeffs.json", "w") as f:
-            json.dump(params, f, indent=4)
-
-        with open(FOLDER["input"] + "dynamic/sun_coeffs.json") as f:
-            sun_params = json.load(f)
-
-        params = dict(params, **sun_params)
-
-        with open(FOLDER["input"] + "dynamic/coeffs.json", "w") as f:
-            json.dump(params, f, indent=4)
-
-    if "-test" in opts:
-        # TODO Scale all coeffs ?
-        # param_values.update((x, y*scaling_factor) for x, y in param_values.items())
-
-        for loc in locations:
-
-            SITE, FOLDER = config(loc, spray="manual")
-
-            with open(FOLDER["input"] + "dynamic/coeffs.json", "w") as f:
-                json.dump(params, f)
-            print(params)
-
-            max_freeze = autoDis(**params, time=6, temp=-20, rh=0, wind=10, alt=SITE["alt"]/1000) * math.pi * 7 **2
-            print(
-                "Max freezing rate: %0.1f for loc %s"%(max_freeze, loc)
-            )
-
-            # print(param_values)
-            # print(
-            #     "dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f + Gaussian(time; Amplitude = %.5f, center = %.5f, sigma = %.5f) "
-            #     % (
-            #         params["a"],
-            #         params["b"],
-            #         params["c"],
-            #         params["d"],
-            #         params["amplitude"],
-            #         params["center"],
-            #         params["sigma"],
-            #     )
-            # )
-
-    if "-png" in opts:
-        logger.info("=> Producing figs")
-
-
