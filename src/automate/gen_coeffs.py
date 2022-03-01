@@ -22,7 +22,7 @@ from src.automate.autoDischarge import TempFreeze, SunMelt
 from src.models.methods.solar import get_offset
 # from src.automate.projectile import get_projectile
 
-def line(x, a, b, c, d, e):
+def line(x, a, b, c, d):
     x1 = x[:, 0]
     x2 = x[:, 1]
     x3 = x[:, 2]
@@ -140,7 +140,7 @@ if __name__ == "__main__":
                     for wind in da.wind.values:
                         aws = [temp, rh, wind]
                         x.append(aws)
-                        y.append(da.sel(temp=temp, rh=rh, wind=wind, alt=round(SITE["alt"]/1000,1),cld=SITE["cld"], spray_r=round(SITE["R_F"],0)).data
+                        y.append(da.sel(temp=temp, rh=rh, wind=wind, alt=round(SITE["alt"]/1000,1),cld=SITE["cld"], spray_r=round(SITE["R_F"],0))).data
 
             popt, pcov = curve_fit(line, x, y)
             a, b, c, d = popt
@@ -162,9 +162,9 @@ if __name__ == "__main__":
                 json.dump(params, f, indent=4)
 
         if "-test" in opts:
-            pool = multiprocessing.Pool(num_procs)
-            results = pool.map(the_function, list_of_objects)
-            pool.close()
+            # pool = multiprocessing.Pool(num_procs)
+            # results = pool.map(the_function, list_of_objects)
+            # pool.close()
 
             # TODO Scale all coeffs ?
             # param_values.update((x, y*scaling_factor) for x, y in param_values.items())
