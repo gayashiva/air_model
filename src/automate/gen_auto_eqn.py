@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
         popt, pcov = curve_fit(line, x, y)
         a, b, c, d, e, f = popt
-        print("dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f * alt + %.5f * cld + %.5f" % (a, b, c, d, e, f))
+        print("dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f * alt + %.5f" % (a, b, c, d, e))
 
         """Combine all coeffs"""
         param_values = {}
@@ -118,10 +118,9 @@ if __name__ == "__main__":
         param_values["c"] = c
         param_values["d"] = d
         param_values["e"] = e
-        param_values["f"] = f
 
         with open("data/common/alt_coeffs.json", "w") as f:
-            json.dump(param_values, f)
+            json.dump(param_values, f, indent=4)
 
     if "-png" in opts:
         logger.info("=> Producing figs")

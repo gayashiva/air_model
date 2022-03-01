@@ -209,8 +209,8 @@ class Icestupa:
             print("\t%s: %r" % (var, results_dict[var]))
         print()
 
-        with open(self.output + self.spray + "/results.json", "w") as fp:
-            json.dump(results_dict, fp, sort_keys=True, indent=4)
+        with open(self.output + self.spray + "/results.json", "w") as f:
+            json.dump(results_dict, f, sort_keys=True, indent=4)
 
         if last_hour > self.total_hours + 1:
             self.df = self.df[: self.total_hours]
