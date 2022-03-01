@@ -17,7 +17,7 @@ from src.utils.settings import config
 from src.models.methods.solar import get_offset
 # from src.automate.projectile import get_projectile
 
-def TempFreeze(temp,rh,wind,alt,cld):
+def TempFreeze(temp,rh,wind,alt,cld=0):
 
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
@@ -75,9 +75,6 @@ def TempFreeze(temp,rh,wind,alt,cld):
 
 def SunMelt(time, coords, utc, alt):
 
-    # with open("data/common/auto.json") as f:
-    #     params = json.load(f)
-
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
 
@@ -94,7 +91,7 @@ def SunMelt(time, coords, utc, alt):
     )
 
     solar_position = loc.get_solarposition(times=times, method="ephemeris")
-    clearsky = site_location.get_clearsky(times=times, model = 'simplified_solis')
+    clearsky = loc.get_clearsky(times=times, model = 'simplified_solis')
     # Not using measured GHI due to shading effects
     clearness = irradiance.erbs(ghi = clearsky["ghi"], zenith = solar_position['zenith'],
                                       datetime_or_doy= times) 
@@ -123,7 +120,7 @@ def SunMelt(time, coords, utc, alt):
         df.loc[i, "f_cone"] = (math.pi * math.sin(df.loc[i, "sea"]) + math.cos(df.loc[i, "sea"]))/(2*math.sqrt(2)*math.pi)
 
     df["SW_direct"]= df["SW_global"] - df["SW_diffuse"]
-    df["dis"] = -1 * (1 - CONSTANTS["A_I"]) * (df["SW_direct"] * df["f_cone"] + df["SW_diffuse"]) / CONSTANTS["L_F"] * 1000 / 60
+    df["dis"] = -1 * (1 - CONSTANTS["A_I"]) * (df["SW_direct"] * df["f_cone"] + df["SW_diffuse"]) / CONSTANTS["L_F"] * CONSTANTS["DT"] / 60
 
     model = GaussianModel()
     gauss_params = model.guess(df.dis, df.hour)
@@ -150,14 +147,14 @@ def dayMelt(times, coords, alt, utc, opt="auto"):
             "SW_diffuse": clearness["dhi"],
             "SW_global": clearsky["ghi"],
             "sea": np.radians(solar_position["elevation"]),
-            "cld": 1 - clearness["kt"],
+            # "cld": 1 - clearness["kt"],
         }
     )
 
     bad_values = df["sea"] < 0 
     df["sea"]= np.where(bad_values, 0, df["sea"])
-    df["cld"]= np.where(bad_values, np.nan, df["cld"])
-    cld = df["cld"].mean()
+    # df["cld"]= np.where(bad_values, np.nan, df["cld"])
+    # cld = df["cld"].mean()
 
     times += pd.Timedelta(hours=utc)
 
@@ -167,25 +164,25 @@ def dayMelt(times, coords, alt, utc, opt="auto"):
     else:
         f_cone = (math.pi * math.sin(sea) + math.cos(sea))/(2*math.sqrt(2)*math.pi)
         SW_direct= SW_global - SW_diffuse
-        dis = -1 * (1 - CONSTANTS["A_I"]) * (SW_direct * f_cone + SW_diffuse) / CONSTANTS["L_F"] * 1000 / 60
+        dis = -1 * (1 - CONSTANTS["A_I"]) * (SW_direct * f_cone + SW_diffuse) / CONSTANTS["L_F"] * CONSTANTS["DT"]/60
 
     return dis
 
 
 if __name__ == "__main__":
 
-    loc="guttannen21"
-    SITE, FOLDER = config(loc,spray="man")
+    loc="gangles21"
+    SITE, FOLDER = config(loc,spray="manual")
     utc = get_offset(*SITE["coords"], date=SITE["start_date"])
-    print(dayMelt(time=SITE["start_date"], coords = SITE["coords"], utc = utc, alt=SITE["alt"]))
-    # result = SunMelt(coords = SITE["coords"], utc = utc, alt=SITE["alt"])
-    # param_values = dict(result.best_values)
+    # print(dayMelt(time=SITE["start_date"], coords = SITE["coords"], utc = utc, alt=SITE["alt"]))
+    result = SunMelt(time=SITE["fountain_off_date"], coords = SITE["coords"], utc = utc, alt=SITE["alt"])
+    param_values = dict(result.best_values)
+    print(param_values)
 
-
-    aws1 = [-5,10,2,4000]
-    aws2 = [-5,10,2,0]
+    aws1 = [-5,10,2,4, SITE["cld"]]
     print(TempFreeze(*aws1))
-    print(TempFreeze(*aws2))
+    # aws2 = [-5,10,2,0]
+    # print(TempFreeze(*aws2))
     # print(param_values)
     # locations = ["gangles21", "guttannen21"]
     # for loc in locations:

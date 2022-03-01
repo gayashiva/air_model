@@ -1,4 +1,4 @@
-
+"""Generate coefficients for empirical fountain scheduler"""
 import pandas as pd
 import xarray as xr
 import numpy as np
@@ -22,15 +22,14 @@ from src.automate.autoDischarge import TempFreeze, SunMelt
 from src.models.methods.solar import get_offset
 # from src.automate.projectile import get_projectile
 
-def line(x, a, b, c, d, e, f):
+def line(x, a, b, c, d, e):
     x1 = x[:, 0]
     x2 = x[:, 1]
     x3 = x[:, 2]
     x4 = x[:, 3]
-    x5 = x[:, 4]
-    return a * x1 + b * x2 + c * x3 + d * x4 + e * x5 + f
+    return a * x1 + b * x2 + c * x3 + d * x4 + e
 
-def autoDis(a, b, c, d, e, amplitude, center, sigma, temp, time, rh, v, alt):
+def autoDis(a, b, c, d, e, amplitude, center, sigma, time, temp, rh, wind, alt):
     model = GaussianModel()
     params = {"amplitude": amplitude, "center": center, "sigma": sigma}
     return a * temp + b * rh + c * v + d * alt + e + model.eval(x=time, **params)

@@ -25,7 +25,7 @@ def config(location="guttannen21", spray=None):
             alt=1047.6,
             coords=[46.65549,8.29149],
             h_i = 0.13, #Initialise ice height at start
-            # cld=0.5,
+            cld=0.5,
             # Calibrated values
             DX=45e-03,  # Surface layer thickness [m]
         )
@@ -77,7 +77,7 @@ def config(location="guttannen21", spray=None):
             name="guttannen21",
             alt=1047.6,
             coords=[46.65549,8.29149],
-            # cld=0.5,
+            cld=0.5,
             # R_F=4.3,  # Fountain mean discharge
             # R_F=5.4,  # First drone rad
             # h_f=5,
@@ -123,7 +123,7 @@ def config(location="guttannen21", spray=None):
             alt=1047.6,
             coords=[46.65549,8.29149],
             # R_F=6.68,  # First drone rad
-            # cld=0.5,
+            cld=0.5,
             # h_f=3,
             # perimeter=28, # on 24 Jan
 
@@ -166,8 +166,8 @@ def config(location="guttannen21", spray=None):
             name="gangles21",
             alt=4009,
             coords=[34.216638,77.606949],
+            cld=0.1,
             # h_f=9,
-            # cld=0.1,
             # R_F=9.05,  # First drone rad
             # perimeter=82.3, # On 3 Mar
 

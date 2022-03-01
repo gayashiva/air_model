@@ -23,18 +23,18 @@ if __name__ == "__main__":
     logger.setLevel("WARNING")
     # logger.setLevel("INFO")
 
-    test = True
-    # test = False
+    # test = True
+    test = False
 
     # location = "Guttannen 2020"
     # location = "Guttannen 2021"
-    # location = "Guttannen 2022"
-    location = "Gangles 2021"
+    location = "Guttannen 2022"
+    # location = "Gangles 2021"
 
     # sprays = ["manual", "dynamic"]
-    # sprays = ["manual", "dynamic", "dynamic_field"]
+    sprays = ["manual", "dynamic", "dynamic_field"]
     # sprays = ["dynamic_field"]
-    sprays=["static"]
+    # sprays=["static"]
 
     for spray in sprays:
         icestupa = Icestupa(location, spray)
@@ -64,7 +64,7 @@ if __name__ == "__main__":
                     else:
                         print('Directory not copied. Error: %s' % e)
 
-            # icestupa.read_output()
+            icestupa.read_output()
             # df = icestupa.df
             # print(df.columns)
             # icestupa.summary_figures()
