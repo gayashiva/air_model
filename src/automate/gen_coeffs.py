@@ -148,7 +148,7 @@ if __name__ == "__main__":
         if "-png" in opts:
             logger.info("=> Producing figs")
 
-            spray = "dynamic"
+            spray = "static"
             mypal = sns.color_palette("Set1", 2)
             for loc in locations:
 
@@ -188,7 +188,7 @@ if __name__ == "__main__":
                 ax1.set_xlim(lims)
                 ax1.set_ylim(lims)
 
-                plt.savefig(FOLDER["fig"] + "dischargevsfreezingrate_corr.png", bbox_inches="tight", dpi=300)
+                plt.savefig(FOLDER["fig"] + "scheduled_discharge_corr.png", bbox_inches="tight", dpi=300)
                 plt.clf()
 
                 fig, ax1 = plt.subplots()
@@ -214,7 +214,7 @@ if __name__ == "__main__":
                 ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
                 ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
                 fig.autofmt_xdate()
-                plt.savefig(FOLDER["fig"] + "dischargevsfreezingrate.png", bbox_inches="tight", dpi=300)
+                plt.savefig(FOLDER["fig"] + "scheduled_discharge.png", bbox_inches="tight", dpi=300)
 
 
         # icestupa_sim = Icestupa(loc)
