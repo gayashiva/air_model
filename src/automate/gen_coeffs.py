@@ -44,8 +44,8 @@ if __name__ == "__main__":
 
     if opts==[]:
         # opts = ["-nc", "-solar", "-json", "-test"]
-        opts = ["-png"]
-        # opts = ["-solar", "-json"]
+        # opts = ["-png"]
+        opts = ["-json", "-png"]
 
     locations = ["gangles21", "guttannen21"]
     # locations = ["guttannen21", "guttannen22", "guttannen20", "gangles21"]
@@ -95,7 +95,7 @@ if __name__ == "__main__":
                                      rh=rh, 
                                      wind=wind,
                                      alt=round(SITE["alt"]/1000,0),
-                                     cld=round(SITE["cld"]/1000,0),
+                                     cld=round(SITE["cld"],0),
                                      spray_r=round(results["R_F"],0)).data)
 
             popt, pcov = curve_fit(line, x, y)
