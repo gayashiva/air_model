@@ -91,6 +91,7 @@ if __name__ == "__main__":
     # sprays = ["dynamic", "static", "manual"]
     sprays = ["dynamic", "static"]
     # sprays = ["auto"]
+
     for spray in sprays:
         for loc in locations:
              task_list.append([loc,spray])

@@ -17,7 +17,8 @@ from src.utils.settings import config
 from src.models.methods.solar import get_offset
 # from src.automate.projectile import get_projectile
 
-def TempFreeze(temp,rh,wind,alt,cld=0):
+# def TempFreeze(temp,rh,wind,alt,data["cld"]=0):
+def TempFreeze(data):
 
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
@@ -26,23 +27,22 @@ def TempFreeze(temp,rh,wind,alt,cld=0):
     temp_i = 0
 
     vp_a = np.exp(
-        34.494 - 4924.99/ (temp + 237.1)
-    ) / ((temp + 105) ** 1.57 * 100)
-    vp_a *= rh/100
+        34.494 - 4924.99/ (data["temp"] + 237.1)
+    ) / ((data["temp"] + 105) ** 1.57 * 100)
+    vp_a *= data["rh"]/100
 
     vp_ice = np.exp(43.494 - 6545.8 / (temp_i + 278)) / ((temp_i + 868) ** 2 * 100)
 
-    e_a = (1.24 * math.pow(abs(vp_a / (temp + 273.15)), 1 / 7)) * (
-        1 + 0.22 * math.pow(cld, 2)
+    e_a = (1.24 * math.pow(abs(vp_a / (data["temp"] + 273.15)), 1 / 7)) * (
+        1 + 0.22 * math.pow(data["cld"], 2)
     )
 
     LW = e_a * CONSTANTS["sigma"] * math.pow(
-        temp + 273.15, 4
+        data["temp"] + 273.15, 4
     ) - CONSTANTS["IE"] * CONSTANTS["sigma"] * math.pow(273.15 + temp_i, 4)
 
     # Derived
-    alt *= 1000
-    press = atmosphere.alt2pres(alt) / 100
+    press = atmosphere.alt2pres(data["alt"] * 1000) / 100
 
     Qs = (
         CONSTANTS["C_A"]
@@ -50,8 +50,8 @@ def TempFreeze(temp,rh,wind,alt,cld=0):
         * press
         / CONSTANTS["P0"]
         * math.pow(CONSTANTS["VAN_KARMAN"], 2)
-        * wind
-        * (temp - temp_i)
+        * data["wind"]
+        * (data["temp"] - temp_i)
         / ((np.log(CONSTANTS["H_AWS"] / CONSTANTS["Z"])) ** 2)
     )
 
@@ -61,7 +61,7 @@ def TempFreeze(temp,rh,wind,alt,cld=0):
         * CONSTANTS["RHO_A"]
         / CONSTANTS["P0"]
         * math.pow(CONSTANTS["VAN_KARMAN"], 2)
-        * wind
+        * data["wind"]
         * (vp_a - vp_ice)
         / ((np.log(CONSTANTS["H_AWS"] / CONSTANTS["Z"])) ** 2)
     )

@@ -1,5 +1,6 @@
 """Generate coefficients for empirical fountain scheduler"""
 import pandas as pd
+import multiprocessing
 import xarray as xr
 import numpy as np
 import os, sys
@@ -44,8 +45,8 @@ if __name__ == "__main__":
 
     if opts==[]:
         # opts = ["-nc", "-solar", "-json", "-test"]
-        opts = ["-test"]
-        # opts = ["-solar", "-json"]
+        # opts = ["-test"]
+        opts = ["-solar", "-json"]
 
     if "-nc" in opts:
         logger.info("=> Calculation of temp coeffs")
@@ -90,14 +91,27 @@ if __name__ == "__main__":
         da.spray_r.attrs["units"] = "$m$"
         da.spray_r.attrs["long_name"] = "Spray radius"
 
+        list_of_objects = []
         for temp in da.temp.values: 
             for rh in da.rh.values:
                 for wind in da.wind.values:
                     for alt in da.alt.values:
                         for cld in da.cld.values:
-                            for spray_r in da.spray_r.values: 
-                                da.sel(temp=temp, rh=rh, wind=wind, alt=alt, cld=cld, spray_r = spray_r).data +=TempFreeze(temp, rh, wind, alt, cld)
-                                da.sel(temp=temp, rh=rh, wind=wind, alt=alt, cld=cld, spray_r = spray_r).data *= math.pi * spray_r * spray_r
+                            list_of_objects.append({'temp':temp, 'rh':rh, 'wind':wind, 'alt':alt, 'cld':cld})
+                    # da.sel(temp=temp, rh=rh, wind=wind, alt=alt, cld=cld, spray_r = spray_r).data +=TempFreeze(temp, rh, wind, alt, cld)
+                    # da.sel(temp=temp, rh=rh, wind=wind, alt=alt, cld=cld, spray_r = spray_r).data *= math.pi * spray_r * spray_r
+
+
+            num_procs = multiprocessing.cpu_count()
+            pool = multiprocessing.Pool(num_procs)
+            results = pool.map(TempFreeze, list_of_objects)
+            pool.close()
+
+            for input,output in zip(list_of_objects, results):
+                for spray_r in da.spray_r.values: 
+                    input['spray_r'] = spray_r
+                    da.sel(input).data += output
+                    da.sel(input).data *= math.pi * spray_r * spray_r
 
 
         da.to_netcdf("data/common/alt_cld_sims.nc")
@@ -174,9 +188,23 @@ if __name__ == "__main__":
                 json.dump(params, f, indent=4)
 
         if "-test" in opts:
-            # pool = multiprocessing.Pool(num_procs)
-            # results = pool.map(the_function, list_of_objects)
-            # pool.close()
+
+            temp = list(range(-20, 5))
+            rh = list(range(0, 100, 10))
+            wind = list(range(0, 15, 1))
+            alt = list(np.arange(0, 5.1, 1))
+            cld = list(np.arange(0, 1.1, 0.5))
+            list_of_objects = []
+
+            for t in temp:
+                list_of_objects.append({'temp':t, 'rh':0, 'wind':0, 'alt':1, 'cld':0})
+                # list_of_objects.append([t,0,0,0,0])
+
+            num_procs = multiprocessing.cpu_count()
+            pool = multiprocessing.Pool(num_procs)
+            results = pool.map(TempFreeze, list_of_objects)
+            pool.close()
+            print(results)
 
             # TODO Scale all coeffs ?
             # param_values.update((x, y*scaling_factor) for x, y in param_values.items())
@@ -188,7 +216,7 @@ if __name__ == "__main__":
                 with open(FOLDER["input"] + "dynamic/coeffs.json") as f:
                     params = json.load(f)
 
-                max_freeze = autoDis(**params, time=6, temp=-20, rh=50, wind=0) * math.pi * 7 **2
+                max_freeze = autoDis(**params, time=6, temp=-20, rh=50, wind=0)
                 print(
                     "Max freezing rate: %0.1f for loc %s"%(max_freeze, loc)
                 )
