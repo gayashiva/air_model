@@ -78,7 +78,6 @@ if __name__ == "__main__":
         # Start the process
         new_process.start()
 
-
     # Define xarray
     temp = list(range(-20, 5))
     rh = list(range(0, 100, 5))
@@ -135,7 +134,7 @@ if __name__ == "__main__":
         tasks.put(single_task)
 
     # Wait while the workers process
-    sleep(5)
+    sleep(2)
 
     # Quit the worker processes by sending them -1
     for i in range(num_processes):
@@ -154,15 +153,22 @@ if __name__ == "__main__":
             num_finished_processes += 1
 
             if num_finished_processes == num_processes:
-                for item in results_list:
-                    input = item[0]
-                    output = item[1]
-                    print(item)
-                    for spray_r in da.spray_r.values:
-                        input['spray_r'] = spray_r
-                        da.sel(input).data += output
-                        da.sel(input).data *= math.pi * spray_r * spray_r
+                # for item in results_list:
+                #     input = item[0]
+                #     output = item[1]
+                #     for spray_r in da.spray_r.values:
+                #         input['spray_r'] = spray_r
+                #         da.sel(input).data += output
+                #         da.sel(input).data *= math.pi * spray_r * spray_r
 
-                da.to_netcdf("data/common/alt_cld_sims.nc")
+                da.to_netcdf("data/common/alt_cld_sims_test.nc")
 
                 break
+        else:
+            item = results_list.pop()
+            input = item[0]
+            output = item[1]
+            for spray_r in da.spray_r.values:
+                input['spray_r'] = spray_r
+                da.sel(input).data += output
+                da.sel(input).data *= math.pi * spray_r * spray_r
