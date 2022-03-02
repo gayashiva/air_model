@@ -7,7 +7,8 @@ import os, sys
 import json
 import math
 from datetime import datetime, timedelta
-
+import seaborn as sns
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from lmfit.models import GaussianModel
@@ -34,87 +35,17 @@ def autoDis(a, b, c, d, amplitude, center, sigma, time, temp, rh, wind):
     params = {"amplitude": amplitude, "center": center, "sigma": sigma}
     return a * temp + b * rh + c * wind + d + model.eval(x=time, **params)
 
-
 if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
     logger.setLevel("INFO")
 
-
     opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
 
     if opts==[]:
         # opts = ["-nc", "-solar", "-json", "-test"]
-        # opts = ["-test"]
-        opts = ["-solar", "-json"]
-
-    if "-nc" in opts:
-        logger.info("=> Calculation of temp coeffs")
-        temp = list(range(-20, 5))
-        rh = list(range(0, 100, 10))
-        wind = list(range(0, 15, 1))
-        alt = list(np.arange(0, 5.1, 1))
-        cld = list(np.arange(0, 1.1, 0.5))
-        spray_r = list(np.arange(5, 11, 1))
-
-        da = xr.DataArray(
-            data=np.zeros(len(temp) * len(rh) * len(wind)* len(alt) * len(cld) * len(spray_r)).reshape(
-                len(temp), len(rh), len(wind), len(alt), len(cld), len(spray_r)
-            ),
-            dims=["temp", "rh", "wind", "alt", "cld", "spray_r"],
-            coords=dict(
-                temp=temp,
-                rh=rh,
-                wind=wind,
-                alt=alt,
-                cld=cld,
-                spray_r=spray_r,
-            ),
-            attrs=dict(
-                long_name="Freezing rate",
-                description="Mean freezing rate",
-                units="$l\\, min^{-1}$",
-            ),
-        )
-
-        da.temp.attrs["units"] = "$\\degree C$"
-        da.temp.attrs["description"] = "Air Temperature"
-        da.temp.attrs["long_name"] = "Air Temperature"
-        da.rh.attrs["units"] = "%"
-        da.rh.attrs["long_name"] = "Relative Humidity"
-        da.wind.attrs["units"] = "$m\\, s^{-1}$"
-        da.wind.attrs["long_name"] = "Wind Speed"
-        da.alt.attrs["units"] = "$km$"
-        da.alt.attrs["long_name"] = "Altitude"
-        da.cld.attrs["units"] = " "
-        da.cld.attrs["long_name"] = "Cloudiness"
-        da.spray_r.attrs["units"] = "$m$"
-        da.spray_r.attrs["long_name"] = "Spray radius"
-
-        list_of_objects = []
-        for temp in da.temp.values: 
-            for rh in da.rh.values:
-                for wind in da.wind.values:
-                    for alt in da.alt.values:
-                        for cld in da.cld.values:
-                            list_of_objects.append({'temp':temp, 'rh':rh, 'wind':wind, 'alt':alt, 'cld':cld})
-                    # da.sel(temp=temp, rh=rh, wind=wind, alt=alt, cld=cld, spray_r = spray_r).data +=TempFreeze(temp, rh, wind, alt, cld)
-                    # da.sel(temp=temp, rh=rh, wind=wind, alt=alt, cld=cld, spray_r = spray_r).data *= math.pi * spray_r * spray_r
-
-
-            num_procs = multiprocessing.cpu_count()
-            pool = multiprocessing.Pool(num_procs)
-            results = pool.map(TempFreeze, list_of_objects)
-            pool.close()
-
-            for input,output in zip(list_of_objects, results):
-                for spray_r in da.spray_r.values: 
-                    input['spray_r'] = spray_r
-                    da.sel(input).data += output
-                    da.sel(input).data *= math.pi * spray_r * spray_r
-
-
-        da.to_netcdf("data/common/alt_cld_sims.nc")
+        opts = ["-png"]
+        # opts = ["-solar", "-json"]
 
     locations = ["gangles21", "guttannen21"]
     # locations = ["guttannen21", "guttannen22", "guttannen20", "gangles21"]
@@ -130,27 +61,26 @@ if __name__ == "__main__":
         with open(FOLDER["output"] + "manual/results.json", "r") as read_file:
             results = json.load(read_file)
 
-        if "-solar" in opts:
+        if "-json" in opts:
+
             logger.info("=> Calculation of solar coeffs")
             utc = get_offset(*SITE["coords"], date=SITE["start_date"])
             result = SunMelt(time = SITE["fountain_off_date"], coords = SITE["coords"], utc = utc, alt = SITE["alt"])
 
-            with open(FOLDER["input"] + "dynamic/sun_coeffs.json", "w") as f:
-                json.dump(dict(result.best_values), f, indent=4)
-
-            params = dict(result.best_values)
+            sun_params = dict(result.best_values)
             print(
                 "dis = Gaussian(time; Amplitude = %.5f, center = %.5f, sigma = %.5f) for %s "
                 % (
-                    params["amplitude"],
-                    params["center"],
-                    params["sigma"],
+                    sun_params["amplitude"],
+                    sun_params["center"],
+                    sun_params["sigma"],
                     loc,
                 )
             )
 
+            # with open(FOLDER["input"] + "dynamic/sun_coeffs.json", "w") as f:
+            #     json.dump(dict(result.best_values), f, indent=4)
 
-        if "-json" in opts:
             logger.info("=> Performing regression analysis")
             da = xr.open_dataarray("data/common/alt_cld_sims.nc")
             x = []
@@ -164,8 +94,8 @@ if __name__ == "__main__":
                                      temp=temp, 
                                      rh=rh, 
                                      wind=wind,
-                                     alt=round(SITE["alt"]/1000,1),
-                                     cld=0,
+                                     alt=round(SITE["alt"]/1000,0),
+                                     cld=round(SITE["cld"]/1000,0),
                                      spray_r=round(results["R_F"],0)).data)
 
             popt, pcov = curve_fit(line, x, y)
@@ -179,32 +109,12 @@ if __name__ == "__main__":
             params["c"] = c
             params["d"] = d
 
-            with open(FOLDER["input"] + "dynamic/sun_coeffs.json") as f:
-                sun_params = json.load(f)
-
             params = dict(params, **sun_params)
 
             with open(FOLDER["input"] + "dynamic/coeffs.json", "w") as f:
                 json.dump(params, f, indent=4)
 
         if "-test" in opts:
-
-            temp = list(range(-20, 5))
-            rh = list(range(0, 100, 10))
-            wind = list(range(0, 15, 1))
-            alt = list(np.arange(0, 5.1, 1))
-            cld = list(np.arange(0, 1.1, 0.5))
-            list_of_objects = []
-
-            for t in temp:
-                list_of_objects.append({'temp':t, 'rh':0, 'wind':0, 'alt':1, 'cld':0})
-                # list_of_objects.append([t,0,0,0,0])
-
-            num_procs = multiprocessing.cpu_count()
-            pool = multiprocessing.Pool(num_procs)
-            results = pool.map(TempFreeze, list_of_objects)
-            pool.close()
-            print(results)
 
             # TODO Scale all coeffs ?
             # param_values.update((x, y*scaling_factor) for x, y in param_values.items())
@@ -238,6 +148,74 @@ if __name__ == "__main__":
         if "-png" in opts:
             logger.info("=> Producing figs")
 
+            spray = "dynamic"
+            mypal = sns.color_palette("Set1", 2)
+            for loc in locations:
+
+                SITE, FOLDER = config(loc, spray)
+
+                with open(FOLDER["input"] + "dynamic/coeffs.json") as f:
+                    params = json.load(f)
+
+                icestupa = Icestupa(loc, spray)
+                icestupa.read_output()
+                df = icestupa.df
+                df = df[df.time <= icestupa.fountain_off_date]
+
+                df["Discharge_sim"] = 0 
+                
+                for i in range(0, df.shape[0]):
+                    df.loc[i, "Discharge_sim"] = autoDis(**params, time=df.time[i].hour, temp=df.temp[i],
+                                                         rh=df.RH[i], wind = df.wind[i])
+                    if df.Discharge_sim[i] <0:
+                        df.loc[i, "Discharge_sim"] = 0
+                        
+
+                fig, ax1 = plt.subplots()
+
+                ax1.scatter(df.fountain_froze/60, df.Discharge_sim, s=2)
+                ax1.set_xlabel("Freezing rate")
+                ax1.set_ylabel("Scheduled discharge")
+                ax1.grid()
+
+                lims = [
+                np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+                np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+                ]
+
+                ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
+                ax1.set_aspect('equal')
+                ax1.set_xlim(lims)
+                ax1.set_ylim(lims)
+
+                plt.savefig(FOLDER["fig"] + "dischargevsfreezingrate_corr.png", bbox_inches="tight", dpi=300)
+                plt.clf()
+
+                fig, ax1 = plt.subplots()
+                x = df.time
+                y1 = df.Discharge_sim
+                y2 = df.fountain_froze /60
+                ax1.plot(
+                    x,
+                    y1,
+                    color=mypal[0],
+                )
+                ax1.set_ylim(0, 30)
+
+                ax2 = ax1.twinx()
+                ax2.set_ylabel('Freezing rate [$l/min$]', color = mypal[1])
+                ax2.plot(x, y2, color = mypal[1], alpha=0.5)
+                ax2.tick_params(axis ='y', labelcolor = mypal[1])
+                ax2.set_ylim(0, 30)
+
+                # ax2.spines["top"].set_visible(False)
+                ax1.spines["top"].set_visible(False)
+                ax1.set_ylabel("Discharge rate [$l/min$]")
+                ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+                ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+                fig.autofmt_xdate()
+                plt.savefig(FOLDER["fig"] + "dischargevsfreezingrate.png", bbox_inches="tight", dpi=300)
+
 
         # icestupa_sim = Icestupa(loc)
         # icestupa_sim.read_output()
@@ -262,5 +240,3 @@ if __name__ == "__main__":
         # print(f"Corresponding discharge for {loc} is {dis}" )
         # print(f"Recommended scaling factor is {scaling_factor}" )
 
-        # with open(FOLDER["raw"] + "auto/auto_info.json", "w") as f:
-        #     json.dump(params, f)
