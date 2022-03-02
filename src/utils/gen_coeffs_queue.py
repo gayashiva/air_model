@@ -16,7 +16,7 @@ from src.utils.settings import config
 from src.automate.autoDischarge import TempFreeze, SunMelt
 
 # define worker function
-def calculate(process_name, tasks, results, results_list):
+def calculate(process_name, tasks, results, results_list, da):
     print("[%s] evaluation routine starts" % process_name)
 
     while True:
@@ -61,30 +61,13 @@ if __name__ == "__main__":
     pool = multiprocessing.Pool(processes=num_processes)
     processes = []
 
-    # Initiate the worker processes
-    for i in range(num_processes):
-
-        # Set process name
-        process_name = "P%i" % i
-
-        # Create the process, and connect it to the worker function
-        new_process = multiprocessing.Process(
-            target=calculate, args=(process_name, tasks, results, results_list)
-        )
-
-        # Add new process to the list of processes
-        processes.append(new_process)
-
-        # Start the process
-        new_process.start()
-
     # Define xarray
-    temp = list(range(-20, 5))
-    rh = list(range(0, 100, 5))
-    wind = list(range(0, 15))
-    alt = list(np.arange(0, 6.1, 0.5))
-    cld = list(np.arange(0, 1.1, 0.1))
-    spray_r = list(np.arange(5, 11, 0.1))
+    temp = list(range(-20, 5, 10))
+    rh = list(range(0, 100, 50))
+    wind = list(range(0, 15, 10))
+    alt = list(np.arange(0, 6.1, 5))
+    cld = list(np.arange(0, 1.1, 1))
+    spray_r = list(np.arange(5, 11, 5))
 
     da = xr.DataArray(
         data=np.zeros(len(temp) * len(rh) * len(wind)* len(alt) * len(cld) * len(spray_r)).reshape(
@@ -120,6 +103,24 @@ if __name__ == "__main__":
     da.spray_r.attrs["units"] = "$m$"
     da.spray_r.attrs["long_name"] = "Spray radius"
 
+    # Initiate the worker processes
+    for i in range(num_processes):
+
+        # Set process name
+        process_name = "P%i" % i
+
+        # Create the process, and connect it to the worker function
+        new_process = multiprocessing.Process(
+            target=calculate, args=(process_name, tasks, results, results_list, da)
+        )
+
+        # Add new process to the list of processes
+        processes.append(new_process)
+
+        # Start the process
+        new_process.start()
+
+
     # Fill task queue
     task_list = []
 
@@ -153,22 +154,15 @@ if __name__ == "__main__":
             num_finished_processes += 1
 
             if num_finished_processes == num_processes:
-                # for item in results_list:
-                #     input = item[0]
-                #     output = item[1]
-                #     for spray_r in da.spray_r.values:
-                #         input['spray_r'] = spray_r
-                #         da.sel(input).data += output
-                #         da.sel(input).data *= math.pi * spray_r * spray_r
+                for item in results_list:
+                    input = item[0]
+                    output = item[1]
+                    for spray_r in da.spray_r.values:
+                        input['spray_r'] = spray_r
+                        da.sel(input).data += output
+                        da.sel(input).data *= math.pi * spray_r * spray_r
 
+                print(da.data.mean())
                 da.to_netcdf("data/common/alt_cld_sims_test.nc")
 
                 break
-        else:
-            item = results_list.pop()
-            input = item[0]
-            output = item[1]
-            for spray_r in da.spray_r.values:
-                input['spray_r'] = spray_r
-                da.sel(input).data += output
-                da.sel(input).data *= math.pi * spray_r * spray_r
