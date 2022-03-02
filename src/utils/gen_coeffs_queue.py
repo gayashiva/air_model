@@ -62,8 +62,8 @@ if __name__ == "__main__":
     processes = []
 
     # Define xarray
-    temp = list(range(-20, 5))
-    rh = list(range(0, 100, 10))
+    temp = list(range(-20, 5,10))
+    rh = list(range(0, 100, 50))
     wind = list(range(0, 15))
     alt = list(np.arange(0, 6.1, 0.5))
     cld = list(np.arange(0, 1.1, 0.5))
