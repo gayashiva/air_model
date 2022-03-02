@@ -62,12 +62,12 @@ if __name__ == "__main__":
     processes = []
 
     # Define xarray
-    temp = list(range(-20, 5, 10))
-    rh = list(range(0, 100, 50))
-    wind = list(range(0, 15, 10))
-    alt = list(np.arange(0, 6.1, 5))
-    cld = list(np.arange(0, 1.1, 1))
-    spray_r = list(np.arange(5, 11, 5))
+    temp = list(range(-20, 5))
+    rh = list(range(0, 100, 10))
+    wind = list(range(0, 10))
+    alt = list(np.arange(0, 6.1, 0.5))
+    cld = list(np.arange(0, 1.1, 0.5))
+    spray_r = list(np.arange(5, 11, 1))
 
     da = xr.DataArray(
         data=np.zeros(len(temp) * len(rh) * len(wind)* len(alt) * len(cld) * len(spray_r)).reshape(
