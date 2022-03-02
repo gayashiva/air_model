@@ -26,9 +26,9 @@ def line(x, a, b, c, d):
     x1 = x[:, 0]
     x2 = x[:, 1]
     x3 = x[:, 2]
-    return a * x1 + b * x2 + c * x3 + d 
+    return a * x1 + b * x2 + c * x3 + d
 
-def autoDis(a, b, c, d, e, amplitude, center, sigma, time, temp, rh, wind):
+def autoDis(a, b, c, d, amplitude, center, sigma, time, temp, rh, wind):
     model = GaussianModel()
     params = {"amplitude": amplitude, "center": center, "sigma": sigma}
     return a * temp + b * rh + c * wind + d + model.eval(x=time, **params)
@@ -45,6 +45,7 @@ if __name__ == "__main__":
     if opts==[]:
         # opts = ["-nc", "-solar", "-json", "-test"]
         opts = ["-test"]
+        # opts = ["-solar", "-json"]
 
     if "-nc" in opts:
         logger.info("=> Calculation of temp coeffs")
@@ -105,10 +106,15 @@ if __name__ == "__main__":
     # locations = ["guttannen21", "guttannen22", "guttannen20", "gangles21"]
 
     for loc in locations:
+        print(loc)
+
         with open("data/common/constants.json") as f:
             CONSTANTS= json.load(f)
 
         SITE, FOLDER = config(loc, spray="manual")
+
+        with open(FOLDER["output"] + "manual/results.json", "r") as read_file:
+            results = json.load(read_file)
 
         if "-solar" in opts:
             logger.info("=> Calculation of solar coeffs")
@@ -140,7 +146,13 @@ if __name__ == "__main__":
                     for wind in da.wind.values:
                         aws = [temp, rh, wind]
                         x.append(aws)
-                        y.append(da.sel(temp=temp, rh=rh, wind=wind, alt=round(SITE["alt"]/1000,1),cld=SITE["cld"], spray_r=round(SITE["R_F"],0))).data
+                        y.append(da.sel(
+                                     temp=temp, 
+                                     rh=rh, 
+                                     wind=wind,
+                                     alt=round(SITE["alt"]/1000,1),
+                                     cld=0,
+                                     spray_r=round(results["R_F"],0)).data)
 
             popt, pcov = curve_fit(line, x, y)
             a, b, c, d = popt
@@ -173,11 +185,10 @@ if __name__ == "__main__":
 
                 SITE, FOLDER = config(loc, spray="manual")
 
-                with open(FOLDER["input"] + "dynamic/coeffs.json", "w") as f:
-                    json.dump(params, f)
-                print(params)
+                with open(FOLDER["input"] + "dynamic/coeffs.json") as f:
+                    params = json.load(f)
 
-                max_freeze = autoDis(**params, time=6, temp=-20, rh=0, wind=10, alt=SITE["alt"]/1000) * math.pi * 7 **2
+                max_freeze = autoDis(**params, time=6, temp=-20, rh=50, wind=0) * math.pi * 7 **2
                 print(
                     "Max freezing rate: %0.1f for loc %s"%(max_freeze, loc)
                 )

@@ -67,7 +67,7 @@ def TempFreeze(temp,rh,wind,alt,cld=0):
     )
 
     # dis = -1 * (Ql / CONSTANTS["L_V"] + (Qs+LW) / CONSTANTS["L_F"]) * CONSTANTS["DT"] / 60
-    dis = -1 * (Ql / CONSTANTS["L_V"] + (Qs+LW) / CONSTANTS["L_F"]) * 1000 / 60
+    dis = -1 * (Ql / CONSTANTS["L_V"] + (Qs+LW) / CONSTANTS["L_F"]) * 60
 
     # SA = math.pi * math.pow(params['spray_r'],2)
     # dis *= SA
@@ -121,7 +121,7 @@ def SunMelt(time, coords, utc, alt):
         df.loc[i, "f_cone"] = (math.pi * math.sin(df.loc[i, "sea"]) + math.cos(df.loc[i, "sea"]))/(2*math.sqrt(2)*math.pi)
 
     df["SW_direct"]= df["SW_global"] - df["SW_diffuse"]
-    df["dis"] = -1 * (1 - CONSTANTS["A_I"]) * (df["SW_direct"] * df["f_cone"] + df["SW_diffuse"]) / CONSTANTS["L_F"] * 1000 / 60
+    df["dis"] = -1 * (1 - CONSTANTS["A_I"]) * (df["SW_direct"] * df["f_cone"] + df["SW_diffuse"]) / CONSTANTS["L_F"] * 60
 
     model = GaussianModel()
     gauss_params = model.guess(df.dis, df.hour)
