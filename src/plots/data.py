@@ -81,6 +81,8 @@ def plot_input(df, folder, name):
 
     y1 = df.ppt
     ax1.plot(x, y1, linestyle="-", color=CB91_Blue, linewidth=1)
+    if "ppt_sonic" in list(df.columns):
+        ax1.plot(x, df.ppt_sonic, linestyle="-", color=CB91_Amber, linewidth=1)
     ax1.set_ylabel("Precipitation [$mm$]", color=CB91_Blue)
 
     df_SZ, df_ERA5, events = shade(name=name, df_in=df, col="temp")

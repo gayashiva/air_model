@@ -163,6 +163,6 @@ if __name__ == "__main__":
                         da.sel(input).data *= math.pi * spray_r * spray_r
 
                 print(da.data.mean())
-                da.to_netcdf("data/common/alt_cld_sims_test.nc")
+                da.to_netcdf("data/common/alt_cld_sims.nc")
 
                 break

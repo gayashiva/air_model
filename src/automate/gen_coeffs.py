@@ -38,15 +38,17 @@ def autoDis(a, b, c, d, amplitude, center, sigma, time, temp, rh, wind):
 if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
-    logger.setLevel("INFO")
+    logger.setLevel("WARNING")
 
     opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
 
     if opts==[]:
         # opts = ["-nc", "-solar", "-json", "-test"]
-        # opts = ["-png"]
-        opts = ["-json", "-png"]
+        opts = ["-png"]
+        # opts = ["-json"]
+        # opts = ["-json", "-png"]
 
+    # locations = ["guttannen21"]
     locations = ["gangles21", "guttannen21"]
     # locations = ["guttannen21", "guttannen22", "guttannen20", "gangles21"]
 
@@ -96,7 +98,7 @@ if __name__ == "__main__":
                                      wind=wind,
                                      alt=round(SITE["alt"]/1000,0),
                                      cld=round(SITE["cld"],0),
-                                     spray_r=round(results["R_F"],0)).data)
+                                     spray_r=round(results["R_F"],0)).data/(math.pi * round(results["R_F"],0))**2)
 
             popt, pcov = curve_fit(line, x, y)
             a, b, c, d = popt
@@ -131,20 +133,6 @@ if __name__ == "__main__":
                     "Max freezing rate: %0.1f for loc %s"%(max_freeze, loc)
                 )
 
-                # print(param_values)
-                # print(
-                #     "dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f + Gaussian(time; Amplitude = %.5f, center = %.5f, sigma = %.5f) "
-                #     % (
-                #         params["a"],
-                #         params["b"],
-                #         params["c"],
-                #         params["d"],
-                #         params["amplitude"],
-                #         params["center"],
-                #         params["sigma"],
-                #     )
-                # )
-
         if "-png" in opts:
             logger.info("=> Producing figs")
 
@@ -166,9 +154,15 @@ if __name__ == "__main__":
                 
                 for i in range(0, df.shape[0]):
                     df.loc[i, "Discharge_sim"] = autoDis(**params, time=df.time[i].hour, temp=df.temp[i],
-                                                         rh=df.RH[i], wind = df.wind[i])
+                                                         rh=df.RH[i], wind = df.wind[i]) 
+                    df.loc[i, "SW_sim"] = autoDis(**params, time=df.time[i].hour, temp=0,
+                                                         rh=0, wind = 0) - params["d"]
                     if df.Discharge_sim[i] <0:
                         df.loc[i, "Discharge_sim"] = 0
+
+                    df.loc[i, "Discharge_sim"] *= (math.pi * icestupa.R_F)**2 
+                    # df.loc[i, "SW_sim"] *= (math.pi * icestupa.R_F)**2 
+                    df.loc[i, "SW_sim"] *= -CONSTANTS["L_F"] / 60
                         
 
                 fig, ax1 = plt.subplots()
@@ -215,6 +209,28 @@ if __name__ == "__main__":
                 ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
                 fig.autofmt_xdate()
                 plt.savefig(FOLDER["fig"] + "scheduled_discharge.png", bbox_inches="tight", dpi=300)
+                plt.clf()
+
+                fig, ax1 = plt.subplots()
+
+                # df = df[df.time < datetime(2020, 12,1)]
+                x = df.time
+                y1 = df.SW
+                y2 = df.SW_sim
+                ax1.plot(
+                    x,
+                    y1,
+                    color=mypal[0],
+                )
+
+                ax1.plot(x, y2, color = mypal[1], alpha=0.5)
+
+                ax1.spines["top"].set_visible(False)
+                ax1.set_ylabel("Discharge rate [$l/min$]")
+                ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+                ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+                fig.autofmt_xdate()
+                plt.savefig(FOLDER["fig"] + "estvsmeas_solar.png", bbox_inches="tight", dpi=300)
 
 
         # icestupa_sim = Icestupa(loc)

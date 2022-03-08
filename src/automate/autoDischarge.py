@@ -17,7 +17,7 @@ from src.utils.settings import config
 from src.models.methods.solar import get_offset
 # from src.automate.projectile import get_projectile
 
-# def TempFreeze(temp,rh,wind,alt,data["cld"]=0):
+# def TempFreeze(temp,rh,wind,alt,cld=0):
 def TempFreeze(data):
 
     with open("data/common/constants.json") as f:

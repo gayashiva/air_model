@@ -24,8 +24,8 @@ def config(location="guttannen21", spray=None):
             name="guttannen22",
             alt=1047.6,
             coords=[46.65549,8.29149],
-            h_i = 0.13, #Initialise ice height at start
-            cld=0.5,
+            h_dome = 0.13, #Initialise ice height at start
+            # cld=0.5,
             # Calibrated values
             DX=45e-03,  # Surface layer thickness [m]
         )
@@ -35,17 +35,20 @@ def config(location="guttannen21", spray=None):
                 add= dict(
                     start_date=datetime(2021, 12, 3, 8),
                     fountain_off_date=datetime(2022, 1, 27),
+                    expiry_date =datetime(2022, 3, 3),
                     R_F = 4,
                     # dis_crit = 1,
-                    dis_max= 11,
+                    dis_max= 14,
                 )
-                add["expiry_date"] = add["fountain_off_date"]
+                # add["expiry_date"] = add["fountain_off_date"]
 
             if spray == "manual":
                 add= dict(
                     start_date=datetime(2021, 12, 3, 8),
                     fountain_off_date=datetime(2022, 1, 27),
+                    expiry_date =datetime(2022, 3, 3),
                     D_F=7.5,  # Fountain mean discharge
+                    # T_F=0.5,  # Fountain temp
                     f_heights = [
                         {"time": datetime(2021, 12, 3, 8), "h_f": 3.7},
                         {"time": datetime(2021, 12, 23, 16), "h_f": 4.7},
@@ -55,18 +58,20 @@ def config(location="guttannen21", spray=None):
                     # dis_crit = 1,
                     # D_F=7.5,  # Fountain mean discharge
                 )
-                add["expiry_date"] = add["fountain_off_date"]
+                # add["expiry_date"] = add["fountain_off_date"]
 
             if spray == "dynamic_field":
                 add= dict(
                     start_date=datetime(2021, 12, 3, 8),
                     fountain_off_date=datetime(2022, 1, 27),
+                    expiry_date =datetime(2022, 3, 3),
                     # dis_crit = 2,
                     # dis_max= 13,
-                    # R_F=3,  # First drone rad
+                    # R_F=4,  #Estimate from drone observation 
+                    R_F=5.5,  #Estimate from manualobservation
                 # perimeter=35, # on Jan 28
                 )
-                add["expiry_date"] = add["fountain_off_date"]
+                # add["expiry_date"] = add["fountain_off_date"]
 
 
             SITE = dict(SITE, **add)

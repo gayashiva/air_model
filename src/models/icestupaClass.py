@@ -46,13 +46,17 @@ class Icestupa:
         # Initialize input dataset
         self.df = pd.read_csv(self.input + "aws.csv", sep=",", header=0, parse_dates=["time"])
         df_f = pd.read_csv(self.input + "discharge_types.csv", sep=",", header=0, parse_dates=["time"])
-
         df_f["Discharge"] = df_f[self.spray]
         df_f = df_f[["time", "Discharge"]]
 
-        self.df = pd.merge(df_f, self.df, on="time", how="left")
+        self.df = self.df.set_index("time")
+        df_f = df_f.set_index("time")
+        self.df["Discharge"] = df_f["Discharge"]
+        self.df["Discharge"] = self.df["Discharge"].replace(np.NaN, 0)
+        self.df = self.df.reset_index()
+        # self.df = pd.merge(df_f, self.df, on="time", how="left")
 
-        self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
+        self.D_F = df_f.Discharge[df_f.Discharge != 0].mean()
         print("\n") 
         logger.warning("Discharge mean of %s method is %.1f\n" % (self.spray, self.D_F))
 

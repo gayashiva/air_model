@@ -106,7 +106,7 @@ def get_discharge(self):  # Provides discharge info based on trigger setting
         self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
         logger.warning("Auto Discharge mean %.1f" % self.D_F)
 
-    if self.name == "guttannen22" and self.spray == "man":
+    if self.name == "guttannen22" and self.spray == "manual":
         df_f = pd.read_csv(
             os.path.join("data/" + self.name + "/interim/")
             + "discharge.csv",

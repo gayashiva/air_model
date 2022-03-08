@@ -6,7 +6,7 @@ import logging, coloredlogs
 from codetiming import Timer
 import os
 
-from src.models.methods.calibration import get_calibration
+# from src.models.methods.calibration import get_calibration
 
 # Module logger
 logger = logging.getLogger("__main__")
@@ -15,35 +15,47 @@ logger = logging.getLogger("__main__")
 def self_attributes(self):
     logger.info("Initialising Icestupa attributes")
 
+    if self.name in ["guttannen22"]:
+        df_c = pd.read_csv(
+            self.input+ self.spray + "/drone.csv",
+            sep=",",
+            header=0,
+            parse_dates=["time"],
+        )
+        df_c = df_c.reset_index()
+        df_c.to_hdf(
+            self.input + self.spray+ "/input.h5",
+            key="df_c",
+            mode="w",
+        )
+    else:
+        df_c = pd.read_csv(
+            self.input + "drone.csv",
+            sep=",",
+            header=0,
+            parse_dates=["time"],
+        )
+        df_c = df_c.reset_index()
+
+        df_c.to_hdf(
+            self.input + "input.h5",
+            key="df_c",
+            mode="w",
+        )
+
     if hasattr(self, "R_F"):
         logger.error("Arbitrary spray radius of %s" % self.R_F)
-        self.V_dome = 0
     else:
-        if self.name in ["guttannen22"]:
-            df_c = get_calibration(site=self.name , input=self.input+ self.spray + "/")
-            self.V_dome = 0
-            df_c.to_hdf(
-                self.input + self.spray+ "/input.h5",
-                key="df_c",
-                mode="w",
-            )
-        else:
-            df_c = get_calibration(site=self.name, input=self.input)
-            self.V_dome = df_c.loc[0, "DroneV"]
-
-            df_c.to_hdf(
-                self.input + "input.h5",
-                key="df_c",
-                mode="w",
-            )
-
         self.R_F = df_c.loc[
             (df_c.time < self.fountain_off_date) & (df_c.index != 0), "rad"
+            # (df_c.time < self.fountain_off_date), "rad"
         ].mean()
-        # self.R_F = df_c.loc[ 0, "rad"]
-        #     (df_c.time < self.fountain_off_date) & (df_c.index != 0), "rad"
-        # ].mean()
         logger.warning("Measured spray radius from drone %0.1f" % self.R_F)
+
+    if self.name in ["guttannen22"]:
+        self.V_dome = math.pi * math.pow(self.R_F,2) * self.h_dome
+    else:
+        self.V_dome = df_c.loc[0, "DroneV"]
 
     # Get initial height
     self.h_i = self.DX + 3 * self.V_dome / (math.pi * self.R_F ** 2)

@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     # locations = ["gangles21", "guttannen20", "guttannen21", "guttannen22"]
     locations = ["guttannen22"]
-    sprays = ["manual", "dynamic"]
+    # sprays = ["manual", "dynamic"]
 
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
@@ -86,7 +86,8 @@ if __name__ == "__main__":
                 df_swiss = df_swiss.set_index("time")
                 df = df.set_index("time")
 
-                for col in ["vp_a"]:
+                # for col in ["vp_a"]:
+                for col in ["vp_a", "ppt"]:
                     logger.info("%s from meteoswiss" % col)
                     df[col] = df_swiss[col]
                 df_swiss = df_swiss.reset_index()
@@ -230,5 +231,5 @@ if __name__ == "__main__":
         plot_input(df_out, FOLDER['fig'], SITE["name"])
         df_out = df_out.drop(columns=['missing_type'])
 
-
         df_out.to_csv(FOLDER["input"]  + "aws.csv", index=False)
+        # df_out.to_csv(FOLDER["input"]  + "aws_ppt.csv", index=False)

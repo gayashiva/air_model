@@ -28,13 +28,14 @@ if __name__ == "__main__":
 
     # location = "Guttannen 2020"
     # location = "Guttannen 2021"
-    # location = "Guttannen 2022"
-    location = "Gangles 2021"
+    location = "Guttannen 2022"
+    # location = "Gangles 2021"
 
-    sprays = ["manual", "dynamic"]
+    # sprays = ["manual", "dynamic"]
     # sprays = ["manual", "dynamic", "dynamic_field"]
-    # sprays = ["dynamic_field"]
-    # sprays=["static"]
+    sprays = ["dynamic_field"]
+    # sprays=["manual"]
+    # sprays=["dynamic_field", "manual"]
 
     for spray in sprays:
         icestupa = Icestupa(location, spray)

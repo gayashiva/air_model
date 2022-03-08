@@ -27,7 +27,7 @@ def get_field(location="schwarzsee19"):
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
 
-    SITE, FOLDER = config(location, spray="man")
+    SITE, FOLDER = config(location, spray="manual")
     if location == "guttannen22":
         cols_old = [
             "TIMESTAMP",
@@ -100,7 +100,8 @@ def get_field(location="schwarzsee19"):
         # df["SW_diffuse"] = 0.4 * df["SW_global"]
 
         df['ppt'] = df.snow_h.diff()*10*CONSTANTS['RHO_S']/CONSTANTS['RHO_W'] # mm of snowfall w.e. in one hour
-        df.loc[df.ppt<1, "ppt"] = 0  # Assuming 1 mm error
+        df.loc[df.ppt<0.5, "ppt"] = 0  # Remove negative values
+        # df.loc[df.ppt<1, "ppt"] = 0  # Assuming 1 mm error
 
         cols = [
             "time",
@@ -114,7 +115,7 @@ def get_field(location="schwarzsee19"):
             "missing_type",
             "LW_in",
             "Qs_meas",
-            "ppt",
+            # "ppt",
             "snow_h",
         ]
 
@@ -138,7 +139,7 @@ def get_field(location="schwarzsee19"):
         ax.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
         plt.savefig(
-            FOLDER['fig'] + "snow.jpg",
+            FOLDER['fig'] + "snow.png",
             # FOLDER['fig'] + "T_ice_6.jpg",
             bbox_inches="tight",
             dpi=300,
