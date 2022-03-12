@@ -29,7 +29,8 @@ if __name__ == "__main__":
 
     mypal = sns.color_palette("Set1", 2)
 
-    fig, ax = plt.subplots(2, 1, sharex="col")
+    # fig, ax = plt.subplots(2, 1, sharex="col")
+    fig, ax = plt.subplots(2, 1, gridspec_kw={'height_ratios': [1, 3]}, sharex="col")
 
     for i, spray in enumerate(sprays):
         SITE, FOLDER = config(location, spray)
@@ -55,7 +56,7 @@ if __name__ == "__main__":
         ax[0].spines["top"].set_visible(False)
         ax[0].spines["left"].set_color("grey")
         ax[0].spines["bottom"].set_color("grey")
-        ax[0].set_ylabel("Discharge [$l/min$]")
+        ax[0].set_ylabel("Discharge [$l/min$]", size=6)
 
         ax[1].plot(
             x,
@@ -73,10 +74,12 @@ if __name__ == "__main__":
 
     ax[1].xaxis.set_major_locator(mdates.WeekdayLocator())
     ax[1].xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # plt.subplots_adjust(wspace=None, hspace=None)
+    fig.subplots_adjust(hspace=None, wspace=None)
     fig.autofmt_xdate()
     handles, labels = ax[1].get_legend_handles_labels()
-    ax[0].legend(handles, labels, loc="upper right", prop={"size": 8}, title="Method")
-    plt.savefig("data/figs/slides/autovsman_dis.png", bbox_inches="tight", dpi=300)
+    ax[1].legend(handles, labels, loc="upper left", prop={"size": 8}, title="Method")
+    plt.savefig("data/figs/paper3/autovsman.png", bbox_inches="tight", dpi=300)
 
     fig, ax = plt.subplots()
     for i, spray in enumerate(sprays):

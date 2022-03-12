@@ -138,8 +138,8 @@ if __name__ == "__main__":
                 try:
                     mask = df[col].isna()
                     percent_nan = df[col].isna().sum() / df.shape[0] * 100
-                    logger.info(" %s has %s percent NaN values" % (col, percent_nan))
                     if percent_nan > 1:
+                        logger.warning(" %s has %s percent NaN values" % (col, percent_nan))
                         logger.warning(" Null values filled with ERA5 in %s" % col)
                         df.loc[df[col].isna(), "missing_type"] = (
                             df.loc[df[col].isna(), "missing_type"] + col
