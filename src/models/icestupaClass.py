@@ -449,7 +449,11 @@ class Icestupa:
             self.df.loc[i + 1, "wastewater"] = (
                 self.df.loc[i, "wastewater"] + self.df.loc[i, "wasted"]
             )
-            self.df.loc[i + 1, "iceV"] = self.df.loc[i + 1, "ice"] / self.RHO_I
+            self.df.loc[i + 1, "iceV"] = self.df.loc[i + 1, "ice"]/self.RHO_I
+                # (self.df.loc[i + 1, "ice"] - self.df.loc[i, "snow2ice"]) 
+                # / self.RHO_I
+                # + self.df.loc[i, "snow2ice"] 
+                # /self.RHO_S)
 
             self.df.loc[i + 1, "input"] = (
                 self.df.loc[i, "input"]

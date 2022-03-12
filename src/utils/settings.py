@@ -34,7 +34,7 @@ def config(location="guttannen21", spray=None):
             if spray == "dynamic" or spray == "static":
                 add= dict(
                     start_date=datetime(2021, 12, 3, 8),
-                    fountain_off_date=datetime(2022, 1, 27),
+                    fountain_off_date=datetime(2022, 3, 3),
                     expiry_date =datetime(2022, 3, 3),
                     R_F = 4,
                     # dis_crit = 1,
@@ -45,16 +45,17 @@ def config(location="guttannen21", spray=None):
             if spray == "manual":
                 add= dict(
                     start_date=datetime(2021, 12, 3, 8),
-                    fountain_off_date=datetime(2022, 1, 27),
+                    fountain_off_date=datetime(2022, 2, 17),
                     expiry_date =datetime(2022, 3, 3),
-                    D_F=7.5,  # Fountain mean discharge
-                    # T_F=0.5,  # Fountain temp
+                    # D_F=7.5,  # Fountain mean discharge
+                    T_F=0.5,  # Fountain temp
                     f_heights = [
                         {"time": datetime(2021, 12, 3, 8), "h_f": 3.7},
                         {"time": datetime(2021, 12, 23, 16), "h_f": 4.7},
                         {"time": datetime(2022, 2, 12, 16), "h_f": 5.7},
                     ],
-                    dis_max= 11,
+                    dis_max= 20,
+                    # R_F=3.9,  #Estimate from manualobservation
                     # dis_crit = 1,
                     # D_F=7.5,  # Fountain mean discharge
                 )
@@ -63,12 +64,12 @@ def config(location="guttannen21", spray=None):
             if spray == "dynamic_field":
                 add= dict(
                     start_date=datetime(2021, 12, 3, 8),
-                    fountain_off_date=datetime(2022, 1, 27),
+                    fountain_off_date=datetime(2022, 3, 3),
                     expiry_date =datetime(2022, 3, 3),
                     # dis_crit = 2,
                     # dis_max= 13,
                     # R_F=4,  #Estimate from drone observation 
-                    R_F=5.5,  #Estimate from manualobservation
+                    # R_F=5.5,  #Estimate from manualobservation
                 # perimeter=35, # on Jan 28
                 )
                 # add["expiry_date"] = add["fountain_off_date"]

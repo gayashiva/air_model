@@ -33,9 +33,9 @@ if __name__ == "__main__":
 
     # sprays = ["manual", "dynamic"]
     # sprays = ["manual", "dynamic", "dynamic_field"]
-    sprays = ["dynamic_field"]
+    # sprays = ["dynamic_field"]
     # sprays=["manual"]
-    # sprays=["dynamic_field", "manual"]
+    sprays=["dynamic_field", "manual"]
 
     for spray in sprays:
         icestupa = Icestupa(location, spray)
@@ -44,6 +44,7 @@ if __name__ == "__main__":
             icestupa.gen_input()
             icestupa.sim_air(test)
             icestupa.gen_output()
+            # icestupa.read_output()
             icestupa.summary_figures()
 
         else:

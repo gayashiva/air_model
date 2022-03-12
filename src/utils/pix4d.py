@@ -27,11 +27,12 @@ if __name__ == "__main__":
     logger.setLevel("INFO")
 
     location="guttannen22"
-    sprays = ["auto", "man"]
+    sprays = ["dynamic", "manual"]
 
     for spray in sprays:
+        print(spray)
 
-        CONSTANTS, SITE, FOLDER = config(location, spray)
+        SITE, FOLDER = config(location, spray)
 
         dfr = pd.read_csv(
             FOLDER["raw"] + spray + "/drone_rad.csv",
@@ -39,9 +40,9 @@ if __name__ == "__main__":
         )
         dfr = dfr.iloc[::2]
 
-        if spray == "auto":
+        if spray == "dynamic":
             format = "%d-%m-%y"
-        if spray == "man":
+        if spray == "manual":
             format = "%b_%d_%y"
 
         dfr["time"] = pd.to_datetime(dfr["Name"], format=format)
@@ -58,7 +59,6 @@ if __name__ == "__main__":
             sep="\t",
         )
         dfv = dfv.iloc[::2]
-        print(dfv)
         dfv["time"] = pd.to_datetime(dfv["Name"], format=format)
         dfv["DroneV"] = round(dfv["Cut Volume  (m3)"].astype(float),2)
         dfv["DroneVError"] = dfv["DroneV"] * 0.2

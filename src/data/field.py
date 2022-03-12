@@ -115,7 +115,7 @@ def get_field(location="schwarzsee19"):
             "missing_type",
             "LW_in",
             "Qs_meas",
-            # "ppt",
+            "ppt",
             "snow_h",
         ]
 

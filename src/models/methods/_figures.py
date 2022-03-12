@@ -208,7 +208,10 @@ def summary_figures(self):
     plt.clf()
 
     """Ice Volume Fig"""
-    df_c = pd.read_hdf(self.input + "input.h5", "df_c")
+    if self.name in ["guttannen22"]:
+        df_c = pd.read_hdf(self.input + self.spray + "/input.h5", "df_c")
+    else:
+        df_c = pd.read_hdf(self.input + "input.h5", "df_c")
 
     df_c = df_c[["time", "DroneV", "DroneVError"]]
     if self.name in ["guttannen21", "guttannen20", "gangles21"]:

@@ -42,8 +42,8 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
         freq=(str(int(CONSTANTS["DT"] / 60)) + "T"),
     )
     # sprays = ['man', 'dynamic', "dynamic_field"]
-    sprays = ['dynamic', 'static', 'manual']
-    # sprays = ['dynamic', 'manual', "dynamic_field"]
+    # sprays = ['dynamic', 'static', 'manual']
+    sprays = ['dynamic', 'manual', "dynamic_field"]
     # sprays = ['manual']
      
     df = pd.DataFrame(index=times, columns=sprays)
@@ -203,12 +203,12 @@ if __name__ == "__main__":
         param_values = json.load(f)
 
     # locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
-    locations = ["guttannen21"]
+    locations = ["guttannen22"]
     # locations = ["gangles21"]
 
     for loc in locations:
         df = get_discharge(loc)
-        SITE, FOLDER = config(loc, "manual")
+        SITE, FOLDER = config(loc, "dynamic")
 
         df= df[df.time <= SITE["fountain_off_date"]]
         
@@ -216,7 +216,7 @@ if __name__ == "__main__":
         x = df.time
         y1 = df.manual
         y2 = df.dynamic
-        y3 = df.static
+        y3 = df.dynamic_field
         ax1.plot(
             x,
             y1,
@@ -233,7 +233,7 @@ if __name__ == "__main__":
             x,
             y3,
             linestyle="-.",
-            label = "Static"
+            label = "Dynamic Field"
         )
         ax1.set_ylabel("Discharge [$l/min$]")
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
