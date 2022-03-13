@@ -90,6 +90,7 @@ if __name__ == "__main__":
         print(f"Max Discharge was {dis_max}")
 
         df.to_csv(FOLDER["sim"] + "auto_dis.csv")
+
         fig, ax = plt.subplots()
         x = df.time
         y1 = df.iceV

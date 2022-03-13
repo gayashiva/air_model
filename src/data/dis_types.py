@@ -163,7 +163,6 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
 
         if spray == "dynamic_field":
             print(spray)
-            # SITE, FOLDER = config(loc, spray)
             df_f = pd.read_csv(
                 os.path.join("data/" + loc + "/interim/")
                 + "discharge_labview.csv",

@@ -170,7 +170,7 @@ if __name__ == "__main__":
                 "ppt",
                 # "vp_a",
                 "press",
-                "missing_type",
+                # "missing_type",
                 # "LW_in",
             ]
 
@@ -185,7 +185,6 @@ if __name__ == "__main__":
                 "ppt",
                 "vp_a",
                 "press",
-                "missing_type",
                 "LW_in",
             ]
 
@@ -203,7 +202,7 @@ if __name__ == "__main__":
                 "press",
                 "LW_in",
                 "snow_h",
-                "missing_type",
+                "T_bulk_meas",
             ]
 
 
@@ -229,7 +228,7 @@ if __name__ == "__main__":
 
         logger.info(df_out.tail())
         plot_input(df_out, FOLDER['fig'], SITE["name"])
-        df_out = df_out.drop(columns=['missing_type'])
+        # df_out = df_out.drop(columns=['missing_type'])
 
         df_out.to_csv(FOLDER["input"]  + "aws.csv", index=False)
         # df_out.to_csv(FOLDER["input"]  + "aws_ppt.csv", index=False)

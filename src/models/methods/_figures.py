@@ -295,6 +295,33 @@ def summary_figures(self):
         bbox_inches="tight",
         dpi=300,
     )
+    plt.clf()
+
+    if self.name in ["guttannen22"]:
+        fig, ax = plt.subplots()
+        x = self.df.time
+        y1 = self.df.T_bulk_meas
+        y2 = self.df.T_bulk
+        ax.scatter(y1, y2, s=2)
+        ax.set_xlabel("Measured Temp")
+        ax.set_ylabel("Estimated Temp")
+        ax.grid()
+        lims = [
+        np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
+        np.max([ax.get_xlim(), ax.get_ylim()]),  # max of both axes
+        ]
+# now plot both limits against eachother
+        ax.plot(lims, lims, '--k', alpha=0.25, zorder=0)
+        ax.set_aspect('equal')
+        ax.set_xlim(lims)
+        ax.set_ylim(lims)
+# format the ticks
+        plt.savefig(
+            self.fig + self.spray + "/temp_validation.png",
+            bbox_inches="tight",
+            dpi=300,
+        )
+        plt.clf()
     plt.close("all")
 
 

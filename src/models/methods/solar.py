@@ -68,8 +68,8 @@ def get_solar(coords, start, end, DT, alt):
     solar_df.index = solar_df.index.set_names(["time"])
     solar_df = solar_df.reset_index()
     solar_df["time"] += pd.Timedelta(hours=utc)
-    # For discharge output
 
+    # For discharge output
     for i in range(0, solar_df.shape[0]):
         solar_df.loc[i, "f_cone"] = (math.pi * math.sin(solar_df.loc[i, "sea"]) + math.cos(solar_df.loc[i, "sea"]))/(2*math.sqrt(2)*math.pi)
 

@@ -35,8 +35,7 @@ def plot_input(df, folder, name):
     CB91_Amber = "#F5B14C"
 
     fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(
-        nrows=5, ncols=1, sharex="col", figsize=(12, 18)
-    )
+        nrows=5, ncols=1, sharex="col", figsize=(10, 14))
 
     x = df.time
 

@@ -39,9 +39,9 @@ if __name__ == "__main__":
         df=icestupa.df
 
         if spray == "dynamic_field":
-            spray = "Dynamic"
+            spray = "Automatic"
         else:
-            spray = "Manual"
+            spray = "Traditional"
 
         x = df.time[1:]
         y1 = df.Discharge[1:]

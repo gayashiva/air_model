@@ -96,12 +96,10 @@ def get_field(location="schwarzsee19"):
         df.loc[df.alb < 0, "alb"] = np.NaN 
         df.loc[:, "alb"] = df["alb"].interpolate()
 
-        # df["SW_direct"] = 0.6 * df["SW_global"]
-        # df["SW_diffuse"] = 0.4 * df["SW_global"]
-
         df['ppt'] = df.snow_h.diff()*10*CONSTANTS['RHO_S']/CONSTANTS['RHO_W'] # mm of snowfall w.e. in one hour
-        df.loc[df.ppt<0.5, "ppt"] = 0  # Remove negative values
-        # df.loc[df.ppt<1, "ppt"] = 0  # Assuming 1 mm error
+        df.loc[df.ppt<0.5, "ppt"] = 0  # Assuming 0.5 mm error
+        df['T_bulk_meas'] = (df["T_ice_3"] + df["T_ice_4"]+ df["T_ice_5"])/3
+
 
         cols = [
             "time",
@@ -109,7 +107,6 @@ def get_field(location="schwarzsee19"):
             "RH",
             "wind",
             "SW_global",
-            # "SW_diffuse",
             "alb",
             "press",
             "missing_type",
@@ -117,34 +114,29 @@ def get_field(location="schwarzsee19"):
             "Qs_meas",
             "ppt",
             "snow_h",
+            "T_bulk_meas",
         ]
 
         df_out = df[cols]
-
 
         if df_out.isna().values.any():
             print(df_out.isna().sum())
 
         df_out.to_csv(FOLDER["input"] + "field.csv", index=False)
 
-        fig, ax = plt.subplots()
-        x = df.time
-        y = df["snow_h"]
-        # y = df["T_ice_6"]
-        # y2 = df["T_ice_4"]
-        ax.plot(x,y)
-        # ax.plot(x,y2)
-        ax.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax.xaxis.set_minor_locator(mdates.DayLocator())
-        fig.autofmt_xdate()
-        plt.savefig(
-            FOLDER['fig'] + "snow.png",
-            # FOLDER['fig'] + "T_ice_6.jpg",
-            bbox_inches="tight",
-            dpi=300,
-        )
-        plt.clf()
+        # fig, ax = plt.subplots()
+        # # x = df.time
+        # # ax.plot(x,df["T_ice_meas"])
+        # ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+        # ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        # ax.xaxis.set_minor_locator(mdates.DayLocator())
+        # fig.autofmt_xdate()
+        # plt.savefig(
+        #     FOLDER['fig'] + "temps.png",
+        #     bbox_inches="tight",
+        #     dpi=300,
+        # )
+        # plt.clf()
 
         return df_out
 
