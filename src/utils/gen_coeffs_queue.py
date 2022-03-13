@@ -68,7 +68,7 @@ if __name__ == "__main__":
     alt = list(np.arange(0, 6.1, 0.5))
     # cld = list(np.arange(0, 1.1, 0.5))
     obj = ["WUE", "ICV"]
-    spray_r = list(np.arange(5, 11, 1))
+    spray_r = list(np.arange(3, 11, 1))
 
     da = xr.DataArray(
         data=np.zeros(len(temp) * len(rh) * len(wind)* len(alt) * len(obj) * len(spray_r)).reshape(

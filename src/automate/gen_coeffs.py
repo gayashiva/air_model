@@ -45,11 +45,13 @@ if __name__ == "__main__":
     if opts==[]:
         # opts = ["-nc", "-solar", "-json", "-test"]
         # opts = ["-png"]
-        opts = ["-json"]
-        # opts = ["-json", "-png"]
+        # opts = ["-json"]
+        # opts = ["-test"]
+        opts = ["-json", "-png"]
 
     # locations = ["guttannen21"]
-    locations = ["gangles21", "guttannen21"]
+    # locations = ["gangles21", "guttannen21"]
+    locations = ["guttannen22"]
     # locations = ["guttannen21", "guttannen22", "guttannen20", "gangles21"]
 
     for loc in locations:
@@ -65,8 +67,9 @@ if __name__ == "__main__":
 
         if "-json" in opts:
 
-            logger.info("=> Calculation of solar coeffs")
             for obj in ["WUE", "ICV"]:
+                logger.warning(f"=> Objective {obj}")
+                logger.info("=> Calculation of solar coeffs")
                 utc = get_offset(*SITE["coords"], date=SITE["start_date"])
                 result = SunMelt(time = SITE["fountain_off_date"], coords = SITE["coords"], utc = utc, alt =SITE["alt"], obj = obj)
 
@@ -83,6 +86,7 @@ if __name__ == "__main__":
 
                 logger.info("=> Performing regression analysis")
                 da = xr.open_dataarray("data/common/alt_obj_sims.nc")
+                print(da)
                 x = []
                 y = []
                 for temp in da.temp.values:
@@ -96,7 +100,7 @@ if __name__ == "__main__":
                                              rh=rh, 
                                              wind=wind,
                                              alt=round(SITE["alt"]/1000,0),
-                                             cld=round(SITE["cld"],0),
+                                             obj=obj,
                                              spray_r=round(results["R_F"],0)).data/(math.pi * round(results["R_F"],0))**2)
                             else:
                                 y.append(da.sel(
@@ -104,12 +108,12 @@ if __name__ == "__main__":
                                              rh=rh, 
                                              wind=wind,
                                              alt=round(SITE["alt"]/1000,0),
-                                             cld=round(SITE["cld"],0),
+                                             obj=obj,
                                              spray_r=round(results["R_F"],0)).data/(math.sqrt(2)*math.pi * round(results["R_F"],0))**2)
 
                 popt, pcov = curve_fit(line, x, y)
                 a, b, c, d = popt
-                print("dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f" % (a, b, c, d))
+                print("j_cone = %.5f * temp + %.5f * rh + %.5f * wind + %.5f" % (a, b, c, d))
 
                 """Combine all coeffs"""
                 params= {}
@@ -129,16 +133,20 @@ if __name__ == "__main__":
             # param_values.update((x, y*scaling_factor) for x, y in param_values.items())
 
             for loc in locations:
+                print(loc)
 
                 SITE, FOLDER = config(loc, spray="manual")
 
-                with open(FOLDER["input"] + "dynamic/coeffs.json") as f:
-                    params = json.load(f)
+                for obj in ["WUE", "ICV"]:
+                    print(obj)
+                    with open(FOLDER["input"] + "dynamic/coeffs_" + obj + ".json") as f:
+                        params = json.load(f)
 
-                max_freeze = autoDis(**params, time=6, temp=-20, rh=50, wind=0)
-                print(
-                    "Max freezing rate: %0.1f for loc %s"%(max_freeze, loc)
-                )
+                    max_freeze = autoDis(**params, time=1, temp=-20, rh=50, wind=0)
+                    max_freeze *= math.pi * 7**2
+                    print(
+                        "Max freezing rate: %0.1f for loc %s"%(max_freeze, loc)
+                    )
 
         if "-png" in opts:
             logger.info("=> Producing figs")
@@ -149,95 +157,96 @@ if __name__ == "__main__":
 
                 SITE, FOLDER = config(loc, spray)
 
-                with open(FOLDER["input"] + "dynamic/coeffs.json") as f:
-                    params = json.load(f)
+                for obj in ["WUE", "ICV"]:
+                    print(obj)
+                    with open(FOLDER["input"] + "dynamic/coeffs_" + obj + ".json") as f:
+                        params = json.load(f)
 
-                icestupa = Icestupa(loc, spray)
-                icestupa.read_output()
-                df = icestupa.df
-                df = df[df.time <= icestupa.fountain_off_date]
+                    icestupa = Icestupa(loc, spray)
+                    icestupa.read_output()
+                    df = icestupa.df
+                    df = df[df.time <= icestupa.fountain_off_date]
 
-                df["Discharge_sim"] = 0 
-                
-                for i in range(0, df.shape[0]):
-                    df.loc[i, "Discharge_sim"] = autoDis(**params, time=df.time[i].hour, temp=df.temp[i],
-                                                         rh=df.RH[i], wind = df.wind[i]) 
-                    df.loc[i, "SW_sim"] = autoDis(**params, time=df.time[i].hour, temp=0,
-                                                         rh=0, wind = 0) - params["d"]
-                    if df.Discharge_sim[i] <0:
-                        df.loc[i, "Discharge_sim"] = 0
+                    df["Discharge_sim"] = 0 
+                    
+                    for i in range(0, df.shape[0]):
+                        df.loc[i, "Discharge_sim"] = autoDis(**params, time=df.time[i].hour, temp=df.temp[i],
+                                                             rh=df.RH[i], wind = df.wind[i]) 
+                        df.loc[i, "SW_sim"] = autoDis(**params, time=df.time[i].hour, temp=0,
+                                                             rh=0, wind = 0) - params["d"]
+                        if df.Discharge_sim[i] <0:
+                            df.loc[i, "Discharge_sim"] = 0
 
-                    df.loc[i, "Discharge_sim"] *= (math.pi * icestupa.R_F)**2 
-                    # df.loc[i, "SW_sim"] *= (math.pi * icestupa.R_F)**2 
-                    df.loc[i, "SW_sim"] *= -CONSTANTS["L_F"] / 60
-                        
+                        df.loc[i, "Discharge_sim"] *= math.pi * icestupa.R_F**2 
+                        df.loc[i, "SW_sim"] *= -CONSTANTS["L_F"] / 60
+                            
 
-                fig, ax1 = plt.subplots()
+                    fig, ax1 = plt.subplots()
 
-                ax1.scatter(df.fountain_froze/60, df.Discharge_sim, s=2)
-                ax1.set_xlabel("Freezing rate")
-                ax1.set_ylabel("Scheduled discharge")
-                ax1.grid()
+                    ax1.scatter(df.fountain_froze/60, df.Discharge_sim, s=2)
+                    ax1.set_xlabel("Freezing rate")
+                    ax1.set_ylabel("Scheduled discharge")
+                    ax1.grid()
 
-                lims = [
-                np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-                np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-                ]
+                    lims = [
+                    np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+                    np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+                    ]
 
-                ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
-                ax1.set_aspect('equal')
-                ax1.set_xlim(lims)
-                ax1.set_ylim(lims)
+                    ax1.plot(lims, lims, '--k', alpha=0.25, zorder=0)
+                    ax1.set_aspect('equal')
+                    ax1.set_xlim(lims)
+                    ax1.set_ylim(lims)
 
-                plt.savefig(FOLDER["fig"] + "scheduled_discharge_corr.png", bbox_inches="tight", dpi=300)
-                plt.clf()
+                    plt.savefig(FOLDER["fig"] + "scheduled_discharge_corr" + obj + ".png", bbox_inches="tight", dpi=300)
+                    plt.clf()
 
-                fig, ax1 = plt.subplots()
-                x = df.time
-                y1 = df.Discharge_sim
-                y2 = df.fountain_froze /60
-                ax1.plot(
-                    x,
-                    y1,
-                    color=mypal[0],
-                )
-                ax1.set_ylim(0, 30)
+                    fig, ax1 = plt.subplots()
+                    x = df.time
+                    y1 = df.Discharge_sim
+                    y2 = df.fountain_froze /60
+                    ax1.plot(
+                        x,
+                        y1,
+                        color=mypal[0],
+                    )
+                    ax1.set_ylim(0, 30)
 
-                ax2 = ax1.twinx()
-                ax2.set_ylabel('Freezing rate [$l/min$]', color = mypal[1])
-                ax2.plot(x, y2, color = mypal[1], alpha=0.5)
-                ax2.tick_params(axis ='y', labelcolor = mypal[1])
-                ax2.set_ylim(0, 30)
+                    ax2 = ax1.twinx()
+                    ax2.set_ylabel('Freezing rate [$l/min$]', color = mypal[1])
+                    ax2.plot(x, y2, color = mypal[1], alpha=0.5)
+                    ax2.tick_params(axis ='y', labelcolor = mypal[1])
+                    ax2.set_ylim(0, 30)
 
-                # ax2.spines["top"].set_visible(False)
-                ax1.spines["top"].set_visible(False)
-                ax1.set_ylabel("Discharge rate [$l/min$]")
-                ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-                ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-                fig.autofmt_xdate()
-                plt.savefig(FOLDER["fig"] + "scheduled_discharge.png", bbox_inches="tight", dpi=300)
-                plt.clf()
+                    # ax2.spines["top"].set_visible(False)
+                    ax1.spines["top"].set_visible(False)
+                    ax1.set_ylabel("Discharge rate [$l/min$]")
+                    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+                    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+                    fig.autofmt_xdate()
+                    plt.savefig(FOLDER["fig"] + "scheduled_discharge" + obj + ".png", bbox_inches="tight", dpi=300)
+                    plt.clf()
 
-                fig, ax1 = plt.subplots()
+                    fig, ax1 = plt.subplots()
 
-                # df = df[df.time < datetime(2020, 12,1)]
-                x = df.time
-                y1 = df.SW
-                y2 = df.SW_sim
-                ax1.plot(
-                    x,
-                    y1,
-                    color=mypal[0],
-                )
+                    # df = df[df.time < datetime(2020, 12,1)]
+                    x = df.time
+                    y1 = df.SW
+                    y2 = df.SW_sim
+                    ax1.plot(
+                        x,
+                        y1,
+                        color=mypal[0],
+                    )
 
-                ax1.plot(x, y2, color = mypal[1], alpha=0.5)
+                    ax1.plot(x, y2, color = mypal[1], alpha=0.5)
 
-                ax1.spines["top"].set_visible(False)
-                ax1.set_ylabel("Discharge rate [$l/min$]")
-                ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
-                ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-                fig.autofmt_xdate()
-                plt.savefig(FOLDER["fig"] + "estvsmeas_solar.png", bbox_inches="tight", dpi=300)
+                    ax1.spines["top"].set_visible(False)
+                    ax1.set_ylabel("Discharge rate [$l/min$]")
+                    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+                    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+                    fig.autofmt_xdate()
+                    plt.savefig(FOLDER["fig"] + "estvsmeas_solar" + obj + ".png", bbox_inches="tight", dpi=300)
 
 
         # icestupa_sim = Icestupa(loc)
