@@ -86,7 +86,6 @@ if __name__ == "__main__":
 
                 logger.info("=> Performing regression analysis")
                 da = xr.open_dataarray("data/common/alt_obj_sims.nc")
-                print(da)
                 x = []
                 y = []
                 for temp in da.temp.values:
