@@ -66,20 +66,21 @@ if __name__ == "__main__":
     rh = list(range(0, 100, 10))
     wind = list(range(0, 10))
     alt = list(np.arange(0, 6.1, 0.5))
-    cld = list(np.arange(0, 1.1, 0.5))
+    # cld = list(np.arange(0, 1.1, 0.5))
+    obj = ["WUE", "ICV"]
     spray_r = list(np.arange(5, 11, 1))
 
     da = xr.DataArray(
-        data=np.zeros(len(temp) * len(rh) * len(wind)* len(alt) * len(cld) * len(spray_r)).reshape(
-            len(temp), len(rh), len(wind), len(alt), len(cld), len(spray_r)
+        data=np.zeros(len(temp) * len(rh) * len(wind)* len(alt) * len(obj) * len(spray_r)).reshape(
+            len(temp), len(rh), len(wind), len(alt), len(obj),  len(spray_r)
         ),
-        dims=["temp", "rh", "wind", "alt", "cld", "spray_r"],
+        dims=["temp", "rh", "wind", "alt", "obj", "spray_r"],
         coords=dict(
             temp=temp,
             rh=rh,
             wind=wind,
             alt=alt,
-            cld=cld,
+            obj=obj,
             spray_r=spray_r,
         ),
         attrs=dict(
@@ -98,8 +99,8 @@ if __name__ == "__main__":
     da.wind.attrs["long_name"] = "Wind Speed"
     da.alt.attrs["units"] = "$km$"
     da.alt.attrs["long_name"] = "Altitude"
-    da.cld.attrs["units"] = " "
-    da.cld.attrs["long_name"] = "Cloudiness"
+    da.obj.attrs["units"] = " "
+    da.obj.attrs["long_name"] = "Objective"
     da.spray_r.attrs["units"] = "$m$"
     da.spray_r.attrs["long_name"] = "Spray radius"
 
@@ -128,8 +129,8 @@ if __name__ == "__main__":
         for rh in da.rh.values:
             for wind in da.wind.values:
                 for alt in da.alt.values:
-                    for cld in da.cld.values:
-                        task_list.append({'temp':temp, 'rh':rh, 'wind':wind, 'alt':alt, 'cld':cld})
+                    for obj in da.obj.values:
+                        task_list.append({'temp':temp, 'rh':rh, 'wind':wind, 'alt':alt, 'obj':obj})
 
     for single_task in task_list:
         tasks.put(single_task)
@@ -160,9 +161,12 @@ if __name__ == "__main__":
                     for spray_r in da.spray_r.values:
                         input['spray_r'] = spray_r
                         da.sel(input).data += output
-                        da.sel(input).data *= math.pi * spray_r * spray_r
+                        if input['obj'] == "WUE":
+                            da.sel(input).data *= math.pi * spray_r * spray_r
+                        elif input['obj'] == "ICV":
+                            da.sel(input).data *= math.sqrt(2) * math.pi * spray_r * spray_r
 
                 print(da.data.mean())
-                da.to_netcdf("data/common/alt_cld_sims.nc")
+                da.to_netcdf("data/common/alt_obj_sims.nc")
 
                 break
