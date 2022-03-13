@@ -44,8 +44,8 @@ if __name__ == "__main__":
 
     if opts==[]:
         # opts = ["-nc", "-solar", "-json", "-test"]
-        opts = ["-png"]
-        # opts = ["-json"]
+        # opts = ["-png"]
+        opts = ["-json"]
         # opts = ["-json", "-png"]
 
     # locations = ["guttannen21"]
@@ -66,55 +66,62 @@ if __name__ == "__main__":
         if "-json" in opts:
 
             logger.info("=> Calculation of solar coeffs")
-            utc = get_offset(*SITE["coords"], date=SITE["start_date"])
-            result = SunMelt(time = SITE["fountain_off_date"], coords = SITE["coords"], utc = utc, alt = SITE["alt"])
+            for obj in ["WUE", "ICV"]:
+                utc = get_offset(*SITE["coords"], date=SITE["start_date"])
+                result = SunMelt(time = SITE["fountain_off_date"], coords = SITE["coords"], utc = utc, alt =SITE["alt"], obj = obj)
 
-            sun_params = dict(result.best_values)
-            print(
-                "dis = Gaussian(time; Amplitude = %.5f, center = %.5f, sigma = %.5f) for %s "
-                % (
-                    sun_params["amplitude"],
-                    sun_params["center"],
-                    sun_params["sigma"],
-                    loc,
+                sun_params = dict(result.best_values)
+                print(
+                    "dis = Gaussian(time; Amplitude = %.5f, center = %.5f, sigma = %.5f) for %s "
+                    % (
+                        sun_params["amplitude"],
+                        sun_params["center"],
+                        sun_params["sigma"],
+                        loc,
+                    )
                 )
-            )
 
-            # with open(FOLDER["input"] + "dynamic/sun_coeffs.json", "w") as f:
-            #     json.dump(dict(result.best_values), f, indent=4)
+                logger.info("=> Performing regression analysis")
+                da = xr.open_dataarray("data/common/alt_obj_sims.nc")
+                x = []
+                y = []
+                for temp in da.temp.values:
+                    for rh in da.rh.values:
+                        for wind in da.wind.values:
+                            aws = [temp, rh, wind]
+                            x.append(aws)
+                            if obj == "WUE":
+                                y.append(da.sel(
+                                             temp=temp, 
+                                             rh=rh, 
+                                             wind=wind,
+                                             alt=round(SITE["alt"]/1000,0),
+                                             cld=round(SITE["cld"],0),
+                                             spray_r=round(results["R_F"],0)).data/(math.pi * round(results["R_F"],0))**2)
+                            else:
+                                y.append(da.sel(
+                                             temp=temp, 
+                                             rh=rh, 
+                                             wind=wind,
+                                             alt=round(SITE["alt"]/1000,0),
+                                             cld=round(SITE["cld"],0),
+                                             spray_r=round(results["R_F"],0)).data/(math.sqrt(2)*math.pi * round(results["R_F"],0))**2)
 
-            logger.info("=> Performing regression analysis")
-            da = xr.open_dataarray("data/common/alt_cld_sims.nc")
-            x = []
-            y = []
-            for temp in da.temp.values:
-                for rh in da.rh.values:
-                    for wind in da.wind.values:
-                        aws = [temp, rh, wind]
-                        x.append(aws)
-                        y.append(da.sel(
-                                     temp=temp, 
-                                     rh=rh, 
-                                     wind=wind,
-                                     alt=round(SITE["alt"]/1000,0),
-                                     cld=round(SITE["cld"],0),
-                                     spray_r=round(results["R_F"],0)).data/(math.pi * round(results["R_F"],0))**2)
+                popt, pcov = curve_fit(line, x, y)
+                a, b, c, d = popt
+                print("dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f" % (a, b, c, d))
 
-            popt, pcov = curve_fit(line, x, y)
-            a, b, c, d = popt
-            print("dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f" % (a, b, c, d))
+                """Combine all coeffs"""
+                params= {}
+                params["a"] = a
+                params["b"] = b
+                params["c"] = c
+                params["d"] = d
 
-            """Combine all coeffs"""
-            params= {}
-            params["a"] = a
-            params["b"] = b
-            params["c"] = c
-            params["d"] = d
+                params = dict(params, **sun_params)
 
-            params = dict(params, **sun_params)
-
-            with open(FOLDER["input"] + "dynamic/coeffs.json", "w") as f:
-                json.dump(params, f, indent=4)
+                with open(FOLDER["input"] + "dynamic/coeffs_" + obj + ".json", "w") as f:
+                    json.dump(params, f, indent=4)
 
         if "-test" in opts:
 
