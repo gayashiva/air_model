@@ -29,7 +29,6 @@ if __name__ == "__main__":
 
     mypal = sns.color_palette("Set1", 2)
 
-    # fig, ax = plt.subplots(2, 1, sharex="col")
     fig, ax = plt.subplots(2, 1, gridspec_kw={'height_ratios': [1, 3]}, sharex="col")
 
     for i, spray in enumerate(sprays):
@@ -38,10 +37,27 @@ if __name__ == "__main__":
         icestupa.read_output()
         df=icestupa.df
 
+        df_c = pd.read_hdf(FOLDER["input"] + spray + "/input.h5", "df_c")
+        df_c = df_c[["time", "DroneV", "DroneVError"]]
+
+        tol = pd.Timedelta("15T")
+        df_c = df_c.set_index("time")
+        df = df.set_index("time")
+        df_c = pd.merge_asof(
+            left=df,
+            right=df_c,
+            right_index=True,
+            left_index=True,
+            direction="nearest",
+            tolerance=tol,
+        )
+        df_c = df_c[[ "DroneV", "DroneVError", "iceV"]]
+        df = df.reset_index()
+
         if spray == "dynamic_field":
-            spray = "Automatic"
+            spray = "Scheduled"
         else:
-            spray = "Traditional"
+            spray = "Unscheduled"
 
         x = df.time[1:]
         y1 = df.Discharge[1:]
@@ -71,14 +87,20 @@ if __name__ == "__main__":
         ax[1].spines["bottom"].set_color("grey")
         ax[1].set_ylabel("Ice Volume [$m^3$]")
 
+        x = df_c.index
+        y2 = df_c.DroneV
+        yerr = df_c.DroneVError
+        ax[1].scatter(x, y2, color=mypal[i], s=8)
+        ax[1].errorbar(x, y2, yerr=df_c.DroneVError, color=mypal[i], linewidth=1)
+        ax[1].set_ylim(bottom=0)
+
 
     ax[1].xaxis.set_major_locator(mdates.WeekdayLocator())
     ax[1].xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    # plt.subplots_adjust(wspace=None, hspace=None)
     fig.subplots_adjust(hspace=None, wspace=None)
     fig.autofmt_xdate()
     handles, labels = ax[1].get_legend_handles_labels()
-    ax[1].legend(handles, labels, loc="upper left", prop={"size": 8}, title="Method")
+    ax[1].legend(handles, labels, loc="upper left", prop={"size": 8}, title="Fountain spray")
     plt.savefig("data/figs/paper3/autovsman.png", bbox_inches="tight", dpi=300)
 
     fig, ax = plt.subplots()
@@ -122,7 +144,6 @@ if __name__ == "__main__":
         )
         y2 = df_c.DroneV
         yerr = df_c.DroneVError
-        # ax.fill_between(x, y1=V_dome, y2=0, color=grey, label="Dome Volume")
         ax.scatter(x, y2, color=mypal[i], label="Measured Volume")
         ax.errorbar(x, y2, yerr=df_c.DroneVError, color=mypal[i])
         ax.set_ylim(bottom=0)
