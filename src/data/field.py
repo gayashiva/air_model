@@ -98,7 +98,9 @@ def get_field(location="schwarzsee19"):
 
         df['ppt'] = df.snow_h.diff()*10*CONSTANTS['RHO_S']/CONSTANTS['RHO_W'] # mm of snowfall w.e. in one hour
         df.loc[df.ppt<0.5, "ppt"] = 0  # Assuming 0.5 mm error
-        df['T_bulk_meas'] = (df["T_ice_3"] + df["T_ice_4"]+ df["T_ice_5"])/3
+        # df['T_bulk_meas'] = (df["T_ice_3"] + df["T_ice_4"]+ df["T_ice_5"])/3
+        df['T_bulk_meas'] = df["T_ice_3"]
+        df['T_G'] = df["T_ice_1"]
 
 
         cols = [
@@ -115,6 +117,7 @@ def get_field(location="schwarzsee19"):
             "ppt",
             "snow_h",
             "T_bulk_meas",
+            "T_G",
         ]
 
         df_out = df[cols]
@@ -124,19 +127,19 @@ def get_field(location="schwarzsee19"):
 
         df_out.to_csv(FOLDER["input"] + "field.csv", index=False)
 
-        # fig, ax = plt.subplots()
-        # # x = df.time
-        # # ax.plot(x,df["T_ice_meas"])
-        # ax.xaxis.set_major_locator(mdates.WeekdayLocator())
-        # ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        # ax.xaxis.set_minor_locator(mdates.DayLocator())
-        # fig.autofmt_xdate()
-        # plt.savefig(
-        #     FOLDER['fig'] + "temps.png",
-        #     bbox_inches="tight",
-        #     dpi=300,
-        # )
-        # plt.clf()
+        fig, ax = plt.subplots()
+        x = df.time
+        ax.plot(x,df["snow_h"])
+        ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax.xaxis.set_minor_locator(mdates.DayLocator())
+        fig.autofmt_xdate()
+        plt.savefig(
+            FOLDER['fig'] + "temps.png",
+            bbox_inches="tight",
+            dpi=300,
+        )
+        plt.clf()
 
         return df_out
 
@@ -204,12 +207,7 @@ def get_field(location="schwarzsee19"):
             print(df_in[cols].isnull().sum())
         df_in = df_in.round(3)
         df_in = df_in.reset_index()
-        df_in.rename(
-            columns={
-                "index": "time",
-            },
-            inplace=True,
-        )
+        df_in.rename(columns={"index": "time"},inplace=True,)
 
         start_date = datetime(2020, 12, 14)
         df_in = df_in.set_index("time")

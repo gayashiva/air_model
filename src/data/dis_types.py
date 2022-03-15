@@ -151,6 +151,7 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                 df_h = pd.DataFrame(SITE["f_heights"])
                 df[spray] = SITE["dis_max"]
                 dis_old= SITE["dis_max"]
+                df.loc[df.time < df_h.time[0], spray] = 0
                 for i in range(1,df_h.shape[0]):
                     h_change = round(df_h.h_f[i] - df_h.h_f[i-1],0)
                     dis_new = dis_old/math.pow(2, h_change)

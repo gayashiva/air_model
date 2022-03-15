@@ -60,18 +60,4 @@ def self_attributes(self):
     # Get initial height
     self.h_i = self.DX + 3 * self.V_dome / (math.pi * self.R_F ** 2)
 
-    # if self.name in ["guttannen21", "guttannen20", "gangles21"]:
-    #     self.V_dome = df_c.loc[0, "DroneV"]
-    #     # Get initial height
-    #     self.h_i = self.DX + 3 * self.V_dome / (math.pi * self.R_F ** 2)
-    # else:
-    #     self.V_dome = 0
-
     logger.warning("Dome Volume %0.1f" % self.V_dome)
-
-    # if self.name in ["guttannen21", "guttannen20"]:
-    #     df_cam.to_hdf(
-    #         self.input + "input.h5",
-    #         key="df_cam",
-    #         mode="a",
-    #     )

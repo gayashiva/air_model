@@ -6,6 +6,8 @@ import os, sys, shutil
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import pandas as pd
+from sklearn.metrics import mean_squared_error
+
 
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -13,6 +15,7 @@ sys.path.append(dirname)
 from src.models.icestupaClass import Icestupa
 from src.utils.settings import config
 from src.utils import setup_logger
+from src.utils.eff_criterion import nse
 import logging, coloredlogs
 
 
@@ -33,9 +36,9 @@ if __name__ == "__main__":
 
     # sprays = ["manual", "dynamic"]
     # sprays = ["manual", "dynamic", "dynamic_field"]
-    sprays = ["dynamic_field"]
+    # sprays = ["dynamic_field"]
     # sprays=["manual"]
-    # sprays=["dynamic_field", "manual"]
+    sprays=["dynamic_field", "manual"]
 
     for spray in sprays:
         icestupa = Icestupa(location, spray)
@@ -46,6 +49,11 @@ if __name__ == "__main__":
             icestupa.gen_output()
             # icestupa.read_output()
             icestupa.summary_figures()
+
+            rmse = mean_squared_error(icestupa.df.T_bulk_meas, icestupa.df.T_bulk, squared=False)
+            nse = nse(icestupa.df.T_bulk, icestupa.df.T_bulk_meas)
+            print(f"Calculated NSE {nse} and RMSE {rmse}")
+
 
         else:
             # For web app

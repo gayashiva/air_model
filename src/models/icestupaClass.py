@@ -113,6 +113,13 @@ class Icestupa:
         self.df = pd.merge(solar_df, self.df, on="time", how="left")
         self.df["SW_direct"] = self.df["SW_global"] - self.df["SW_diffuse"]
 
+        if "T_G" in list(self.df.columns):
+            self.df.rename(columns={"T_G": "T_F"},inplace=True)
+            logger.warning(" Measured ground temp is fountain water temp\n")
+        else:
+            self.df["T_F"] = float(self.T_F)
+            logger.warning(f"Estimated fountain water temp is {self.T_F}\n")
+            
         for row in tqdm(
             self.df[1:].itertuples(),
             total=self.df.shape[0],
@@ -139,6 +146,10 @@ class Icestupa:
                 self.df.loc[i, "LW_in"] = (
                     self.df.loc[i, "e_a"] * self.sigma * math.pow(row.temp + 273.15, 4)
                 )
+
+            """Water temperature"""
+            if row.temp < 0:
+                self.df.loc[i,"T_F"] = 0
 
         self.self_attributes()
         # self.get_discharge()

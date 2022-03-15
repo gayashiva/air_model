@@ -145,6 +145,8 @@ if __name__ == "__main__":
                             df.loc[df[col].isna(), "missing_type"] + col
                         )
                         df.loc[df[col].isna(), col] = df_ERA5[col]
+                    elif percent_nan == 0:
+                        logger.warning(" No Null values in %s" % col)
                     else:
                         logger.warning(" Null values interpolated in %s" % col)
                         df.loc[:, col] = df[col].interpolate()
@@ -152,8 +154,8 @@ if __name__ == "__main__":
                     logger.warning("%s from ERA5" % col)
                     df[col] = df_ERA5[col]
                     df["missing_type"] = df["missing_type"] + col
-            logger.info(df.missing_type.describe())
-            logger.info(df.missing_type.unique())
+            # logger.info(df.missing_type.describe())
+            # logger.info(df.missing_type.unique())
 
             df = df.reset_index()
 
@@ -203,6 +205,7 @@ if __name__ == "__main__":
                 "LW_in",
                 "snow_h",
                 "T_bulk_meas",
+                "T_G",
             ]
 
 
