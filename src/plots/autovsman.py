@@ -28,6 +28,7 @@ if __name__ == "__main__":
     sprays = ['dynamic_field', 'manual']
 
     mypal = sns.color_palette("Set1", 2)
+    default = "#284D58"
 
     fig, ax = plt.subplots(2, 1, gridspec_kw={'height_ratios': [1, 3]}, sharex="col")
 
@@ -37,42 +38,25 @@ if __name__ == "__main__":
         icestupa.read_output()
         df=icestupa.df
 
-        df_c = pd.read_hdf(FOLDER["input"] + spray + "/input.h5", "df_c")
-        df_c = df_c[["time", "DroneV", "DroneVError"]]
-
-        tol = pd.Timedelta("15T")
-        df_c = df_c.set_index("time")
-        df = df.set_index("time")
-        df_c = pd.merge_asof(
-            left=df,
-            right=df_c,
-            right_index=True,
-            left_index=True,
-            direction="nearest",
-            tolerance=tol,
-        )
-        df_c = df_c[[ "DroneV", "DroneVError", "iceV"]]
-        df = df.reset_index()
-
         if spray == "dynamic_field":
             spray = "Scheduled"
         else:
             spray = "Unscheduled"
 
         x = df.time[1:]
-        y1 = df.Discharge[1:]
-        y2 = df.iceV[1:]
+        y1 = df.temp[1:]
+        y2 = df.Discharge[1:]
         ax[0].plot(
             x,
             y1,
-            linewidth=1,
-            color=mypal[i],
+            linewidth=0.8,
+            color=default,
         )
         ax[0].spines["right"].set_visible(False)
         ax[0].spines["top"].set_visible(False)
         ax[0].spines["left"].set_color("grey")
         ax[0].spines["bottom"].set_color("grey")
-        ax[0].set_ylabel("Discharge [$l/min$]", size=6)
+        ax[0].set_ylabel("Temperature [$\degree C$]", size=6)
 
         ax[1].plot(
             x,
@@ -85,23 +69,63 @@ if __name__ == "__main__":
         ax[1].spines["top"].set_visible(False)
         ax[1].spines["left"].set_color("grey")
         ax[1].spines["bottom"].set_color("grey")
-        ax[1].set_ylabel("Ice Volume [$m^3$]")
+        ax[1].set_ylabel("Discharge [$l/min$]")
 
-        x = df_c.index
-        y2 = df_c.DroneV
-        yerr = df_c.DroneVError
-        ax[1].scatter(x, y2, color=mypal[i], s=8)
-        ax[1].errorbar(x, y2, yerr=df_c.DroneVError, color=mypal[i], linewidth=1)
-        ax[1].set_ylim(bottom=0)
-
+        # ax[1].set_ylim([0,14])
+        # ax[0].set_ylim([-13,10])
 
     ax[1].xaxis.set_major_locator(mdates.WeekdayLocator())
     ax[1].xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     fig.subplots_adjust(hspace=None, wspace=None)
     fig.autofmt_xdate()
     handles, labels = ax[1].get_legend_handles_labels()
-    ax[1].legend(handles, labels, loc="upper left", prop={"size": 8}, title="Fountain spray")
-    plt.savefig("data/figs/paper3/autovsman.png", bbox_inches="tight", dpi=300)
+    ax[1].legend(handles, labels, loc="upper right", prop={"size": 8}, title="Fountain spray")
+    plt.savefig("data/figs/paper3/data.png", bbox_inches="tight", dpi=300)
+    plt.clf()
+
+    #     x = df.time[1:]
+    #     y1 = df.Discharge[1:]
+    #     y2 = df.iceV[1:]
+    #     ax[0].plot(
+    #         x,
+    #         y1,
+    #         linewidth=1,
+    #         color=mypal[i],
+    #     )
+    #     ax[0].spines["right"].set_visible(False)
+    #     ax[0].spines["top"].set_visible(False)
+    #     ax[0].spines["left"].set_color("grey")
+    #     ax[0].spines["bottom"].set_color("grey")
+    #     ax[0].set_ylabel("Discharge [$l/min$]", size=6)
+
+    #     ax[1].plot(
+    #         x,
+    #         y2,
+    #         label= spray,
+    #         linewidth=1,
+    #         color=mypal[i],
+    #     )
+    #     ax[1].spines["right"].set_visible(False)
+    #     ax[1].spines["top"].set_visible(False)
+    #     ax[1].spines["left"].set_color("grey")
+    #     ax[1].spines["bottom"].set_color("grey")
+    #     ax[1].set_ylabel("Ice Volume [$m^3$]")
+
+    #     x = df_c.index
+    #     y2 = df_c.DroneV
+    #     yerr = df_c.DroneVError
+    #     ax[1].scatter(x, y2, color=mypal[i], s=8)
+    #     ax[1].errorbar(x, y2, yerr=df_c.DroneVError, color=mypal[i], linewidth=1)
+    #     ax[1].set_ylim(bottom=0)
+
+
+    # ax[1].xaxis.set_major_locator(mdates.WeekdayLocator())
+    # ax[1].xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    # fig.subplots_adjust(hspace=None, wspace=None)
+    # fig.autofmt_xdate()
+    # handles, labels = ax[1].get_legend_handles_labels()
+    # ax[1].legend(handles, labels, loc="upper left", prop={"size": 8}, title="Fountain spray")
+    # plt.savefig("data/figs/paper3/autovsman.png", bbox_inches="tight", dpi=300)
 
     fig, ax = plt.subplots()
     for i, spray in enumerate(sprays):

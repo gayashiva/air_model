@@ -138,17 +138,22 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                 df.loc[df_f.index, spray] = SITE["D_F"] * df_f["fountain"]
                 df = df.reset_index()
 
+
+            if loc in ["guttannen22"]:
+                df_f = pd.read_csv(
+                    os.path.join("data/" + loc + "/interim/")
+                    + "discharge_labview.csv",
+                    sep=",",
+                    parse_dates=["time"],
+                )
+                df_f = df_f.set_index("time")
+                SITE["dis_max"] = df_f["Discharge"].max()
+
             if loc in ["guttannen22", "guttannen21", "guttannen20"]:
                 SITE, FOLDER = config(loc, spray)
-                # df_f = pd.read_csv(
-                #     os.path.join("data/" + loc + "/interim/")
-                #     + "discharge_labview.csv",
-                #     sep=",",
-                #     parse_dates=["time"],
-                # )
-                # df_f = df_f.set_index("time")
 
                 df_h = pd.DataFrame(SITE["f_heights"])
+
                 df[spray] = SITE["dis_max"]
                 dis_old= SITE["dis_max"]
                 df.loc[df.time < df_h.time[0], spray] = 0

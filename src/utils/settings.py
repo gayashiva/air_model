@@ -37,7 +37,6 @@ def config(location="guttannen21", spray=None):
             if spray == "dynamic" or spray == "static":
                 add= dict(
                     R_F = 4,
-                    dis_max= 14,
                 )
                 # add["expiry_date"] = add["fountain_off_date"]
 
@@ -49,7 +48,7 @@ def config(location="guttannen21", spray=None):
                         {"time": datetime(2021, 12, 23, 16), "h_f": 4.7},
                         {"time": datetime(2022, 2, 12, 16), "h_f": 5.7},
                     ],
-                    dis_max= 14,
+                    # dis_max= 14,
                     # D_F=7.5,  # Fountain mean discharge
                 )
 
