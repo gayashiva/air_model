@@ -30,7 +30,7 @@ def config(location="guttannen21", spray=None):
             h_dome = 0.13, #Initialise ice height at start
             # cld=0.5,
             # Calibrated values
-            DX=45e-03,  # Surface layer thickness [m]
+            # DX=200e-03,  # Surface layer thickness [m]
         )
 
         if spray != None:

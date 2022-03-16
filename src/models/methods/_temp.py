@@ -22,10 +22,11 @@ def get_temp(self, i):
         and self.df.loc[i, "Qtotal"] < 0
     ):
         self.df.loc[i, "event"] = 1
+
     else:
         self.df.loc[i, "event"] = 0
 
-    if self.df.loc[i, "event"]:
+    if self.df.loc[i, "event"] == 1:
         self.df.loc[i, "Qfreeze"] = freezing_energy
         self.df.loc[i, "Qmelt"] = np.nan
 
@@ -96,7 +97,6 @@ def get_temp(self, i):
         self.df.loc[i, "melted"] = (
             self.df.loc[i, "Qmelt"] * self.DT * self.df.loc[i, "A_cone"] / (self.L_F)
         )
-
 
 def test_get_temp(self, i):
     self.get_temp(i)

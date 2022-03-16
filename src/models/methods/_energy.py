@@ -60,7 +60,7 @@ def get_energy(self, i):
         self.df.loc[i, "T_s"] + 273.15, 4
     )
 
-    # if self.df.loc[i, "Discharge"] > 0:
+
     self.df.loc[i, "Qf"] = (
         (self.df.loc[i, "Discharge"] * self.DT / 60)
         * self.C_W
@@ -68,6 +68,12 @@ def get_energy(self, i):
         # * self.T_F
         / (self.DT * self.df.loc[i, "A_cone"])
     )
+
+    # # snows heats temp to zero
+    # if self.df.loc[i, "snow2ice"] > 0:
+    #     self.df.loc[i, "Qf"] += (
+    #         (-self.df.loc[i, "T_s"]) * self.RHO_I * self.DX * self.C_I / self.DT
+    #     )
 
     # self.df.loc[i, "Qf"] += (
     #     (self.df.loc[i, "T_s"]) * self.RHO_I * self.DX * self.C_I / self.DT

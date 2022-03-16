@@ -403,6 +403,15 @@ class Icestupa:
 
             self.get_area(i)
 
+            # Precipitation
+            self.df.loc[i, "snow2ice"] = (
+                self.RHO_W
+                * self.df.loc[i, "ppt"]
+                / 1000
+                * math.pi
+                * math.pow(self.df.loc[i, "r_cone"], 2)
+            )
+
             if test:
                 self.test_get_energy(i)
             else:
@@ -425,14 +434,10 @@ class Icestupa:
                     self.df.loc[i, "Ql"] * self.DT * self.df.loc[i, "A_cone"] / self.L_S
                 )
 
-            # Precipitation
-            self.df.loc[i, "snow2ice"] = (
-                self.RHO_W
-                * self.df.loc[i, "ppt"]
-                / 1000
-                * math.pi
-                * math.pow(self.df.loc[i, "r_cone"], 2)
-            )
+                
+            # # Treating snowfall like discharge
+            # self.df.loc[i, "Discharge"] += self.df.loc[i, "snow2ice"]/ self.DT * 60
+            # self.df.loc[i, "snow2ice"] = 0
 
             # Precipitation not from snow height and possible rain
             if "snow_h" not in list(self.df.columns) and self.df.loc[i, "temp"] > self.T_PPT:
@@ -460,11 +465,12 @@ class Icestupa:
             self.df.loc[i + 1, "wastewater"] = (
                 self.df.loc[i, "wastewater"] + self.df.loc[i, "wasted"]
             )
-            self.df.loc[i + 1, "iceV"] = self.df.loc[i + 1, "ice"]/self.RHO_I
-                # (self.df.loc[i + 1, "ice"] - self.df.loc[i, "snow2ice"]) 
-                # / self.RHO_I
-                # + self.df.loc[i, "snow2ice"] 
-                # /self.RHO_S)
+            # self.df.loc[i + 1, "iceV"] = self.df.loc[i + 1, "ice"]/self.RHO_I
+            self.df.loc[i + 1, "iceV"] = (
+                (self.df.loc[i + 1, "ice"] - self.df.loc[i, "snow2ice"])
+                / self.RHO_I
+                + self.df.loc[i, "snow2ice"]
+                /self.RHO_S)
 
             self.df.loc[i + 1, "input"] = (
                 self.df.loc[i, "input"]

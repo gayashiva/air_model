@@ -36,8 +36,8 @@ if __name__ == "__main__":
 
     # sprays = ["manual", "dynamic"]
     # sprays = ["manual", "dynamic", "dynamic_field"]
-    # sprays = ["dynamic_field"]
-    sprays=["manual"]
+    sprays = ["dynamic_field"]
+    # sprays=["manual"]
     # sprays=["dynamic_field", "manual"]
 
     for spray in sprays:
@@ -53,7 +53,6 @@ if __name__ == "__main__":
             rmse = mean_squared_error(icestupa.df.T_bulk_meas, icestupa.df.T_bulk, squared=False)
             nse = nse(icestupa.df.T_bulk, icestupa.df.T_bulk_meas)
             print(f"Calculated NSE {nse} and RMSE {rmse}")
-
 
         else:
             # For web app
