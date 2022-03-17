@@ -65,28 +65,27 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
         if spray == "dynamic":
             SITE, FOLDER = config(loc, "dynamic")
 
-            with open("data/common/alt_coeffs.json") as f:
-                param_values = json.load(f)
-            print(
-                "dis = %.5f * temp + %.5f * rh + %.5f * wind + %.5f * alt + %.5f * cld + %.5f "
-                % (
-                    param_values['a'],
-                    param_values["b"],
-                    param_values["c"],
-                    param_values["d"],
-                    param_values["e"],
-                    param_values["f"],
-                )
-            )
+
+            df.loc[i, "Discharge_sim"] = TempFreeze(data) + model.eval(x=df.time.dt.hour[i], **sun_params)
 
             input_file = FOLDER["input"] + "aws.csv"
             df_aws = pd.read_csv(input_file, sep=",", header=0, parse_dates=["time"])
 
             for i in range(0,df_aws.shape[0]):
-                df.loc[i, "dynamic"] = autoLinear(**param_values, temp=df_aws.temp[i],rh=df_aws.RH[i],
-                                               wind=df_aws.wind[i], alt=SITE["alt"]/1000, cld=cld)
-                df.loc[i, "dynamic"] += df_solar[df_solar.time == df_aws.time[i]].dis.values[0]
+                # df.loc[i, "dynamic"] = autoLinear(**param_values, temp=df_aws.temp[i],rh=df_aws.RH[i],
+                #                                wind=df_aws.wind[i], alt=SITE["alt"]/1000, cld=cld)
+                # df.loc[i, "dynamic"] += df_solar[df_solar.time == df_aws.time[i]].dis.values[0]
+
+                data=dict()
+                data["temp"] = df.temp[i]
+                data["rh"] = df.RH[i]
+                data["wind"] = df.wind[i]
+                data["obj"] = obj
+                data["alt"] = SITE["alt"]/1000
+                model = GaussianModel()
+                df.loc[i, "dynamic"] = TempFreeze(data) + model.eval(x=df.time.dt.hour[i], **sun_params)
                 df.loc[i, "dynamic"] *= math.pi * math.pow(SITE["R_F"],2) * math.sqrt(2)
+
                 if df.dynamic[i] < 0:
                     df.loc[i, "dynamic"] = 0
                 # if df.dynamic[i] >= SITE["dis_max"]:
