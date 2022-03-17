@@ -41,7 +41,6 @@ if __name__ == "__main__":
     # print(icestupa.df[['When', 'cam_temp']].loc[icestupa.df.cam_temp>0])
 
     fig = plt.figure()
-
     ax1 = fig.add_subplot(111)
     ax1.scatter(icestupa.df.Qs, -icestupa.df.Qs_meas, s=2)
     ax1.set_xlabel("Modelled Qs")
