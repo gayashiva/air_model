@@ -100,10 +100,8 @@ def get_field(location="schwarzsee19"):
         df.loc[df.ppt<0.5, "ppt"] = 0  # Assuming 0.5 mm error
 
         # print(df.time[df.T_ice_8.isna()].values[0])
-        # df['T_bulk_meas'] = (df["T_ice_2"] + df["T_ice_3"] + df["T_ice_4"]+ df["T_ice_5"]+ df["T_ice_6"]+df["T_ice_7"])/6
+        df['T_bulk_meas'] = (df["T_ice_2"] + df["T_ice_3"] + df["T_ice_4"]+ df["T_ice_5"]+ df["T_ice_6"]+df["T_ice_7"])/6
         # df['T_bulk_meas'] = (df["T_ice_2"] + df["T_ice_3"] + df["T_ice_4"]+ df["T_ice_5"]+ df["T_ice_6"])/5
-        # df['T_bulk_meas'] = df["T_ice_3"]
-        df['T_bulk_meas'] = df["T_ice_7"]
         df['T_G'] = df["T_ice_1"]
 
 

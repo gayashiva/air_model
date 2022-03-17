@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from matplotlib.offsetbox import AnchoredText
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+from matplotlib.lines import Line2D
 import logging, coloredlogs
 
 sys.path.append(
@@ -30,6 +31,14 @@ if __name__ == "__main__":
 
     mypal = sns.color_palette("Set1", 2)
     default = "#284D58"
+    grey = "#ced4da"
+    legend_elements = [Line2D([0], [0], color=mypal[0], lw=4, label='Scheduled'),
+                        Line2D([0], [0], color=mypal[1], lw=4, label='Unscheduled'),
+                        Line2D([0], [0], color=default, lw=4, label='Measured Temperature'),
+                       Line2D([0], [0], marker='.', color='w', label='Measured Volume',
+                              markerfacecolor='k', markersize=15),
+                        Line2D([0], [0], color=grey, lw=4, label='Dome Volume'),
+                       ]
 
     fig, ax = plt.subplots(3, 1, gridspec_kw={'height_ratios': [1,1,2]}, sharex="col")
     for i, spray in enumerate(sprays):
@@ -96,7 +105,7 @@ if __name__ == "__main__":
     plt.savefig("data/figs/paper3/data.png", bbox_inches="tight", dpi=300)
     plt.close()
 
-    fig, ax = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]}, sharex="col")
+    fig, ax = plt.subplots(2, 1, gridspec_kw={'height_ratios': [1, 3]}, sharex="col")
 
     # fig = plt.figure()
     # ax1 = fig.add_subplot(111)
@@ -128,13 +137,15 @@ if __name__ == "__main__":
         else:
             spray = "Unscheduled"
 
+        df["T_ice_mean"] = (df["T_s"] + df["T_bulk"])/2
         df["T_bulk_meas"] = np.where(df.T_bulk_meas < 0,df.T_bulk_meas, np.NaN)
+        df["T_ice_mean"] = np.where(df.T_ice_mean < 0,df.T_ice_mean, np.NaN)
         x = df.time[1:]
         # y1 = df.T_bulk[1:]
-        y1 = df.T_s[1:]
+        y1 = (df.T_s[1:] + df.T_bulk[1:])/2
         y1t = df.T_bulk_meas[1:]
 
-        column_1 = "T_s"
+        column_1 = "T_ice_mean"
         column_2 = "T_bulk_meas"
         correlation = df[column_1].corr(icestupa.df[column_2])
         print("Correlation between %s and %s is %0.2f"%(column_1, column_2, correlation))
@@ -161,27 +172,28 @@ if __name__ == "__main__":
         #     bbox_inches="tight",
         #     dpi=300,
         # )
-        ax[0].plot(
-            x,
-            y1,
-            linewidth=1,
-            color=mypal[i],
-            zorder = i+1,
-            alpha=0.8,
-        )
-        ax[0].plot(
-            x,
-            y1t,
-            linewidth=0.5,
-            color=default,
-            zorder=0
-        )
-        ax[0].spines["right"].set_visible(False)
-        ax[0].spines["top"].set_visible(False)
-        ax[0].spines["left"].set_color("grey")
-        ax[0].spines["bottom"].set_color("grey")
-        ax[0].set_ylabel(" Bulk Temperature [$\degree C$]", size=6)
-        ax[0].set_ylim([-20,0])
+        if spray != "Unscheduled":
+            ax[0].plot(
+                x,
+                y1,
+                linewidth=0.5,
+                color=mypal[i],
+                zorder = i+1,
+                alpha=0.8,
+            )
+            ax[0].plot(
+                x,
+                y1t,
+                linewidth=1,
+                color=default,
+                zorder=0
+            )
+            ax[0].spines["right"].set_visible(False)
+            ax[0].spines["top"].set_visible(False)
+            ax[0].spines["left"].set_color("grey")
+            ax[0].spines["bottom"].set_color("grey")
+            ax[0].set_ylabel(" Bulk Temperature [$\degree C$]", size=6)
+            ax[0].set_ylim([-20,0])
 
         y2 = df.iceV[1:]
         ax[1].plot(
@@ -200,21 +212,22 @@ if __name__ == "__main__":
         x = df_c.index
         y2 = df_c.DroneV
         yerr = df_c.DroneVError
+        ax[1].fill_between(x, y1=icestupa.V_dome, y2=0, color=grey, label="Dome Volume")
         ax[1].scatter(x, y2, color=mypal[i], s=8)
         ax[1].errorbar(x, y2, yerr=df_c.DroneVError, color=mypal[i], linewidth=1)
-        ax[1].set_ylim(bottom=0)
+        ax[1].set_ylim([0,80])
 
 
     ax[1].xaxis.set_major_locator(mdates.WeekdayLocator())
     ax[1].xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     fig.subplots_adjust(hspace=None, wspace=None)
     fig.autofmt_xdate()
-    handles, labels = ax[1].get_legend_handles_labels()
-    ax[1].legend(handles, labels, loc="upper left", prop={"size": 8}, title="Fountain spray")
-    plt.savefig("data/figs/paper3/autovsman.png", bbox_inches="tight", dpi=300)
+    ax[1].legend(handles=legend_elements, prop={"size": 8})
+    plt.savefig("data/figs/paper3/validation.png", bbox_inches="tight", dpi=300)
 
     fig, ax = plt.subplots()
-    grey = "#ced4da"
+
+
     for i, spray in enumerate(sprays):
         SITE, FOLDER = config(location, spray)
         icestupa = Icestupa(location, spray)
@@ -268,8 +281,7 @@ if __name__ == "__main__":
         ax.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
 
-    handles, labels = ax.get_legend_handles_labels()
-    ax.legend(handles, labels, prop={"size": 8}, title="Method")
+    ax.legend(handles=legend_elements, prop={"size": 8})
     plt.savefig("data/figs/paper3/autovsman_vol.png", bbox_inches="tight", dpi=300)
     plt.clf()
 

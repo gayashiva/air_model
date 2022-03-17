@@ -13,6 +13,7 @@ from matplotlib.offsetbox import AnchoredText
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import logging, coloredlogs
+from sklearn.metrics import mean_squared_error
 
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -23,6 +24,7 @@ from src.models.methods.metadata import get_parameter_metadata
 from src.automate.gen_coeffs import autoDis
 from src.automate.autoDischarge import TempFreeze
 from lmfit.models import GaussianModel
+from src.utils.eff_criterion import nse
 
 if __name__ == "__main__":
     # Main logger
@@ -67,7 +69,6 @@ if __name__ == "__main__":
                 df.loc[i, "Discharge_sim"]*= math.sqrt(2) * math.pi * icestupa.R_F **2
             if obj == "WUE":
                 df.loc[i, "Discharge_sim"]*= math.pi * icestupa.R_F **2
-            # df.loc[i, "Discharge_sim"]*= math.pi * 7 **2
 
             # TODO correct with params
             if df.Discharge_sim[i] < 0:
@@ -77,12 +78,17 @@ if __name__ == "__main__":
             # if df.wind[i] >= 8 or df.temp[i] > -2 or df.temp[i] < -8:
             #     df.loc[i, "Discharge_sim"] = 0
 
-        df["fountain_froze"] = np.where(df.fountain_froze == 0, np.nan, df.fountain_froze)
-        df["Discharge_sim"] = np.where(df.Discharge_sim == 0, np.nan, df.Discharge_sim)
         column_1 = "fountain_froze"
         column_2 = "Discharge_sim"
         correlation = df[column_1].corr(icestupa.df[column_2])
         print("Correlation between %s and %s is %0.2f"%(column_1, column_2, correlation))
+        eff = nse(df[column_2], df[column_1]/60)
+        rmse = mean_squared_error(df[column_2], df[column_1]/60, squared=False)
+        print(f"Calculated NSE {eff} and RMSE {rmse}")
+
+        # df["fountain_froze"] = np.where(df.fountain_froze == 0, np.nan, df.fountain_froze)
+        # df["Discharge_sim"] = np.where(df.Discharge_sim == 0, np.nan, df.Discharge_sim)
+
 
         # fig, ax = plt.subplots(2, 1, sharex="col")
 
