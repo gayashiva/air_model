@@ -37,11 +37,16 @@ if __name__ == "__main__":
     # df = df[df.time<datetime(2022,1,26)] #automation error
 
     objs = ["WUE", "ICV"]
+    styles=['.', 'x']
     # objs = ["WUE"]
-    objs = ["ICV"]
+    # objs = ["ICV"]
 
-    for obj in objs:
-        print(obj)
+    default = "#284D58"
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+
+    for j,obj in enumerate(objs):
+        print(j,obj)
         with open(FOLDER["input"] + "dynamic/coeffs_" + obj + ".json") as f:
             params = json.load(f)
         sun_params = {"amplitude": params["amplitude"], "center": params["center"], "sigma": params["sigma"]}
@@ -71,80 +76,77 @@ if __name__ == "__main__":
                 df.loc[i, "Discharge_sim"] = 11
             # if df.wind[i] >= 8 or df.temp[i] > -2 or df.temp[i] < -8:
             #     df.loc[i, "Discharge_sim"] = 0
-        logger.warning(df.Discharge_sim.describe())
-        logger.warning(df.Discharge.describe())
 
         df["fountain_froze"] = np.where(df.fountain_froze == 0, np.nan, df.fountain_froze)
         df["Discharge_sim"] = np.where(df.Discharge_sim == 0, np.nan, df.Discharge_sim)
-
         column_1 = "fountain_froze"
         column_2 = "Discharge_sim"
         correlation = df[column_1].corr(icestupa.df[column_2])
         print("Correlation between %s and %s is %0.2f"%(column_1, column_2, correlation))
 
-        fig, ax = plt.subplots(2, 1, sharex="col")
+        # fig, ax = plt.subplots(2, 1, sharex="col")
 
         x = df.time[1:]
         y1 = df.fountain_froze[1:]/60
         y2 = df.Discharge_sim[1:]
-        ax[0].plot(
-            x,
-            y1,
-            # label= spray + "Discharge",
-            linewidth=1,
-            # color=mypal[i],
-        )
-        ax[0].spines["right"].set_visible(False)
-        ax[0].spines["top"].set_visible(False)
-        ax[0].spines["left"].set_color("grey")
-        ax[0].spines["bottom"].set_color("grey")
-        ax[0].set_ylabel("Freezing rate[$l/min$]")
-        ax[0].set_ylim([0,2])
+        # ax[0].plot(
+        #     x,
+        #     y1,
+        #     # label= spray + "Discharge",
+        #     linewidth=1,
+        #     # color=mypal[i],
+        # )
+        # ax[0].spines["right"].set_visible(False)
+        # ax[0].spines["top"].set_visible(False)
+        # ax[0].spines["left"].set_color("grey")
+        # ax[0].spines["bottom"].set_color("grey")
+        # ax[0].set_ylabel("Freezing rate[$l/min$]")
+        # ax[0].set_ylim([0,2])
 
-        ax[1].plot(
-            x,
-            y2,
-            # label= spray,
-            linewidth=1,
-            # color=mypal[i],
-        )
-        ax[1].spines["right"].set_visible(False)
-        ax[1].spines["top"].set_visible(False)
-        ax[1].spines["left"].set_color("grey")
-        ax[1].spines["bottom"].set_color("grey")
-        ax[1].set_ylabel("Sim Discharge [$l/min$]")
-        ax[1].set_ylim([0,2])
+        # ax[1].plot(
+        #     x,
+        #     y2,
+        #     # label= spray,
+        #     linewidth=1,
+        #     # color=mypal[i],
+        # )
+        # ax[1].spines["right"].set_visible(False)
+        # ax[1].spines["top"].set_visible(False)
+        # ax[1].spines["left"].set_color("grey")
+        # ax[1].spines["bottom"].set_color("grey")
+        # ax[1].set_ylabel("Sim Discharge [$l/min$]")
+        # ax[1].set_ylim([0,2])
 
 
-        ax[1].xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax[1].xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        fig.autofmt_xdate()
-        handles, labels = ax[1].get_legend_handles_labels()
-        fig.legend(handles, labels, loc="upper right", prop={"size": 8})
-        plt.savefig("data/figs/paper3/simvsreal_dis.jpg", bbox_inches="tight", dpi=300)
-        plt.clf()
+        # ax[1].xaxis.set_major_locator(mdates.WeekdayLocator())
+        # ax[1].xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        # fig.autofmt_xdate()
+        # handles, labels = ax[1].get_legend_handles_labels()
+        # fig.legend(handles, labels, loc="upper right", prop={"size": 8})
+        # plt.savefig("data/figs/paper3/simvsreal_dis.jpg", bbox_inches="tight", dpi=300)
+        # plt.clf()
 
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.scatter(y1, y2, s=2)
-        ax1.set_xlabel("Physical")
-        ax1.set_ylabel("Empirical")
+        ax1.scatter(y1, y2, s=10, marker=styles[j], color=default, label = obj)
+        ax1.set_xlabel("Validated freezing rate [$l/min$]")
+        ax1.set_ylabel("Scheduled discharge rate [$l/min$]")
         ax1.grid()
 
         # lims = [
         #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
         #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
         # ]
-        lims = [0,2]
+        lims = [0,2.5]
 
         # now plot both limits against eachother
         ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
         ax1.set_aspect("equal")
         ax1.set_xlim(lims)
         ax1.set_ylim(lims)
+        
 
-        plt.savefig(
-            "data/figs/paper3/freezing_rate_corr.jpg",
-            bbox_inches="tight",
-            dpi=300,
-        )
+    ax1.legend(prop={"size": 8}, title="Objective", loc="upper right")
+    plt.savefig(
+        "data/figs/paper3/freezing_rate_corr.png",
+        bbox_inches="tight",
+        dpi=300,
+    )
