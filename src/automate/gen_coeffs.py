@@ -1,7 +1,7 @@
 """Generate coefficients for empirical fountain scheduler"""
 import pandas as pd
 import multiprocessing
-import xarray as xr
+# import xarray as xr
 import numpy as np
 import os, sys
 import json

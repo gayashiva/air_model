@@ -21,75 +21,95 @@ from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
 from src.models.methods.metadata import get_parameter_metadata
 from src.automate.gen_coeffs import autoDis
-
-# def autoDis(a, b, c, d, amplitude, center, sigma, temp, time, rh, v):
-#     model = GaussianModel()
-#     params = {"amplitude": amplitude, "center": center, "sigma": sigma}
-#     return a * temp + b * rh + c * v + d + model.eval(x=time, **params)
-
+from src.automate.autoDischarge import TempFreeze
 
 if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
-    logger.setLevel("ERROR")
+    logger.setLevel("WARNING")
 
-    location = "Guttannen 2022"
-    icestupa = Icestupa(location, spray="auto")
+    loc= "Guttannen 2022"
+    icestupa = Icestupa(loc, spray="manual")
+    SITE, FOLDER = config(loc, spray="manual")
     icestupa.read_output()
     df = icestupa.df
+    # df = df[df.time<datetime(2022,1,26)] #automation error
 
-    with open(icestupa.sim + "coeffs.json") as f:
-        param_values = json.load(f)
+    objs = ["WUE", "ICV"]
+    objs = ["WUE"]
+    # objs = ["ICV"]
 
-    for i in range(0,df.shape[0]):
-        df.loc[i, "Discharge_sim"] = autoDis(**param_values, time=df.time.dt.hour[i], temp=df.temp[i],rh=df.RH[i], v=df.wind[i])
-        # TODO correct with params
-        if df.Discharge_sim[i] < 2:
-            df.loc[i, "Discharge_sim"] = 0
-        if df.Discharge_sim[i] >= 13:
-            df.loc[i, "Discharge_sim"] = 13
-        if df.wind[i] >= 8 or df.temp[i] > -2 or df.temp[i] < -8:
-            df.loc[i, "Discharge_sim"] = 0
-    logger.warning(df.Discharge_sim.describe())
-    logger.warning(df.Discharge.describe())
+    for obj in objs:
+        print(obj)
+        with open(FOLDER["input"] + "dynamic/coeffs_" + obj + ".json") as f:
+            params = json.load(f)
 
-    fig, ax = plt.subplots(2, 1, sharex="col")
-    x = df.time[1:]
-    y1 = df.Discharge[1:]
-    y2 = df.Discharge_sim[1:]
-    ax[0].plot(
-        x,
-        y1,
-        # label= spray + "Discharge",
-        linewidth=1,
-        # color=mypal[i],
-    )
-    ax[0].spines["right"].set_visible(False)
-    ax[0].spines["top"].set_visible(False)
-    ax[0].spines["left"].set_color("grey")
-    ax[0].spines["bottom"].set_color("grey")
-    ax[0].set_ylabel("Discharge [$l/min$]")
+        for i in range(0,df.shape[0]):
+            # df.loc[i, "Discharge_sim"] = autoDis(**params, time=df.time.dt.hour[i], temp=df.temp[i],rh=df.RH[i],wind=df.wind[i])
+            data=dict()
+            data["temp"] = df.temp[i]
+            data["rh"] = df.RH[i]
+            data["wind"] = df.wind[i]
+            data["obj"] = obj
+            data["alt"] = SITE["alt"]/1000
+            df.loc[i, "Discharge_sim"] = TempFreeze(data)
+            
+            if obj == "ICV":
+                df.loc[i, "Discharge_sim"]*= math.sqrt(2) * math.pi * icestupa.R_F **2
+            if obj == "WUE":
+                df.loc[i, "Discharge_sim"]*= math.pi * icestupa.R_F **2
+            # df.loc[i, "Discharge_sim"]*= math.pi * 7 **2
 
-    ax[1].plot(
-        x,
-        y2,
-        # label= spray,
-        linewidth=1,
-        # color=mypal[i],
-    )
-    ax[1].spines["right"].set_visible(False)
-    ax[1].spines["top"].set_visible(False)
-    ax[1].spines["left"].set_color("grey")
-    ax[1].spines["bottom"].set_color("grey")
-    ax[1].set_ylabel("Sim Discharge [$l/min$]")
+            # TODO correct with params
+            if df.Discharge_sim[i] < 0:
+                df.loc[i, "Discharge_sim"] = 0
+            if df.Discharge_sim[i] >= 11:
+                df.loc[i, "Discharge_sim"] = 11
+            # if df.wind[i] >= 8 or df.temp[i] > -2 or df.temp[i] < -8:
+            #     df.loc[i, "Discharge_sim"] = 0
+        logger.warning(df.Discharge_sim.describe())
+        logger.warning(df.Discharge.describe())
+
+        fig, ax = plt.subplots(2, 1, sharex="col")
+        x = df.time[1:]
+        # y1 = df.Discharge[1:]
+        y1 = df.fountain_froze[1:]/60
+        y2 = df.Discharge_sim[1:]
+        ax[0].plot(
+            x,
+            y1,
+            # label= spray + "Discharge",
+            linewidth=1,
+            # color=mypal[i],
+        )
+        ax[0].spines["right"].set_visible(False)
+        ax[0].spines["top"].set_visible(False)
+        ax[0].spines["left"].set_color("grey")
+        ax[0].spines["bottom"].set_color("grey")
+        ax[0].set_ylabel("Freezing rate[$l/min$]")
+        ax[0].set_ylim([0,2])
+
+        ax[1].plot(
+            x,
+            y2,
+            # label= spray,
+            linewidth=1,
+            # color=mypal[i],
+        )
+        ax[1].spines["right"].set_visible(False)
+        ax[1].spines["top"].set_visible(False)
+        ax[1].spines["left"].set_color("grey")
+        ax[1].spines["bottom"].set_color("grey")
+        ax[1].set_ylabel("Sim Discharge [$l/min$]")
+        ax[1].set_ylim([0,2])
 
 
-    ax[1].xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax[1].xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax[1].xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax[1].xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
 # ax[1].xaxis.set_minor_locator(mdates.DayLocator())
-    fig.autofmt_xdate()
+        fig.autofmt_xdate()
 # fig.text(0.04, 0.5, "Ice Volume[$m^3$]", va="center", rotation="vertical")
-    handles, labels = ax[1].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="upper right", prop={"size": 8})
+        handles, labels = ax[1].get_legend_handles_labels()
+        fig.legend(handles, labels, loc="upper right", prop={"size": 8})
 # plt.legend()
-    plt.savefig("data/figs/paper3/simvsreal_dis.jpg", bbox_inches="tight", dpi=300)
+        plt.savefig("data/figs/paper3/simvsreal_dis.jpg", bbox_inches="tight", dpi=300)

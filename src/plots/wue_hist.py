@@ -71,7 +71,7 @@ if __name__ == "__main__":
     ax.spines["right"].set_visible(False)
     ax.spines["top"].set_visible(False)
     ax.legend(handles=legend_elements)
-    plt.savefig("data/figs/slides/wue.png", bbox_inches="tight")
+    plt.savefig("data/figs/slides/wue.png", bbox_inches="tight", dpi=300)
 
 
     #     ax[0].spines["left"].set_color("grey")

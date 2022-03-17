@@ -25,8 +25,8 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("ERROR")
     location = 'guttannen22'
-    # sprays = ['dynamic_field', 'manual']
-    sprays = ['dynamic_field']
+    sprays = ['dynamic_field', 'manual']
+    # sprays = ['dynamic_field']
 
     mypal = sns.color_palette("Set1", 2)
     default = "#284D58"
@@ -97,6 +97,9 @@ if __name__ == "__main__":
     plt.close()
 
     fig, ax = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]}, sharex="col")
+
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(111)
     for i, spray in enumerate(sprays):
         SITE, FOLDER = config(location, spray)
         icestupa = Icestupa(location, spray)
@@ -125,11 +128,39 @@ if __name__ == "__main__":
         else:
             spray = "Unscheduled"
 
+        df["T_bulk_meas"] = np.where(df.T_bulk_meas < 0,df.T_bulk_meas, np.NaN)
         x = df.time[1:]
-        y1 = df.T_bulk[1:]
-        # y1 = df.T_s[1:]
+        # y1 = df.T_bulk[1:]
+        y1 = df.T_s[1:]
         y1t = df.T_bulk_meas[1:]
-        y2 = df.iceV[1:]
+
+        column_1 = "T_s"
+        column_2 = "T_bulk_meas"
+        correlation = df[column_1].corr(icestupa.df[column_2])
+        print("Correlation between %s and %s is %0.2f"%(column_1, column_2, correlation))
+
+        # ax1.scatter(y1t, y1, s=2)
+        # ax1.set_ylabel("Modelled Qs")
+        # ax1.set_xlabel("Measured Qs")
+        # ax1.grid()
+
+        # lims = [
+        #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+        #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+        # ]
+
+        # # now plot both limits against eachother
+        # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+        # ax1.set_aspect("equal")
+        # ax1.set_xlim(lims)
+        # ax1.set_ylim(lims)
+        # # format the ticks
+
+        # plt.savefig(
+        #     FOLDER['fig'] + "correlate_Ts.jpg",
+        #     bbox_inches="tight",
+        #     dpi=300,
+        # )
         ax[0].plot(
             x,
             y1,
@@ -152,6 +183,7 @@ if __name__ == "__main__":
         ax[0].set_ylabel(" Bulk Temperature [$\degree C$]", size=6)
         ax[0].set_ylim([-20,0])
 
+        y2 = df.iceV[1:]
         ax[1].plot(
             x,
             y2,
@@ -181,59 +213,63 @@ if __name__ == "__main__":
     ax[1].legend(handles, labels, loc="upper left", prop={"size": 8}, title="Fountain spray")
     plt.savefig("data/figs/paper3/autovsman.png", bbox_inches="tight", dpi=300)
 
-    # fig, ax = plt.subplots()
-    # for i, spray in enumerate(sprays):
-    #     SITE, FOLDER = config(location, spray)
-    #     icestupa = Icestupa(location, spray)
-    #     icestupa.read_output()
-    #     df=icestupa.df
+    fig, ax = plt.subplots()
+    grey = "#ced4da"
+    for i, spray in enumerate(sprays):
+        SITE, FOLDER = config(location, spray)
+        icestupa = Icestupa(location, spray)
+        icestupa.read_output()
+        df=icestupa.df
 
-    #     df_c = pd.read_hdf(FOLDER["input"] + spray + "/input.h5", "df_c")
-    #     df_c = df_c[["time", "DroneV", "DroneVError"]]
+        df_c = pd.read_hdf(FOLDER["input"] + spray + "/input.h5", "df_c")
+        df_c = df_c[["time", "DroneV", "DroneVError"]]
 
-    #     tol = pd.Timedelta("15T")
-    #     df_c = df_c.set_index("time")
-    #     df = df.set_index("time")
-    #     df_c = pd.merge_asof(
-    #         left=df,
-    #         right=df_c,
-    #         right_index=True,
-    #         left_index=True,
-    #         direction="nearest",
-    #         tolerance=tol,
-    #     )
-    #     df_c = df_c[["DroneV", "DroneVError", "iceV"]]
-    #     df = df.reset_index()
+        tol = pd.Timedelta("15T")
+        df_c = df_c.set_index("time")
+        df = df.set_index("time")
+        df_c = pd.merge_asof(
+            left=df,
+            right=df_c,
+            right_index=True,
+            left_index=True,
+            direction="nearest",
+            tolerance=tol,
+        )
+        df_c = df_c[["DroneV", "DroneVError", "iceV"]]
+        df = df.reset_index()
 
-    #     if spray == "dynamic_field":
-    #         spray = "Dynamic"
-    #     else:
-    #         spray = "Manual"
+        if spray == "dynamic_field":
+            spray = "Dynamic"
+        else:
+            spray = "Manual"
 
-    #     x = df.time
-    #     y1 = df.iceV
-    #     ax.set_ylabel("Ice Volume[$m^3$]")
-    #     ax.plot(
-    #         x,
-    #         y1,
-    #         label="Modelled Volume",
-    #         linewidth=1,
-    #         color=mypal[i],
-    #     )
-    #     y2 = df_c.DroneV
-    #     yerr = df_c.DroneVError
-    #     ax.scatter(x, y2, color=mypal[i], label="Measured Volume")
-    #     ax.errorbar(x, y2, yerr=df_c.DroneVError, color=mypal[i])
-    #     ax.set_ylim(bottom=0)
-    #     ax.spines["right"].set_visible(False)
-    #     ax.spines["top"].set_visible(False)
-    #     ax.spines["left"].set_color("grey")
-    #     ax.spines["bottom"].set_color("grey")
-    #     ax.xaxis.set_major_locator(mdates.WeekdayLocator())
-    #     ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    #     ax.xaxis.set_minor_locator(mdates.DayLocator())
-    #     fig.autofmt_xdate()
-    # ax.legend(handles, labels, prop={"size": 8}, title="Method")
-    # plt.savefig("data/figs/slides/autovsman_vol.png", bbox_inches="tight", dpi=300)
-    # plt.clf()
+        x = df.time
+        y1 = df.iceV
+        ax.set_ylabel("Ice Volume[$m^3$]")
+        ax.plot(
+            x,
+            y1,
+            label=spray,
+            linewidth=1,
+            color=mypal[i],
+        )
+        y2 = df_c.DroneV
+        yerr = df_c.DroneVError
+        ax.fill_between(x, y1=icestupa.V_dome, y2=0, color=grey, label="Dome Volume")
+        ax.scatter(x, y2, color=mypal[i], label="Measured Volume")
+        ax.errorbar(x, y2, yerr=df_c.DroneVError, color=mypal[i])
+        ax.set_ylim([0,80])
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+        ax.spines["left"].set_color("grey")
+        ax.spines["bottom"].set_color("grey")
+        ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax.xaxis.set_minor_locator(mdates.DayLocator())
+        fig.autofmt_xdate()
+
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles, labels, prop={"size": 8}, title="Method")
+    plt.savefig("data/figs/paper3/autovsman_vol.png", bbox_inches="tight", dpi=300)
+    plt.clf()
 

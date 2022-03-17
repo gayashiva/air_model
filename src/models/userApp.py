@@ -36,9 +36,9 @@ if __name__ == "__main__":
 
     # sprays = ["manual", "dynamic"]
     # sprays = ["manual", "dynamic", "dynamic_field"]
-    sprays = ["dynamic_field"]
+    # sprays = ["dynamic_field"]
     # sprays=["manual"]
-    # sprays=["dynamic_field", "manual"]
+    sprays=["dynamic_field", "manual"]
 
     for spray in sprays:
         icestupa = Icestupa(location, spray)
