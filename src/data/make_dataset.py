@@ -47,11 +47,11 @@ if __name__ == "__main__":
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
 
-    for location in locations:
-        SITE, FOLDER = config(location, spray="manual")
+    for loc in locations:
+        SITE, FOLDER = config(loc)
 
-        if location in ["gangles21"]:
-            df = get_field(location)
+        if loc in ["gangles21"]:
+            df = get_field(loc)
             df = df.set_index("time")
             df = df[SITE["start_date"] : SITE["expiry_date"]]
             df = df.reset_index()
@@ -60,11 +60,11 @@ if __name__ == "__main__":
             logger.info(df.missing_type.unique())
         else:
 
-            if location in ["schwarzsee19", "guttannen22"]:
-                df = get_field(location)
+            if loc in ["schwarzsee19", "guttannen22"]:
+                df = get_field(loc)
 
-            if location in ["guttannen21", "guttannen20"]:
-                df = get_meteoswiss(location)
+            if loc in ["guttannen21", "guttannen20"]:
+                df = get_meteoswiss(loc)
 
             df = df.set_index("time")
             df = df[SITE["start_date"] : SITE["expiry_date"]]
@@ -77,8 +77,8 @@ if __name__ == "__main__":
             mask &= df.wind == 0
             df.wind = df.wind.mask(mask)
 
-            # if location in ["guttannen22"]:
-                # df_swiss = get_meteoswiss(location)
+            # if loc in ["guttannen22"]:
+                # df_swiss = get_meteoswiss(loc)
                 # df_swiss = df_swiss.set_index("time")
                 # df_swiss = df_swiss[SITE["start_date"] : SITE["expiry_date"]]
                 # df_swiss = df_swiss.reset_index()
@@ -113,7 +113,7 @@ if __name__ == "__main__":
                 Y = df[column].values.reshape(-1, 1)
                 X = df_ERA5[column].values.reshape(-1, 1)
                 slope, intercept, r_value = linreg(X, Y)
-                logger.info(f"Correlation of {column} in ERA5 is {r_value} at {location}")
+                logger.info(f"Correlation of {column} in ERA5 is {r_value} at {loc}")
                 df_ERA5[column] = slope * df_ERA5[column] + intercept
                 df_ERA5_full[column] = slope * df_ERA5_full[column] + intercept
                 if column in ["wind"]:

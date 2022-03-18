@@ -16,18 +16,21 @@ sys.path.append(dirname)
 from src.utils.settings import config
 from src.models.methods.solar import get_offset
 
-def TempFreeze(data):
+def Scheduler(time, temp, rh, wind, r, alt, coords, obj="icv"):
 
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
 
+    utc = get_offset(*coords, time)
+    daymelt = DayMelt(time, coords, utc, alt)
+
     #Assumptions
     temp_i = 0
 
-    if data["obj"] == "WUE":
+    if obj == "wue":
         cld = 1
         mu_cone = 1
-    elif data["obj"]== "ICV":
+    elif obj== "icv":
         cld = 0
         mu_cone = 1.5
     else:
@@ -35,22 +38,22 @@ def TempFreeze(data):
         sys.exit()
 
     vp_a = np.exp(
-        34.494 - 4924.99/ (data["temp"] + 237.1)
-    ) / ((data["temp"] + 105) ** 1.57 * 100)
-    vp_a *= data["rh"]/100
+        34.494 - 4924.99/ (temp + 237.1)
+    ) / ((temp + 105) ** 1.57 * 100)
+    vp_a *= rh/100
 
     vp_ice = np.exp(43.494 - 6545.8 / (temp_i + 278)) / ((temp_i + 868) ** 2 * 100)
 
-    e_a = (1.24 * math.pow(abs(vp_a / (data["temp"] + 273.15)), 1 / 7)) * (
+    e_a = (1.24 * math.pow(abs(vp_a / (temp + 273.15)), 1 / 7)) * (
         1 + 0.22 * math.pow(cld, 2)
     )
 
     LW = e_a * CONSTANTS["sigma"] * math.pow(
-        data["temp"] + 273.15, 4
+        temp + 273.15, 4
     ) - CONSTANTS["IE"] * CONSTANTS["sigma"] * math.pow(273.15 + temp_i, 4)
 
     # Derived
-    press = atmosphere.alt2pres(data["alt"] * 1000) / 100
+    press = atmosphere.alt2pres(alt) / 100
 
     Qs = (
         mu_cone
@@ -59,8 +62,8 @@ def TempFreeze(data):
         * press
         / CONSTANTS["P0"]
         * math.pow(CONSTANTS["VAN_KARMAN"], 2)
-        * data["wind"]
-        * (data["temp"] - temp_i)
+        * wind
+        * (temp - temp_i)
         / ((np.log(CONSTANTS["H_AWS"] / CONSTANTS["Z"])) ** 2)
     )
 
@@ -71,24 +74,86 @@ def TempFreeze(data):
         * CONSTANTS["RHO_A"]
         / CONSTANTS["P0"]
         * math.pow(CONSTANTS["VAN_KARMAN"], 2)
-        * data["wind"]
+        * wind
         * (vp_a - vp_ice)
         / ((np.log(CONSTANTS["H_AWS"] / CONSTANTS["Z"])) ** 2)
     )
 
-    j_cone = -1 * (Ql / CONSTANTS["L_V"] + (Qs+LW) / CONSTANTS["L_F"]) * 60
+    j_cone = -1 * (Ql / CONSTANTS["L_V"] + (Qs+LW) / CONSTANTS["L_F"]) * 60 + daymelt
+    
+    if obj == "wue":
+        dis = j_cone * math.pi * r**2
+    elif obj== "icv":
+        dis = j_cone * math.sqrt(2) * math.pi * r**2
+    else:
+        logger.error("Wrong Objective")
+        sys.exit()
 
-    return j_cone
+    return dis
 
-def SunMelt(time, coords, utc, alt, obj="WUE"):
+def DayMelt(time, coords, utc, alt, obj="wue"):
 
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
 
-    if obj== "WUE":
+    if obj== "wue":
         cld = 0
         alpha = CONSTANTS["A_I"]
-    elif obj== "ICV":
+    elif obj== "icv":
+        cld = 1
+        alpha = CONSTANTS["A_S"]
+    else:
+        logger.error("Wrong Objective")
+        sys.exit()
+
+    time -= pd.Timedelta(hours=utc)
+    loc = location.Location(
+        *coords,
+        altitude=alt,
+    )
+
+    solar_position = loc.get_solarposition(times=time, method="ephemeris")
+    clearsky = loc.get_clearsky(times=time, model = 'simplified_solis')
+
+    df = pd.DataFrame(
+        {
+            "SW_global": clearsky["ghi"],
+            "sea": np.radians(solar_position["elevation"]),
+        }
+    )
+    bad_values = df["sea"]< 0 
+    df["sea"]= np.where(bad_values, 0, df["sea"])
+    df["SW_diffuse"]= cld * df["SW_global"]
+    df["SW_direct"]= (1-cld) * df["SW_global"]
+                            
+    df.index += pd.Timedelta(hours=utc)
+    df = df.reset_index()
+    df["hour"] = df["index"].apply(lambda x: int(x.strftime("%H")))
+    df["f_cone"] = 0
+
+    for i in range(0, df.shape[0]):
+        if obj == "wue":
+            df.loc[i, "f_cone"] = math.sin(df.loc[i, "sea"])/2
+        elif obj == "icv":
+            df.loc[i, "f_cone"] = (math.cos(df.loc[i, "sea"]) + math.pi * math.sin(df.loc[i, "sea"]))/(2*math.sqrt(2)*math.pi)
+        else:
+            logger.error("Wrong Objective")
+            sys.exit()
+
+    df["SW_direct"]= df["SW_global"] - df["SW_diffuse"]
+    df["j_cone"] = -1 * (1 - alpha) * (df["SW_direct"] * df["f_cone"] + df["SW_diffuse"]) / CONSTANTS["L_F"] * 60
+
+    return df.j_cone.values[0]
+
+def SunMelt(time, coords, utc, alt, obj="wue"):
+
+    with open("data/common/constants.json") as f:
+        CONSTANTS = json.load(f)
+
+    if obj== "wue":
+        cld = 0
+        alpha = CONSTANTS["A_I"]
+    elif obj== "icv":
         cld = 1
         alpha = CONSTANTS["A_S"]
     else:
@@ -132,9 +197,9 @@ def SunMelt(time, coords, utc, alt, obj="WUE"):
     df["f_cone"] = 0
 
     for i in range(0, df.shape[0]):
-        if obj == "WUE":
+        if obj == "wue":
             df.loc[i, "f_cone"] = math.sin(df.loc[i, "sea"])/2
-        elif obj == "ICV":
+        elif obj == "icv":
             df.loc[i, "f_cone"] = (math.cos(df.loc[i, "sea"]) + math.pi * math.sin(df.loc[i, "sea"]))/(2*math.sqrt(2)*math.pi)
         else:
             logger.error("Wrong Objective")
@@ -148,14 +213,14 @@ def SunMelt(time, coords, utc, alt, obj="WUE"):
     result = model.fit(df.j_cone, gauss_params, x=df.hour)
     return result
 
+
 if __name__ == "__main__":
 
     loc="gangles21"
-    SITE, FOLDER = config(loc,spray="manual")
-    utc = get_offset(*SITE["coords"], date=SITE["start_date"])
-    result = SunMelt(time=SITE["fountain_off_date"], coords = SITE["coords"], utc = utc, alt=SITE["alt"])
-    param_values = dict(result.best_values)
-    print(param_values)
-    data = {'temp':-5, 'rh':50, 'wind':1, 'alt':1, 'obj':"ICV"}
-    print(TempFreeze(data)*math.pi*7**2)
+    SITE, FOLDER = config(loc)
+    # utc = get_offset(*SITE["coords"], date=SITE["start_date"])
+    # result = DayMelt(time=SITE["fountain_off_date"], coords = SITE["coords"], utc = utc, alt=SITE["alt"])
+    # param_values = dict(result.best_values)
+    # print(param_values)
+    print(Scheduler(time=datetime(2021, 4, 10,12), temp=-10, rh=80, wind=5, r=7, coords = SITE["coords"], alt=SITE["alt"]))
 

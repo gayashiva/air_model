@@ -1,4 +1,4 @@
-"""Location specific settings used to initialise icestupa object
+"""loc specific settings used to initialise icestupa object
 """
 
 # External modules
@@ -16,10 +16,9 @@ logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
 logging.getLogger("numexpr").setLevel(logging.CRITICAL)
 logging.getLogger('PIL').setLevel(logging.CRITICAL)
 
-def config(location="guttannen21", spray=None):
+def config(loc="guttannen21", spray=None):
 
-    if location == "Guttannen 2022" or location == "guttannen22":
-
+    if loc== "Guttannen 2022" or loc == "guttannen22":
         SITE = dict(
             name="guttannen22",
             alt=1047.6,
@@ -34,41 +33,77 @@ def config(location="guttannen21", spray=None):
         )
 
         if spray != None:
-            if spray.split('_')[0] == "dynamic":
-                if spray.split('_')[1] in ["WUE", "ICV"]:
+            if spray.split('_')[0] == "scheduled":
+                if spray.split('_')[1] in ["wue", "icv"]:
                     add= dict(
                         R_F = 4,
                         dis_crit = 2,
                     )
-                    # add["expiry_date"] = add["fountain_off_date"]
+
                 if spray.split('_')[1] == "field":
                     add= dict(
                         h_dome = 0.13, #Initialise ice height at start
-                        # dis_crit = 2,
-                        # dis_max= 13,
                         # R_F=4,  #Estimate from drone observation 
                         # R_F=5.5,  #Estimate from manualobservation
                     # perimeter=35, # on Jan 28
                     )
-                    # add["expiry_date"] = add["fountain_off_date"]
 
-            if spray == "manual":
-                add= dict(
-                    # D_F=7.5,  # Fountain mean discharge
-                    f_heights = [
-                        {"time": datetime(2021, 12, 8, 14), "h_f": 3.7},
-                        {"time": datetime(2021, 12, 23, 16), "h_f": 4.7},
-                        {"time": datetime(2022, 2, 12, 16), "h_f": 5.7},
-                    ],
-                    # dis_max= 14,
-                    # D_F=7.5,  # Fountain mean discharge
-                )
+            if spray.split('_')[0] == "unscheduled":
+                if spray.split('_')[1] == "field":
+                    add= dict(
+                        f_heights = [
+                            {"time": datetime(2021, 12, 8, 14), "h_f": 3.7},
+                            {"time": datetime(2021, 12, 23, 16), "h_f": 4.7},
+                            {"time": datetime(2022, 2, 12, 16), "h_f": 5.7},
+                        ],
+                    )
+            SITE = dict(SITE, **add)
 
+    if loc == "Gangles 2021" or loc == "gangles21":
+
+        SITE = dict(
+            name="gangles21",
+            start_date=datetime(2021, 1, 18),
+            fountain_off_date=datetime(2021, 4, 10),
+            expiry_date=datetime(2021, 4, 10),
+            alt=4009,
+            coords=[34.216638,77.606949],
+            # cld=0.1,
+            # h_f=9,
+            # R_F=9.05,  # First drone rad
+            # perimeter=82.3, # On 3 Mar
+
+            # Calibrated values
+            DX=65e-03,  # Surface layer thickness [m]
+        )
+
+        if spray != None:
+
+            if spray.split('_')[0] == "scheduled":
+                if spray.split('_')[1] in ["wue", "icv"]:
+                    add= dict(
+                        dis_crit = 1,
+                        dis_max= 60,
+                        # R_F = 10,
+                    )
+
+            if spray.split('_')[0] == "unscheduled":
+                if spray.split('_')[1] in ["field"]:
+                    add = dict(
+                        start_date=datetime(2021, 1, 18),
+                        fountain_off_date=datetime(2021, 3, 10, 18),
+                        expiry_date=datetime(2021, 6, 20),
+                        D_F=60,  # FOUNTAIN infinite water
+                        # dis_max=60,  # FOUNTAIN min discharge
+                        f_heights = [
+                            {"time": datetime(2021, 1, 18), "h_f": 5},
+                            {"time": datetime(2021, 1, 22, 16), "h_f": 9},
+                        ],
+                    )
 
             SITE = dict(SITE, **add)
 
-    if location == "Guttannen 2021" or location == "guttannen21":
-
+    if loc == "Guttannen 2021" or loc == "guttannen21":
         SITE = dict(
             name="guttannen21",
             alt=1047.6,
@@ -112,7 +147,7 @@ def config(location="guttannen21", spray=None):
             SITE = dict(SITE, **add)
 
 
-    if location == "Guttannen 2020" or location == "guttannen20":
+    if loc == "Guttannen 2020" or loc == "guttannen20":
 
         SITE = dict(
             name="guttannen20",
@@ -156,56 +191,6 @@ def config(location="guttannen21", spray=None):
             SITE = dict(SITE, **add)
 
 
-    if location == "Gangles 2021" or location == "gangles21":
-
-        SITE = dict(
-            name="gangles21",
-            alt=4009,
-            coords=[34.216638,77.606949],
-            cld=0.1,
-            # h_f=9,
-            # R_F=9.05,  # First drone rad
-            # perimeter=82.3, # On 3 Mar
-
-            # Calibrated values
-            DX=65e-03,  # Surface layer thickness [m]
-        )
-
-        if spray != None:
-
-            if spray == "dynamic" or spray == "static":
-                add= dict(
-                    start_date=datetime(2021, 1, 18),
-                    fountain_off_date=datetime(2021, 4, 10),
-                    dis_crit = 1,
-                    dis_max= 60,
-                    # R_F = 10,
-                )
-                add["expiry_date"] = add["fountain_off_date"]
-
-            if spray == "static":
-                add= dict(
-                    start_date=datetime(2021, 1, 18),
-                    fountain_off_date=datetime(2021, 4, 10),
-                    dis_crit = 1,
-                    # R_F = 10,
-                )
-                add["expiry_date"] = add["fountain_off_date"]
-
-            if spray == "manual":
-                add = dict(
-                    start_date=datetime(2021, 1, 18),
-                    fountain_off_date=datetime(2021, 3, 10, 18),
-                    expiry_date=datetime(2021, 6, 20),
-                    D_F=60,  # FOUNTAIN infinite water
-                    # dis_max=60,  # FOUNTAIN min discharge
-                    f_heights = [
-                        {"time": datetime(2021, 1, 18), "h_f": 5},
-                        {"time": datetime(2021, 1, 22, 16), "h_f": 9},
-                    ],
-                )
-
-            SITE = dict(SITE, **add)
 
     # Define directory structure
     FOLDER = dict(

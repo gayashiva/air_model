@@ -23,12 +23,12 @@ sys.path.append(dirname)
 from src.utils.settings import config
 
 
-def get_field(location="schwarzsee19"):
+def get_field(loc="schwarzsee19"):
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
 
-    SITE, FOLDER = config(location, spray="manual")
-    if location == "guttannen22":
+    SITE, FOLDER = config(loc)
+    if loc == "guttannen22":
         cols_old = [
             "TIMESTAMP",
             "T_probe_Avg",
@@ -155,7 +155,7 @@ def get_field(location="schwarzsee19"):
 
         return df_out
 
-    if location == "gangles21":
+    if loc == "gangles21":
         col_list = [
             "TIMESTAMP",
             "AirTC_Avg",
@@ -241,7 +241,7 @@ def get_field(location="schwarzsee19"):
         df = df.reset_index()
         df = df[df.columns.drop(list(df.filter(regex="Unnamed")))]
         df = df.dropna()
-        # df.to_csv("outputs/" + location + "_input_field.csv")
+        # df.to_csv("outputs/" + loc + "_input_field.csv")
 
         mask = df["SW_global"] < 0
         mask_index = df[mask].index
@@ -258,7 +258,7 @@ def get_field(location="schwarzsee19"):
         df.to_csv(FOLDER["input"] + "field.csv")
         return df
 
-    if location == "guttannen20":
+    if loc == "guttannen20":
         df_in = pd.read_csv(
             FOLDER["raw"] + "field.txt",
             header=None,
@@ -335,7 +335,7 @@ def get_field(location="schwarzsee19"):
         logger.info(df_in.tail())
         df.to_csv(FOLDER["input"] + "field.csv")
 
-    if location == "guttannen21":
+    if loc == "guttannen21":
         df_in = pd.read_csv(
             FOLDER["raw"] + "field.txt",
             header=None,
@@ -408,7 +408,7 @@ def get_field(location="schwarzsee19"):
         )
         df.to_csv(FOLDER["input"] + "field.csv")
 
-    if location == "schwarzsee19":
+    if loc == "schwarzsee19":
         df_in = pd.read_csv(
             FOLDER["raw"] + SITE["name"][:-2] + "_aws.txt",
             header=None,
