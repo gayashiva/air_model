@@ -88,6 +88,7 @@ def get_field(loc="schwarzsee19"):
         df= df.replace("NAN", np.NaN)
         df = df.set_index("time").resample("H").mean().reset_index()
         df["missing_type"] = "-"
+        df.loc[df.wind > 50, "wind"] = np.NaN 
         df.loc[df.Qs_meas > 300, "Qs_meas"] = np.NaN 
         df.loc[df.Qs_meas < -300, "Qs_meas"] = np.NaN 
         df.loc[:, "Qs_meas"] = df["Qs_meas"].interpolate()
@@ -97,7 +98,7 @@ def get_field(loc="schwarzsee19"):
         df.loc[:, "alb"] = df["alb"].interpolate()
 
         df['ppt'] = df.snow_h.diff()*10*CONSTANTS['RHO_S']/CONSTANTS['RHO_W'] # mm of snowfall w.e. in one hour
-        df.loc[df.ppt<0.5, "ppt"] = 0  # Assuming 0.5 mm error
+        df.loc[df.ppt<1, "ppt"] = 0  # Assuming 1 mm error
 
         # print(df.time[df.T_ice_8.isna()].values[0])
         df['T_bulk_meas'] = (df["T_ice_2"] + df["T_ice_3"] + df["T_ice_4"]+ df["T_ice_5"]+ df["T_ice_6"]+df["T_ice_7"])/6

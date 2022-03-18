@@ -70,28 +70,29 @@ if __name__ == "__main__":
             df = df[SITE["start_date"] : SITE["expiry_date"]]
             df = df.reset_index()
 
-            # Replace Wind zero values for 3 hours
-            mask = df.wind.shift().eq(df.wind)
-            for i in range(1, 3 * 4):
-                mask &= df.wind.shift(-1 * i).eq(df.wind)
-            mask &= df.wind == 0
-            df.wind = df.wind.mask(mask)
+            if loc in ["schwarzsee19","guttannen21", "guttannen20"]:
+                # Replace Wind zero values for 3 hours
+                mask = df.wind.shift().eq(df.wind)
+                for i in range(1, 3 * 4):
+                    mask &= df.wind.shift(-1 * i).eq(df.wind)
+                mask &= df.wind == 0
+                df.wind = df.wind.mask(mask)
 
             # if loc in ["guttannen22"]:
-                # df_swiss = get_meteoswiss(loc)
-                # df_swiss = df_swiss.set_index("time")
-                # df_swiss = df_swiss[SITE["start_date"] : SITE["expiry_date"]]
-                # df_swiss = df_swiss.reset_index()
+            #     df_swiss = get_meteoswiss(loc)
+            #     df_swiss = df_swiss.set_index("time")
+            #     df_swiss = df_swiss[SITE["start_date"] : SITE["expiry_date"]]
+            #     df_swiss = df_swiss.reset_index()
 
-                # df_swiss = df_swiss.set_index("time")
-                # df = df.set_index("time")
+            #     df_swiss = df_swiss.set_index("time")
+            #     df = df.set_index("time")
 
-                # for col in ["vp_a"]:
-                # for col in ["vp_a", "ppt"]:
-                    # logger.info("%s from meteoswiss" % col)
-                    # df[col] = df_swiss[col]
-                # df_swiss = df_swiss.reset_index()
-                # df = df.reset_index()
+            #     # for col in ["ppt"]:
+            #     for col in ["vp_a", "ppt"]:
+            #         logger.info("%s from meteoswiss" % col)
+            #         df[col] = df_swiss[col]
+            #     df_swiss = df_swiss.reset_index()
+            #     df = df.reset_index()
 
             df_ERA5_full = get_era5(SITE["name"])
 

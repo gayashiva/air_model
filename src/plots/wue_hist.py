@@ -29,14 +29,13 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("INFO")
 
-    locations = ["guttannen22", "guttannen21", "gangles21"]
-    sprays = ['manual', 'static', 'dynamic']
+    locations = ["guttannen22", "gangles21"]
+    sprays = ['unscheduled_field', 'scheduled_icv', 'scheduled_wue']
     styles=['.', 'x' , '*']
 
-    mypal = sns.color_palette("Set1", 3)
+    mypal = sns.color_palette("Set1", 2)
     legend_elements = [Line2D([0], [0], color=mypal[0], lw=4, label='CH22'),
-                        Line2D([0], [0], color=mypal[1], lw=4, label='CH21'),
-                        Line2D([0], [0], color=mypal[2], lw=4, label='IN21'),
+                        Line2D([0], [0], color=mypal[1], lw=4, label='IN21'),
                        Line2D([0], [0], marker='.', color='w', label='Unscheduled',
                               markerfacecolor='k', markersize=15),
                        Line2D([0], [0], marker='X', color='w', label='ICV Scheduled',
@@ -48,19 +47,17 @@ if __name__ == "__main__":
 
     for i, loc in enumerate(locations):
         for j, spray in enumerate(sprays):
-
-            SITE, FOLDER = config(loc)
-
-            with open(FOLDER["output"] + spray +  "/results.json") as f:
+            SITE, FOLDER = config(loc, spray)
+            with open(FOLDER["output"] +  "/results.json") as f:
                 results = json.load(f, object_hook=keystoint)
             print(loc,spray, results["WUE"], results["iceV_max"])
-            ax.scatter(results["WUE"], results["iceV_max"], label=loc+spray, color=mypal[i], marker=styles[j])
+            ax.scatter(results["WUE"], results["iceV_max"], color=mypal[i], marker=styles[j])
 
-            if loc == 'guttannen22' and spray == "dynamic":
-                with open(FOLDER["output"] + "dynamic_field/results.json") as f:
-                    results = json.load(f, object_hook=keystoint)
-                print(loc,"dynamic_field", results["WUE"], results["iceV_max"])
-                ax.scatter(results["WUE"], results["iceV_max"], color=mypal[i], marker=styles[j])
+            # if loc == 'guttannen22' and spray == "dynamic":
+            #     with open(FOLDER["output"] + "/results.json") as f:
+            #         results = json.load(f, object_hook=keystoint)
+            #     print(loc,"dynamic_field", results["WUE"], results["iceV_max"])
+            #     ax.scatter(results["WUE"], results["iceV_max"], color=mypal[i], marker=styles[j])
 
         # ax = df_l.set_index('x')['y'].plot(style='.', color='k', ms=10)
 

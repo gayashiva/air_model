@@ -17,14 +17,14 @@ def self_attributes(self):
 
     if self.name in ["guttannen22"]:
         df_c = pd.read_csv(
-            self.input+ self.spray + "/drone.csv",
+            self.input + self.spray.split('_')[0] + "/drone.csv",
             sep=",",
             header=0,
             parse_dates=["time"],
         )
         df_c = df_c.reset_index()
         df_c.to_hdf(
-            self.input + self.spray+ "/input.h5",
+            self.input_sim + "/input.h5",
             key="df_c",
             mode="w",
         )

@@ -24,7 +24,7 @@ logger = logging.getLogger("__main__")
 logger.propagate = False
 
 class Icestupa:
-    def __init__(self, location="Guttannen 2021", spray="manual"):
+    def __init__(self, location="Guttannen 2021", spray="unscheduled_field"):
 
         self.spray = spray
 
@@ -48,13 +48,15 @@ class Icestupa:
         df_f = pd.read_csv(self.input + "discharge_types.csv", sep=",", header=0, parse_dates=["time"])
         df_f["Discharge"] = df_f[self.spray]
         df_f = df_f[["time", "Discharge"]]
+        if np.count_nonzero(df_f["Discharge"]) <= 24:
+            logger.error("Less than 24 hours of spray")
 
+        # Perform discharge atleast one night check
         self.df = self.df.set_index("time")
         df_f = df_f.set_index("time")
         self.df["Discharge"] = df_f["Discharge"]
         self.df["Discharge"] = self.df["Discharge"].replace(np.NaN, 0)
         self.df = self.df.reset_index()
-        # self.df = pd.merge(df_f, self.df, on="time", how="left")
 
         self.D_F = df_f.Discharge[df_f.Discharge != 0].mean()
         print("\n") 
@@ -95,10 +97,6 @@ class Icestupa:
             else:
                 logger.warning(" %s is unknown\n" % (unknown[i]))
                 self.df[unknown[i]] = 0
-
-        # logger.error(self.df.SW_diffuse.mean())
-        # self.df = self.df.set_index("time")
-        # print(self.df.head())
 
         self.cld, solar_df = get_solar(
             coords=self.coords,
@@ -152,8 +150,6 @@ class Icestupa:
                 self.df.loc[i,"T_F"] = 0
 
         self.self_attributes()
-        # self.get_discharge()
-
 
         if "alb" in unknown:
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
@@ -172,7 +168,7 @@ class Icestupa:
                     self.df.loc[:, column] = self.df[column].interpolate()
 
         self.df.to_hdf(
-            self.input + self.spray + "/input.h5",
+            self.input_sim + "/input.h5",
             key="df",
             mode="a",
         )
@@ -218,13 +214,13 @@ class Icestupa:
         for variable in results:
             results_dict[variable] = float(round(eval(variable), 1))
 
-        print("Summary of results for %s :" % self.name)
+        print("Summary of results for %s with scheduler %s  :" %(self.name, self.spray))
         print()
         for var in sorted(results_dict.keys()):
             print("\t%s: %r" % (var, results_dict[var]))
         print()
 
-        with open(self.output + self.spray + "/results.json", "w") as f:
+        with open(self.output + "/results.json", "w") as f:
             json.dump(results_dict, f, sort_keys=True, indent=4)
 
         if last_hour > self.total_hours + 1:
@@ -243,28 +239,27 @@ class Icestupa:
         self.df = self.df.reset_index(drop=True)
 
         # Full Output
-        filename4 = self.output + self.spray + "/output.csv"
-        self.df.to_csv(filename4, sep=",")
+        self.df.to_csv(self.output + "/output.csv", sep=",")
         self.df.to_hdf(
-            self.output + self.spray + "/output.h5",
+            self.output  + "/output.h5",
             key="df",
             mode="w",
         )
 
     def read_input(self):  # Use processed input dataset
 
-        self.df = pd.read_hdf(self.input + self.spray + "/input.h5", "df")
+        self.df = pd.read_hdf(self.input_sim  + "/input.h5", "df")
 
         if self.df.isnull().values.any():
             logger.warning("\n Null values present\n")
 
     def read_output(self):  # Reads output
 
-        self.df = pd.read_hdf(self.output + self.spray + "/output.h5", "df")
+        self.df = pd.read_hdf(self.output + "/output.h5", "df")
 
         self.self_attributes()
 
-        with open(self.output + self.spray + "/results.json", "r") as read_file:
+        with open(self.output + "/results.json", "r") as read_file:
             results_dict = json.load(read_file)
 
         # Initialise all variables of dictionary

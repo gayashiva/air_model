@@ -37,12 +37,8 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
 
     print(loc)
 
-    # sprays = ['man', 'scheduled', "scheduled_field"]
-    # sprays = ['scheduled', 'static', 'manual']
     # sprays = ["unscheduled_field","scheduled_field", "scheduled_icv", "scheduled_wue"]
-    sprays = ["scheduled_icv", "scheduled_wue"]
-    # sprays = ["unscheduled_field", "scheduled_icv", "scheduled_wue"]
-    # sprays = ['manual']
+    sprays = ["unscheduled_field","scheduled_icv", "scheduled_wue"]
      
 
     SITE, FOLDER = config(loc)
@@ -56,15 +52,6 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
     df = df.fillna(0)
     df = df.reset_index()
     df.rename(columns = {'index':'time'}, inplace = True)
-
-    # cld, df_solar = get_solar(
-    #     coords=SITE["coords"],
-    #     start=SITE["start_date"],
-    #     end=SITE["expiry_date"],
-    #     DT=CONSTANTS["DT"],
-    #     alt=SITE["alt"],
-    # )
-
     for spray in sprays:
         SITE, FOLDER = config(loc, spray)
         print(spray)
@@ -93,6 +80,7 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
             if obj in ["wue", "icv"]:
                 input_file = FOLDER["input"] + "aws.csv"
                 df_aws = pd.read_csv(input_file, sep=",", header=0, parse_dates=["time"])
+                df_aws = df_aws[df_aws.time < SITE["fountain_off_date"]]
 
                 for i in range(0,df_aws.shape[0]):
                     # df.loc[i, "scheduled_"+obj] = TempFreeze(data) + model.eval(x=df.time.dt.hour[i], **params)
@@ -188,10 +176,10 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                     # logger.info("Discharge constant")
 
 
-        # if spray != "scheduledWUE":
-        #     mask = df["time"] > SITE["fountain_off_date"]
-        #     mask_index = df[mask].index
-        #     df.loc[mask_index, spray] = 0
+        if spray.split('_')[0] == "unscheduled":
+            mask = df["time"] > SITE["fountain_off_date"]
+            mask_index = df[mask].index
+            df.loc[mask_index, spray] = 0
 
     df.to_csv(FOLDER["input"]  + "discharge_types.csv", index=True)
     return df
@@ -203,22 +191,16 @@ if __name__ == "__main__":
     logger.setLevel("WARNING")
     # logger.setLevel("INFO")
 
-
-    with open("data/common/alt_coeffs.json") as f:
-        param_values = json.load(f)
-
     # locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
-    locations = ["guttannen22"]
-    # locations = ["gangles21"]
+    # locations = ["guttannen22"]
+    locations = ["gangles21", "guttannen22"]
 
-    df = get_discharge(locations[0])
-    print(df.head())
+    for loc in locations:
+        df = get_discharge(loc)
 
     for loc in locations:
         SITE, FOLDER = config(loc)
-
-        df= df[df.time <= SITE["fountain_off_date"]]
-       
+        # df= df[df.time <= SITE["fountain_off_date"]]
         fig, ax1 = plt.subplots()
         x = df.time
         y1 = df.unscheduled_field

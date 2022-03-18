@@ -30,7 +30,7 @@ def config(loc="guttannen21", spray=None):
             utc = 1, #Initialise ice height at start
             # cld=0.5,
             # Calibrated values
-            # DX=200e-03,  # Surface layer thickness [m]
+            DX=45e-03,  # Surface layer thickness [m]
         )
 
         if spray != None:
@@ -41,13 +41,13 @@ def config(loc="guttannen21", spray=None):
                         dis_crit = 2,
                     )
 
-                if spray.split('_')[1] == "field":
-                    add= dict(
-                        h_dome = 0.13, #Initialise ice height at start
-                        # R_F=4,  #Estimate from drone observation 
-                        # R_F=5.5,  #Estimate from manualobservation
-                    # perimeter=35, # on Jan 28
-                    )
+            if spray == "scheduled_field":
+                add= dict(
+                    h_dome = 0.13, #Initialise ice height at start
+                    # R_F=4,  #Estimate from drone observation 
+                    # R_F=5.5,  #Estimate from manualobservation
+                # perimeter=35, # on Jan 28
+                )
 
             if spray.split('_')[0] == "unscheduled":
                 if spray.split('_')[1] == "field":
@@ -65,10 +65,10 @@ def config(loc="guttannen21", spray=None):
         SITE = dict(
             name="gangles21",
             start_date=datetime(2021, 1, 18),
-            fountain_off_date=datetime(2021, 4, 10),
             expiry_date=datetime(2021, 4, 10),
             alt=4009,
             coords=[34.216638,77.606949],
+            utc=4.5,
             # cld=0.1,
             # h_f=9,
             # R_F=9.05,  # First drone rad
@@ -79,21 +79,20 @@ def config(loc="guttannen21", spray=None):
         )
 
         if spray != None:
-
             if spray.split('_')[0] == "scheduled":
                 if spray.split('_')[1] in ["wue", "icv"]:
                     add= dict(
+                        fountain_off_date=datetime(2021, 4, 10),
+                        R_F=10,
                         dis_crit = 1,
-                        dis_max= 60,
+                        # dis_max= 60,
                         # R_F = 10,
                     )
 
             if spray.split('_')[0] == "unscheduled":
                 if spray.split('_')[1] in ["field"]:
                     add = dict(
-                        start_date=datetime(2021, 1, 18),
                         fountain_off_date=datetime(2021, 3, 10, 18),
-                        expiry_date=datetime(2021, 6, 20),
                         D_F=60,  # FOUNTAIN infinite water
                         # dis_max=60,  # FOUNTAIN min discharge
                         f_heights = [
@@ -194,13 +193,21 @@ def config(loc="guttannen21", spray=None):
 
 
     # Define directory structure
-    FOLDER = dict(
-        raw="data/" + SITE["name"] + "/raw/",
-        input="data/" + SITE["name"] + "/interim/",
-        output="data/" + SITE["name"] + "/processed/",
-        sim="data/" + SITE["name"] + "/processed/simulations/",
-        fig="data/" + SITE["name"] + "/figs/",
-    )
-    # df_h = pd.DataFrame(f_heights)
+    if spray != None:
+        FOLDER = dict(
+            raw="data/" + SITE["name"] + "/raw/",
+            input="data/" + SITE["name"] + "/interim/",
+            input_sim="data/" + SITE["name"] + "/interim/" + spray.split('_')[0] + "/" + spray.split('_')[1],
+            output="data/" + SITE["name"] + "/processed/"+ spray.split('_')[0] + "/" + spray.split('_')[1],
+            fig="data/" + SITE["name"] + "/figs/"+ spray.split('_')[0] + "/" + spray.split('_')[1],
+        )
+    else:
+        FOLDER = dict(
+            raw="data/" + SITE["name"] + "/raw/",
+            input="data/" + SITE["name"] + "/interim/",
+            output="data/" + SITE["name"] + "/processed/",
+            fig="data/" + SITE["name"] + "/figs/",
+        )
+
 
     return SITE, FOLDER

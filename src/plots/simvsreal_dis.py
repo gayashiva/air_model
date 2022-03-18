@@ -38,7 +38,7 @@ if __name__ == "__main__":
     df = icestupa.df
     # df = df[df.time<datetime(2022,1,26)] #automation error
 
-    objs = ["WUE", "ICV"]
+    objs = ["wue", "icv"]
     styles=['.', 'x']
     # objs = ["WUE"]
     # objs = ["ICV"]
