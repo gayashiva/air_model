@@ -16,13 +16,10 @@ sys.path.append(dirname)
 from src.utils.settings import config
 from src.models.methods.solar import get_offset
 
-def Scheduler(time, temp, rh, wind, r, alt, coords, obj="icv"):
+def Scheduler(time, temp, rh, wind, r, alt, coords, utc, obj="icv"):
 
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
-
-    utc = get_offset(*coords, time)
-    daymelt = DayMelt(time, coords, utc, alt)
 
     #Assumptions
     temp_i = 0
@@ -36,6 +33,8 @@ def Scheduler(time, temp, rh, wind, r, alt, coords, obj="icv"):
     else:
         logger.error("Wrong Objective")
         sys.exit()
+
+    daymelt = DayMelt(time, coords, utc, alt, obj)
 
     vp_a = np.exp(
         34.494 - 4924.99/ (temp + 237.1)

@@ -20,11 +20,12 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 sys.path.append(dirname)
 from src.utils.settings import config
 from src.utils import setup_logger
-from src.automate.gen_auto_eqn import autoLinear
+# from src.automate.gen_auto_eqn import autoLinear
 from src.models.methods.solar import get_solar
 from src.models.icestupaClass import Icestupa
-from src.automate.autoDischarge import TempFreeze
-from lmfit.models import GaussianModel
+# from src.automate.autoDischarge import TempFreeze
+# from lmfit.models import GaussianModel
+from src.automate.autoDischarge import Scheduler
 
 # Module logger
 # logger = logging.getLogger("__main__")
@@ -38,8 +39,9 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
 
     # sprays = ['man', 'scheduled', "scheduled_field"]
     # sprays = ['scheduled', 'static', 'manual']
-    sprays = ["unscheduled_field","scheduled_field", "scheduled_icv", "scheduled_wue"]
-    sprays = ["unscheduled_field", "scheduled_icv", "scheduled_wue"]
+    # sprays = ["unscheduled_field","scheduled_field", "scheduled_icv", "scheduled_wue"]
+    sprays = ["scheduled_icv", "scheduled_wue"]
+    # sprays = ["unscheduled_field", "scheduled_icv", "scheduled_wue"]
     # sprays = ['manual']
      
 
@@ -92,25 +94,18 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                 input_file = FOLDER["input"] + "aws.csv"
                 df_aws = pd.read_csv(input_file, sep=",", header=0, parse_dates=["time"])
 
-                with open(FOLDER["input"] + "scheduled/" + obj + "/solar_coeffs.json") as f:
-                    params = json.load(f)
-
                 for i in range(0,df_aws.shape[0]):
-                    data=dict()
-                    data["temp"] = df_aws.temp[i]
-                    data["rh"] = df_aws.RH[i]
-                    data["wind"] = df_aws.wind[i]
-                    data["obj"] = obj
-                    data["alt"] = SITE["alt"]/1000
-                    model = GaussianModel()
-                    df.loc[i, "scheduled_"+obj] = TempFreeze(data) + model.eval(x=df.time.dt.hour[i], **params)
+                    # df.loc[i, "scheduled_"+obj] = TempFreeze(data) + model.eval(x=df.time.dt.hour[i], **params)
+
+                    df.loc[i, "scheduled_"+obj] = Scheduler(time=df_aws.time[i], temp=df_aws.temp[i], rh=df_aws.RH[i],
+                                                            wind=df_aws.wind[i], obj=obj, r=SITE["R_F"],
+                                                            alt=SITE["alt"], coords=SITE["coords"],
+                                                            utc=SITE["utc"])
                     if df.loc[i, "scheduled_"+obj] > 0:
                         if obj == "icv":
-                            df.loc[i, "scheduled_"+obj] *= math.sqrt(2) * math.pi * math.pow(SITE["R_F"],2) * math.sqrt(2)
                             if df.loc[i, "scheduled_"+obj] < SITE["dis_crit"]:
                                 df.loc[i, "scheduled_"+obj] += SITE["dis_crit"]
                         if obj == "wue":
-                            df.loc[i, "scheduled_"+obj] *= math.pi * math.pow(SITE["R_F"],2) * math.sqrt(2)
                             if df.loc[i, "scheduled_"+obj] < SITE["dis_crit"]:
                                 df.loc[i, "scheduled_"+obj] = 0
                     else:
@@ -213,8 +208,8 @@ if __name__ == "__main__":
         param_values = json.load(f)
 
     # locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
-    # locations = ["guttannen22"]
-    locations = ["gangles21"]
+    locations = ["guttannen22"]
+    # locations = ["gangles21"]
 
     df = get_discharge(locations[0])
     print(df.head())

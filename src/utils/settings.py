@@ -27,6 +27,7 @@ def config(loc="guttannen21", spray=None):
             fountain_off_date=datetime(2022, 3, 3),
             expiry_date =datetime(2022, 3, 3),
             h_dome = 0.13, #Initialise ice height at start
+            utc = 1, #Initialise ice height at start
             # cld=0.5,
             # Calibrated values
             # DX=200e-03,  # Surface layer thickness [m]
