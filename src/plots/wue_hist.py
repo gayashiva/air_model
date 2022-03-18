@@ -37,11 +37,11 @@ if __name__ == "__main__":
     legend_elements = [Line2D([0], [0], color=mypal[0], lw=4, label='CH22'),
                         Line2D([0], [0], color=mypal[1], lw=4, label='CH21'),
                         Line2D([0], [0], color=mypal[2], lw=4, label='IN21'),
-                       Line2D([0], [0], marker='.', color='w', label='Manual',
+                       Line2D([0], [0], marker='.', color='w', label='Unscheduled',
                               markerfacecolor='k', markersize=15),
-                       Line2D([0], [0], marker='X', color='w', label='Static',
+                       Line2D([0], [0], marker='X', color='w', label='ICV Scheduled',
                               markerfacecolor='k', markersize=10),
-                       Line2D([0], [0], marker='*', color='w', label='Dynamic',
+                       Line2D([0], [0], marker='*', color='w', label='WUE Scheduled',
                               markerfacecolor='k', markersize=15),
                        ]
     fig, ax = plt.subplots(1, 1, sharex="col")
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     ax.spines["right"].set_visible(False)
     ax.spines["top"].set_visible(False)
     ax.legend(handles=legend_elements)
-    plt.savefig("data/figs/slides/wue.png", bbox_inches="tight", dpi=300)
+    plt.savefig("data/figs/paper3/wue.png", bbox_inches="tight", dpi=300)
 
 
     #     ax[0].spines["left"].set_color("grey")

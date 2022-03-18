@@ -20,10 +20,11 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 sys.path.append(dirname)
 from src.utils.settings import config
 from src.utils import setup_logger
-# from src.automate.autoDischarge import dayMelt
 from src.automate.gen_auto_eqn import autoLinear
 from src.models.methods.solar import get_solar
 from src.models.icestupaClass import Icestupa
+from src.automate.autoDischarge import TempFreeze
+from lmfit.models import GaussianModel
 
 # Module logger
 # logger = logging.getLogger("__main__")
@@ -65,35 +66,42 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
         if spray == "dynamic":
             SITE, FOLDER = config(loc, "dynamic")
 
-
-            df.loc[i, "Discharge_sim"] = TempFreeze(data) + model.eval(x=df.time.dt.hour[i], **sun_params)
-
             input_file = FOLDER["input"] + "aws.csv"
             df_aws = pd.read_csv(input_file, sep=",", header=0, parse_dates=["time"])
 
-            for i in range(0,df_aws.shape[0]):
-                # df.loc[i, "dynamic"] = autoLinear(**param_values, temp=df_aws.temp[i],rh=df_aws.RH[i],
-                #                                wind=df_aws.wind[i], alt=SITE["alt"]/1000, cld=cld)
-                # df.loc[i, "dynamic"] += df_solar[df_solar.time == df_aws.time[i]].dis.values[0]
+            for obj in ["WUE", "ICV"]:
+                print(obj)
+                with open(FOLDER["input"] + "dynamic/coeffs_" + obj + ".json") as f:
+                    params = json.load(f)
+                sun_params = {"amplitude": params["amplitude"], "center": params["center"], "sigma": params["sigma"]}
 
-                data=dict()
-                data["temp"] = df.temp[i]
-                data["rh"] = df.RH[i]
-                data["wind"] = df.wind[i]
-                data["obj"] = obj
-                data["alt"] = SITE["alt"]/1000
-                model = GaussianModel()
-                df.loc[i, "dynamic"] = TempFreeze(data) + model.eval(x=df.time.dt.hour[i], **sun_params)
-                df.loc[i, "dynamic"] *= math.pi * math.pow(SITE["R_F"],2) * math.sqrt(2)
+                for i in range(0,df_aws.shape[0]):
+                    data=dict()
+                    data["temp"] = df_aws.temp[i]
+                    data["rh"] = df_aws.RH[i]
+                    data["wind"] = df_aws.wind[i]
+                    data["obj"] = obj
+                    data["alt"] = SITE["alt"]/1000
+                    model = GaussianModel()
+                    df.loc[i, "dynamic"+obj] = TempFreeze(data) + model.eval(x=df.time.dt.hour[i], **sun_params)
+                    if df.loc[i, "dynamic"+obj] > 0:
+                        if obj == "ICV":
+                            df.loc[i, "dynamic"+obj] *= math.sqrt(2) * math.pi * math.pow(SITE["R_F"],2) * math.sqrt(2)
+                            if df.loc[i, "dynamic"+obj] < SITE["dis_crit"]:
+                                df.loc[i, "dynamic"+obj] += SITE["dis_crit"]
+                        else:
+                            df.loc[i, "dynamic"+obj] *= math.pi * math.pow(SITE["R_F"],2) * math.sqrt(2)
+                            if df.loc[i, "dynamic"+obj] < SITE["dis_crit"]:
+                                df.loc[i, "dynamic"+obj] = 0
+                    else:
+                        df.loc[i, "dynamic"+obj] = 0
 
-                if df.dynamic[i] < 0:
-                    df.loc[i, "dynamic"] = 0
                 # if df.dynamic[i] >= SITE["dis_max"]:
                 #     df.loc[i, "dynamic"] = SITE["dis_max"]
 
-            df["static"] = df["dynamic"].max()
+            # df["static"] = df["dynamic"].max()
             
-            logger.warning("Static discharge is %s" %df.dynamic.max())
+            # logger.warning("Static discharge is %s" %df.dynamic.max())
             # logger.warning("Dynamic discharge varies from %s to %s" %(df.dynamic.min(), df.dynamic.max()))
             # SITE["D_F"] = df.dynamic[df.dynamic != 0].mean()
 
@@ -138,20 +146,20 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                 df = df.reset_index()
 
 
-            if loc in ["guttannen22"]:
-                df_f = pd.read_csv(
-                    os.path.join("data/" + loc + "/interim/")
-                    + "discharge_labview.csv",
-                    sep=",",
-                    parse_dates=["time"],
-                )
-                df_f = df_f.set_index("time")
-                SITE["dis_max"] = df_f["Discharge"].max()
-
             if loc in ["guttannen22", "guttannen21", "guttannen20"]:
                 SITE, FOLDER = config(loc, spray)
 
                 df_h = pd.DataFrame(SITE["f_heights"])
+
+                if loc in ["guttannen22"]:
+                    df_f = pd.read_csv(
+                        os.path.join("data/" + loc + "/interim/")
+                        + "discharge_labview.csv",
+                        sep=",",
+                        parse_dates=["time"],
+                    )
+                    df_f = df_f.set_index("time")
+                    SITE["dis_max"] = df_f["Discharge"].max()
 
                 df[spray] = SITE["dis_max"]
                 dis_old= SITE["dis_max"]
@@ -187,10 +195,10 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
             # logger.warning("Manual Discharge mean %.1f" % self.D_F)
             # logger.warning("Manual Discharge used")
 
-        if spray != "dynamic":
-            mask = df["time"] > SITE["fountain_off_date"]
-            mask_index = df[mask].index
-            df.loc[mask_index, spray] = 0
+        # if spray != "dynamicWUE":
+        #     mask = df["time"] > SITE["fountain_off_date"]
+        #     mask_index = df[mask].index
+        #     df.loc[mask_index, spray] = 0
 
     df.to_csv(FOLDER["input"]  + "discharge_types.csv", index=True)
     return df
@@ -219,7 +227,7 @@ if __name__ == "__main__":
         fig, ax1 = plt.subplots()
         x = df.time
         y1 = df.manual
-        y2 = df.dynamic
+        y2 = df.dynamicICV
         y3 = df.dynamic_field
         ax1.plot(
             x,
@@ -243,9 +251,10 @@ if __name__ == "__main__":
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
         ax1.xaxis.set_minor_locator(mdates.DayLocator())
+        ax1.set_ylim([0,15])
         ax1.legend()
         fig.autofmt_xdate()
-        plt.savefig(FOLDER["fig"] + "dis_types.png")
+        plt.savefig(FOLDER["fig"] + "dis_types.png", dpi=300)
 
         # SITE, FOLDER = config(loc, spray="manual")
         # icestupa = Icestupa(loc, spray="manual")

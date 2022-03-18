@@ -37,6 +37,7 @@ def config(location="guttannen21", spray=None):
             if spray == "dynamic" or spray == "static":
                 add= dict(
                     R_F = 4,
+                    dis_crit = 2,
                 )
                 # add["expiry_date"] = add["fountain_off_date"]
 
