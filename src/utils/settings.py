@@ -34,12 +34,23 @@ def config(location="guttannen21", spray=None):
         )
 
         if spray != None:
-            if spray == "dynamic" or spray == "static":
-                add= dict(
-                    R_F = 4,
-                    dis_crit = 2,
-                )
-                # add["expiry_date"] = add["fountain_off_date"]
+            if spray.split('_')[0] == "dynamic":
+                if spray.split('_')[1] in ["WUE", "ICV"]:
+                    add= dict(
+                        R_F = 4,
+                        dis_crit = 2,
+                    )
+                    # add["expiry_date"] = add["fountain_off_date"]
+                if spray.split('_')[1] == "field":
+                    add= dict(
+                        h_dome = 0.13, #Initialise ice height at start
+                        # dis_crit = 2,
+                        # dis_max= 13,
+                        # R_F=4,  #Estimate from drone observation 
+                        # R_F=5.5,  #Estimate from manualobservation
+                    # perimeter=35, # on Jan 28
+                    )
+                    # add["expiry_date"] = add["fountain_off_date"]
 
             if spray == "manual":
                 add= dict(
@@ -53,16 +64,6 @@ def config(location="guttannen21", spray=None):
                     # D_F=7.5,  # Fountain mean discharge
                 )
 
-            if spray == "dynamic_field":
-                add= dict(
-                    h_dome = 0.13, #Initialise ice height at start
-                    # dis_crit = 2,
-                    # dis_max= 13,
-                    # R_F=4,  #Estimate from drone observation 
-                    # R_F=5.5,  #Estimate from manualobservation
-                # perimeter=35, # on Jan 28
-                )
-                # add["expiry_date"] = add["fountain_off_date"]
 
             SITE = dict(SITE, **add)
 

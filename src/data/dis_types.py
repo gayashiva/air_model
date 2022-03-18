@@ -44,7 +44,7 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
     )
     # sprays = ['man', 'dynamic', "dynamic_field"]
     # sprays = ['dynamic', 'static', 'manual']
-    sprays = ['dynamic', 'manual', "dynamic_field"]
+    sprays = ['dynamic', 'manual', "dynamic_field", "dynamic_ICV", "dynamic_WUE"]
     # sprays = ['manual']
      
     df = pd.DataFrame(index=times, columns=sprays)
@@ -63,7 +63,7 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
     for spray in sprays:
 
         print(spray)
-        if spray == "dynamic":
+        if spray == "dynamic_ICV" or spray == "dynamic_WUE":
             SITE, FOLDER = config(loc, "dynamic")
 
             input_file = FOLDER["input"] + "aws.csv"
@@ -83,18 +83,18 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                     data["obj"] = obj
                     data["alt"] = SITE["alt"]/1000
                     model = GaussianModel()
-                    df.loc[i, "dynamic"+obj] = TempFreeze(data) + model.eval(x=df.time.dt.hour[i], **sun_params)
-                    if df.loc[i, "dynamic"+obj] > 0:
+                    df.loc[i, "dynamic_"+obj] = TempFreeze(data) + model.eval(x=df.time.dt.hour[i], **sun_params)
+                    if df.loc[i, "dynamic_"+obj] > 0:
                         if obj == "ICV":
-                            df.loc[i, "dynamic"+obj] *= math.sqrt(2) * math.pi * math.pow(SITE["R_F"],2) * math.sqrt(2)
-                            if df.loc[i, "dynamic"+obj] < SITE["dis_crit"]:
-                                df.loc[i, "dynamic"+obj] += SITE["dis_crit"]
+                            df.loc[i, "dynamic_"+obj] *= math.sqrt(2) * math.pi * math.pow(SITE["R_F"],2) * math.sqrt(2)
+                            if df.loc[i, "dynamic_"+obj] < SITE["dis_crit"]:
+                                df.loc[i, "dynamic_"+obj] += SITE["dis_crit"]
                         else:
-                            df.loc[i, "dynamic"+obj] *= math.pi * math.pow(SITE["R_F"],2) * math.sqrt(2)
-                            if df.loc[i, "dynamic"+obj] < SITE["dis_crit"]:
-                                df.loc[i, "dynamic"+obj] = 0
+                            df.loc[i, "dynamic_"+obj] *= math.pi * math.pow(SITE["R_F"],2) * math.sqrt(2)
+                            if df.loc[i, "dynamic_"+obj] < SITE["dis_crit"]:
+                                df.loc[i, "dynamic_"+obj] = 0
                     else:
-                        df.loc[i, "dynamic"+obj] = 0
+                        df.loc[i, "dynamic_"+obj] = 0
 
                 # if df.dynamic[i] >= SITE["dis_max"]:
                 #     df.loc[i, "dynamic"] = SITE["dis_max"]
@@ -227,7 +227,7 @@ if __name__ == "__main__":
         fig, ax1 = plt.subplots()
         x = df.time
         y1 = df.manual
-        y2 = df.dynamicICV
+        y2 = df.dynamic_ICV
         y3 = df.dynamic_field
         ax1.plot(
             x,

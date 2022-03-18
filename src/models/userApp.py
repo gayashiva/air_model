@@ -39,6 +39,8 @@ if __name__ == "__main__":
     # sprays = ["dynamic_field"]
     # sprays=["manual"]
     sprays=["dynamic_field", "manual"]
+    sprays = ["dynamic_ICV"]
+    print(sprays[0].split('_')[0])
 
     for spray in sprays:
         icestupa = Icestupa(location, spray)
