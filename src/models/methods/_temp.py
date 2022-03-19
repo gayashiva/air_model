@@ -8,8 +8,7 @@ import logging
 import sys
 
 # Module logger
-logger = logging.getLogger(__name__)
-
+logger = logging.getLogger("__main__")
 
 def get_temp(self, i):
 
@@ -131,12 +130,15 @@ def test_get_temp(self, i):
             f"Discharge exceeded time {self.df.time[i]}, Fountain in {self.df.wasted[i]}, Discharge in {self.df.Discharge[i]* self.DT / 60}"
         )
 
-    if math.fabs(self.df.loc[i, "delta_T_s"]) > 20:
-        logger.warning(
-            "Temperature change above 20C %s,Surface temp %i,Bulk temp %i"
+    if math.fabs(self.df.loc[i, "delta_T_s"]) > 40:
+        logger.error(
+            "Temperature change above 40C %s,Surface temp %i,Freezing energy %s, Temp flux %s, Density %i"
             % (
                 self.df.loc[i, "time"],
                 self.df.loc[i, "T_s"],
-                self.df.loc[i, "T_bulk"],
+                self.df.loc[i, "Qfreeze"],
+                self.df.loc[i, "Qt"],
+                self.df.loc[i, "rho_air"],
             )
         )
+        # sys.exit("temperature change")

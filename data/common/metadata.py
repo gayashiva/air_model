@@ -114,6 +114,13 @@ def get_parameter_metadata(
             "kind": "site",
             "units": "()",
         },
+        "Guttannen 2021": {
+            "name": "Guttannen 2021",
+            "shortname": "CH21",
+            "slidename": "Swiss",
+            "kind": "site",
+            "units": "()",
+        },
         "guttannen20": {
             "name": "Guttannen 2020",
             "shortname": "CH20",
@@ -433,5 +440,22 @@ def get_parameter_metadata(
             "latex": "$\\Delta y$",
             "kind": "Output",
             "units": "($m$)",
+        },
+        "ghi": {
+            "name": "Global Shortwave",
+            "kind": "Input",
+        },
+        "cld": {
+            "name": "Cloudiness factor",
+            "kind": "Input",
+        },
+        "dis": {
+            "name": "Discharge",
+            "kind": "Input",
+        },
+        "rho_air": {
+            "name": "AIR Density",
+            "kind": "Output",
+            "units": "($kg/m3$)",
         },
     }[parameter]

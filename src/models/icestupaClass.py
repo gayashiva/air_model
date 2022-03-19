@@ -98,7 +98,7 @@ class Icestupa:
                 logger.warning(" %s is unknown\n" % (unknown[i]))
                 self.df[unknown[i]] = 0
 
-        self.cld, solar_df = get_solar(
+        solar_df = get_solar(
             coords=self.coords,
             start=self.start_date,
             end=self.df["time"].iloc[-1],
@@ -109,14 +109,21 @@ class Icestupa:
         )
 
         self.df = pd.merge(solar_df, self.df, on="time", how="left")
-        self.df["SW_direct"] = self.df["SW_global"] - self.df["SW_diffuse"]
+
+        if "SW_global" not in list(self.df.columns):
+            self.df["SW_global"] = self.df["ghi"]
+            logger.warning(f"Estimated global solar from pvlib\n")
+
+        self.df["SW_direct"] = (1- self.cld) * self.df["SW_global"]
+        self.df["SW_diffuse"] = self.cld * self.df["SW_global"]
+        logger.warning(f"Estimated solar components with constant cloudiness of {self.cld}\n")
 
         if "T_G" in list(self.df.columns):
             self.df.rename(columns={"T_G": "T_F"},inplace=True)
             logger.warning(" Measured ground temp is fountain water temp\n")
         else:
             self.df["T_F"] = float(self.T_F)
-            logger.warning(f"Estimated fountain water temp is {self.T_F}\n")
+            logger.warning(f"Estimated constant fountain water temp is {self.T_F}\n")
             
         for row in tqdm(
             self.df[1:].itertuples(),
@@ -321,9 +328,8 @@ class Icestupa:
         self.df.loc[0, "s_cone"] = self.df.loc[0, "h_cone"] / self.df.loc[0, "r_cone"]
         V_initial = math.pi / 3 * self.R_F ** 2 * self.h_i
         self.df.loc[1, "rho_air"] = self.RHO_I
-        self.df.loc[1, "ice"] = V_initial * self.RHO_I
+        self.df.loc[1, "ice"] = V_initial* self.RHO_I
         self.df.loc[1, "iceV"] = V_initial
-        self.df.loc[0, "iceV"] = V_initial
         self.df.loc[1, "input"] = self.df.loc[1, "ice"]
 
         logger.warning(
@@ -409,6 +415,10 @@ class Icestupa:
                 * math.pow(self.df.loc[i, "r_cone"], 2)
             )
 
+            # Precipitation not from snow height and possible rain
+            if "snow_h" not in list(self.df.columns) and self.df.loc[i, "temp"] > self.T_PPT:
+                self.df.loc[i, "snow2ice"] = 0
+
             if test:
                 self.test_get_energy(i)
             else:
@@ -432,13 +442,6 @@ class Icestupa:
                 )
 
                 
-            # # Treating snowfall like discharge
-            # self.df.loc[i, "Discharge"] += self.df.loc[i, "snow2ice"]/ self.DT * 60
-            # self.df.loc[i, "snow2ice"] = 0
-
-            # Precipitation not from snow height and possible rain
-            if "snow_h" not in list(self.df.columns) and self.df.loc[i, "temp"] > self.T_PPT:
-                self.df.loc[i, "snow2ice"] = 0
 
             """ Quantities of all phases """
             self.df.loc[i + 1, "T_s"] = (
@@ -463,13 +466,17 @@ class Icestupa:
                 self.df.loc[i, "wastewater"] + self.df.loc[i, "wasted"]
             )
 
+            # if self.df.loc[:i, "fountain_froze"].sum() + self.df.loc[:i,"dep"].sum() + self.df.loc[:i,"snow2ice"].sum() == 0:
+            #     self.df.loc[i + 1, "rho_air"] = self.RHO_I
+            # else:
             self.df.loc[i + 1, "rho_air"] =(
-                    self.df.loc[i, "ice"]
-                    /((self.df.loc[i, "ice"] - self.df.loc[:i, "snow2ice"].sum())/self.RHO_I
+                    (self.df.loc[1, "ice"] + self.df.loc[:i, "fountain_froze"].sum()+self.df.loc[:i,"dep"].sum()+self.df.loc[:i,"snow2ice"].sum())
+                    /(( self.df.loc[1, "ice"] + self.df.loc[:i, "fountain_froze"].sum()+self.df.loc[:i, "dep"].sum())/self.RHO_I
                     +(self.df.loc[:i, "snow2ice"].sum()/self.RHO_S))
             )
 
             self.df.loc[i + 1, "iceV"] = self.df.loc[i + 1, "ice"]/self.df.loc[i+1, "rho_air"]
+
             # self.df.loc[i + 1, "iceV"] = self.df.loc[i + 1, "ice"]/self.RHO_I
             # self.df.loc[i + 1, "iceV"] = (
             #     (self.df.loc[i + 1, "ice"] - self.df.loc[i, "snow2ice"])
@@ -488,8 +495,6 @@ class Icestupa:
             ) / (self.df.loc[i, "A_cone"])
 
             if test and not ice_melted:
-                logger.info(
-                    f" time {self.df.time[i]},iceV {self.df.iceV[i+1]}, rho {self.df.rho_air[i]}"
-                )
+                logger.info(f"time {self.df.time[i]}, rho_air {self.df.rho_air[i+1]}, iceV {self.df.iceV[i]}")
         # else:
             # print(self.df.loc[i, "time"], self.df.loc[i, "iceV"])

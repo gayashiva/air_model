@@ -37,6 +37,7 @@ def get_energy(self, i):
     #     self.df.loc[i, "Qs"] = self.df.loc[i, "Qs_meas"]
     #     logger.warning("Using measured sensible heat")
     # else:
+
     self.df.loc[i, "Qs"] = (
         self.C_A
         * self.RHO_A

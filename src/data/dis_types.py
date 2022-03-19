@@ -35,8 +35,6 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
 
-    print(loc)
-
     # sprays = ["unscheduled_field","scheduled_field", "scheduled_icv", "scheduled_wue"]
     sprays = ["unscheduled_field","scheduled_icv", "scheduled_wue"]
 
@@ -45,7 +43,6 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
      
 
     SITE, FOLDER = config(loc)
-
     times = pd.date_range(
         SITE["start_date"],
         SITE["expiry_date"],
@@ -55,6 +52,7 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
     df = df.fillna(0)
     df = df.reset_index()
     df.rename(columns = {'index':'time'}, inplace = True)
+
     for spray in sprays:
         SITE, FOLDER = config(loc, spray)
         print(spray)
@@ -113,6 +111,10 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
 
         if spray.split('_')[0] == "unscheduled":
             if spray.split('_')[1] == "field":
+                # if "D_F" in SITE.keys():
+                #     df[spray] = SITE["D_F"] 
+                #     logger.warning("Constant Discharge taken from settings as %s "%(SITE["D_F"]))
+                # else:
                 if loc  == "gangles21":
                     SITE, FOLDER = config(loc, spray)
                     df_f = pd.read_csv(
@@ -137,16 +139,6 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                     df_f = df_f.loc[mask]
                     df_f = df_f.reset_index(drop=True)
                     df_f = df_f.set_index("time")
-
-                    # df_h = pd.DataFrame(SITE["f_heights"])
-                    # df[spray] = SITE["dis_max"]
-                    # dis_old= SITE["dis_max"]
-                    # for i in range(1,df_h.shape[0]):
-                    #     h_change = round(df_h.h_f[i] - df_h.h_f[i-1],0)
-                    #     print(h_change)
-                    #     dis_new = dis_old/math.pow(2, h_change)
-                    #     df.loc[df.time > df_h.time[i], spray] *= dis_new/dis_old
-                    #     dis_old = dis_new
 
                     df = df.set_index("time")
                     df.loc[df_f.index, spray] = SITE["D_F"] * df_f["fountain"]
@@ -174,9 +166,6 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                         df.loc[df.time > df_h.time[i], spray] *= dis_new/dis_old
                         logger.warning("Discharge changed from %s to %s"%(dis_old,dis_new))
                         dis_old = dis_new
-                    # SITE, FOLDER = config(loc, spray)
-                    # df[spray] = SITE["D_F"]
-                    # logger.info("Discharge constant")
 
 
         if spray.split('_')[0] == "unscheduled":

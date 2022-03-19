@@ -44,39 +44,31 @@ def get_solar(coords, start, end, DT, alt):
     solar_position = site_location.get_solarposition(times=times, method="ephemeris")
     clearsky = site_location.get_clearsky(times=times, model = 'simplified_solis')
     # clearsky = site_location.get_clearsky(times=times, model = 'ineichen')
-    clearness = irradiance.erbs(ghi = clearsky["ghi"], zenith = solar_position['zenith'],
-                                      datetime_or_doy= times) 
+    # clearness = irradiance.erbs(ghi = clearsky["ghi"], zenith = solar_position['zenith'],
+    #                                   datetime_or_doy= times)
 
     solar_df = pd.DataFrame(
         {
             "ghi": clearsky["ghi"],
-            "SW_diffuse": clearness["dhi"],
-            "cld": 1 - clearness["kt"],
+            # "SW_diffuse": clearness["dhi"],
+            # "cld": 1 - clearness["kt"],
             "sea": np.radians(solar_position["elevation"]),
         }
     )
 
     bad_values = solar_df["sea"]< 0 
-    solar_df["cld"]= np.where(bad_values, np.nan, solar_df["cld"])
+    # solar_df["cld"]= np.where(bad_values, np.nan, solar_df["cld"])
 
-    logger.info(solar_df.cld.describe())
     solar_df["sea"]= np.where(bad_values, 0, solar_df["sea"])
-    cld = round(solar_df["cld"].mean(), 2)
-    solar_df["cld"]= np.where(bad_values, cld, solar_df["cld"])
-    logger.warning("Diffuse and direct SW calculated with cld %s" % cld)
+    # cld = round(solar_df["cld"].mean(), 2)
+    # solar_df["cld"]= np.where(bad_values, cld, solar_df["cld"])
+    # logger.warning("Diffuse and direct SW calculated with cld %s" % cld)
 
     solar_df.index = solar_df.index.set_names(["time"])
     solar_df = solar_df.reset_index()
     solar_df["time"] += pd.Timedelta(hours=utc)
 
-    # For discharge output
-    for i in range(0, solar_df.shape[0]):
-        solar_df.loc[i, "f_cone"] = (math.pi * math.sin(solar_df.loc[i, "sea"]) + math.cos(solar_df.loc[i, "sea"]))/(2*math.sqrt(2)*math.pi)
-
-    solar_df["SW_direct"]= solar_df["ghi"] - solar_df["SW_diffuse"]
-    solar_df["dis"] = -1 * (1 - CONSTANTS["A_I"]) * (solar_df["SW_direct"] * solar_df["f_cone"] + solar_df["SW_diffuse"]) * CONSTANTS["DT"] / (CONSTANTS["L_F"] * 60)
-
-    return cld, solar_df
+    return solar_df
 
 if __name__ == "__main__":
     tf = TimezoneFinder()

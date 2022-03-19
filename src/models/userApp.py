@@ -30,9 +30,9 @@ if __name__ == "__main__":
     # test = False
 
     # location = "Guttannen 2020"
-    location = "Guttannen 2021"
+    # location = "Guttannen 2021"
     # location = "Guttannen 2022"
-    # location = "Gangles 2021"
+    location = "Gangles 2021"
 
     # sprays = ["scheduled_icv", "scheduled_wue"]
     # sprays = ["unscheduled_field", "scheduled_field"]
@@ -65,6 +65,7 @@ if __name__ == "__main__":
                         shutil.copytree(src + dir, dst + dir)
                     else:
                         shutil.copytree(src + dir, dst + dir)
+                    print('Directory copied.')
                 except OSError as e:
                     # If the error was caused because the source wasn't a directory
                     if e.errno == errno.ENOTDIR:

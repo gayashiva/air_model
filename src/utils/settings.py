@@ -16,7 +16,11 @@ logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
 logging.getLogger("numexpr").setLevel(logging.CRITICAL)
 logging.getLogger('PIL').setLevel(logging.CRITICAL)
 
+# Module logger
+logger = logging.getLogger("__main__")
+
 def config(loc="guttannen21", spray=None):
+    logger.warning(f"Site {loc} with scheduler {spray}")
 
     if loc== "Guttannen 2022" or loc == "guttannen22":
         SITE = dict(
@@ -28,7 +32,7 @@ def config(loc="guttannen21", spray=None):
             expiry_date =datetime(2022, 3, 3),
             h_dome = 0.13, #Initialise ice height at start
             utc = 1, #Initialise ice height at start
-            # cld=0.5,
+            cld=0.5,
             # Calibrated values
             DX=45e-03,  # Surface layer thickness [m]
         )
@@ -69,7 +73,7 @@ def config(loc="guttannen21", spray=None):
             alt=4009,
             coords=[34.216638,77.606949],
             utc=4.5,
-            # cld=0.1,
+            cld=0.1,
             # h_f=9,
             # R_F=9.05,  # First drone rad
             # perimeter=82.3, # On 3 Mar
@@ -108,10 +112,10 @@ def config(loc="guttannen21", spray=None):
             name="guttannen21",
             alt=1047.6,
             coords=[46.65549,8.29149],
-            utc=4.5,
+            utc=1,
             start_date=datetime(2020, 11, 22, 15),
             expiry_date=datetime(2021, 5, 10, 1),
-            # cld=0.5,
+            cld=0.5,
             # R_F=4.3,  # Fountain mean discharge
             # R_F=5.4,  # First drone rad
             # h_f=5,
@@ -125,24 +129,24 @@ def config(loc="guttannen21", spray=None):
             if spray.split('_')[0] == "scheduled":
                 if spray.split('_')[1] in ["wue", "icv"]:
                     add= dict(
-                        fountain_off_date=datetime(2021, 2, 20, 1),
-                        dis_crit = 1,
-                        dis_max= 11,
+                        dis_crit = 2,
                         R_F = 6.9,
                     )
+                add["fountain_off_date"] = add["expiry_date"]
 
             if spray.split('_')[0] == "unscheduled":
-                add = dict(
-                    fountain_off_date=datetime(2021, 2, 20, 10),
-                    dis_max= 18,
-                    D_F=7.5,  # Fountain mean discharge
-                    f_heights = [
-                        {"time": datetime(2020, 11, 22, 15), "h_f": 2.68},
-                        {"time": datetime(2020, 12, 30, 16), "h_f": 3.75},
-                        {"time": datetime(2021, 1, 7, 16), "h_f": 4.68},
-                        {"time": datetime(2021, 1, 11, 16), "h_f": 5.68},
-                    ],
-                )
+                if spray.split('_')[1] == "field":
+                    add = dict(
+                        fountain_off_date=datetime(2021, 2, 20, 10),
+                        dis_max= 18,
+                        D_F=7.5,  # Fountain mean discharge
+                        f_heights = [
+                            {"time": datetime(2020, 11, 22, 15), "h_f": 2.68},
+                            {"time": datetime(2020, 12, 30, 16), "h_f": 3.75},
+                            {"time": datetime(2021, 1, 7, 16), "h_f": 4.68},
+                            {"time": datetime(2021, 1, 11, 16), "h_f": 5.68},
+                        ],
+                    )
 
             SITE = dict(SITE, **add)
 
@@ -197,9 +201,9 @@ def config(loc="guttannen21", spray=None):
         FOLDER = dict(
             raw="data/" + SITE["name"] + "/raw/",
             input="data/" + SITE["name"] + "/interim/",
-            input_sim="data/" + SITE["name"] + "/interim/" + spray.split('_')[0] + "/" + spray.split('_')[1],
-            output="data/" + SITE["name"] + "/processed/"+ spray.split('_')[0] + "/" + spray.split('_')[1],
-            fig="data/" + SITE["name"] + "/figs/"+ spray.split('_')[0] + "/" + spray.split('_')[1],
+            input_sim="data/" + SITE["name"] + "/interim/" + spray.split('_')[0] + "/" + spray.split('_')[1]+ "/",
+            output="data/" + SITE["name"] + "/processed/"+ spray.split('_')[0] + "/" + spray.split('_')[1]+ "/",
+            fig="data/" + SITE["name"] + "/figs/"+ spray.split('_')[0] + "/" + spray.split('_')[1]+ "/",
         )
     else:
         FOLDER = dict(
