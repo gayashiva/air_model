@@ -41,8 +41,7 @@ if __name__ == "__main__":
     logger.setLevel("INFO")
 
     # locations = ["gangles21", "guttannen20", "guttannen21", "guttannen22"]
-    locations = ["guttannen22"]
-    # sprays = ["manual", "dynamic"]
+    locations = ["guttannen21"]
 
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)

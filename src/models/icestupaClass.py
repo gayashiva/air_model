@@ -319,8 +319,8 @@ class Icestupa:
         self.df.loc[0, "r_cone"] = self.R_F
         self.df.loc[0, "dr"] = self.DX
         self.df.loc[0, "s_cone"] = self.df.loc[0, "h_cone"] / self.df.loc[0, "r_cone"]
-        self.df.loc[0, "rho_air"] = self.RHO_I
         V_initial = math.pi / 3 * self.R_F ** 2 * self.h_i
+        self.df.loc[1, "rho_air"] = self.RHO_I
         self.df.loc[1, "ice"] = V_initial * self.RHO_I
         self.df.loc[1, "iceV"] = V_initial
         self.df.loc[0, "iceV"] = V_initial
@@ -492,4 +492,4 @@ class Icestupa:
                     f" time {self.df.time[i]},iceV {self.df.iceV[i+1]}, rho {self.df.rho_air[i]}"
                 )
         # else:
-        #     print(self.df.loc[i, "time"], self.df.loc[i, "iceV"])
+            # print(self.df.loc[i, "time"], self.df.loc[i, "iceV"])

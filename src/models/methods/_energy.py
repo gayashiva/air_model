@@ -135,6 +135,18 @@ def test_get_energy(self, i):
         )
         sys.exit("Energy nan")
 
+    if math.fabs(self.df.loc[i, "Qs"]) > 1000:
+        logger.warning(
+            "Sensible heat above 1000 %s ,wind %s, ice temp %s, slope %s, temp %s"
+            % (
+                self.df.loc[i, "time"],
+                self.df.loc[i, "wind"],
+                self.df.loc[i, "T_s"],
+                self.df.loc[i, "s_cone"],
+                self.df.loc[i, "temp"],
+            )
+        )
+
     if math.fabs(self.df.loc[i, "Qtotal"]) > 1000:
         logger.warning(
             "Energy above 1000 %s,Fountain water %s,Sensible %s, SW %s, LW %s, Qg %s"

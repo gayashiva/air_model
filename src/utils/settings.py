@@ -108,7 +108,10 @@ def config(loc="guttannen21", spray=None):
             name="guttannen21",
             alt=1047.6,
             coords=[46.65549,8.29149],
-            cld=0.5,
+            utc=4.5,
+            start_date=datetime(2020, 11, 22, 15),
+            expiry_date=datetime(2021, 5, 10, 1),
+            # cld=0.5,
             # R_F=4.3,  # Fountain mean discharge
             # R_F=5.4,  # First drone rad
             # h_f=5,
@@ -119,20 +122,17 @@ def config(loc="guttannen21", spray=None):
         )
 
         if spray != None:
-            if spray == "dynamic" or spray == "static":
-                add= dict(
-                    start_date=datetime(2020, 11, 22, 15),
-                    fountain_off_date=datetime(2021, 2, 20, 1),
-                    dis_crit = 1,
-                    dis_max= 11,
-                    R_F = 6.9,
-                )
-                add["expiry_date"] = add["fountain_off_date"]
+            if spray.split('_')[0] == "scheduled":
+                if spray.split('_')[1] in ["wue", "icv"]:
+                    add= dict(
+                        fountain_off_date=datetime(2021, 2, 20, 1),
+                        dis_crit = 1,
+                        dis_max= 11,
+                        R_F = 6.9,
+                    )
 
-            if spray == "manual":
+            if spray.split('_')[0] == "unscheduled":
                 add = dict(
-                    start_date=datetime(2020, 11, 22, 15),
-                    expiry_date=datetime(2021, 5, 10, 1),
                     fountain_off_date=datetime(2021, 2, 20, 10),
                     dis_max= 18,
                     D_F=7.5,  # Fountain mean discharge

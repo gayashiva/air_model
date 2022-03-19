@@ -195,7 +195,7 @@ if __name__ == "__main__":
     # logger.setLevel("INFO")
 
     # locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
-    locations = ["guttannen22"]
+    locations = ["guttannen21"]
     # locations = ["gangles21", "guttannen22"]
 
     for loc in locations:

@@ -104,25 +104,6 @@ def test_get_temp(self, i):
     if not np.isnan(self.df.loc[i, "Qmelt"] * self.df.loc[i, "Qfreeze"]):
         sys.exit("Qmelt nonzero in freezing event")
 
-    if self.df.loc[i, "delta_T_s"] > 1 * self.DT / 60:
-        logger.warning(
-            "Too much fountain energy %s causes temperature change of %0.1f on %s"
-            % (
-                self.df.loc[i, "Qf"],
-                self.df.loc[i, "delta_T_s"],
-                self.df.loc[i, "time"],
-            )
-        )
-        if math.fabs(self.df.delta_T_s[i]) > 50:
-            logger.error(
-                "%s,Surface Temperature %s,Mass %s"
-                % (
-                    self.df.loc[i, "time"],
-                    self.df.loc[i, "T_s"],
-                    self.df.loc[i, "ice"],
-                )
-            )
-
     if np.isnan(self.df.loc[i, "delta_T_s"]):
         logger.error(
             f"time {self.df.time[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
@@ -134,7 +115,6 @@ def test_get_temp(self, i):
             f"time {self.df.time[i]},wasted {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i - 1]}"
         )
         logger.error("All discharge froze!")
-        # sys.exit("All discharge froze!")
 
     if np.isnan(self.df.loc[i, "wasted"]):
         logger.error(
