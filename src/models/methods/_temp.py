@@ -32,24 +32,24 @@ def get_temp(self, i):
 
         # Force surface temperature zero
         self.df.loc[i, "Qfreeze"] += (
-            (self.df.loc[i, "T_s"]) * self.RHO_I * self.DX * self.C_I / self.DT
+            (self.df.loc[i, "T_s"]) * (self.df.loc[i, "rho_air"]) * self.DX * self.C_I / self.DT
         )
         self.df.loc[i, "Qt"] -= (
-            (self.df.loc[i, "T_s"]) * self.RHO_I * self.DX * self.C_I / self.DT
+            (self.df.loc[i, "T_s"]) * self.df.loc[i,"rho_air"] * self.DX * self.C_I / self.DT
         )
     else:
         self.df.loc[i, "Qt"] += freezing_energy
         self.df.loc[i, "Qfreeze"] = np.nan
 
     self.df.loc[i, "delta_T_s"] = (
-        self.df.loc[i, "Qt"] * self.DT / (self.RHO_I * self.DX * self.C_I)
+        self.df.loc[i, "Qt"] * self.DT / (self.df.loc[i,"rho_air"] * self.DX * self.C_I)
     )
 
     """Ice temperature above zero"""
     if (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]) > 0:
         self.df.loc[i, "Qmelt"] += (
             (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"])
-            * self.RHO_I
+            * self.df.loc[i,"rho_air"]
             * self.DX
             * self.C_I
             / self.DT
@@ -57,7 +57,7 @@ def get_temp(self, i):
 
         self.df.loc[i, "Qt"] -= (
             (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"])
-            * self.RHO_I
+            * self.df.loc[i,"rho_air"]
             * self.DX
             * self.C_I
             / self.DT

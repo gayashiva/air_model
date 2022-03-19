@@ -78,21 +78,21 @@ if __name__ == "__main__":
                 mask &= df.wind == 0
                 df.wind = df.wind.mask(mask)
 
-            # if loc in ["guttannen22"]:
-            #     df_swiss = get_meteoswiss(loc)
-            #     df_swiss = df_swiss.set_index("time")
-            #     df_swiss = df_swiss[SITE["start_date"] : SITE["expiry_date"]]
-            #     df_swiss = df_swiss.reset_index()
+            if loc in ["guttannen22"]:
+                df_swiss = get_meteoswiss(loc)
+                df_swiss = df_swiss.set_index("time")
+                df_swiss = df_swiss[SITE["start_date"] : SITE["expiry_date"]]
+                df_swiss = df_swiss.reset_index()
 
-            #     df_swiss = df_swiss.set_index("time")
-            #     df = df.set_index("time")
+                df_swiss = df_swiss.set_index("time")
+                df = df.set_index("time")
 
-            #     # for col in ["ppt"]:
-            #     for col in ["vp_a", "ppt"]:
-            #         logger.info("%s from meteoswiss" % col)
-            #         df[col] = df_swiss[col]
-            #     df_swiss = df_swiss.reset_index()
-            #     df = df.reset_index()
+                # for col in ["ppt"]:
+                for col in ["vp_a", "ppt"]:
+                    logger.info("%s from meteoswiss" % col)
+                    df[col] = df_swiss[col]
+                df_swiss = df_swiss.reset_index()
+                df = df.reset_index()
 
             df_ERA5_full = get_era5(SITE["name"])
 

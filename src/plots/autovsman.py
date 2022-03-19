@@ -26,7 +26,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("ERROR")
     location = 'guttannen22'
-    sprays = ['dynamic_field', 'manual']
+    sprays = ['scheduled_field', 'unscheduled_field']
     # sprays = ['dynamic_field']
 
     mypal = sns.color_palette("Set1", 2)
@@ -47,7 +47,7 @@ if __name__ == "__main__":
         icestupa.read_output()
         df=icestupa.df
 
-        if spray == "dynamic_field":
+        if spray == "scheduled_field":
             spray = "Scheduled"
         else:
             spray = "Unscheduled"
@@ -115,7 +115,7 @@ if __name__ == "__main__":
         icestupa.read_output()
         df=icestupa.df
 
-        df_c = pd.read_hdf(FOLDER["input"] + spray + "/input.h5", "df_c")
+        df_c = pd.read_hdf(FOLDER["input_sim"] + "/input.h5", "df_c")
         df_c = df_c[["time", "DroneV", "DroneVError"]]
 
         tol = pd.Timedelta("15T")
@@ -132,7 +132,7 @@ if __name__ == "__main__":
         df_c = df_c[["DroneV", "DroneVError", "iceV"]]
         df = df.reset_index()
 
-        if spray == "dynamic_field":
+        if spray == "scheduled_field":
             spray = "Scheduled"
         else:
             spray = "Unscheduled"
@@ -192,7 +192,7 @@ if __name__ == "__main__":
             ax[0].spines["top"].set_visible(False)
             ax[0].spines["left"].set_color("grey")
             ax[0].spines["bottom"].set_color("grey")
-            ax[0].set_ylabel(" Bulk Temperature [$\degree C$]", size=6)
+            ax[0].set_ylabel("Bulk Temperature [$\degree C$]", size=6)
             ax[0].set_ylim([-20,0])
 
         y2 = df.iceV[1:]
@@ -234,7 +234,7 @@ if __name__ == "__main__":
         icestupa.read_output()
         df=icestupa.df
 
-        df_c = pd.read_hdf(FOLDER["input"] + spray + "/input.h5", "df_c")
+        df_c = pd.read_hdf(FOLDER["input_sim"]  + "/input.h5", "df_c")
         df_c = df_c[["time", "DroneV", "DroneVError"]]
 
         tol = pd.Timedelta("15T")
@@ -251,10 +251,10 @@ if __name__ == "__main__":
         df_c = df_c[["DroneV", "DroneVError", "iceV"]]
         df = df.reset_index()
 
-        if spray == "dynamic_field":
-            spray = "Dynamic"
+        if spray == "scheduled_field":
+            spray = "Scheduled"
         else:
-            spray = "Manual"
+            spray = "Unscheduled"
 
         x = df.time
         y1 = df.iceV

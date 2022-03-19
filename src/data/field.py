@@ -79,10 +79,6 @@ def get_field(loc="schwarzsee19"):
         df = df.set_index("time").sort_index()
         df = df[SITE["start_date"] :]
         df = df.reset_index()
-        print(df.head())
-        print(df.tail())
-        col = "snow_h"
-        print(df[col].describe())
 
         """Correct data errors"""
         df= df.replace("NAN", np.NaN)
@@ -99,6 +95,7 @@ def get_field(loc="schwarzsee19"):
 
         df['ppt'] = df.snow_h.diff()*10*CONSTANTS['RHO_S']/CONSTANTS['RHO_W'] # mm of snowfall w.e. in one hour
         df.loc[df.ppt<1, "ppt"] = 0  # Assuming 1 mm error
+        print(df['ppt'].describe())
 
         # print(df.time[df.T_ice_8.isna()].values[0])
         df['T_bulk_meas'] = (df["T_ice_2"] + df["T_ice_3"] + df["T_ice_4"]+ df["T_ice_5"]+ df["T_ice_6"]+df["T_ice_7"])/6
@@ -117,7 +114,7 @@ def get_field(loc="schwarzsee19"):
             "missing_type",
             "LW_in",
             "Qs_meas",
-            "ppt",
+            # "ppt",
             "snow_h",
             "T_bulk_meas",
             "T_G",

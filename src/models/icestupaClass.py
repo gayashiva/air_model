@@ -305,6 +305,7 @@ class Icestupa:
             "Qfreeze",
             "input",
             "event",
+            "rho_air",
         ]
 
         for column in all_cols:
@@ -318,6 +319,7 @@ class Icestupa:
         self.df.loc[0, "r_cone"] = self.R_F
         self.df.loc[0, "dr"] = self.DX
         self.df.loc[0, "s_cone"] = self.df.loc[0, "h_cone"] / self.df.loc[0, "r_cone"]
+        self.df.loc[0, "rho_air"] = self.RHO_I
         V_initial = math.pi / 3 * self.R_F ** 2 * self.h_i
         self.df.loc[1, "ice"] = V_initial * self.RHO_I
         self.df.loc[1, "iceV"] = V_initial
@@ -460,7 +462,15 @@ class Icestupa:
             self.df.loc[i + 1, "wastewater"] = (
                 self.df.loc[i, "wastewater"] + self.df.loc[i, "wasted"]
             )
-            self.df.loc[i + 1, "iceV"] = self.df.loc[i + 1, "ice"]/self.RHO_I
+
+            self.df.loc[i + 1, "rho_air"] =(
+                    self.df.loc[i, "ice"]
+                    /((self.df.loc[i, "ice"] - self.df.loc[:i, "snow2ice"].sum())/self.RHO_I
+                    +(self.df.loc[:i, "snow2ice"].sum()/self.RHO_S))
+            )
+
+            self.df.loc[i + 1, "iceV"] = self.df.loc[i + 1, "ice"]/self.df.loc[i+1, "rho_air"]
+            # self.df.loc[i + 1, "iceV"] = self.df.loc[i + 1, "ice"]/self.RHO_I
             # self.df.loc[i + 1, "iceV"] = (
             #     (self.df.loc[i + 1, "ice"] - self.df.loc[i, "snow2ice"])
             #     / self.RHO_I
@@ -478,22 +488,8 @@ class Icestupa:
             ) / (self.df.loc[i, "A_cone"])
 
             if test and not ice_melted:
-                output = (
-                    self.df.loc[i + 1, "ice"]
-                    + self.df.loc[i + 1, "wastewater"]
-                    + self.df.loc[i + 1, "vapour"]
-                    + self.df.loc[i + 1, "meltwater"]
-                )
-                input = self.df.loc[i + 1, "input"]
-                input2 = (
-                    self.df.loc[1, "input"]
-                    + self.df.Discharge[1 : i + 1].sum() * self.DT / 60
-                    + self.df["dep"].sum()
-                    + self.df["snow2ice"].sum()
-                )
-
                 logger.info(
-                    f" time {self.df.time[i]},iceV {self.df.iceV[i+1]}, mass balance {self.df.j_cone[i]}"
+                    f" time {self.df.time[i]},iceV {self.df.iceV[i+1]}, rho {self.df.rho_air[i]}"
                 )
         # else:
         #     print(self.df.loc[i, "time"], self.df.loc[i, "iceV"])

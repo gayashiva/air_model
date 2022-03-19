@@ -39,6 +39,9 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
 
     # sprays = ["unscheduled_field","scheduled_field", "scheduled_icv", "scheduled_wue"]
     sprays = ["unscheduled_field","scheduled_icv", "scheduled_wue"]
+
+    if loc=="guttannen22":
+        sprays.append("scheduled_field")
      
 
     SITE, FOLDER = config(loc)
@@ -192,8 +195,8 @@ if __name__ == "__main__":
     # logger.setLevel("INFO")
 
     # locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
-    # locations = ["guttannen22"]
-    locations = ["gangles21", "guttannen22"]
+    locations = ["guttannen22"]
+    # locations = ["gangles21", "guttannen22"]
 
     for loc in locations:
         df = get_discharge(loc)
