@@ -31,12 +31,12 @@ if __name__ == "__main__":
 
     # location = "Guttannen 2020"
     # location = "Guttannen 2021"
-    # location = "Guttannen 2022"
-    location = "Gangles 2021"
+    location = "Guttannen 2022"
+    # location = "Gangles 2021"
 
     # sprays = ["scheduled_icv", "scheduled_wue"]
-    # sprays = ["unscheduled_field", "scheduled_field"]
-    sprays = ["unscheduled_field"]
+    sprays = ["scheduled_field", "unscheduled_field"]
+    # sprays = ["unscheduled_field"]
     # sprays = ["scheduled_wue", "scheduled_icv"]
 
     for spray in sprays:
@@ -49,9 +49,10 @@ if __name__ == "__main__":
             # icestupa.read_output()
             icestupa.summary_figures()
 
-            # rmse = mean_squared_error(icestupa.df.T_bulk_meas, icestupa.df.T_bulk, squared=False)
-            # nse = nse(icestupa.df.T_bulk, icestupa.df.T_bulk_meas)
-            # print(f"Calculated NSE {nse} and RMSE {rmse}")
+            if location == "Guttannen 2022" and spray == "scheduled_field":
+                rmse = mean_squared_error(icestupa.df.T_bulk_meas, (icestupa.df.T_bulk + icestupa.df.T_s)/2, squared=False)
+                nse = nse(icestupa.df.T_bulk, (icestupa.df.T_bulk + icestupa.df.T_s)/2)
+                print(f"Calculated NSE {nse} and RMSE {rmse}")
 
         else:
             # For web app

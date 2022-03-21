@@ -27,7 +27,7 @@ if __name__ == "__main__":
     logger.setLevel("INFO")
 
     location="guttannen22"
-    sprays = ["dynamic", "manual"]
+    sprays = ["scheduled_field", "unscheduled_field"]
 
     for spray in sprays:
         print(spray)
@@ -35,14 +35,14 @@ if __name__ == "__main__":
         SITE, FOLDER = config(location, spray)
 
         dfr = pd.read_csv(
-            FOLDER["raw"] + spray + "/drone_rad.csv",
+            FOLDER["raw"] + spray.split('_')[0] + "/drone_rad.csv",
             sep="\t",
         )
         dfr = dfr.iloc[::2]
 
-        if spray == "dynamic":
+        if spray == "scheduled_field":
             format = "%d-%m-%y"
-        if spray == "manual":
+        if spray == "unscheduled_field":
             format = "%b_%d_%y"
 
         dfr["time"] = pd.to_datetime(dfr["Name"], format=format)
@@ -53,7 +53,7 @@ if __name__ == "__main__":
         dfr = dfr[["rad"]]
 
         dfv = pd.read_csv(
-            FOLDER["raw"] + spray + "/drone_vol.csv",
+            FOLDER["raw"] + spray.split('_')[0]+ "/drone_vol.csv",
             # names=col_names,
             # skiprows = [3,5],
             sep="\t",
@@ -68,4 +68,4 @@ if __name__ == "__main__":
         df = pd.concat([dfr, dfv], axis=1)
         df = df.sort_index()
         print(df)
-        df.to_csv(FOLDER["input"] + spray +  "/drone.csv")
+        df.to_csv(FOLDER["input"]+ spray.split('_')[0] +  "/drone.csv")
