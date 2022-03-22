@@ -28,7 +28,6 @@ def config(loc="guttannen21", spray=None):
             alt=1047.6,
             coords=[46.65549,8.29149],
             start_date=datetime(2021, 12, 3, 12),
-            fountain_off_date=datetime(2022, 3, 3),
             expiry_date =datetime(2022, 3, 3),
             h_dome = 0.13, #Initialise ice height at start
             utc = 1, #Initialise ice height at start
@@ -39,23 +38,16 @@ def config(loc="guttannen21", spray=None):
 
         if spray != None:
             if spray.split('_')[0] == "scheduled":
-                if spray.split('_')[1] in ["wue", "icv"]:
+                if spray.split('_')[1] in ["wue", "icv", "field"]:
                     add= dict(
+                        fountain_off_date=datetime(2022, 3, 3),
                         R_F = 4,
                         dis_crit = 2,
                     )
-
-            if spray == "scheduled_field":
-                add= dict(
-                    h_dome = 0.13, #Initialise ice height at start
-                    # R_F=4,  #Estimate from drone observation 
-                    # R_F=5.5,  #Estimate from manualobservation
-                # perimeter=35, # on Jan 28
-                )
-
             if spray.split('_')[0] == "unscheduled":
                 if spray.split('_')[1] == "field":
                     add= dict(
+                        fountain_off_date=datetime(2022, 2, 17, 6),
                         f_heights = [
                             {"time": datetime(2021, 12, 8, 14), "h_f": 3.7},
                             {"time": datetime(2021, 12, 23, 16), "h_f": 4.7},

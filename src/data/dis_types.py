@@ -11,7 +11,6 @@ from tqdm import tqdm
 from functools import lru_cache
 import logging
 import coloredlogs
-from lmfit.models import GaussianModel
 import pytz
 import logging, coloredlogs
 
@@ -24,7 +23,6 @@ from src.utils import setup_logger
 from src.models.methods.solar import get_solar
 from src.models.icestupaClass import Icestupa
 # from src.automate.autoDischarge import TempFreeze
-# from lmfit.models import GaussianModel
 from src.automate.autoDischarge import Scheduler
 
 # Module logger
@@ -184,7 +182,7 @@ if __name__ == "__main__":
     # logger.setLevel("INFO")
 
     # locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
-    locations = ["guttannen21"]
+    locations = ["guttannen22"]
     # locations = ["gangles21", "guttannen22"]
 
     for loc in locations:
