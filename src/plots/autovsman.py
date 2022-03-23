@@ -234,30 +234,30 @@ if __name__ == "__main__":
         icestupa.read_output()
         df=icestupa.df
 
-        df_c = pd.read_hdf(FOLDER["input_sim"]  + "/input.h5", "df_c")
-        df_c = df_c[["time", "DroneV", "DroneVError"]]
+        # df_c = pd.read_hdf(FOLDER["input_sim"]  + "/input.h5", "df_c")
+        # df_c = df_c[["time", "DroneV", "DroneVError"]]
 
-        tol = pd.Timedelta("15T")
-        df_c = df_c.set_index("time")
-        df = df.set_index("time")
-        df_c = pd.merge_asof(
-            left=df,
-            right=df_c,
-            right_index=True,
-            left_index=True,
-            direction="nearest",
-            tolerance=tol,
-        )
-        df_c = df_c[["DroneV", "DroneVError", "iceV"]]
-        df = df.reset_index()
+        # tol = pd.Timedelta("15T")
+        # df_c = df_c.set_index("time")
+        # df = df.set_index("time")
+        # df_c = pd.merge_asof(
+        #     left=df,
+        #     right=df_c,
+        #     right_index=True,
+        #     left_index=True,
+        #     direction="nearest",
+        #     tolerance=tol,
+        # )
+        # df_c = df_c[["DroneV", "DroneVError", "iceV"]]
+        # df = df.reset_index()
 
         if spray == "scheduled_field":
             spray = "Scheduled"
         else:
             spray = "Unscheduled"
 
-        x = df.time
-        y1 = df.iceV
+        x = df.time[1:]
+        y1 = df.iceV[1:]
         ax.set_ylabel("Ice Volume[$m^3$]")
         ax.plot(
             x,
@@ -266,12 +266,12 @@ if __name__ == "__main__":
             linewidth=1,
             color=mypal[i],
         )
-        y2 = df_c.DroneV
-        yerr = df_c.DroneVError
-        ax.fill_between(x, y1=icestupa.V_dome, y2=0, color=grey, label="Dome Volume")
-        ax.scatter(x, y2, color=mypal[i], label="Measured Volume")
-        ax.errorbar(x, y2, yerr=df_c.DroneVError, color=mypal[i])
-        ax.set_ylim([0,80])
+        # y2 = df_c.DroneV
+        # yerr = df_c.DroneVError
+        # ax.fill_between(x, y1=icestupa.V_dome, y2=0, color=grey, label="Dome Volume")
+        # ax.scatter(x, y2, color=mypal[i], label="Measured Volume")
+        # ax.errorbar(x, y2, yerr=df_c.DroneVError, color=mypal[i])
+        ax.set_ylim([0,60])
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
         ax.spines["left"].set_color("grey")
@@ -281,6 +281,9 @@ if __name__ == "__main__":
         ax.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
 
+    legend_elements = [Line2D([0], [0], color=mypal[0], lw=4, label='Scheduled'),
+                        Line2D([0], [0], color=mypal[1], lw=4, label='Unscheduled'),
+                       ]
     ax.legend(handles=legend_elements, prop={"size": 8})
     plt.savefig("data/figs/paper3/autovsman_vol.png", bbox_inches="tight", dpi=300)
     plt.clf()

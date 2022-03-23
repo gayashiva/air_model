@@ -205,13 +205,15 @@ class Icestupa:
         ]
         iceV_max = self.df["iceV"].max()
         M_input = self.df["input"].iloc[-1]
-        M_F = self.df["Discharge"].sum() * self.DT / 60 + self.df.loc[0, "input"] - self.V_dome * self.RHO_I
+        # M_F = self.df["Discharge"].sum() * self.DT / 60 + self.df.loc[0, "input"] - self.V_dome * self.RHO_I
+        M_F = self.df["Discharge"].sum() * self.DT / 60 + self.df.loc[0, "input"]
         M_ppt = self.df["snow2ice"].sum()
         M_dep = self.df["dep"].sum()
         M_water = self.df["meltwater"].iloc[-1]
         M_waste = self.df["wastewater"].iloc[-1]
         M_sub = self.df["vapour"].iloc[-1]
-        M_ice = self.df["ice"].iloc[-1] - self.V_dome * self.RHO_I
+        # M_ice = self.df["ice"].iloc[-1] - self.V_dome * self.RHO_I
+        M_ice = self.df["ice"].iloc[-1]
         last_hour = self.df.shape[0]
         R_F = self.R_F
         D_F = self.D_F
