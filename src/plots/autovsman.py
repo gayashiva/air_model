@@ -271,7 +271,7 @@ if __name__ == "__main__":
         # ax.fill_between(x, y1=icestupa.V_dome, y2=0, color=grey, label="Dome Volume")
         # ax.scatter(x, y2, color=mypal[i], label="Measured Volume")
         # ax.errorbar(x, y2, yerr=df_c.DroneVError, color=mypal[i])
-        ax.set_ylim([0,60])
+        ax.set_ylim([0,70])
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
         ax.spines["left"].set_color("grey")

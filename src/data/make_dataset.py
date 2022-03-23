@@ -1,4 +1,4 @@
-"""Compile raw data from the location, meteoswiss or ERA5
+make_da"""Compile raw data from the location, meteoswiss or ERA5
 """
 
 # External modules

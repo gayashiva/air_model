@@ -44,6 +44,11 @@ def config(loc="guttannen21", spray=None):
                         R_F = 4,
                         dis_crit = 2,
                     )
+                if spray.split('_')[1] in ["field"]:
+                    add= dict(
+                        fountain_off_date=datetime(2022, 3, 3),
+                        dis_crit = 2,
+                    )
             if spray.split('_')[0] == "unscheduled":
                 if spray.split('_')[1] == "field":
                     add= dict(

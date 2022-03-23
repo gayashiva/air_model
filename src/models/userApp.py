@@ -26,8 +26,8 @@ if __name__ == "__main__":
     logger.setLevel("WARNING")
     # logger.setLevel("INFO")
 
-    # test = True
-    test = False
+    test = True
+    # test = False
 
     # location = "Guttannen 2020"
     # location = "Guttannen 2021"
@@ -35,8 +35,8 @@ if __name__ == "__main__":
     # location = "Gangles 2021"
 
     # sprays = ["scheduled_icv", "scheduled_wue"]
-    sprays = ["scheduled_field", "unscheduled_field"]
-    # sprays = ["unscheduled_field"]
+    # sprays = ["scheduled_field", "unscheduled_field"]
+    sprays = ["scheduled_field"]
     # sprays = ["scheduled_wue", "scheduled_icv"]
 
     for spray in sprays:
