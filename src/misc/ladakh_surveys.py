@@ -60,7 +60,6 @@ if __name__ == "__main__":
         # else:
             # ax.scatter(df.Altitude[i],df.Volume[i],s=20, color=mypal[1], marker=dot_dict[df.Winter[i]])
 
-    plt.axvline(x=4200, color = 'k', linestyle = '--', alpha = 0.5, linewidth=0.9)
     # Hide the right and top spines
     ax.spines["right"].set_visible(False)
     ax.spines["top"].set_visible(False)
@@ -74,4 +73,6 @@ if __name__ == "__main__":
     ax.set_ylabel("Ice Volume [$million\,litres$]")
     ax.set_xlabel("Altitude [$m$]")
     ax.legend(handles=legend_elements, prop={"size": 8})
-    plt.savefig("data/figs/slides/ladakh_surveys.png", bbox_inches="tight", dpi=300)
+    plt.savefig("data/figs/slides/ladakh_surveys_0.png", bbox_inches="tight", dpi=300)
+    plt.axvline(x=4200, color = 'k', linestyle = '--', alpha = 0.5, linewidth=0.9)
+    plt.savefig("data/figs/slides/ladakh_surveys_1.png", bbox_inches="tight", dpi=300)
