@@ -15,6 +15,10 @@
 
 ---
 
+## About
+
+This app showcases the results from a [publication](https://www.frontiersin.org/articles/10.3389/feart.2021.771342/full) that evaluated fountain efficiency and meltwater quantities of icestupas in India and Switzerland. 
+
 ## Timelapses
 
 ![](data/guttannen22/figs/Guttannen_Icestupa_2021.gif)
