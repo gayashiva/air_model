@@ -17,7 +17,9 @@
 
 ## About
 
-This app showcases the results from a [publication](https://www.frontiersin.org/articles/10.3389/feart.2021.771342/full) that evaluated fountain efficiency and meltwater quantities of icestupas in India and Switzerland. 
+The model documentation is present in this
+[publication](https://www.frontiersin.org/articles/10.3389/feart.2021.771342/full) along with its applications
+on several icestupas built in India and Switzerland. 
 
 ## Timelapses
 
