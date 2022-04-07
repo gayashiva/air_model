@@ -51,7 +51,7 @@ def get_field(loc="schwarzsee19"):
             "Tice_Avg(8)",
         ]
         cols_new = ["time", "temp", "RH", "press", "wind", "snow_h", "SW_global", "SW_out", "LW_in", "LW_out",
-            "Qs_meas", "T_ice_1", "T_ice_2", "T_ice_3", "T_ice_4", "T_ice_5","T_ice_6","T_ice_7","T_ice_8"]
+            "Qs_meas", "T_1", "T_2", "T_3", "T_4", "T_5","T_6","T_7","T_8"]
         cols_dict = dict(zip(cols_old, cols_new))
 
         path = FOLDER["raw"] + "CardConvert/"
@@ -98,9 +98,9 @@ def get_field(loc="schwarzsee19"):
         print(df['ppt'].describe())
 
         # print(df.time[df.T_ice_8.isna()].values[0])
-        df['T_bulk_meas'] = (df["T_ice_2"] + df["T_ice_3"] + df["T_ice_4"]+ df["T_ice_5"]+ df["T_ice_6"]+df["T_ice_7"])/6
+        # df['T_bulk_meas'] = (df["T_ice_2"] + df["T_ice_3"] + df["T_ice_4"]+ df["T_ice_5"]+ df["T_ice_6"]+df["T_ice_7"])/6
         # df['T_bulk_meas'] = (df["T_ice_2"] + df["T_ice_3"] + df["T_ice_4"]+ df["T_ice_5"]+ df["T_ice_6"])/5
-        df['T_G'] = df["T_ice_1"]
+        # df['T_G'] = df["T_ice_1"]
 
 
         cols = [
@@ -116,8 +116,7 @@ def get_field(loc="schwarzsee19"):
             "Qs_meas",
             # "ppt",
             "snow_h",
-            "T_bulk_meas",
-            "T_G",
+            # "T_G",
         ]
 
         df_out = df[cols]
@@ -127,29 +126,36 @@ def get_field(loc="schwarzsee19"):
 
         df_out.to_csv(FOLDER["input"] + "field.csv", index=False)
 
-        fig, ax = plt.subplots()
-        x = df.time
-        # ax.plot(x,df["T_ice_7"])
-        # ax.plot(x,df["T_ice_6"])
-        # ax.plot(x,df["T_ice_8"] - df["T_ice_7"])
-        # ax.plot(x,df["T_ice_7"] - df["T_ice_6"])
-        # ax.plot(x,df["T_ice_6"] - df["T_ice_5"])
-        ax.plot(x,df["T_ice_5"] - df["T_ice_4"])
-        ax.plot(x,df["T_ice_4"] - df["T_ice_3"])
-        ax.plot(x,df["T_ice_3"] - df["T_ice_2"])
-        # ax.plot(x,df["T_ice_3"])
-        ax.set_ylim([-3,0.1])
-        ax.legend()
-        ax.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax.xaxis.set_minor_locator(mdates.DayLocator())
-        fig.autofmt_xdate()
-        plt.savefig(
-            FOLDER['fig'] + "temps.png",
-            bbox_inches="tight",
-            dpi=300,
-        )
-        plt.clf()
+        cols_temp = [
+            "time",
+            "T_2",
+            "T_3",
+            "T_4",
+            "T_5",
+            "T_6",
+            "T_7",
+        ]
+
+        df_temp = df[cols_temp]
+        df_temp['T_bulk'] = (df["T_2"] + df["T_3"] + df["T_4"]+ df["T_5"]+ df["T_6"])/5
+
+        df_temp.to_csv("/home/suryab/work/cosipy/data/input/guttannen22_scheduled/"+ "thermistor.csv", index=False)
+
+        # fig, ax = plt.subplots()
+        # x = df.time
+        # ax.plot(x,df["T_3"])
+        # ax.set_ylim([-3,0.1])
+        # ax.legend()
+        # ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+        # ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        # ax.xaxis.set_minor_locator(mdates.DayLocator())
+        # fig.autofmt_xdate()
+        # plt.savefig(
+        #     FOLDER['fig'] + "temps.png",
+        #     bbox_inches="tight",
+        #     dpi=300,
+        # )
+        # plt.clf()
 
         return df_out
 

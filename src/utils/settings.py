@@ -66,7 +66,8 @@ def config(loc="guttannen21", spray=None):
         SITE = dict(
             name="gangles21",
             start_date=datetime(2021, 1, 18),
-            expiry_date=datetime(2021, 4, 10),
+            # expiry_date=datetime(2021, 4, 10),
+            expiry_date=datetime(2021, 6, 20),
             alt=4009,
             coords=[34.216638,77.606949],
             utc=4.5,
@@ -154,6 +155,8 @@ def config(loc="guttannen21", spray=None):
             name="guttannen20",
             alt=1047.6,
             coords=[46.65549,8.29149],
+            start_date=datetime(2020, 1, 3, 16),
+            expiry_date=datetime(2020, 4, 6, 12),
             # R_F=6.68,  # First drone rad
             cld=0.5,
             # h_f=3,
@@ -175,19 +178,18 @@ def config(loc="guttannen21", spray=None):
                 )
                 add["expiry_date"] = add["fountain_off_date"]
 
-            if spray == "manual":
-                add = dict(
-                    start_date=datetime(2020, 1, 3, 16),
-                    expiry_date=datetime(2020, 4, 6, 12),
-                    fountain_off_date=datetime(2020, 3, 8, 9),  # Image shows Dani switched off at 8th Mar 10 am
-                    dis_max= 11,
-                    D_F=7.5,  # Fountain mean discharge
-                    f_heights = [
-                        {"time": datetime(2020, 1, 3, 16), "h_f": 2.5},
-                        {"time": datetime(2020, 1, 24, 12), "h_f": 3.5},
-                        {"time": datetime(2020, 2, 5, 19), "h_f": 2.5},
-                    ],
-                )
+            if spray.split('_')[0] == "unscheduled":
+                if spray.split('_')[1] == "field":
+                    add = dict(
+                        fountain_off_date=datetime(2020, 3, 8, 9),  # Image shows Dani switched off at 8th Mar 10 am
+                        dis_max= 11,
+                        D_F=7.5,  # Fountain mean discharge
+                        f_heights = [
+                            {"time": datetime(2020, 1, 3, 16), "h_f": 2.5},
+                            {"time": datetime(2020, 1, 24, 12), "h_f": 3.5},
+                            {"time": datetime(2020, 2, 5, 19), "h_f": 2.5},
+                        ],
+                    )
 
             SITE = dict(SITE, **add)
 

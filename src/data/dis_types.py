@@ -34,7 +34,8 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
         CONSTANTS = json.load(f)
 
     # sprays = ["unscheduled_field","scheduled_field", "scheduled_icv", "scheduled_wue"]
-    sprays = ["unscheduled_field","scheduled_icv", "scheduled_wue"]
+    # sprays = ["unscheduled_field","scheduled_icv", "scheduled_wue"]
+    sprays = ["unscheduled_field"]
 
     if loc=="guttannen22":
         sprays.append("scheduled_field")
@@ -182,7 +183,7 @@ if __name__ == "__main__":
     # logger.setLevel("INFO")
 
     # locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
-    locations = ["guttannen22"]
+    locations = ["guttannen20"]
     # locations = ["gangles21", "guttannen22"]
 
     for loc in locations:

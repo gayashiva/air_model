@@ -152,9 +152,9 @@ class Icestupa:
                     self.df.loc[i, "e_a"] * self.sigma * math.pow(row.temp + 273.15, 4)
                 )
 
-            """Water temperature"""
-            if row.temp < 0:
-                self.df.loc[i,"T_F"] = 0
+            # """Water temperature"""
+            # if row.temp < 0:
+            #     self.df.loc[i,"T_F"] = 0
 
         self.self_attributes()
 
@@ -174,6 +174,9 @@ class Icestupa:
                     logger.warning(" Null values interpolated in %s" % column)
                     self.df.loc[:, column] = self.df[column].interpolate()
 
+        self.df.to_csv(
+            self.input_sim + "/input.csv",
+        )
         self.df.to_hdf(
             self.input_sim + "/input.h5",
             key="df",
@@ -229,7 +232,7 @@ class Icestupa:
             print("\t%s: %r" % (var, results_dict[var]))
         print()
 
-        with open(self.output + "/results.json", "w") as f:
+        with open(self.output + "results.json", "w") as f:
             json.dump(results_dict, f, sort_keys=True, indent=4)
 
         if last_hour > self.total_hours + 1:
@@ -471,11 +474,15 @@ class Icestupa:
             # if self.df.loc[:i, "fountain_froze"].sum() + self.df.loc[:i,"dep"].sum() + self.df.loc[:i,"snow2ice"].sum() == 0:
             #     self.df.loc[i + 1, "rho_air"] = self.RHO_I
             # else:
-            self.df.loc[i + 1, "rho_air"] =(
-                    (self.df.loc[1, "ice"] + self.df.loc[:i, "fountain_froze"].sum()+self.df.loc[:i,"dep"].sum()+self.df.loc[:i,"snow2ice"].sum())
-                    /(( self.df.loc[1, "ice"] + self.df.loc[:i, "fountain_froze"].sum()+self.df.loc[:i, "dep"].sum())/self.RHO_I
-                    +(self.df.loc[:i, "snow2ice"].sum()/self.RHO_S))
-            )
+
+            if self.name == 'guttannen21':
+                self.df.loc[i + 1, "rho_air"] = self.RHO_I
+            else:
+                self.df.loc[i + 1, "rho_air"] =(
+                        (self.df.loc[1, "ice"] + self.df.loc[:i, "fountain_froze"].sum()+self.df.loc[:i,"dep"].sum()+self.df.loc[:i,"snow2ice"].sum())
+                        /(( self.df.loc[1, "ice"] + self.df.loc[:i, "fountain_froze"].sum()+self.df.loc[:i, "dep"].sum())/self.RHO_I
+                        +(self.df.loc[:i, "snow2ice"].sum()/self.RHO_S))
+                )
 
             self.df.loc[i + 1, "iceV"] = self.df.loc[i + 1, "ice"]/self.df.loc[i+1, "rho_air"]
 

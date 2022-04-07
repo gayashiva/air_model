@@ -1,4 +1,4 @@
-make_da"""Compile raw data from the location, meteoswiss or ERA5
+"""Compile raw data from the location, meteoswiss or ERA5
 """
 
 # External modules
@@ -41,7 +41,8 @@ if __name__ == "__main__":
     logger.setLevel("INFO")
 
     # locations = ["gangles21", "guttannen20", "guttannen21", "guttannen22"]
-    locations = ["guttannen21"]
+    locations = ["guttannen22"]
+    # locations = ["gangles21"]
 
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
@@ -153,7 +154,7 @@ if __name__ == "__main__":
                 except KeyError:
                     logger.warning("%s from ERA5" % col)
                     df[col] = df_ERA5[col]
-                    df["missing_type"] = df["missing_type"] + col
+                    # df["missing_type"] = df["missing_type"] + col
             # logger.info(df.missing_type.describe())
             # logger.info(df.missing_type.unique())
 
@@ -190,6 +191,7 @@ if __name__ == "__main__":
                 "LW_in",
             ]
 
+
         if SITE["name"] in ["guttannen22"]:
             cols = [
                 "time",
@@ -204,13 +206,13 @@ if __name__ == "__main__":
                 "press",
                 "LW_in",
                 "snow_h",
-                "T_bulk_meas",
-                "T_G",
+                # "T_ice_3",
+                # "T_G",
             ]
 
 
         df_out = df[cols]
-            
+
         if df_out.isna().values.any():
             logger.warning(df_out[cols].isna().sum())
             df = df.interpolate(method='linear', limit_direction='forward', axis=0)
@@ -218,6 +220,7 @@ if __name__ == "__main__":
             df_out.loc[df_out.ppt.isna(), "ppt"] = 0
             if df_out.isna().values.any():
                 logger.error(df_out[cols].isna().sum())
+
             # for column in cols:
             #     if df_out[column].isna().sum() > 0 and column not in ["missing_type"]:
             #         logger.warning(" Null values interpolated in %s" % column)
