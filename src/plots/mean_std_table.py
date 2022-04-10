@@ -191,7 +191,7 @@ if __name__ == "__main__":
                 + dfd.Qg.abs().sum()
             )
             print(
-                "Percent of SW: %.1f \n LW: %.1f \n Qs: %.1f \n Ql: %.1f \n Qf: %.1f\n Qg: %.1f"
+                "Percent of \n SW: %.1f \n LW: %.1f \n Qs: %.1f \n Ql: %.1f \n Qf: %.1f\n Qg: %.1f"
                 % (
                     dfd.SW.abs().sum() / Total2 * 100,
                     dfd.LW.abs().sum() / Total2 * 100,

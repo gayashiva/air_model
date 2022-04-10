@@ -34,6 +34,7 @@ def config(loc="guttannen21", spray=None):
             cld=0.5,
             # Calibrated values
             DX=45e-03,  # Surface layer thickness [m]
+            T_F = 5.0,
         )
 
         if spray != None:

@@ -152,9 +152,15 @@ class Icestupa:
                     self.df.loc[i, "e_a"] * self.sigma * math.pow(row.temp + 273.15, 4)
                 )
 
-            # """Water temperature"""
-            # if row.temp < 0:
-            #     self.df.loc[i,"T_F"] = 0
+            """Water temperature"""
+            if row.temp < 0:
+                self.df.loc[i,"T_F"] = 0
+            elif row.temp > self.T_F:
+                self.df.loc[i,"T_F"] = self.T_F
+            else:
+                self.df.loc[i,"T_F"] = row.temp
+
+        logger.warning(f"Variable fountain water temp mean is {self.df.T_F.mean()}\n")
 
         self.self_attributes()
 
