@@ -215,18 +215,16 @@ if __name__ == "__main__":
 
         if df_out.isna().values.any():
             logger.warning(df_out[cols].isna().sum())
-            df = df.interpolate(method='linear', limit_direction='forward', axis=0)
-            df_out.loc[df_out.wind.isna(), "wind"] = 0
-            df_out.loc[df_out.ppt.isna(), "ppt"] = 0
-            if df_out.isna().values.any():
-                logger.error(df_out[cols].isna().sum())
+            # df = df.interpolate(method='linear', limit_direction='forward', axis=0)
+            # df_out.loc[df_out.wind.isna(), "wind"] = 0
+            # df_out.loc[df_out.ppt.isna(), "ppt"] = 0
 
             # for column in cols:
             #     if df_out[column].isna().sum() > 0 and column not in ["missing_type"]:
             #         logger.warning(" Null values interpolated in %s" % column)
             #         df_out.loc[:,column] = df_out[column].interpolate()
-                    # print(df_out.loc[df_out[column]==np.NaN, column])
-                    # df_out.loc[df_out[column]==np.NaN, column] = 0
+            #         print(df_out.loc[df_out[column]==np.NaN, column])
+            #         df_out.loc[df_out[column]==np.NaN, column] = 0
 
         df_out = df_out.round(3)
         if len(df_out[df_out.index.duplicated()]):
