@@ -54,7 +54,10 @@ def self_attributes(self):
         logger.warning("Measured spray radius from drone %0.1f" % self.R_F)
 
     if self.name in ["guttannen22"]:
-        self.V_dome = math.pi * math.pow(self.R_F,2) * self.h_dome
+        if self.spray.split('_')[0] == 'scheduled':
+            self.V_dome = math.pi * math.pow(self.R_F,2) * self.h_dome
+        if self.spray.split('_')[0] == 'unscheduled':
+            self.V_dome = df_c.loc[df_c.shape[0]-1, "DroneV"]
     else:
         self.V_dome = df_c.loc[0, "DroneV"]
 

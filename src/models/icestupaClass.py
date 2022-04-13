@@ -314,6 +314,7 @@ class Icestupa:
             "r_cone",
             "dr",
             "snow2ice",
+            "rain2ice",
             "dep",
             "j_cone",
             "wasted",
@@ -339,7 +340,7 @@ class Icestupa:
         self.df.loc[0, "s_cone"] = self.df.loc[0, "h_cone"] / self.df.loc[0, "r_cone"]
         V_initial = math.pi / 3 * self.R_F ** 2 * self.h_i
         self.df.loc[1, "rho_air"] = self.RHO_I
-        self.df.loc[1, "ice"] = V_initial* self.RHO_I
+        self.df.loc[1, "ice"] = V_initial* self.df.loc[1, "rho_air"]
         self.df.loc[1, "iceV"] = V_initial
         self.df.loc[1, "input"] = self.df.loc[1, "ice"]
 
@@ -430,15 +431,14 @@ class Icestupa:
                     )
                 else:
                 # If rain add to discharge and change temperature
-                    self.df.loc[i, "Discharge"] += (
+                    self.df.loc[i, "rain2ice"] = (
                         self.RHO_W
                         * self.df.loc[i, "ppt"]
                         / 1000
                         * math.pi
                         * math.pow(self.df.loc[i, "r_cone"], 2)
-                        / 60
                     )
-                    self.df.loc[i, "T_F"] = self.df.loc[i, "temp"]
+                    # self.df.loc[i, "Discharge"] += self.df.loc[i, "rain2ice"]/60
                     self.df.loc[i, "snow2ice"] = 0
                     logger.info(f"Rain event on {self.df.time.loc[i]} with temp {self.df.temp.loc[i]}")
             else:
@@ -505,13 +505,6 @@ class Icestupa:
                 )
 
             self.df.loc[i + 1, "iceV"] = self.df.loc[i + 1, "ice"]/self.df.loc[i+1, "rho_air"]
-
-            # self.df.loc[i + 1, "iceV"] = self.df.loc[i + 1, "ice"]/self.RHO_I
-            # self.df.loc[i + 1, "iceV"] = (
-            #     (self.df.loc[i + 1, "ice"] - self.df.loc[i, "snow2ice"])
-            #     / self.RHO_I
-            #     + self.df.loc[i, "snow2ice"]
-            #     /self.RHO_S)
 
             self.df.loc[i + 1, "input"] = (
                 self.df.loc[i, "input"]
