@@ -26,7 +26,7 @@ def labview(location):
             CONSTANTS = json.load(f)
         SITE, FOLDER = config(location)
 
-        path = FOLDER["raw"] + "dynamic/sdcard/"
+        path = FOLDER["raw"] + "scheduled/sdcard/"
         all_files = glob.glob(path + "*.txt")
 
         li = []
@@ -62,7 +62,7 @@ def labview(location):
                         "T_Luft": "T_a",
                         "r_Luft": "RH",
                         "Q_Wasser ": "Discharge",
-                        "T_Wasser ": "T_w",
+                        "T_Wasser ": "T_F",
                     },
                     inplace=True,
                 )
@@ -108,10 +108,10 @@ if __name__ == "__main__":
         logger=logger,
     )
 
-    SITE, FOLDER = config("guttannen22", spray="dynamic")
+    SITE, FOLDER = config("guttannen22")
 
-    # sdcard = True
-    sdcard = False
+    sdcard = True
+    # sdcard = False
     
     if sdcard:
         df= labview("guttannen22")
@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
     df = df.set_index("time")
     df = df[SITE["start_date"] : SITE["expiry_date"]]
-    df = df[["Discharge", "T_w"]]
+    df = df[["Discharge", "T_F"]]
 
     df= df.replace(np.NaN, 0)
     df = df.resample("H").mean()
@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
     fig, ax = plt.subplots()
     # x = df.time
-    y = df.T_w
+    y = df.T_F
     ax.plot(y)
     ax.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
