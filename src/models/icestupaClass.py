@@ -417,17 +417,31 @@ class Icestupa:
 
             self.get_area(i)
 
-            # Precipitation
-            self.df.loc[i, "snow2ice"] = (
-                self.RHO_W
-                * self.df.loc[i, "ppt"]
-                / 1000
-                * math.pi
-                * math.pow(self.df.loc[i, "r_cone"], 2)
-            )
+            # Precipitation 
+            if self.df.loc[i, "ppt"] > 0:
 
-            # Precipitation not from snow height and possible rain
-            if "snow_h" not in list(self.df.columns) and self.df.loc[i, "temp"] > self.T_PPT:
+                if self.df.loc[i, "temp"] < self.T_PPT:
+                    self.df.loc[i, "snow2ice"] = (
+                        self.RHO_W
+                        * self.df.loc[i, "ppt"]
+                        / 1000
+                        * math.pi
+                        * math.pow(self.df.loc[i, "r_cone"], 2)
+                    )
+                else:
+                # If rain add to discharge and change temperature
+                    self.df.loc[i, "Discharge"] += (
+                        self.RHO_W
+                        * self.df.loc[i, "ppt"]
+                        / 1000
+                        * math.pi
+                        * math.pow(self.df.loc[i, "r_cone"], 2)
+                        / 60
+                    )
+                    self.df.loc[i, "T_F"] = self.df.loc[i, "temp"]
+                    self.df.loc[i, "snow2ice"] = 0
+                    logger.info(f"Rain event on {self.df.time.loc[i]} with temp {self.df.temp.loc[i]}")
+            else:
                 self.df.loc[i, "snow2ice"] = 0
 
             if test:

@@ -103,60 +103,60 @@ if __name__ == "__main__":
             df_ERA5 = df_ERA5.reset_index()
             df_ERA5_full = df_ERA5_full.reset_index()
 
-            # Fit ERA5 to field data
-            if SITE["name"] in ["guttannen21", "guttannen20", "guttannen22"]:
-                fit_list = ["temp", "RH", "wind"]
+            # # Fit ERA5 to field data
+            # if SITE["name"] in ["guttannen21", "guttannen20", "guttannen22"]:
+            #     fit_list = ["temp", "RH", "wind"]
 
-            if SITE["name"] in ["schwarzsee19"]:
-                fit_list = ["temp", "RH", "wind", "press"]
+            # if SITE["name"] in ["schwarzsee19"]:
+            #     fit_list = ["temp", "RH", "wind", "press"]
 
-            for column in fit_list:
-                Y = df[column].values.reshape(-1, 1)
-                X = df_ERA5[column].values.reshape(-1, 1)
-                slope, intercept, r_value = linreg(X, Y)
-                logger.info(f"Correlation of {column} in ERA5 is {r_value} at {loc}")
-                df_ERA5[column] = slope * df_ERA5[column] + intercept
-                df_ERA5_full[column] = slope * df_ERA5_full[column] + intercept
-                if column in ["wind"]:
-                    # Correct negative wind
-                    df_ERA5.loc[df_ERA5.wind < 0, 'wind'] = 0
-                    df_ERA5_full.loc[df_ERA5_full.wind < 0, 'wind'] = 0
+            # for column in fit_list:
+            #     Y = df[column].values.reshape(-1, 1)
+            #     X = df_ERA5[column].values.reshape(-1, 1)
+            #     slope, intercept, r_value = linreg(X, Y)
+            #     logger.info(f"Correlation of {column} in ERA5 is {r_value} at {loc}")
+            #     df_ERA5[column] = slope * df_ERA5[column] + intercept
+            #     df_ERA5_full[column] = slope * df_ERA5_full[column] + intercept
+            #     if column in ["wind"]:
+            #         # Correct negative wind
+            #         df_ERA5.loc[df_ERA5.wind < 0, 'wind'] = 0
+            #         df_ERA5_full.loc[df_ERA5_full.wind < 0, 'wind'] = 0
 
-            df_ERA5 = df_ERA5.set_index("time")
+            # df_ERA5 = df_ERA5.set_index("time")
 
-            # Fill from ERA5
-            df["missing_type"] = ""
-            for col in [
-                "temp",
-                "RH",
-                "wind",
-                "ppt",
-                "press",
-                "SW_global",
-                # "SW_diffuse",
-                "LW_in",
-            ]:
-                try:
-                    mask = df[col].isna()
-                    percent_nan = df[col].isna().sum() / df.shape[0] * 100
-                    if percent_nan > 1:
-                        logger.warning(" %s has %s percent NaN values" % (col, percent_nan))
-                        logger.warning(" Null values filled with ERA5 in %s" % col)
-                        df.loc[df[col].isna(), "missing_type"] = (
-                            df.loc[df[col].isna(), "missing_type"] + col
-                        )
-                        df.loc[df[col].isna(), col] = df_ERA5[col]
-                    elif percent_nan == 0:
-                        logger.warning(" No Null values in %s" % col)
-                    else:
-                        logger.warning(" Null values interpolated in %s" % col)
-                        df.loc[:, col] = df[col].interpolate()
-                except KeyError:
-                    logger.warning("%s from ERA5" % col)
-                    df[col] = df_ERA5[col]
-                    # df["missing_type"] = df["missing_type"] + col
-            # logger.info(df.missing_type.describe())
-            # logger.info(df.missing_type.unique())
+            # # Fill from ERA5
+            # df["missing_type"] = ""
+            # for col in [
+            #     "temp",
+            #     "RH",
+            #     "wind",
+            #     "ppt",
+            #     "press",
+            #     "SW_global",
+            #     # "SW_diffuse",
+            #     "LW_in",
+            # ]:
+            #     try:
+            #         mask = df[col].isna()
+            #         percent_nan = df[col].isna().sum() / df.shape[0] * 100
+            #         if percent_nan > 1:
+            #             logger.warning(" %s has %s percent NaN values" % (col, percent_nan))
+            #             logger.warning(" Null values filled with ERA5 in %s" % col)
+            #             df.loc[df[col].isna(), "missing_type"] = (
+            #                 df.loc[df[col].isna(), "missing_type"] + col
+            #             )
+            #             df.loc[df[col].isna(), col] = df_ERA5[col]
+            #         elif percent_nan == 0:
+            #             logger.warning(" No Null values in %s" % col)
+            #         else:
+            #             logger.warning(" Null values interpolated in %s" % col)
+            #             df.loc[:, col] = df[col].interpolate()
+            #     except KeyError:
+            #         logger.warning("%s from ERA5" % col)
+            #         df[col] = df_ERA5[col]
+            #         # df["missing_type"] = df["missing_type"] + col
+            # # logger.info(df.missing_type.describe())
+            # # logger.info(df.missing_type.unique())
 
             df = df.reset_index()
 
@@ -215,6 +215,7 @@ if __name__ == "__main__":
 
         if df_out.isna().values.any():
             logger.warning(df_out[cols].isna().sum())
+            df = df.interpolate(method='ffill', axis=0)
             # df = df.interpolate(method='linear', limit_direction='forward', axis=0)
             # df_out.loc[df_out.wind.isna(), "wind"] = 0
             # df_out.loc[df_out.ppt.isna(), "ppt"] = 0
