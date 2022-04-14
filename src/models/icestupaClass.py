@@ -438,7 +438,7 @@ class Icestupa:
                         * math.pi
                         * math.pow(self.df.loc[i, "r_cone"], 2)
                     )
-                    # self.df.loc[i, "Discharge"] += self.df.loc[i, "rain2ice"]/60
+                    self.df.loc[i, "Discharge"] += self.df.loc[i, "rain2ice"]/60
                     self.df.loc[i, "snow2ice"] = 0
                     logger.info(f"Rain event on {self.df.time.loc[i]} with temp {self.df.temp.loc[i]}")
             else:

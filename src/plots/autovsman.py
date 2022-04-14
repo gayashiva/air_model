@@ -235,12 +235,12 @@ if __name__ == "__main__":
         ax.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
 
-    legend_elements = [Line2D([0], [0], color=mypal[0], lw=4, label='Automatic AIR Volume'),
-                        Line2D([0], [0], color=mypal[1], lw=4, label='Traditional AIR Volume'),
-                       Line2D([0], [0], marker='.', color='w', label='Measured AIR Volume',
+    legend_elements = [Line2D([0], [0], color=mypal[0], lw=4, label='Automatic'),
+                        Line2D([0], [0], color=mypal[1], lw=4, label='Traditional'),
+                       Line2D([0], [0], marker='.', color='w', label='Measured',
                               markerfacecolor='k', markersize=15),
                        ]
-    ax.legend(handles=legend_elements, prop={"size": 8})
+    ax.legend(handles=legend_elements, prop={"size": 8}, title='AIR Volume')
     plt.savefig("data/figs/paper3/validation.png", bbox_inches="tight", dpi=300)
     plt.clf()
 
