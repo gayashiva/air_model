@@ -69,8 +69,20 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                 df_f = df_f.set_index("time")
                 df = df.set_index("time")
                 df[spray] = df_f["Discharge"]
+                df = df.replace(np.NaN, 0)
+
+                # Apply corrections from lookup table
+                df3 = pd.read_csv('/home/suryab/work/air_model/data/guttannen22/interim/scheduled/field/lookup_table.csv')
+                df3 = df3.set_index('temp')
+                df1 = pd.read_csv('file:///home/suryab/work/air_model/data/guttannen22/interim/aws.csv')
+                df1['time'] = pd.to_datetime(df1['time'])
+                df1 = df1.set_index('time')
+                for i in df1[datetime(2022, 1, 28):].index:
+                    temp = round(df1.temp[i], 1)
+                    if temp in df3.index :  
+                        df.loc[i, spray] = df3.loc[temp, "Discharge"]
                 df = df.reset_index()
-                df= df.replace(np.NaN, 0)
+
                 # D_F = self.df.Discharge[self.df.Discharge != 0].mean()
                 # logger.warning("scheduled Discharge mean %.1f" % self.D_F)
                 # D_F = self.df.Discharge[self.df.Discharge != 0].mean()
@@ -183,7 +195,7 @@ if __name__ == "__main__":
     # logger.setLevel("INFO")
 
     # locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
-    locations = ["guttannen20"]
+    locations = ["guttannen22"]
     # locations = ["gangles21", "guttannen22"]
 
     for loc in locations:
@@ -194,34 +206,34 @@ if __name__ == "__main__":
         # df= df[df.time <= SITE["fountain_off_date"]]
         fig, ax1 = plt.subplots()
         x = df.time
-        y1 = df.unscheduled_field
+        # y1 = df.unscheduled_field
         y12 = df.scheduled_field
-        y2 = df.scheduled_icv
-        y3 = df.scheduled_wue
-        ax1.plot(
-            x,
-            y1,
-            linestyle="-",
-            label = "Unscheduled field"
-        )
+        # y2 = df.scheduled_icv
+        # y3 = df.scheduled_wue
+        # ax1.plot(
+        #     x,
+        #     y1,
+        #     linestyle="-",
+        #     label = "Unscheduled field"
+        # )
         ax1.plot(
             x,
             y12,
             linestyle="-",
             label = "Scheduled field"
         )
-        ax1.plot(
-            x,
-            y2,
-            linestyle="--",
-            label = "Scheduled ICV"
-        )
-        ax1.plot(
-            x,
-            y3,
-            linestyle="-.",
-            label = "Scheduled WUE"
-        )
+        # ax1.plot(
+        #     x,
+        #     y2,
+        #     linestyle="--",
+        #     label = "Scheduled ICV"
+        # )
+        # ax1.plot(
+        #     x,
+        #     y3,
+        #     linestyle="-.",
+        #     label = "Scheduled WUE"
+        # )
         ax1.set_ylabel("Discharge [$l/min$]")
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))

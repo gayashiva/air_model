@@ -58,8 +58,8 @@ def labview(location):
 
                 df.rename(
                     columns={
-                        "w_Luft": "v_a",
-                        "T_Luft": "T_a",
+                        "w_Luft": "wind",
+                        "T_Luft": "temp",
                         "r_Luft": "RH",
                         "Q_Wasser ": "Discharge",
                         "T_Wasser ": "T_F",
@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
     df = df.set_index("time")
     df = df[SITE["start_date"] : SITE["expiry_date"]]
-    df = df[["Discharge", "T_F"]]
+    df = df[["Discharge", "temp", "T_F"]]
 
     df= df.replace(np.NaN, 0)
     df = df.resample("H").mean()
