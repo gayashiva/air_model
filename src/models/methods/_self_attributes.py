@@ -51,7 +51,12 @@ def self_attributes(self):
         #     (df_c.time < self.fountain_off_date) & (df_c.index != 0), "rad"
         #     # (df_c.time < self.fountain_off_date), "rad"
         # ].mean()
-        self.R_F = df_c.rad.max()
+
+        # self.R_F = df_c.rad.max()
+
+        df_c['diff'] = df_c['DroneV'] - df_c.shift(1)['DroneV']
+        # logger.warning(df_c.tail())
+        self.R_F = df_c.loc[df_c['diff'].values > 0 , "rad"].mean()
         logger.warning("Measured spray radius from drone %0.1f" % self.R_F)
 
     if self.name in ["guttannen22"]:
