@@ -61,14 +61,13 @@ def get_energy(self, i):
         self.df.loc[i, "T_s"] + 273.15, 4
     )
 
-    if self.df.loc[i, "rain2ice"] == 0: 
-        self.df.loc[i, "Qf"] = (
-            (self.df.loc[i, "Discharge"] * self.DT / 60)
-            * self.C_W
-            * (self.df.loc[i, "T_F"]-self.df.loc[i, "T_s"])
-            # * self.df.loc[i, "T_F"]
-            / (self.DT * self.df.loc[i, "A_cone"])
-        )
+    self.df.loc[i, "Qf"] = (
+        (self.df.loc[i, "Discharge"] * self.DT / 60)
+        * self.C_W
+        # * (self.df.loc[i, "T_F"]-self.df.loc[i, "T_s"]) # Reduces iceV of gangles dramatically
+        * self.df.loc[i, "T_F"]
+        / (self.DT * self.df.loc[i, "A_cone"])
+    )
     if self.df.loc[i, "rain2ice"] != 0: 
         self.df.loc[i, "Qf"] += (
             (self.df.loc[i, "rain2ice"])

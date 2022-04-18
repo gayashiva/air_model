@@ -74,9 +74,9 @@ def config(loc="guttannen21", spray=None):
             alt=4009,
             coords=[34.216638,77.606949],
             utc=4.5,
-            cld=0.1,
+            cld=0,
+            T_F=0,
             # h_f=9,
-            # R_F=9.05,  # First drone rad
             # perimeter=82.3, # On 3 Mar
 
             # Calibrated values

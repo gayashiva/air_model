@@ -89,6 +89,7 @@ class Icestupa:
             "alb",
             "vp_a",
             "LW_in",
+            "SW_global",
         ]  # Possible unknown variables
 
         for i in range(len(unknown)):
@@ -118,12 +119,12 @@ class Icestupa:
         self.df["SW_diffuse"] = self.cld * self.df["SW_global"]
         logger.warning(f"Estimated solar components with constant cloudiness of {self.cld}\n")
 
-        if "T_G" in list(self.df.columns):
-            self.df.rename(columns={"T_G": "T_F"},inplace=True)
-            logger.warning(" Measured ground temp is fountain water temp\n")
-        else:
-            self.df["T_F"] = float(self.T_F)
-            logger.warning(f"Estimated constant fountain water temp is {self.T_F}\n")
+        # if "T_G" in list(self.df.columns):
+        #     self.df.rename(columns={"T_G": "T_F"},inplace=True)
+        #     logger.warning(" Measured ground temp is fountain water temp\n")
+        # else:
+        #     self.df["T_F"] = float(self.T_F)
+        #     logger.warning(f"Estimated constant fountain water temp is {self.T_F}\n")
             
         for row in tqdm(
             self.df[1:].itertuples(),
@@ -155,10 +156,8 @@ class Icestupa:
             """Water temperature"""
             if row.temp < 0:
                 self.df.loc[i,"T_F"] = 0
-            # elif row.temp > self.T_F:
-            #     self.df.loc[i,"T_F"] = self.T_F
             else:
-                self.df.loc[i,"T_F"] = row.temp
+                self.df.loc[i,"T_F"] = self.T_F
 
         logger.warning(f"Variable fountain water temp mean is {self.df.T_F.mean()}\n")
 
@@ -495,7 +494,7 @@ class Icestupa:
             #     self.df.loc[i + 1, "rho_air"] = self.RHO_I
             # else:
 
-            if self.name == 'guttannen21':
+            if self.name in ['guttannen21', 'gangles21']:
                 self.df.loc[i + 1, "rho_air"] = self.RHO_I
             else:
                 self.df.loc[i + 1, "rho_air"] =(
