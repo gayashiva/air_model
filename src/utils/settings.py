@@ -41,7 +41,7 @@ def config(loc="guttannen21", spray=None):
 
         if spray != None:
             if spray.split('_')[0] == "scheduled":
-                if spray.split('_')[1] in ["wue", "icv", "field"]:
+                if spray.split('_')[1] in ["wue", "icv"]:
                     add= dict(
                         fountain_off_date=datetime(2022, 3, 3),
                         R_F = 4,

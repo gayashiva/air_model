@@ -155,8 +155,8 @@ class Icestupa:
             """Water temperature"""
             if row.temp < 0:
                 self.df.loc[i,"T_F"] = 0
-            elif row.temp > self.T_F:
-                self.df.loc[i,"T_F"] = self.T_F
+            # elif row.temp > self.T_F:
+            #     self.df.loc[i,"T_F"] = self.T_F
             else:
                 self.df.loc[i,"T_F"] = row.temp
 
@@ -286,7 +286,7 @@ class Icestupa:
             logger.warning(f"%s -> %s" % (key, str(results_dict[key])))
 
 
-    @Timer(text="Simulation executed in {:.2f} seconds", logger=logging.NOTSET)
+    # @Timer(text="Simulation executed in {:.2f} seconds", logger=logging.NOTSET)
     def sim_air(self, test=False):
 
         # Initialisaton for sites
@@ -438,7 +438,7 @@ class Icestupa:
                         * math.pi
                         * math.pow(self.df.loc[i, "r_cone"], 2)
                     )
-                    self.df.loc[i, "Discharge"] += self.df.loc[i, "rain2ice"]/60
+                    # self.df.loc[i, "Discharge"] += self.df.loc[i, "rain2ice"]/60
                     self.df.loc[i, "snow2ice"] = 0
                     logger.info(f"Rain event on {self.df.time.loc[i]} with temp {self.df.temp.loc[i]}")
             else:
@@ -509,6 +509,7 @@ class Icestupa:
             self.df.loc[i + 1, "input"] = (
                 self.df.loc[i, "input"]
                 + self.df.loc[i, "snow2ice"]
+                + self.df.loc[i, "rain2ice"]
                 + self.df.loc[i, "dep"]
                 + self.df.loc[i, "Discharge"] * self.DT / 60
             )

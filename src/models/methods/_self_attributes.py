@@ -47,10 +47,11 @@ def self_attributes(self):
         logger.error("Arbitrary spray radius of %s" % self.R_F)
     else:
         # TODO remove first index?
-        self.R_F = df_c.loc[
-            (df_c.time < self.fountain_off_date) & (df_c.index != 0), "rad"
-            # (df_c.time < self.fountain_off_date), "rad"
-        ].mean()
+        # self.R_F = df_c.loc[
+        #     (df_c.time < self.fountain_off_date) & (df_c.index != 0), "rad"
+        #     # (df_c.time < self.fountain_off_date), "rad"
+        # ].mean()
+        self.R_F = df_c.rad.max()
         logger.warning("Measured spray radius from drone %0.1f" % self.R_F)
 
     if self.name in ["guttannen22"]:

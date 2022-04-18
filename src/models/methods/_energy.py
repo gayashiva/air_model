@@ -69,9 +69,9 @@ def get_energy(self, i):
             # * self.df.loc[i, "T_F"]
             / (self.DT * self.df.loc[i, "A_cone"])
         )
-    else:
-        self.df.loc[i, "Qf"] = (
-            (self.df.loc[i, "Discharge"] * self.DT / 60)
+    if self.df.loc[i, "rain2ice"] != 0: 
+        self.df.loc[i, "Qf"] += (
+            (self.df.loc[i, "rain2ice"])
             * self.C_W
             * (self.df.loc[i, "temp"]-self.df.loc[i, "T_s"])
             / (self.DT * self.df.loc[i, "A_cone"])
