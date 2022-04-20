@@ -43,15 +43,16 @@ def config(loc="guttannen21", spray=None):
             if spray.split('_')[0] == "scheduled":
                 if spray.split('_')[1] in ["wue", "icv"]:
                     add= dict(
-                        fountain_off_date=datetime(2022, 3, 3),
+                        fountain_off_date=datetime(2022, 4, 1),
                         R_F = 4,
                         dis_crit = 2,
                     )
                 if spray.split('_')[1] in ["field"]:
                     add= dict(
-                        # fountain_off_date=datetime(2022, 3, 3),
+                        fountain_off_date=datetime(2022, 4, 1),
                         dis_crit = 2,
                     )
+                # add['fountain_off_date'] = SITE['expiry_date'] - 
             if spray.split('_')[0] == "unscheduled":
                 if spray.split('_')[1] == "field":
                     add= dict(

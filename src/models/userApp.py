@@ -29,14 +29,14 @@ if __name__ == "__main__":
     test = True
     # test = False
 
-    # location = "Guttannen 2020"
+    location = "Guttannen 2020"
     # location = "Guttannen 2021"
-    location = "Guttannen 2022"
+    # location = "Guttannen 2022"
     # location = "Gangles 2021"
 
     # sprays = ["scheduled_icv", "scheduled_wue"]
-    sprays = ["scheduled_field", "unscheduled_field"]
-    # sprays = ["unscheduled_field"]
+    # sprays = ["scheduled_field", "unscheduled_field"]
+    sprays = ["unscheduled_field"]
     # sprays = ["scheduled_wue", "scheduled_icv"]
 
     for spray in sprays:
@@ -75,27 +75,4 @@ if __name__ == "__main__":
                         print('Directory not copied. Error: %s' % e)
 
             icestupa.read_output()
-            # df = icestupa.df
-            # print(df.columns)
-            # icestupa.summary_figures()
-
-
-
-            # fig, ax = plt.subplots()
-            # x1 = df.time
-            # y1 = df.Discharge
-            # # x2 = dfr.time
-            # # y2 = dfr.rad
-            # ax.plot(x1,y1)
-            # # ax.scatter(x2,y2)
-
-            # ax.xaxis.set_major_locator(mdates.WeekdayLocator())
-            # ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-            # ax.xaxis.set_minor_locator(mdates.DayLocator())
-            # fig.autofmt_xdate()
-            # plt.savefig(
-            #     icestupa.fig + icestupa.spray + "/discharge.jpg",
-            #     bbox_inches="tight",
-            # )
-            # plt.clf()
 

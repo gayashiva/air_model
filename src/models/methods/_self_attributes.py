@@ -54,10 +54,10 @@ def self_attributes(self):
 
         # self.R_F = df_c.rad.max()
 
-        df_c['diff'] = df_c['DroneV'] - df_c.shift(1)['DroneV']
-        # logger.warning(df_c.tail())
-        self.R_F = df_c.loc[df_c['diff'].values > 0 , "rad"].mean()
-        logger.warning("Measured spray radius from drone %0.1f" % self.R_F)
+        df_c['cond'] = (df_c['rad'] - df_c.shift(1)['rad']>0) | (df_c['DroneV'] - df_c.shift(1)['DroneV']>0)
+        rad_flights = df_c.loc[df_c['cond'].values > 0 , "rad"].values
+        self.R_F = np.mean(rad_flights)
+        logger.warning("Measured spray radius from drone %0.1f using %i measurements" % (self.R_F, len(rad_flights)))
 
     if self.name in ["guttannen22"]:
         if self.spray.split('_')[0] == 'scheduled':

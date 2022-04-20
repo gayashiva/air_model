@@ -210,22 +210,32 @@ class Icestupa:
             "R_F",
             "D_F",
             "WUE",
+            "RMSE",
         ]
         iceV_max = self.df["iceV"].max()
         M_input = self.df["input"].iloc[-1]
-        # M_F = self.df["Discharge"].sum() * self.DT / 60 + self.df.loc[0, "input"] - self.V_dome * self.RHO_I
         M_F = self.df["Discharge"].sum() * self.DT / 60 + self.df.loc[0, "input"]
         M_ppt = self.df["snow2ice"].sum()
         M_dep = self.df["dep"].sum()
         M_water = self.df["meltwater"].iloc[-1]
         M_waste = self.df["wastewater"].iloc[-1]
         M_sub = self.df["vapour"].iloc[-1]
-        # M_ice = self.df["ice"].iloc[-1] - self.V_dome * self.RHO_I
         M_ice = self.df["ice"].iloc[-1]
         last_hour = self.df.shape[0]
         R_F = self.R_F
         D_F = self.D_F
         WUE = int((M_ice + M_water) / M_input * 100)
+
+        if self.spray.split('_')[1] == 'field':
+            if self.name in ["guttannen22"]:
+                df_c = pd.read_hdf(self.input_sim  + "/input.h5", "df_c")
+            else:
+                df_c = pd.read_hdf(self.input  + "/input.h5", "df_c")
+            df_c = df_c[["time", "DroneV", "DroneVError"]]
+
+            df_c = df_c.set_index("time")
+            df = self.df.set_index("time")
+            RMSE = ((df['iceV'].subtract(df_c['DroneV'],axis=0))**2).mean()**.5
 
         # For web app
         for variable in results:
@@ -379,24 +389,46 @@ class Icestupa:
                         else:
                             self.df[column] = 0
 
-                    self.df.loc[i - 1, "h_cone"] = self.h_i
-                    self.df.loc[i - 1, "r_cone"] = self.R_F
-                    self.df.loc[i - 1, "s_cone"] = (
-                        self.df.loc[i - 1, "h_cone"] / self.df.loc[i - 1, "r_cone"]
-                    )
-                    self.df.loc[i, "ice"] = V_initial * self.RHO_I
+                    # Initialise first model time step
+                    self.df.loc[i-1, "h_cone"] = self.h_i
+                    self.df.loc[i-1, "r_cone"] = self.R_F
+                    self.df.loc[i-1, "dr"] = self.DX
+                    self.df.loc[i-1, "s_cone"] = self.df.loc[0, "h_cone"] / self.df.loc[0, "r_cone"]
+                    V_initial = math.pi / 3 * self.R_F ** 2 * self.h_i
+                    self.df.loc[i, "rho_air"] = self.RHO_I
+                    self.df.loc[i, "ice"] = V_initial* self.df.loc[i, "rho_air"]
                     self.df.loc[i, "iceV"] = V_initial
                     self.df.loc[i, "input"] = self.df.loc[i, "ice"]
 
                     logger.warning(
-                        "Initialise again: time %s, radius %.3f, height %.3f, iceV %.3f\n"
+                        "Initialise: time %s, radius %.3f, height %.3f, iceV %.3f\n"
                         % (
-                            self.df.loc[i - 1, "time"],
-                            self.df.loc[i - 1, "r_cone"],
-                            self.df.loc[i - 1, "h_cone"],
+                            self.df.loc[i-1, "time"],
+                            self.df.loc[i-1, "r_cone"],
+                            self.df.loc[i-1, "h_cone"],
                             self.df.loc[i, "iceV"],
                         )
                     )
+
+                    # self.df.loc[i - 1, "h_cone"] = self.h_i
+                    # self.df.loc[i - 1, "r_cone"] = self.R_F
+                    # self.df.loc[i - 1, "s_cone"] = (
+                    #     self.df.loc[i - 1, "h_cone"] / self.df.loc[i - 1, "r_cone"]
+                    # )
+                    # self.df.loc[i, "ice"] = V_initial * self.RHO_I
+                    # self.df.loc[i, "iceV"] = V_initial
+                    # self.df.loc[i, "input"] = self.df.loc[i, "ice"]
+
+                    # logger.warning(
+                    #     "Initialise again: time %s, radius %.3f, height %.3f, iceV %.3f\n"
+                    #     % (
+                    #         self.df.loc[i - 1, "time"],
+                    #         self.df.loc[i - 1, "r_cone"],
+                    #         self.df.loc[i - 1, "h_cone"],
+                    #         self.df.loc[i, "iceV"],
+                    #     )
+                    # )
+
                 else:
 
                     col_list = [
