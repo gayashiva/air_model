@@ -16,9 +16,9 @@ def get_albedo(self, i, s=0, f=0):  # Albedo Scheme described in
     if self.df.Discharge[i] > 0:
         f = 1
 
-    # # Rain event
-    # if self.df.temp[i] > self.T_PPT and self.df.ppt[i] > 0:
-    #     f = 1
+    # Rain event
+    if self.df.temp[i] > self.T_PPT and self.df.ppt[i] > 0:
+        f = 1
 
     # Snow event
     if self.df.temp[i] < self.T_PPT and self.df.ppt[i] > 0:

@@ -36,7 +36,7 @@ def config(loc="guttannen21", spray=None):
             DX=45e-03,  # Surface layer thickness [m]
             T_F = 5.0, # TODO Update to mean ground temp
             T_PPT = 1.0, # TODO Identified ppt change on 31 Mar 2100
-            A_I = 0.15, 
+            # A_I = 0.15, 
         )
 
         if spray != None:
