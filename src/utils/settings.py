@@ -29,14 +29,14 @@ def config(loc="guttannen21", spray=None):
             coords=[46.65549,8.29149],
             start_date=datetime(2021, 12, 3, 12),
             expiry_date =datetime(2022, 4, 12),
-            # expiry_date =datetime(2022, 3, 3),
             h_dome = 0.13, #Initialise ice height at start
             utc = 1, #Initialise ice height at start
             cld=0.5,
             # Calibrated values
             DX=45e-03,  # Surface layer thickness [m]
-            T_F = 5.0,
-            T_PPT = 2.0,
+            T_F = 5.0, # TODO Update to mean ground temp
+            T_PPT = 1.0, # TODO Identified ppt change on 31 Mar 2100
+            A_I = 0.15, 
         )
 
         if spray != None:
@@ -53,6 +53,7 @@ def config(loc="guttannen21", spray=None):
                         dis_crit = 2,
                     )
                 # add['fountain_off_date'] = SITE['expiry_date'] - 
+
             if spray.split('_')[0] == "unscheduled":
                 if spray.split('_')[1] == "field":
                     add= dict(
