@@ -60,7 +60,7 @@ if __name__ == "__main__":
             logger.info(df.missing_type.unique())
         else:
 
-            if loc in ["schwarzsee19", "guttannen22"]:
+            if loc in ["guttannen22"]:
                 df = get_field(loc)
 
             if loc in ["guttannen21", "guttannen20"]:
@@ -70,7 +70,7 @@ if __name__ == "__main__":
             df = df[SITE["start_date"] : SITE["expiry_date"]]
             df = df.reset_index()
 
-            if loc in ["schwarzsee19","guttannen21", "guttannen20"]:
+            if loc in ["guttannen21", "guttannen20"]:
                 # Replace Wind zero values for 3 hours
                 mask = df.wind.shift().eq(df.wind)
                 for i in range(1, 3 * 4):
@@ -94,21 +94,18 @@ if __name__ == "__main__":
                 df_swiss = df_swiss.reset_index()
                 df = df.reset_index()
 
-            df_ERA5_full = get_era5(SITE["name"])
+            # df_ERA5_full = get_era5(SITE["name"])
 
-            df = df.set_index("time")
+            # df = df.set_index("time")
 
-            df_ERA5_full = df_ERA5_full.set_index("time")
-            df_ERA5 = df_ERA5_full[SITE["start_date"] : SITE["expiry_date"]]
-            df_ERA5 = df_ERA5.reset_index()
-            df_ERA5_full = df_ERA5_full.reset_index()
+            # df_ERA5_full = df_ERA5_full.set_index("time")
+            # df_ERA5 = df_ERA5_full[SITE["start_date"] : SITE["expiry_date"]]
+            # df_ERA5 = df_ERA5.reset_index()
+            # df_ERA5_full = df_ERA5_full.reset_index()
 
             # # Fit ERA5 to field data
             # if SITE["name"] in ["guttannen21", "guttannen20", "guttannen22"]:
             #     fit_list = ["temp", "RH", "wind"]
-
-            # if SITE["name"] in ["schwarzsee19"]:
-            #     fit_list = ["temp", "RH", "wind", "press"]
 
             # for column in fit_list:
             #     Y = df[column].values.reshape(-1, 1)
@@ -127,14 +124,12 @@ if __name__ == "__main__":
             # # Fill from ERA5
             # df["missing_type"] = ""
             # for col in [
-            #     "temp",
-            #     "RH",
-            #     "wind",
             #     "ppt",
             #     "press",
             #     "SW_global",
+            #     # "tcc",
             #     # "SW_diffuse",
-            #     "LW_in",
+            #     # "LW_in",
             # ]:
             #     try:
             #         mask = df[col].isna()
@@ -158,7 +153,7 @@ if __name__ == "__main__":
             # # logger.info(df.missing_type.describe())
             # # logger.info(df.missing_type.unique())
 
-            df = df.reset_index()
+            # df = df.reset_index()
 
         if SITE["name"] in ["gangles21"]:
             cols = [

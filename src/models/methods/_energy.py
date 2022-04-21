@@ -71,7 +71,8 @@ def get_energy(self, i):
     self.df.loc[i, "Qr"] = (
         (self.df.loc[i, "rain2ice"])
         * self.C_W
-        * (self.df.loc[i, "temp"]-self.df.loc[i, "T_s"])
+        # * (self.df.loc[i, "temp"]-self.df.loc[i, "T_s"])
+        * self.df.loc[i, "temp"]
         / (self.DT * self.df.loc[i, "A_cone"])
     )
 
