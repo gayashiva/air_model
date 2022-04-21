@@ -105,23 +105,38 @@ if __name__ == "__main__":
     plt.savefig("data/figs/paper3/data.png", bbox_inches="tight", dpi=300)
     plt.close()
 
-    fig, ax = plt.subplots(3, 1, gridspec_kw={'height_ratios': [1,1,1]}, sharex="col")
+    fig, ax = plt.subplots(2, 1, gridspec_kw={'height_ratios': [1,1]}, sharex="col")
     for i, spray in enumerate(sprays):
         SITE, FOLDER = config(location, spray)
         icestupa = Icestupa(location, spray)
         icestupa.read_output()
         df=icestupa.df
+        dfd = df.set_index("time").resample("D").mean().reset_index()
+
+        # dfd["time"] = dfd["time"].dt.strftime("%b %d")
+        # z = dfd[
+        #     [
+        #         "alb",
+        #     ]
+        # ]
 
         if spray == "scheduled_field":
             spray = "Scheduled"
         else:
             spray = "Unscheduled"
 
-        x = df.time[1:]
-        y1 = df.alb[1:]
-        y2 = df.T_s[1:]
-        y3 = df.Qf[1:]
+        x = dfd.time[1:]
+        y1 = dfd.alb[1:]
+        y2 = dfd.Qf[1:]
 
+        # z.plot.bar(
+        #     # stacked=True,
+        #     # edgecolor="black",
+        #     linewidth=0.5,
+        #     alpha = (i+1)*0.5,
+        #     color=mypal[i],
+        #     ax=ax[0],
+        # )
         ax[0].plot(
             x,
             y1,
@@ -132,7 +147,7 @@ if __name__ == "__main__":
         ax[0].spines["top"].set_visible(False)
         ax[0].spines["left"].set_color("grey")
         ax[0].spines["bottom"].set_color("grey")
-        ax[0].set_ylabel("Albedo")
+        ax[0].set_ylabel("Albedo", size=8)
         ax[0].set_ylim([0,1])
         at = AnchoredText("(a)", prop=dict(size=10), frameon=True, loc="upper left")
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
@@ -141,6 +156,7 @@ if __name__ == "__main__":
         ax[1].plot(
             x,
             y2,
+            label= spray,
             linewidth=0.8,
             color=mypal[i],
         )
@@ -148,36 +164,34 @@ if __name__ == "__main__":
         ax[1].spines["top"].set_visible(False)
         ax[1].spines["left"].set_color("grey")
         ax[1].spines["bottom"].set_color("grey")
-        ax[1].set_ylabel("Temperature [$\degree C$]", size=6)
-        ax[1].set_ylim([-20,0])
+        ax[1].set_ylabel("Fountain heat flux [$W\\,m^{-2}$]", size=8)
+        ax[1].set_ylim([0,100])
         at = AnchoredText("(b)", prop=dict(size=10), frameon=True, loc="upper left")
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
         ax[1].add_artist(at)
 
-        ax[2].plot(
-            x,
-            y3,
-            label= spray,
-            linewidth=0.8,
-            color=mypal[i],
-        )
-        ax[2].spines["right"].set_visible(False)
-        ax[2].spines["top"].set_visible(False)
-        ax[2].spines["left"].set_color("grey")
-        ax[2].spines["bottom"].set_color("grey")
-        ax[2].set_ylabel("Fountain heat flux [$W\\,m^{-2}$]", size=6)
-        ax[2].set_ylim([0,100])
-        at = AnchoredText("(c)", prop=dict(size=10), frameon=True, loc="upper left")
-        at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-        ax[2].add_artist(at)
+        # ax[1].plot(
+        #     x,
+        #     y2,
+        #     linewidth=0.8,
+        #     color=mypal[i],
+        # )
+        # ax[1].spines["right"].set_visible(False)
+        # ax[1].spines["top"].set_visible(False)
+        # ax[1].spines["left"].set_color("grey")
+        # ax[1].spines["bottom"].set_color("grey")
+        # ax[1].set_ylabel("Temperature [$\degree C$]", size=6)
+        # ax[1].set_ylim([-20,0])
+        # at = AnchoredText("(b)", prop=dict(size=10), frameon=True, loc="upper left")
+        # at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+        # ax[1].add_artist(at)
 
-
-    ax[2].xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax[2].xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    ax[1].xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax[1].xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     fig.subplots_adjust(hspace=None, wspace=None)
     fig.autofmt_xdate()
-    handles, labels = ax[2].get_legend_handles_labels()
-    ax[2].legend(handles, labels, loc="upper right", prop={"size": 8}, title="Fountain spray")
+    handles, labels = ax[1].get_legend_handles_labels()
+    ax[1].legend(handles, labels, loc="upper right", prop={"size": 8}, title="Fountain spray")
     plt.savefig("data/figs/paper3/dis_processes.png", bbox_inches="tight", dpi=300)
     plt.close()
 
