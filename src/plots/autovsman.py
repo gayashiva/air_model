@@ -165,7 +165,7 @@ if __name__ == "__main__":
         ax[1].spines["left"].set_color("grey")
         ax[1].spines["bottom"].set_color("grey")
         ax[1].set_ylabel("Fountain heat flux [$W\\,m^{-2}$]", size=8)
-        ax[1].set_ylim([0,100])
+        # ax[1].set_ylim([0,100])
         at = AnchoredText("(b)", prop=dict(size=10), frameon=True, loc="upper left")
         at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
         ax[1].add_artist(at)

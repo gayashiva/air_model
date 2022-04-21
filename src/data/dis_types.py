@@ -34,8 +34,8 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
         CONSTANTS = json.load(f)
 
     # sprays = ["unscheduled_field","scheduled_field", "scheduled_icv", "scheduled_wue"]
-    # sprays = ["unscheduled_field","scheduled_icv", "scheduled_wue"]
-    sprays = ["unscheduled_field"]
+    sprays = ["unscheduled_field","scheduled_icv", "scheduled_wue"]
+    # sprays = ["unscheduled_field"]
 
     if loc=="guttannen22":
         sprays.append("scheduled_field")
@@ -101,15 +101,16 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                                                             wind=df_aws.wind[i], obj=obj, r=SITE["R_F"],
                                                             alt=SITE["alt"], coords=SITE["coords"],
                                                             utc=SITE["utc"])
-                    if df.loc[i, "scheduled_"+obj] > 0:
-                        if obj == "icv":
-                            if df.loc[i, "scheduled_"+obj] < SITE["dis_crit"]:
-                                df.loc[i, "scheduled_"+obj] += SITE["dis_crit"]
-                        if obj == "wue":
-                            if df.loc[i, "scheduled_"+obj] < SITE["dis_crit"]:
-                                df.loc[i, "scheduled_"+obj] = 0
-                    else:
+                    if df.loc[i, "scheduled_"+obj] < SITE["dis_crit"]:
                         df.loc[i, "scheduled_"+obj] = 0
+                        # if obj == "icv":
+                        #     if df.loc[i, "scheduled_"+obj] < SITE["dis_crit"]:
+                        #         df.loc[i, "scheduled_"+obj] += SITE["dis_crit"]
+                        # if obj == "wue":
+                        #     if df.loc[i, "scheduled_"+obj] < SITE["dis_crit"]:
+                        #         df.loc[i, "scheduled_"+obj] = 0
+                    # else:
+                    #     df.loc[i, "scheduled_"+obj] = 0
 
                     # if df.scheduled[i] >= SITE["dis_max"]:
                     #     df.loc[i, "scheduled"] = SITE["dis_max"]
@@ -196,7 +197,7 @@ if __name__ == "__main__":
 
     # locations = ["gangles21", "guttannen21", "guttannen20", "guttannen22"]
     locations = ["guttannen22"]
-    # locations = ["gangles21", "guttannen22"]
+    # locations = ["gangles21"]
 
     for loc in locations:
         df = get_discharge(loc)
@@ -206,34 +207,36 @@ if __name__ == "__main__":
         # df= df[df.time <= SITE["fountain_off_date"]]
         fig, ax1 = plt.subplots()
         x = df.time
-        # y1 = df.unscheduled_field
-        y12 = df.scheduled_field
-        # y2 = df.scheduled_icv
-        # y3 = df.scheduled_wue
-        # ax1.plot(
-        #     x,
-        #     y1,
-        #     linestyle="-",
-        #     label = "Unscheduled field"
-        # )
+        y1 = df.unscheduled_field
+        if loc == 'guttannen22':
+            y12 = df.scheduled_field
+        y2 = df.scheduled_icv
+        y3 = df.scheduled_wue
         ax1.plot(
             x,
-            y12,
+            y1,
             linestyle="-",
-            label = "Scheduled field"
+            label = "Unscheduled field"
         )
-        # ax1.plot(
-        #     x,
-        #     y2,
-        #     linestyle="--",
-        #     label = "Scheduled ICV"
-        # )
-        # ax1.plot(
-        #     x,
-        #     y3,
-        #     linestyle="-.",
-        #     label = "Scheduled WUE"
-        # )
+        if loc == 'guttannen22':
+            ax1.plot(
+                x,
+                y12,
+                linestyle="-",
+                label = "Scheduled field"
+            )
+        ax1.plot(
+            x,
+            y2,
+            linestyle="--",
+            label = "Scheduled ICV"
+        )
+        ax1.plot(
+            x,
+            y3,
+            linestyle="-.",
+            label = "Scheduled WUE"
+        )
         ax1.set_ylabel("Discharge [$l/min$]")
         ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))

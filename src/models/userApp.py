@@ -31,11 +31,11 @@ if __name__ == "__main__":
 
     # location = "Guttannen 2020"
     # location = "Guttannen 2021"
-    location = "Guttannen 2022"
-    # location = "Gangles 2021"
+    # location = "Guttannen 2022"
+    location = "Gangles 2021"
 
-    # sprays = ["scheduled_icv", "scheduled_wue"]
-    sprays = ["scheduled_field", "unscheduled_field"]
+    sprays = ["scheduled_icv", "scheduled_wue"]
+    # sprays = ["scheduled_field", "unscheduled_field"]
     # sprays = ["unscheduled_field"]
     # sprays = ["scheduled_wue", "scheduled_icv"]
 

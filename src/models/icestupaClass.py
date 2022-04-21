@@ -50,6 +50,7 @@ class Icestupa:
         df_f = df_f[["time", "Discharge"]]
         if np.count_nonzero(df_f["Discharge"]) <= 24:
             logger.error("Less than 24 hours of spray")
+            sys.exit()
 
         # Perform discharge atleast one night check
         self.df = self.df.set_index("time")
@@ -210,7 +211,6 @@ class Icestupa:
             "R_F",
             "D_F",
             "WUE",
-            "RMSE",
         ]
         iceV_max = self.df["iceV"].max()
         M_input = self.df["input"].iloc[-1]
@@ -227,6 +227,7 @@ class Icestupa:
         WUE = int((M_ice + M_water) / M_input * 100)
 
         if self.spray.split('_')[1] == 'field':
+            results.append("RMSE")
             if self.name in ["guttannen22"]:
                 df_c = pd.read_hdf(self.input_sim  + "/input.h5", "df_c")
             else:

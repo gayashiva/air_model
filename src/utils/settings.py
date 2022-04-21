@@ -42,13 +42,13 @@ def config(loc="guttannen21", spray=None):
                 if spray.split('_')[1] in ["wue", "icv"]:
                     add= dict(
                         fountain_off_date=datetime(2022, 4, 1),
-                        R_F = 4,
-                        dis_crit = 2,
+                        R_F = 4.8,
+                        dis_crit = 5,
                     )
                 if spray.split('_')[1] in ["field"]:
                     add= dict(
                         fountain_off_date=datetime(2022, 4, 1),
-                        dis_crit = 2,
+                        dis_crit = 5,
                     )
                 # add['fountain_off_date'] = SITE['expiry_date'] - 
 
@@ -89,7 +89,7 @@ def config(loc="guttannen21", spray=None):
                     add= dict(
                         fountain_off_date=datetime(2021, 4, 10),
                         R_F=10,
-                        dis_crit = 1,
+                        dis_crit = 5,
                         # dis_max= 60,
                         # R_F = 10,
                     )
@@ -130,10 +130,10 @@ def config(loc="guttannen21", spray=None):
             if spray.split('_')[0] == "scheduled":
                 if spray.split('_')[1] in ["wue", "icv"]:
                     add= dict(
-                        dis_crit = 2,
+                        dis_crit = 5,
                         R_F = 6.9,
                     )
-                add["fountain_off_date"] = add["expiry_date"]
+                add["fountain_off_date"] = SITE["expiry_date"]
 
             if spray.split('_')[0] == "unscheduled":
                 if spray.split('_')[1] == "field":
@@ -175,7 +175,7 @@ def config(loc="guttannen21", spray=None):
                 add= dict(
                     start_date=datetime(2020, 1, 3, 16),
                     fountain_off_date=datetime(2020, 3, 6, 12),
-                    dis_crit = 1,
+                    dis_crit = 5,
                     dis_max= 11,
                     # R_F = 7,
                 )

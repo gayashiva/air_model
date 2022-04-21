@@ -48,10 +48,13 @@ if __name__ == "__main__":
     for i, loc in enumerate(locations):
         for j, spray in enumerate(sprays):
             SITE, FOLDER = config(loc, spray)
-            with open(FOLDER["output"] +  "/results.json") as f:
-                results = json.load(f, object_hook=keystoint)
-            print(loc,spray, results["WUE"], results["iceV_max"])
-            ax.scatter(results["WUE"], results["iceV_max"], color=mypal[i], marker=styles[j])
+            try: 
+                with open(FOLDER["output"] +  "/results.json") as f:
+                    results = json.load(f, object_hook=keystoint)
+                print(loc,spray, results["WUE"], results["iceV_max"])
+                ax.scatter(results["WUE"], results["iceV_max"], color=mypal[i], marker=styles[j])
+            except FileNotFoundError:
+                logger.error("No simulation exists")
 
             # if loc == 'guttannen22' and spray == "dynamic":
             #     with open(FOLDER["output"] + "/results.json") as f:
@@ -61,10 +64,16 @@ if __name__ == "__main__":
 
         # ax = df_l.set_index('x')['y'].plot(style='.', color='k', ms=10)
 
+    SITE, FOLDER = config('guttannen22', 'scheduled_field')
+    with open(FOLDER["output"] +  "/results.json") as f:
+        results = json.load(f, object_hook=keystoint)
+    print(loc,spray, results["WUE"], results["iceV_max"])
+    ax.scatter(results["WUE"], results["iceV_max"], color='green', marker='.')
+
     ax.set_ylabel("Max Ice Volume [$m^3$]")
     ax.set_xlabel("Water Use Efficiency [%]")
     ax.set_xlim([0,100])
-    ax.set_ylim([0,1200])
+    ax.set_ylim([0,1400])
     ax.spines["right"].set_visible(False)
     ax.spines["top"].set_visible(False)
     ax.legend(handles=legend_elements)
