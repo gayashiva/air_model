@@ -2,13 +2,13 @@
 
 import sys, json
 import os
-import seaborn as sns
 import numpy as np
 import pandas as pd
 import math
 import matplotlib.colors
 from datetime import datetime, timedelta
 from matplotlib.offsetbox import AnchoredText
+import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.lines import Line2D
