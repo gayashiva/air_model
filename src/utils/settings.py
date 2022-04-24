@@ -47,7 +47,7 @@ def config(loc="guttannen21", spray=None):
                     )
                 if spray.split('_')[1] in ["field"]:
                     add= dict(
-                        fountain_off_date=datetime(2022, 4, 1),
+                        fountain_off_date=datetime(2022, 3, 1),
                         dis_crit = 0,
                     )
                 # add['fountain_off_date'] = SITE['expiry_date'] - 

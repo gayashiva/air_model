@@ -29,21 +29,32 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("INFO")
 
-    locations = ["guttannen22", "gangles21"]
+    locations = ["guttannen22", "guttannen21", "gangles21"]
     sprays = ['unscheduled_field', 'scheduled_icv', 'scheduled_wue']
     styles=['.', 'x' , '*']
 
-    mypal = sns.color_palette("Set1", 2)
+    mypal = sns.color_palette("Set1", len(locations))
     legend_elements = [Line2D([0], [0], color=mypal[0], lw=4, label='CH22'),
-                        Line2D([0], [0], color=mypal[1], lw=4, label='IN21'),
+                        Line2D([0], [0], color=mypal[1], lw=4, label='CH21'),
+                        Line2D([0], [0], color=mypal[2], lw=4, label='IN21'),
                        Line2D([0], [0], marker='.', color='w', label='Unscheduled',
                               markerfacecolor='k', markersize=15),
                        Line2D([0], [0], marker='X', color='w', label='ICV Scheduled',
                               markerfacecolor='k', markersize=10),
                        Line2D([0], [0], marker='*', color='w', label='WUE Scheduled',
                               markerfacecolor='k', markersize=15),
+                       Line2D([0], [0], marker='o', color='k', label='Experiment',
+                              markerfacecolor='w', markersize=15),
+                       Line2D([0], [0], marker='o', color='k', label='Simulation',
+                              markerfacecolor='k', markersize=15, alpha=0.3),
                        ]
     fig, ax = plt.subplots(1, 1, sharex="col")
+
+    SITE, FOLDER = config('guttannen22', 'scheduled_field')
+    with open(FOLDER["output"] +  "/results.json") as f:
+        results = json.load(f, object_hook=keystoint)
+    ax.scatter(results["WUE"], results["iceV_max"], color='k', marker='.', s=500, facecolors='none')
+    ax.scatter(results["WUE"], results["iceV_max"], color=mypal[0], marker=styles[1])
 
     for i, loc in enumerate(locations):
         for j, spray in enumerate(sprays):
@@ -52,7 +63,14 @@ if __name__ == "__main__":
                 with open(FOLDER["output"] +  "/results.json") as f:
                     results = json.load(f, object_hook=keystoint)
                 print(loc,spray, results["WUE"], results["iceV_max"])
+                if j == 0:
+                    ax.scatter(results["WUE"], results["iceV_max"], color='k', marker='.', s=500, facecolors='none')
+                else:
+                    ax.scatter(results["WUE"], results["iceV_max"], color='k', marker='.', s=500,
+                               facecolors='k', alpha=0.3)
                 ax.scatter(results["WUE"], results["iceV_max"], color=mypal[i], marker=styles[j])
+
+
             except FileNotFoundError:
                 logger.error("No simulation exists")
 
@@ -64,11 +82,6 @@ if __name__ == "__main__":
 
         # ax = df_l.set_index('x')['y'].plot(style='.', color='k', ms=10)
 
-    SITE, FOLDER = config('guttannen22', 'scheduled_field')
-    with open(FOLDER["output"] +  "/results.json") as f:
-        results = json.load(f, object_hook=keystoint)
-    print(loc,spray, results["WUE"], results["iceV_max"])
-    ax.scatter(results["WUE"], results["iceV_max"], color='green', marker='.')
 
     ax.set_ylabel("Max Ice Volume [$m^3$]")
     ax.set_xlabel("Water Use Efficiency [%]")

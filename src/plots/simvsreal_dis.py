@@ -1,4 +1,3 @@
-
 """ Plot comparing simulated and real discharge of automated guttannen22"""
 
 import sys, json
@@ -20,11 +19,6 @@ sys.path.append(
 )
 from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
-from src.models.methods.metadata import get_parameter_metadata
-from src.automate.gen_coeffs import autoDis
-from src.automate.autoDischarge import TempFreeze
-from lmfit.models import GaussianModel
-from src.utils.eff_criterion import nse
 
 if __name__ == "__main__":
     # Main logger
@@ -32,69 +26,68 @@ if __name__ == "__main__":
     logger.setLevel("WARNING")
 
     loc= "Guttannen 2022"
-    icestupa = Icestupa(loc, spray="manual")
-    SITE, FOLDER = config(loc, spray="manual")
+    icestupa = Icestupa(loc, spray="unscheduled_field")
+    SITE, FOLDER = config(loc, spray="unscheduled_field")
     icestupa.read_output()
     df = icestupa.df
-    # df = df[df.time<datetime(2022,1,26)] #automation error
+
+
+    df_f = pd.read_csv(FOLDER['input'] + "discharge_types.csv", sep=",", header=0, parse_dates=["time"])
+    df_f = df_f[["time", "scheduled_wue", "scheduled_icv"]]
 
     objs = ["wue", "icv"]
     styles=['.', 'x']
-    # objs = ["WUE"]
-    # objs = ["ICV"]
 
     default = "#284D58"
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
 
-    for j,obj in enumerate(objs):
+
+    for j, obj in enumerate(objs):
         print(j,obj)
-        with open(FOLDER["input"] + "dynamic/coeffs_" + obj + ".json") as f:
-            params = json.load(f)
-        sun_params = {"amplitude": params["amplitude"], "center": params["center"], "sigma": params["sigma"]}
-
-        for i in range(0,df.shape[0]):
-            # df.loc[i, "Discharge_sim"] = autoDis(**params, time=df.time.dt.hour[i], temp=df.temp[i],rh=df.RH[i],wind=df.wind[i])
-            data=dict()
-            data["temp"] = df.temp[i]
-            data["rh"] = df.RH[i]
-            data["wind"] = df.wind[i]
-            data["obj"] = obj
-            data["alt"] = SITE["alt"]/1000
-            model = GaussianModel()
-
-            df.loc[i, "Discharge_sim"] = TempFreeze(data) + model.eval(x=df.time.dt.hour[i], **sun_params)
-            
-            if obj == "ICV":
-                df.loc[i, "Discharge_sim"]*= math.sqrt(2) * math.pi * icestupa.R_F **2
-            if obj == "WUE":
-                df.loc[i, "Discharge_sim"]*= math.pi * icestupa.R_F **2
-
-            # TODO correct with params
-            if df.Discharge_sim[i] < 0:
-                df.loc[i, "Discharge_sim"] = 0
-            if df.Discharge_sim[i] >= 11:
-                df.loc[i, "Discharge_sim"] = 11
-            # if df.wind[i] >= 8 or df.temp[i] > -2 or df.temp[i] < -8:
-            #     df.loc[i, "Discharge_sim"] = 0
 
         column_1 = "fountain_froze"
-        column_2 = "Discharge_sim"
-        correlation = df[column_1].corr(icestupa.df[column_2])
-        print("Correlation between %s and %s is %0.2f"%(column_1, column_2, correlation))
-        eff = nse(df[column_2], df[column_1]/60)
-        rmse = mean_squared_error(df[column_2], df[column_1]/60, squared=False)
-        print(f"Calculated NSE {eff} and RMSE {rmse}")
+        column_2 = "Discharge"
+        icestupa = Icestupa(loc, spray="scheduled_"+obj)
+        df_f = icestupa.df
+        corr= df[column_1].corr(df_f[column_2])
+        print("Correlation between %s and %s is %0.2f"%(column_1, column_2, corr))
+        rmse = mean_squared_error(df_f[column_2], df[column_1]/60, squared=False)
+        print(f"Calculated correlation {corr} and RMSE {rmse}")
 
         # df["fountain_froze"] = np.where(df.fountain_froze == 0, np.nan, df.fountain_froze)
-        # df["Discharge_sim"] = np.where(df.Discharge_sim == 0, np.nan, df.Discharge_sim)
+        # df_f["Discharge"] = np.where(df_f.Discharge == 0, np.nan, df_f.Discharge)
 
 
         # fig, ax = plt.subplots(2, 1, sharex="col")
 
         x = df.time[1:]
         y1 = df.fountain_froze[1:]/60
-        y2 = df.Discharge_sim[1:]
+        y2 = df_f.Discharge[1:]
+        ax1.scatter(y1, y2, s=10, marker=styles[j], color=default, label = obj)
+        ax1.set_xlabel("Validated freezing rate [$l/min$]")
+        ax1.set_ylabel("Scheduled discharge rate [$l/min$]")
+        ax1.grid()
+
+        lims = [
+            np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+            np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+        ]
+        lims = [0,2.5]
+
+        # now plot both limits against eachother
+        ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+        ax1.set_aspect("equal")
+        ax1.set_xlim(lims)
+        ax1.set_ylim(lims)
+
+    ax1.legend(prop={"size": 8}, title="Objective", loc="upper right")
+    plt.savefig(
+        "data/figs/paper3/freezing_rate_corr.png",
+        bbox_inches="tight",
+        dpi=300,
+    )
+
         # ax[0].plot(
         #     x,
         #     y1,
@@ -131,28 +124,3 @@ if __name__ == "__main__":
         # fig.legend(handles, labels, loc="upper right", prop={"size": 8})
         # plt.savefig("data/figs/paper3/simvsreal_dis.jpg", bbox_inches="tight", dpi=300)
         # plt.clf()
-
-        ax1.scatter(y1, y2, s=10, marker=styles[j], color=default, label = obj)
-        ax1.set_xlabel("Validated freezing rate [$l/min$]")
-        ax1.set_ylabel("Scheduled discharge rate [$l/min$]")
-        ax1.grid()
-
-        # lims = [
-        #     np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-        #     np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-        # ]
-        lims = [0,2.5]
-
-        # now plot both limits against eachother
-        ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
-        ax1.set_aspect("equal")
-        ax1.set_xlim(lims)
-        ax1.set_ylim(lims)
-        
-
-    ax1.legend(prop={"size": 8}, title="Objective", loc="upper right")
-    plt.savefig(
-        "data/figs/paper3/freezing_rate_corr.png",
-        bbox_inches="tight",
-        dpi=300,
-    )
