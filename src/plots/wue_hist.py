@@ -39,14 +39,14 @@ if __name__ == "__main__":
                         Line2D([0], [0], color=mypal[2], lw=4, label='IN21'),
                        Line2D([0], [0], marker='.', color='w', label='Unscheduled',
                               markerfacecolor='k', markersize=15),
-                       Line2D([0], [0], marker='X', color='w', label='ICV Scheduled',
+                       Line2D([0], [0], marker='X', color='w', label='HIV Scheduled',
                               markerfacecolor='k', markersize=10),
-                       Line2D([0], [0], marker='*', color='w', label='WUE Scheduled',
+                       Line2D([0], [0], marker='*', color='w', label='HWE Scheduled',
                               markerfacecolor='k', markersize=15),
                        Line2D([0], [0], marker='o', color='k', label='Experiment',
-                              markerfacecolor='w', markersize=15),
+                              markerfacecolor='w', markersize=10, lw=0),
                        Line2D([0], [0], marker='o', color='k', label='Simulation',
-                              markerfacecolor='k', markersize=15, alpha=0.3),
+                              markerfacecolor='w', markersize=10, alpha=0.5, lw=0),
                        ]
     fig, ax = plt.subplots(1, 1, sharex="col")
 
@@ -67,7 +67,7 @@ if __name__ == "__main__":
                     ax.scatter(results["WUE"], results["iceV_max"], color='k', marker='.', s=500, facecolors='none')
                 else:
                     ax.scatter(results["WUE"], results["iceV_max"], color='k', marker='.', s=500,
-                               facecolors='k', alpha=0.3)
+                               facecolors='none', alpha=0.5)
                 ax.scatter(results["WUE"], results["iceV_max"], color=mypal[i], marker=styles[j])
 
 

@@ -19,6 +19,7 @@ sys.path.append(
 )
 from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
+from src.automate.projectile import get_projectile
 # from src.models.methods.metadata import get_parameter_metadata
 
 if __name__ == "__main__":
@@ -77,7 +78,7 @@ if __name__ == "__main__":
         ax[1].spines["top"].set_visible(False)
         ax[1].spines["left"].set_color("grey")
         ax[1].spines["bottom"].set_color("grey")
-        ax[1].set_ylabel("Precipitation [$mm\, w.e.$]", size=6)
+        ax[1].set_ylabel("Precipitation [$mm$]", size=6)
 
         y3 = df.Discharge[1:]
         ax[2].plot(
@@ -289,3 +290,75 @@ if __name__ == "__main__":
     ax.legend(handles=legend_elements, prop={"size": 8}, title='Type')
     plt.savefig("data/figs/paper3/simvsreal.png", bbox_inches="tight", dpi=300)
     plt.clf()
+
+    # mypal = sns.color_palette("Set1", 2)
+    legend_elements = [Line2D([0], [0], lw=1, label='Estimated', color=default),
+                       Line2D([0], [0], marker='.', color='w', label='Measured',
+                              markerfacecolor=default, markersize=15),
+                       ]
+
+    location = 'guttannen22'
+    # sprays = ['scheduled_field', 'unscheduled_field']
+    sprays = ['scheduled_field']
+
+    fig, ax = plt.subplots()
+    for i, spray in enumerate(sprays):
+        SITE, FOLDER = config(location, spray)
+        icestupa = Icestupa(location, spray)
+        icestupa.read_output()
+        # if spray == "scheduled_field":
+        #     spray = "Scheduled"
+        # else:
+        #     spray = "Unscheduled"
+
+        df=icestupa.df
+        for j in range(0,df.shape[0]):
+            if df.Discharge[j] !=0:
+                df.loc[j,'radf'] = get_projectile(h_f=4, dia=0.005, dis=df.Discharge[j])
+            else:
+                # df.loc[j,'radf'] = np.nan
+                df.loc[j,'radf'] = 0
+
+        # dfd = df.set_index("time").resample("D").mean().reset_index()
+
+        df_c = pd.read_hdf(FOLDER["input_sim"]  + "/input.h5", "df_c")
+        df_c = df_c[["time", "rad"]]
+
+        # print(df.radf.mean())
+
+        x = df.time[1:]
+        y1 = df.radf[1:]
+        x2 = df_c.time
+        y2 = df_c.rad
+        ax.plot(
+            x,
+            y1,
+            linewidth=0.8,
+            color=default,
+            # s=10,
+            # color=mypal[i],
+            # label=spray,
+        )
+        ax.scatter(
+            x2,
+            y2,
+            # linewidth=0.8,
+            s=10,
+            color=default,
+            # label=spray,
+        )
+        ax.axhline(y=icestupa.R_F, linewidth=0.8, linestyle='--', color=default)
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+        ax.spines["left"].set_color("grey")
+        ax.spines["bottom"].set_color("grey")
+        ax.set_ylabel("Spray Radius [$m$]")
+    ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    fig.subplots_adjust(hspace=None, wspace=None)
+    fig.autofmt_xdate()
+    # handles, labels = ax.get_legend_handles_labels()
+    # ax.legend(handles, labels, loc="upper right", prop={"size": 8}, title="Fountain spray")
+    ax.legend(handles=legend_elements, prop={"size": 8}, title='Type')
+    plt.savefig("data/figs/paper3/radf.png", bbox_inches="tight", dpi=300)
+    plt.close()

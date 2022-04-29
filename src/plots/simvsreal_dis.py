@@ -58,6 +58,8 @@ if __name__ == "__main__":
         # df["fountain_froze"] = np.where(df.fountain_froze == 0, np.nan, df.fountain_froze)
         # df_f["Discharge"] = np.where(df_f.Discharge == 0, np.nan, df_f.Discharge)
 
+        print(np.where(df.fountain_froze < df_f.Discharge , 1, 0).sum()/df.shape[0])
+
 
         # fig, ax = plt.subplots(2, 1, sharex="col")
 
