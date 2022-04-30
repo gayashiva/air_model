@@ -65,6 +65,15 @@ def get_projectile(
         return dis
 
 
+def get_dis_with_height(
+    h_f, Q_i=11.3, h_i=4, dia=0.0049 
+):  # returns discharge
+    Q_i /=(1000*60)
+    Q_f = np.sqrt(Q_i**2 + 2*9.8*(h_i-h_f) * (np.pi * dia ** 2/4)**2)
+    Q_f*=1000*60
+    return Q_f
+
+
 if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
@@ -74,4 +83,8 @@ if __name__ == "__main__":
     # print(get_dis_new(dh=1, dis=13))
     # print(get_projectile(h_f=3, dia=0.006, r=3, theta_f=60))
     # print(get_projectile(h_f=4.7, dia=0.005, dis=5))
-    print(get_projectile(h_f=4, dia=0.0049, dis=5.63))
+    # print(get_projectile(h_f=4, dia=0.0049, dis=5.63))
+    # print(get_projectile(h_f=4, dia=0.0049, dis=11))
+    # print(get_projectile(h_f=4.7, dia=0.0053, r=4.1))
+    # print(get_projectile(h_f=5.7, dia=0.0049, dis=11))
+    print(get_dis_with_height(h_f=5.7))

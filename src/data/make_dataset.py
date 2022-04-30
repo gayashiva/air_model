@@ -202,7 +202,7 @@ if __name__ == "__main__":
                 "LW_in",
                 "snow_h",
                 # "T_ice_3",
-                # "T_G",
+                "T_F",
             ]
 
 

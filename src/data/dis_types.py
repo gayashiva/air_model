@@ -24,6 +24,7 @@ from src.models.methods.solar import get_solar
 from src.models.icestupaClass import Icestupa
 # from src.automate.autoDischarge import TempFreeze
 from src.automate.autoDischarge import Scheduler
+from src.automate.projectile import get_dis_with_height
 
 # Module logger
 # logger = logging.getLogger("__main__")
@@ -158,26 +159,35 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
 
                 if loc in ["guttannen22", "guttannen21", "guttannen20"]:
                     df_h = pd.DataFrame(SITE["f_heights"])
-
                     if loc in ["guttannen22"]:
-                        df_f = pd.read_csv(
-                            os.path.join("data/" + loc + "/interim/")
-                            + "discharge_labview.csv",
-                            sep=",",
-                            parse_dates=["time"],
-                        )
-                        df_f = df_f.set_index("time")
-                        SITE["dis_max"] = df_f["Discharge"].max()
+                        print(df_h)
+                        dis_old=0
+                        for i in range(0,df_h.shape[0]):
+                            dis_new = get_dis_with_height(h_f = df_h.h_f[i])
+                            # dis_new = dis_old/math.pow(2, h_change)
+                            df.loc[df.time > df_h.time[i], spray] += (dis_new-dis_old)
+                            logger.warning("Discharge changed from %s to %s"%(dis_old,dis_new))
+                            dis_old = dis_new
+                    # if loc in ["guttannen22"]:
+                    #     df_f = pd.read_csv(
+                    #         os.path.join("data/" + loc + "/interim/")
+                    #         + "discharge_labview.csv",
+                    #         sep=",",
+                    #         parse_dates=["time"],
+                    #     )
+                    #     df_f = df_f.set_index("time")
+                    #     SITE["dis_max"] = df_f["Discharge"].max()
+                    else:
 
-                    df[spray] = SITE["dis_max"]
-                    dis_old= SITE["dis_max"]
-                    df.loc[df.time < df_h.time[0], spray] = 0
-                    for i in range(1,df_h.shape[0]):
-                        h_change = round(df_h.h_f[i] - df_h.h_f[i-1],0)
-                        dis_new = dis_old/math.pow(2, h_change)
-                        df.loc[df.time > df_h.time[i], spray] *= dis_new/dis_old
-                        logger.warning("Discharge changed from %s to %s"%(dis_old,dis_new))
-                        dis_old = dis_new
+                        df[spray] = SITE["dis_max"]
+                        dis_old= SITE["dis_max"]
+                        df.loc[df.time < df_h.time[0], spray] = 0
+                        for i in range(1,df_h.shape[0]):
+                            h_change = round(df_h.h_f[i] - df_h.h_f[i-1],0)
+                            dis_new = dis_old/math.pow(2, h_change)
+                            df.loc[df.time > df_h.time[i], spray] *= dis_new/dis_old
+                            logger.warning("Discharge changed from %s to %s"%(dis_old,dis_new))
+                            dis_old = dis_new
 
 
         if spray.split('_')[0] == "unscheduled":

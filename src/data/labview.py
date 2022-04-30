@@ -48,10 +48,10 @@ def labview(location):
                     sep=";",
                     skiprows=3,
                     encoding="latin-1",
-                    usecols=["Q_Wasser ", "T_Luft", "r_Luft","w_Luft", "T_Wasser "],
+                    usecols=["Q_Wasser ", "T_Luft", "r_Luft","w_Luft", "T_Wasser ", "KH_Position"],
                 )
                 df = df[1:].reset_index(drop=True)
-                df = df[["Q_Wasser ", "T_Luft", "r_Luft","w_Luft", "T_Wasser "]]
+                df = df[["Q_Wasser ", "T_Luft", "r_Luft","w_Luft", "T_Wasser ", "KH_Position"]]
                 for col in df.columns:
                     df[col] = df[col].astype(float)
                 df = df.round(2)
@@ -63,6 +63,7 @@ def labview(location):
                         "r_Luft": "RH",
                         "Q_Wasser ": "Discharge",
                         "T_Wasser ": "T_F",
+                        "KH_Position": "Valve",
                     },
                     inplace=True,
                 )

@@ -100,7 +100,7 @@ def get_field(loc="schwarzsee19"):
         # print(df.time[df.T_ice_8.isna()].values[0])
         # df['T_bulk_meas'] = (df["T_ice_2"] + df["T_ice_3"] + df["T_ice_4"]+ df["T_ice_5"]+ df["T_ice_6"]+df["T_ice_7"])/6
         # df['T_bulk_meas'] = (df["T_ice_2"] + df["T_ice_3"] + df["T_ice_4"]+ df["T_ice_5"]+ df["T_ice_6"])/5
-        # df['T_G'] = df["T_ice_1"]
+        df['T_F'] = df["T_1"]
 
 
         cols = [
@@ -116,7 +116,7 @@ def get_field(loc="schwarzsee19"):
             "Qs_meas",
             # "ppt",
             "snow_h",
-            # "T_G",
+            "T_F",
         ]
 
         df_out = df[cols]

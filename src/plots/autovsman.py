@@ -27,7 +27,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("ERROR")
     location = 'guttannen22'
-    sprays = ['scheduled_field', 'unscheduled_field']
+    sprays = ['scheduled_field']
     # sprays = ['dynamic_field']
 
     mypal = sns.color_palette("Set1", 2)
@@ -41,7 +41,7 @@ if __name__ == "__main__":
                         Line2D([0], [0], color=grey, lw=4, label='Dome Volume'),
                        ]
 
-    fig, ax = plt.subplots(3, 1, gridspec_kw={'height_ratios': [1,1,2]}, sharex="col")
+    fig, ax = plt.subplots(2, 1, gridspec_kw={'height_ratios': [1,1]}, sharex="col")
     for i, spray in enumerate(sprays):
         SITE, FOLDER = config(location, spray)
         icestupa = Icestupa(location, spray)
@@ -65,47 +65,50 @@ if __name__ == "__main__":
         ax[0].spines["top"].set_visible(False)
         ax[0].spines["left"].set_color("grey")
         ax[0].spines["bottom"].set_color("grey")
-        ax[0].set_ylabel("Temperature [$\degree C$]", size=6)
+        ax[0].set_ylabel("Temperature [$\degree C$]")
+        ax[0].set_ylim([-20,20])
 
-        y2 = df.ppt[1:]
+        # y2 = df.ppt[1:]
+        # ax[1].plot(
+        #     x,
+        #     y2,
+        #     linewidth=0.8,
+        #     color=default,
+        # )
+        # ax[1].spines["right"].set_visible(False)
+        # ax[1].spines["top"].set_visible(False)
+        # ax[1].spines["left"].set_color("grey")
+        # ax[1].spines["bottom"].set_color("grey")
+        # ax[1].set_ylabel("Precipitation [$mm$]", size=6)
+
+        y2 = df.Discharge[1:]
         ax[1].plot(
             x,
             y2,
-            linewidth=0.8,
+            label= spray,
+            linewidth=1,
+            # color=mypal[i],
             color=default,
         )
         ax[1].spines["right"].set_visible(False)
         ax[1].spines["top"].set_visible(False)
         ax[1].spines["left"].set_color("grey")
         ax[1].spines["bottom"].set_color("grey")
-        ax[1].set_ylabel("Precipitation [$mm$]", size=6)
+        ax[1].set_ylabel("Discharge [$l/min$]")
 
-        y3 = df.Discharge[1:]
-        ax[2].plot(
-            x,
-            y3,
-            label= spray,
-            linewidth=1,
-            color=mypal[i],
-        )
-        ax[2].spines["right"].set_visible(False)
-        ax[2].spines["top"].set_visible(False)
-        ax[2].spines["left"].set_color("grey")
-        ax[2].spines["bottom"].set_color("grey")
-        ax[2].set_ylabel("Discharge [$l/min$]")
-
-        # ax[1].set_ylim([0,14])
+        ax[1].set_ylim([0,15])
         # ax[0].set_ylim([-13,10])
 
-    ax[2].xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax[2].xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    ax[1].xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax[1].xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     fig.subplots_adjust(hspace=None, wspace=None)
     fig.autofmt_xdate()
-    handles, labels = ax[2].get_legend_handles_labels()
-    ax[2].legend(handles, labels, loc="upper right", prop={"size": 8}, title="Fountain spray")
-    plt.savefig("data/figs/paper3/data.png", bbox_inches="tight", dpi=300)
+    # handles, labels = ax[2].get_legend_handles_labels()
+    # ax[2].legend(handles, labels, loc="upper right", prop={"size": 8}, title="Fountain spray")
+    plt.savefig("data/figs/paper3/disvstemp.png", bbox_inches="tight", dpi=300)
     plt.close()
 
+    sprays = ['scheduled_field', 'unscheduled_field']
     fig, ax = plt.subplots(2, 1, gridspec_kw={'height_ratios': [1,1]}, sharex="col")
     for i, spray in enumerate(sprays):
         SITE, FOLDER = config(location, spray)

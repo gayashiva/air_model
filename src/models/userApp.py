@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     # sprays = ["scheduled_icv", "scheduled_wue"]
     sprays = ["scheduled_field", "unscheduled_field"]
-    # sprays = ["unscheduled_field"]
+    # sprays = ["scheduled_field"]
     # sprays = ["scheduled_wue", "scheduled_icv"]
 
     for spray in sprays:
