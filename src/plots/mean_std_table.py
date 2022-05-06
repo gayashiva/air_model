@@ -188,16 +188,18 @@ if __name__ == "__main__":
                 + dfd.Qs.abs().sum()
                 + dfd.Ql.abs().sum()
                 + dfd.Qf.abs().sum()
+                + dfd.Qr.abs().sum()
                 + dfd.Qg.abs().sum()
             )
             print(
-                "Percent of \n SW: %.1f \n LW: %.1f \n Qs: %.1f \n Ql: %.1f \n Qf: %.1f\n Qg: %.1f"
+                "Percent of \n SW: %.1f \n LW: %.1f \n Qs: %.1f \n Ql: %.1f \n Qf: %.1f\n Qr: %.1f\n Qg: %.1f"
                 % (
                     dfd.SW.abs().sum() / Total2 * 100,
                     dfd.LW.abs().sum() / Total2 * 100,
                     dfd.Qs.abs().sum() / Total2 * 100,
                     dfd.Ql.abs().sum() / Total2 * 100,
                     dfd.Qf.abs().sum() / Total2 * 100,
+                    dfd.Qr.abs().sum() / Total2 * 100,
                     dfd.Qg.abs().sum() / Total2 * 100,
                 )
             )

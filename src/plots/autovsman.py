@@ -305,15 +305,11 @@ if __name__ == "__main__":
                         Line2D([0], [0], color=mypal[1], lw=4, label='Unscheduled'),
                        ]
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(1, 1)
     for i, spray in enumerate(sprays):
         SITE, FOLDER = config(location, spray)
         icestupa = Icestupa(location, spray)
         icestupa.read_output()
-        # if spray == "scheduled_field":
-        #     spray = "Scheduled"
-        # else:
-        #     spray = "Unscheduled"
 
         df=icestupa.df
         for j in range(0,df.shape[0]):
@@ -323,25 +319,19 @@ if __name__ == "__main__":
                 # df.loc[j,'radf'] = np.nan
                 df.loc[j,'radf'] = 0
 
-        # dfd = df.set_index("time").resample("D").mean().reset_index()
-
         df_c = pd.read_hdf(FOLDER["input_sim"]  + "/input.h5", "df_c")
         df_c = df_c[["time", "rad"]]
 
-        # print(df.radf.mean())
-
-        x = df.time[1:]
-        y1 = df.radf[1:]
+        x = df.time[1:-1]
+        y1 = df.radf[1:-1]
+        y3 = df.h_cone[1:-1]
         x2 = df_c.time
         y2 = df_c.rad
         ax.plot(
             x,
             y1,
             linewidth=0.8,
-            # color=default,
-            # s=10,
             color=mypal[i],
-            # label=spray,
         )
         ax.scatter(
             x2,
@@ -352,18 +342,17 @@ if __name__ == "__main__":
             color=mypal[i],
             # label=spray,
         )
+        ax.set_ylabel("Spray Radius [$m$]")
         # ax.axhline(y=icestupa.R_F, linewidth=0.8, linestyle='--', color=mypal[i])
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
         ax.spines["left"].set_color("grey")
         ax.spines["bottom"].set_color("grey")
-        ax.set_ylabel("Spray Radius [$m$]")
-    ax.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    ax.set_ylim([0,14])
     fig.subplots_adjust(hspace=None, wspace=None)
     fig.autofmt_xdate()
-    # handles, labels = ax.get_legend_handles_labels()
-    # ax.legend(handles, labels, loc="upper right", prop={"size": 8}, title="Fountain spray")
     ax.legend(handles=legend_elements, prop={"size": 8}, title='Fountain')
     plt.savefig("data/figs/paper3/radf.png", bbox_inches="tight", dpi=300)
     plt.close()
