@@ -64,10 +64,10 @@ if __name__ == "__main__":
 
 
 
-    at = AnchoredText("(a) Height constant", prop=dict(size=10), frameon=True, loc="upper right")
+    at = AnchoredText("(a)", prop=dict(size=10), frameon=True, loc="upper right")
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
     axd['A'].add_artist(at)
-    at = AnchoredText("(b) Diameter constant", prop=dict(size=10), frameon=True, loc="upper right")
+    at = AnchoredText("(b)", prop=dict(size=10), frameon=True, loc="upper right")
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
     axd['B'].add_artist(at)
     # at = AnchoredText("(c)", prop=dict(size=10), frameon=True, loc="upper right")

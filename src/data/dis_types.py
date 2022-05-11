@@ -104,6 +104,7 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                                                             utc=SITE["utc"])
                     if df.loc[i, "scheduled_"+obj] < SITE["dis_crit"]:
                         df.loc[i, "scheduled_"+obj] = 0
+
                         # if obj == "icv":
                         #     if df.loc[i, "scheduled_"+obj] < SITE["dis_crit"]:
                         #         df.loc[i, "scheduled_"+obj] += SITE["dis_crit"]

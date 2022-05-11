@@ -19,7 +19,7 @@ logging.getLogger('PIL').setLevel(logging.CRITICAL)
 # Module logger
 logger = logging.getLogger("__main__")
 
-def config(loc="guttannen21", spray=None):
+def config(loc=None, spray=None):
     logger.warning(f"Site {loc} with scheduler {spray}")
 
     if loc== "Guttannen 2022" or loc == "guttannen22":

@@ -26,69 +26,179 @@ if __name__ == "__main__":
     logger.setLevel("WARNING")
 
     loc= "Guttannen 2022"
-    icestupa = Icestupa(loc, spray="unscheduled_field")
     SITE, FOLDER = config(loc, spray="unscheduled_field")
-    icestupa.read_output()
-    df = icestupa.df
+    # icestupa = Icestupa(loc, spray="unscheduled_field")
+    # icestupa.read_output()
+    # df = icestupa.df
 
 
-    df_f = pd.read_csv(FOLDER['input'] + "discharge_types.csv", sep=",", header=0, parse_dates=["time"])
-    df_f = df_f[["time", "scheduled_wue", "scheduled_icv"]]
+    # df_f = pd.read_csv(FOLDER['input'] + "discharge_types.csv", sep=",", header=0, parse_dates=["time"])
+    # df_f = df_f[["time", "unscheduled_field", "scheduled_icv"]]
+    # df_f = df_f[["time", "scheduled_icv"]]
 
-    objs = ["wue", "icv"]
+    objs = ["scheduled_field", "scheduled_icv"]
+    labels = ["Measured", "Modelled"]
     styles=['.', 'x']
 
     default = "#284D58"
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
 
+    df1 = Icestupa(loc, spray=objs[0]).df
+    df2 = Icestupa(loc, spray=objs[1]).df
+    corr= df1["Discharge"].corr(df2["Discharge"])
+    print("Correlation between %s and %s is %0.2f"%(objs[0], objs[1], corr))
+    rmse = mean_squared_error(df1["Discharge"], df2["Discharge"], squared=False)
+    print(f"Calculated correlation {corr} and RMSE {rmse}")
+    print(df1.Discharge.describe())
+    print(df2.Discharge.describe())
 
-    for j, obj in enumerate(objs):
-        print(j,obj)
+    x = df1.time[1:]
+    y1 = df1.Discharge[1:]
+    y2 = df2.Discharge[1:]
+    ax1.scatter(y1, y2, s=10, marker='.', color=default)
+    ax1.set_xlabel("Measured Discharge [$l/min$]")
+    ax1.set_ylabel("Modelled Discharge [$l/min$]")
+    ax1.grid()
 
-        column_1 = "fountain_froze"
-        column_2 = "Discharge"
-        icestupa = Icestupa(loc, spray="scheduled_"+obj)
-        df_f = icestupa.df
-        corr= df[column_1].corr(df_f[column_2])
-        print("Correlation between %s and %s is %0.2f"%(column_1, column_2, corr))
-        rmse = mean_squared_error(df_f[column_2], df[column_1]/60, squared=False)
-        print(f"Calculated correlation {corr} and RMSE {rmse}")
+    lims = [
+        np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+        np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+    ]
+    lims = [0,12]
 
-        # df["fountain_froze"] = np.where(df.fountain_froze == 0, np.nan, df.fountain_froze)
-        # df_f["Discharge"] = np.where(df_f.Discharge == 0, np.nan, df_f.Discharge)
+    # now plot both limits against eachother
+    ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+    ax1.set_aspect("equal")
+    ax1.set_xlim(lims)
+    ax1.set_ylim(lims)
 
-        print(np.where(df.fountain_froze < df_f.Discharge , 1, 0).sum()/df.shape[0])
-
-
-        # fig, ax = plt.subplots(2, 1, sharex="col")
-
-        x = df.time[1:]
-        y1 = df.fountain_froze[1:]/60
-        y2 = df_f.Discharge[1:]
-        ax1.scatter(y1, y2, s=10, marker=styles[j], color=default, label = obj)
-        ax1.set_xlabel("Validated freezing rate [$l/min$]")
-        ax1.set_ylabel("Scheduled discharge rate [$l/min$]")
-        ax1.grid()
-
-        lims = [
-            np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
-            np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
-        ]
-        lims = [0,2.5]
-
-        # now plot both limits against eachother
-        ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
-        ax1.set_aspect("equal")
-        ax1.set_xlim(lims)
-        ax1.set_ylim(lims)
-
-    ax1.legend(prop={"size": 8}, title="Objective", loc="upper right")
+    # ax1.legend(prop={"size": 8}, title="Objective", loc="upper right")
     plt.savefig(
-        "data/figs/paper3/freezing_rate_corr.png",
+        "data/figs/paper3/simvsreal2.png",
         bbox_inches="tight",
         dpi=300,
     )
+    plt.clf()
+
+    loc= "Gangles 2021"
+    SITE, FOLDER = config(loc, spray="unscheduled_field")
+
+    objs = ["unscheduled_field", "scheduled_icv"]
+    labels = ["Unscheduled", "Scheduled ICV"]
+    styles=['.', 'x']
+
+    mypal = sns.color_palette("Set1", 2)
+    default = "#284D58"
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+
+    df1 = Icestupa(loc, spray=objs[0]).df
+    df2 = Icestupa(loc, spray=objs[1]).df
+
+    df1 = df1.set_index("time")
+    df1 = df1[SITE["start_date"] : datetime(2021, 4, 13)]
+    df1 = df1.reset_index()
+    df2 = df2.set_index("time")
+    df2 = df2[SITE["start_date"] : datetime(2021, 4, 13)]
+    df2 = df2.reset_index()
+
+    corr= df1["Discharge"].corr(df2["Discharge"])
+    print("Correlation between %s and %s is %0.2f"%(objs[0], objs[1], corr))
+    rmse = mean_squared_error(df1["Discharge"], df2["Discharge"], squared=False)
+    print(f"Calculated correlation {corr} and RMSE {rmse}")
+    print(df1.Discharge.describe())
+    print(df2.Discharge.describe())
+
+    x = df1.time[1:]
+    y1 = df1.Discharge[1:]
+    y2 = df2.Discharge[1:]
+
+    ax1.plot(
+        x,
+        y1,
+        label= labels[0],
+        linewidth=1,
+        color=mypal[1],
+    )
+    ax1.spines["right"].set_visible(False)
+    ax1.spines["top"].set_visible(False)
+    ax1.spines["left"].set_color("grey")
+    ax1.spines["bottom"].set_color("grey")
+
+    ax1.plot(
+        x,
+        y2,
+        label= labels[1],
+        linewidth=1,
+        color=mypal[0],
+    )
+    ax1.spines["right"].set_visible(False)
+    ax1.spines["top"].set_visible(False)
+    ax1.spines["left"].set_color("grey")
+    ax1.spines["bottom"].set_color("grey")
+    ax1.set_ylabel("Discharge rate [$l/min$]")
+
+
+    ax1.legend(prop={"size": 8}, title="Fountain type", loc="upper right")
+    ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    fig.autofmt_xdate()
+
+    plt.savefig(
+        "data/figs/paper3/simvsreal_IN21.png",
+        bbox_inches="tight",
+        dpi=300,
+    )
+    plt.clf()
+
+
+    # for j, obj in enumerate(objs):
+    #     print(j,obj)
+
+    #     column_1 = "fountain_froze"
+    #     column_2 = "Discharge"
+    #     icestupa = Icestupa(loc, spray=obj)
+    #     df_f = icestupa.df
+    #     corr= df[column_1].corr(df_f[column_2])
+    #     print("Correlation between %s and %s is %0.2f"%(column_1, column_2, corr))
+    #     rmse = mean_squared_error(df_f[column_2], df[column_1]/60, squared=False)
+    #     print(f"Calculated correlation {corr} and RMSE {rmse}")
+
+    #     # df["fountain_froze"] = np.where(df.fountain_froze == 0, np.nan, df.fountain_froze)
+    #     # df_f["Discharge"] = np.where(df_f.Discharge == 0, np.nan, df_f.Discharge)
+
+    #     # print(np.where(df.fountain_froze < df_f.Discharge , 1, 0).sum()/df.shape[0])
+
+
+    #     # fig, ax = plt.subplots(2, 1, sharex="col")
+
+    #     x = df.time[1:]
+    #     y1 = df.fountain_froze[1:]/60
+    #     y2 = df_f.Discharge[1:]
+    #     ax1.scatter(y1, y2, s=10, marker=styles[j], color=default, label = obj)
+    #     ax1.set_xlabel("Validated freezing rate [$l/min$]")
+    #     ax1.set_ylabel("Scheduled discharge rate [$l/min$]")
+    #     ax1.grid()
+
+    #     lims = [
+    #         np.min([ax1.get_xlim(), ax1.get_ylim()]),  # min of both axes
+    #         np.max([ax1.get_xlim(), ax1.get_ylim()]),  # max of both axes
+    #     ]
+    #     lims = [0,5]
+
+    #     # now plot both limits against eachother
+    #     ax1.plot(lims, lims, "--k", alpha=0.25, zorder=0)
+    #     ax1.set_aspect("equal")
+    #     ax1.set_xlim(lims)
+    #     ax1.set_ylim(lims)
+
+    # ax1.legend(prop={"size": 8}, title="Objective", loc="upper right")
+    # plt.savefig(
+    #     "data/figs/paper3/freezing_rate_corr.png",
+    #     bbox_inches="tight",
+    #     dpi=300,
+    # )
 
         # ax[0].plot(
         #     x,
