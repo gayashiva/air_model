@@ -83,7 +83,7 @@ if __name__ == "__main__":
     ax.spines["left"].set_color("grey")
     ax.spines["bottom"].set_color("grey")
     ax.legend(handles=legend_elements)
-    at = AnchoredText("(a)", prop=dict(size=20), frameon=True, loc="upper left")
+    at = AnchoredText("(a)", prop=dict(size=15), frameon=True, loc="upper left")
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
     ax.add_artist(at)
 
@@ -91,15 +91,16 @@ if __name__ == "__main__":
     loc= "Gangles 2021"
     SITE, FOLDER = config(loc, spray="unscheduled_field")
 
-    objs = ["unscheduled_field", "scheduled_icv"]
-    labels = ["Unscheduled", "Scheduled HIV"]
+    objs = ["unscheduled_field", "scheduled_icv", "scheduled_wue"]
+    labels = ["Unscheduled", "Scheduled HIV", "Scheduled WUE"]
     styles=['.', 'x']
 
-    mypal = sns.color_palette("Set1", 2)
+    mypal = sns.color_palette("Set1", 3)
     default = "#284D58"
 
     df1 = Icestupa(loc, spray=objs[0]).df
     df2 = Icestupa(loc, spray=objs[1]).df
+    df3 = Icestupa(loc, spray=objs[2]).df
 
     df1 = df1.set_index("time")
     df1 = df1[SITE["start_date"] : datetime(2021, 4, 13)]
@@ -107,11 +108,15 @@ if __name__ == "__main__":
     df2 = df2.set_index("time")
     df2 = df2[SITE["start_date"] : datetime(2021, 4, 13)]
     df2 = df2.reset_index()
+    df3 = df3.set_index("time")
+    df3 = df3[SITE["start_date"] : datetime(2021, 4, 13)]
+    df3 = df3.reset_index()
 
 
     x = df1.time[1:]
     y1 = df1.Discharge[1:]
     y2 = df2.Discharge[1:]
+    y3 = df3.Discharge[1:]
 
     ax1.plot(
         x,
@@ -137,9 +142,17 @@ if __name__ == "__main__":
     ax1.spines["left"].set_color("grey")
     ax1.spines["bottom"].set_color("grey")
     ax1.set_ylabel("Discharge rate [$l/min$]")
-    at = AnchoredText("(b)", prop=dict(size=20), frameon=True, loc="upper left")
+    at = AnchoredText("(b)", prop=dict(size=15), frameon=True, loc="upper left")
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
     ax1.add_artist(at)
+
+    ax1.plot(
+        x,
+        y3,
+        label= labels[2],
+        linewidth=1,
+        color=mypal[2],
+    )
 
 
     ax1.legend(prop={"size": 8}, title="IN21 Fountain type", loc="upper right")
@@ -148,11 +161,6 @@ if __name__ == "__main__":
     fig.autofmt_xdate()
 
     plt.savefig("data/figs/paper3/wue.png", bbox_inches="tight", dpi=300)
-    # plt.savefig(
-    #     "data/figs/paper3/simvsreal_IN21.png",
-    #     bbox_inches="tight",
-    #     dpi=300,
-    # )
     plt.clf()
 
 
