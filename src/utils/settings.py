@@ -61,9 +61,9 @@ def config(loc=None, spray=None):
                     add= dict(
                         fountain_off_date=datetime(2022, 2, 17, 6),
                         f_heights = [
-                            {"time": datetime(2021, 12, 8, 14), "h_f": 3.7},
-                            {"time": datetime(2021, 12, 23, 16), "h_f": 4.7},
-                            {"time": datetime(2022, 2, 12, 16), "h_f": 5.7},
+                            {"time": datetime(2021, 12, 8, 14), "h_f": 3.7, "dis":12.8},
+                            {"time": datetime(2021, 12, 23, 16), "h_f": 4.7, "dis":11.3},
+                            {"time": datetime(2022, 2, 12, 16), "h_f": 5.7, "dis":0},
                         ],
                     )
             SITE = dict(SITE, **add)

@@ -158,7 +158,7 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                     df.loc[df_f.index, spray] = SITE["D_F"] * df_f["fountain"]
                     df = df.reset_index()
 
-                if loc in ["guttannen22", "guttannen21", "guttannen20"]:
+                if loc in ["guttannen21", "guttannen20"]:
                     df_h = pd.DataFrame(SITE["f_heights"])
                     print(df_h)
                     dis_old=0
@@ -168,15 +168,26 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                         logger.warning("Discharge changed from %s to %s"%(dis_old,dis_new))
                         dis_old = dis_new
 
-                    # if loc in ["guttannen22"]:
-                    #     df_f = pd.read_csv(
-                    #         os.path.join("data/" + loc + "/interim/")
-                    #         + "discharge_labview.csv",
-                    #         sep=",",
-                    #         parse_dates=["time"],
-                    #     )
-                    #     df_f = df_f.set_index("time")
-                    #     SITE["dis_max"] = df_f["Discharge"].max()
+                if loc in ["guttannen22"]:
+                    df_h = pd.DataFrame(SITE["f_heights"])
+                    df_f = pd.read_csv(
+                        os.path.join("data/" + loc + "/interim/")
+                        + "discharge_labview.csv",
+                        sep=",",
+                        parse_dates=["time"],
+                    )
+                    df_f = df_f.set_index("time")
+                    dis_old = df_h.dis[0]
+                    df[spray] = dis_old
+
+                    for i in range(1,df_h.shape[0]):
+                        print(df_h.time[i], df_h.dis[i])
+                        dis_new = df_h.dis[i]
+                        df.loc[df.time > df_h.time[i], spray] *= dis_new/dis_old 
+                        logger.warning("Discharge changed from %s to %s"%(dis_old,dis_new))
+                        dis_old = dis_new
+
+
                     # else:
 
                     #     df[spray] = SITE["dis_max"]
@@ -205,8 +216,8 @@ if __name__ == "__main__":
     logger.setLevel("WARNING")
     # logger.setLevel("INFO")
 
-    locations = ["gangles21", "guttannen21",  "guttannen22"]
-    # locations = ["guttannen22"]
+    # locations = ["gangles21", "guttannen21",  "guttannen22"]
+    locations = ["guttannen22"]
     # locations = ["gangles21"]
 
     for loc in locations:

@@ -35,8 +35,8 @@ if __name__ == "__main__":
     # location = "Gangles 2021"
 
     # sprays = ["scheduled_icv", "scheduled_wue"]
-    sprays = ["scheduled_field", "unscheduled_field"]
-    # sprays = ["scheduled_icv"]
+    # sprays = ["scheduled_field", "unscheduled_field"]
+    sprays = ["unscheduled_field"]
     # sprays = ["scheduled_wue", "scheduled_icv"]
 
     for spray in sprays:
@@ -48,6 +48,7 @@ if __name__ == "__main__":
             icestupa.gen_output()
             # icestupa.read_output()
             icestupa.summary_figures()
+            # print(icestupa.df.s_cone.max())
 
             # if location == "Guttannen 2022" and spray == "scheduled_field":
             #     rmse = mean_squared_error(icestupa.df.T_bulk_meas, (icestupa.df.T_bulk + icestupa.df.T_s)/2, squared=False)

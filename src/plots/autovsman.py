@@ -27,7 +27,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("ERROR")
     location = 'guttannen22'
-    sprays = ['scheduled_field']
+    sprays = ['scheduled_field', 'unscheduled_field']
     # sprays = ['dynamic_field']
 
     mypal = sns.color_palette("Set1", 2)
@@ -87,8 +87,8 @@ if __name__ == "__main__":
             y2,
             label= spray,
             linewidth=1,
-            # color=mypal[i],
-            color=default,
+            color=mypal[i],
+            # color=default,
         )
         ax[1].spines["right"].set_visible(False)
         ax[1].spines["top"].set_visible(False)
@@ -103,8 +103,8 @@ if __name__ == "__main__":
     ax[1].xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     fig.subplots_adjust(hspace=None, wspace=None)
     fig.autofmt_xdate()
-    # handles, labels = ax[2].get_legend_handles_labels()
-    # ax[2].legend(handles, labels, loc="upper right", prop={"size": 8}, title="Fountain spray")
+    handles, labels = ax[1].get_legend_handles_labels()
+    ax[1].legend(handles, labels, loc="upper right", prop={"size": 8}, title="Fountain spray")
     plt.savefig("data/figs/paper3/disvstemp.png", bbox_inches="tight", dpi=300)
     plt.close()
 
