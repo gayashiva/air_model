@@ -44,10 +44,12 @@ def get_temp(self, i):
         self.df.loc[i, "Qt"] * self.DT / (self.df.loc[i,"rho_air"] * self.DX * self.C_I)
     )
 
-    # Prevent huge temperature changes especially for automated AIR
+    # Prevent huge temperature changes on surface and send it to bulk 
     if math.fabs(self.df.loc[i, "delta_T_s"]) > 20:
         self.df.loc[i, "delta_T_s"] = math.fabs(self.df.loc[i, "delta_T_s"])/self.df.loc[i, "delta_T_s"] * 20
         self.df.loc[i, "Qt"] = self.df.loc[i, "delta_T_s"] / self.DT * (self.df.loc[i,"rho_air"] * self.DX * self.C_I)
+        # self.df.loc[i+1, "Qg"] = self.df.loc[i, "Qt"]
+        # self.df.loc[i+1, "Qg"] -= self.df.loc[i, "Qt"]
 
     """Ice temperature above zero"""
     if (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]) > 0:
@@ -67,6 +69,7 @@ def get_temp(self, i):
             / self.DT
         )
         self.df.loc[i, "delta_T_s"] = -self.df.loc[i, "T_s"]
+
 
     if self.df.loc[i, "event"]:
         self.df.loc[i, "fountain_froze"] += (

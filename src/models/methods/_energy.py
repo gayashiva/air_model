@@ -87,7 +87,7 @@ def get_energy(self, i):
     #     (self.df.loc[i, "T_s"]) * self.RHO_I * self.DX * self.C_I / self.DT
     # )
 
-    self.df.loc[i, "Qg"] = (
+    self.df.loc[i, "Qg"] += (
         self.K_I
         * (self.df.loc[i, "T_bulk"] - self.df.loc[i, "T_s"])
         / (self.df.loc[i, "r_cone"] + self.df.loc[i, "h_cone"] / 2)
