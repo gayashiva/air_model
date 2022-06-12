@@ -34,7 +34,7 @@ def config(loc=None, spray=None):
             cld=0.5,
             # Calibrated values
             DX=45e-03,  # Surface layer thickness [m]
-            T_F = 3.0, # TODO Update to mean ground temp
+            T_F = 0.5, # TODO Update to mean ground temp
         )
 
         if spray != None:

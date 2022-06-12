@@ -41,7 +41,7 @@ if __name__ == "__main__":
     logger.setLevel("INFO")
 
     # locations = ["gangles21", "guttannen20", "guttannen21", "guttannen22"]
-    locations = ["guttannen21"]
+    locations = ["guttannen22"]
     # locations = ["gangles21"]
 
     with open("data/common/constants.json") as f:
@@ -207,17 +207,17 @@ if __name__ == "__main__":
                 "RH",
                 "wind",
                 "SW_global",
-                # "SW_diffuse",
-                # "alb",
+                "cld",
                 "ppt",
-                # "vp_a",
                 "press",
                 "LW_in",
                 "snow_h",
+                "T_G",
+                # "SW_diffuse",
+                # "alb",
+                # "vp_a",
                 # "T_ice_3",
-                "T_F",
-                "Qs_meas",
-                "cld",
+                # "Qs_meas",
             ]
 
 

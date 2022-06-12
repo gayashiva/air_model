@@ -44,6 +44,11 @@ def get_temp(self, i):
         self.df.loc[i, "Qt"] * self.DT / (self.df.loc[i,"rho_air"] * self.DX * self.C_I)
     )
 
+    # Prevent huge temperature changes especially for automated AIR
+    if math.fabs(self.df.loc[i, "delta_T_s"]) > 20:
+        self.df.loc[i, "delta_T_s"] = math.fabs(self.df.loc[i, "delta_T_s"])/self.df.loc[i, "delta_T_s"] * 20
+        self.df.loc[i, "Qt"] = self.df.loc[i, "delta_T_s"] / self.DT * (self.df.loc[i,"rho_air"] * self.DX * self.C_I)
+
     """Ice temperature above zero"""
     if (self.df.loc[i, "T_s"] + self.df.loc[i, "delta_T_s"]) > 0:
         self.df.loc[i, "Qmelt"] += (
@@ -96,6 +101,7 @@ def get_temp(self, i):
         self.df.loc[i, "melted"] = (
             self.df.loc[i, "Qmelt"] * self.DT * self.df.loc[i, "A_cone"] / (self.L_F)
         )
+
 
 def test_get_temp(self, i):
     self.get_temp(i)

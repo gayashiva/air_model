@@ -144,9 +144,9 @@ def test_get_energy(self, i):
         )
         sys.exit("Energy nan")
 
-    if math.fabs(self.df.loc[i, "Qs"]) > 500:
+    if math.fabs(self.df.loc[i, "Qs"]) > 1000:
         logger.warning(
-            "Sensible heat above 500 %s ,wind %s, ice temp %s, slope %s, temp %s"
+            "Sensible heat above 1000 %s ,wind %s, ice temp %s, slope %s, temp %s"
             % (
                 self.df.loc[i, "time"],
                 self.df.loc[i, "wind"],
