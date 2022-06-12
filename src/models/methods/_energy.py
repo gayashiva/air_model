@@ -34,10 +34,8 @@ def get_energy(self, i):
 
     # Sensible Heat Qs
     # if "Qs_meas" in list(self.df.columns):
-    #     self.df.loc[i, "Qs"] = self.df.loc[i, "Qs_meas"]
-    #     logger.warning("Using measured sensible heat")
+    #     self.df.loc[i, "Qs"] = - self.df.loc[i, "Qs_meas"] * (1 + 0.5 * self.df.loc[i, "s_cone"])
     # else:
-
     self.df.loc[i, "Qs"] = (
         self.C_A
         * self.RHO_A
@@ -61,6 +59,7 @@ def get_energy(self, i):
         self.df.loc[i, "T_s"] + 273.15, 4
     )
 
+
     self.df.loc[i, "Qf"] = (
         (self.df.loc[i, "Discharge"] * self.DT / 60)
         * self.C_W
@@ -69,6 +68,7 @@ def get_energy(self, i):
         / (self.DT * self.df.loc[i, "A_cone"])
     )
 
+    # self.df.loc[i, "Qr"] = 0
     self.df.loc[i, "Qr"] = (
         (self.df.loc[i, "rain2ice"])
         * self.C_W
@@ -144,9 +144,9 @@ def test_get_energy(self, i):
         )
         sys.exit("Energy nan")
 
-    if math.fabs(self.df.loc[i, "Qs"]) > 1000:
+    if math.fabs(self.df.loc[i, "Qs"]) > 500:
         logger.warning(
-            "Sensible heat above 1000 %s ,wind %s, ice temp %s, slope %s, temp %s"
+            "Sensible heat above 500 %s ,wind %s, ice temp %s, slope %s, temp %s"
             % (
                 self.df.loc[i, "time"],
                 self.df.loc[i, "wind"],

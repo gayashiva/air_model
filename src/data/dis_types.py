@@ -178,7 +178,7 @@ def get_discharge(loc):  # Provides discharge info based on trigger setting
                     )
                     df_f = df_f.set_index("time")
                     dis_old = df_h.dis[0]
-                    df[spray] = dis_old
+                    df.loc[df.time > df_h.time[0], spray] = dis_old 
 
                     for i in range(1,df_h.shape[0]):
                         print(df_h.time[i], df_h.dis[i])

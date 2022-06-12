@@ -46,18 +46,21 @@ def self_attributes(self):
     if hasattr(self, "R_F"):
         logger.error("Arbitrary spray radius of %s" % self.R_F)
     else:
-        # TODO remove first index?
+        # # TODO remove first index?
         # self.R_F = df_c.loc[
-        #     (df_c.time < self.fountain_off_date) & (df_c.index != 0), "rad"
-        #     # (df_c.time < self.fountain_off_date), "rad"
+        #     # (df_c.time < self.fountain_off_date) & (df_c.index != 0), "rad"
+        #     (df_c.time < self.fountain_off_date), "rad"
         # ].mean()
-
-        # self.R_F = df_c.rad.max()
+        # rad_flights = df_c.loc[
+        #     # (df_c.time < self.fountain_off_date) & (df_c.index != 0), "rad"
+        #     (df_c.time < self.fountain_off_date), "rad"
+        # ].values
+        # logger.warning("Measured spray radius from all ice radius drone %0.1f using %i measurements" % (self.R_F, len(rad_flights)))
 
         df_c['cond'] = (df_c['rad'] - df_c.shift(1)['rad']>0) | (df_c['DroneV'] - df_c.shift(1)['DroneV']>0)
         rad_flights = df_c.loc[df_c['cond'].values > 0 , "rad"].values
         self.R_F = np.mean(rad_flights)
-        logger.warning("Measured spray radius from drone %0.1f using %i measurements" % (self.R_F, len(rad_flights)))
+        logger.warning("Measured spray radius from increasing ice radius drone %0.1f using %i measurements" % (self.R_F, len(rad_flights)))
 
     if self.name in ["guttannen22"]:
         if self.spray.split('_')[0] == 'scheduled':

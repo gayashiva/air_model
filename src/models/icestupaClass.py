@@ -117,9 +117,18 @@ class Icestupa:
             self.df["SW_global"] = self.df["ghi"]
             logger.warning(f"Estimated global solar from pvlib\n")
 
-        self.df["SW_direct"] = (1- self.cld) * self.df["SW_global"]
-        self.df["SW_diffuse"] = self.cld * self.df["SW_global"]
-        logger.warning(f"Estimated solar components with constant cloudiness of {self.cld}\n")
+        # self.df["SW_diffuse"]= np.where(self.df.ppt > 0, self.df["SW_global"], 0)
+        # self.df["SW_direct"] = self.df["SW_global"] - self.df["SW_diffuse"]
+        # logger.warning(f"Estimated solar components using precipitation\n")
+
+        if 'cld' in list(self.df.columns):
+            self.df["SW_direct"] = (1- self.df["cld"]) * self.df["SW_global"]
+            self.df["SW_diffuse"] = self.df["cld"] * self.df["SW_global"]
+            logger.warning(f"Estimated solar components with ERA5 cloudiness with mean {self.df.cld.mean()}\n")
+        else:
+            self.df["SW_direct"] = (1- self.cld) * self.df["SW_global"]
+            self.df["SW_diffuse"] = self.cld * self.df["SW_global"]
+            logger.warning(f"Estimated solar components with constant cloudiness of {self.cld}\n")
 
         # if "T_G" in list(self.df.columns):
         #     self.df.rename(columns={"T_G": "T_F"},inplace=True)
@@ -149,7 +158,13 @@ class Icestupa:
                 self.df.loc[i, "e_a"] = (
                     1.24
                     * math.pow(abs(self.df.loc[i, "vp_a"] / (row.temp + 273.15)), 1 / 7)
-                ) * (1 + 0.22 * math.pow(self.cld, 2))
+                )
+
+                if 'cld' in list(self.df.columns):
+                    self.df.loc[i, "e_a"] *= (1 + 0.22 * math.pow(self.df.loc[i,"cld"], 2))
+                else:
+                    self.df.loc[i, "e_a"] *= (1 + 0.22 * math.pow(self.cld, 2))
+
 
                 self.df.loc[i, "LW_in"] = (
                     self.df.loc[i, "e_a"] * self.sigma * math.pow(row.temp + 273.15, 4)
