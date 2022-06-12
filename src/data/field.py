@@ -92,9 +92,10 @@ def get_field(loc="schwarzsee19"):
         df.loc[df.alb > 1, "alb"] = np.NaN 
         df.loc[df.alb < 0, "alb"] = np.NaN 
         df.loc[:, "alb"] = df["alb"].interpolate()
+        df['press'] *=10
 
         df['ppt'] = df.snow_h.diff()*10*CONSTANTS['RHO_S']/CONSTANTS['RHO_W'] # mm of snowfall w.e. in one hour
-        df.loc[df.ppt<1, "ppt"] = 0  # Assuming 1 mm error
+        # df.loc[df.ppt<1, "ppt"] = 0  # Assuming 1 mm error
         print(df['ppt'].describe())
 
         # print(df.time[df.T_ice_8.isna()].values[0])

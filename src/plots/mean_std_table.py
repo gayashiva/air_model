@@ -31,10 +31,42 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("ERROR")
 
-    # locations = ['gangles21',  'guttannen21']
-    locations = ['guttannen22']
-    sprays = ['scheduled_field', 'unscheduled_field']
 
+    # locations = ['gangles21',  'guttannen21']
+    locations = ['guttannen20', 'guttannen21', 'guttannen22']
+    spray = 'unscheduled_field'
+
+    print("Comparing weather of different locations")
+    for location in locations:
+        SITE, FOLDER = config(location, spray)
+        icestupa = Icestupa(location, spray)
+        print(location, spray)
+        print()
+        icestupa.read_output()
+        cols = [
+            "temp",
+            "RH",
+            "wind",
+            "SW_global",
+            "ppt",
+            "press",
+        ]
+        separate_periods_index = icestupa.df.loc[icestupa.df.Discharge > 0].index[-1]
+        df_jan = icestupa.df.loc[icestupa.df.time.dt.month == 1]
+        df_ac = icestupa.df[icestupa.df.index <= separate_periods_index]
+        df_ab = icestupa.df[icestupa.df.index > separate_periods_index]
+        df_e = icestupa.df[cols].describe().T[["mean", "std"]]
+        # print(df_e)
+        iceV_diff = df_jan.iceV[df_jan.index[-1]] - df_jan.iceV[df_jan.index[0]]
+        print(df_jan[cols].describe().T[["mean", "std"]])
+        print(f'\n\tVolume diff {iceV_diff}')
+        print(f'\n\tSpray radius {icestupa.R_F}\n')
+
+    # locations = ['gangles21',  'guttannen21']
+    locations = ['guttannen22', 'guttannen21']
+    # sprays = ['scheduled_field', 'unscheduled_field']
+    sprays = ['unscheduled_field']
+    print("Comparing processes of same location")
     for location in locations:
         for spray in sprays:
             SITE, FOLDER = config(location, spray)
