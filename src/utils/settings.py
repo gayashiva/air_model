@@ -49,6 +49,7 @@ def config(loc=None, spray=None):
                     add= dict(
                         fountain_off_date=datetime(2022, 3, 1),
                         dis_crit = 0,
+                        DX=90e-03,  # Surface layer thickness [m]
                         f_heights = [
                             {"time": datetime(2021, 12, 8, 14), "h_f": 3},
                             {"time": datetime(2021, 12, 23, 16), "h_f": 4},

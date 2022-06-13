@@ -136,6 +136,7 @@ class Icestupa:
         else:
             self.df["T_F"] = float(self.T_F)
             logger.warning(f"Estimated constant fountain water temp is {self.T_F}\n")
+
             
         for row in tqdm(
             self.df[1:].itertuples(),
@@ -173,8 +174,6 @@ class Icestupa:
             """Water temperature"""
             if row.temp < 0:
                 self.df.loc[i,"T_F"] = 0
-            # else:
-            #     self.df.loc[i,"T_F"] = self.T_F
 
         logger.warning(f"Variable fountain water temp mean is {self.df.T_F.mean()}\n")
 

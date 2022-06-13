@@ -36,6 +36,7 @@ def get_energy(self, i):
     # if "Qs_meas" in list(self.df.columns):
     #     self.df.loc[i, "Qs"] = - self.df.loc[i, "Qs_meas"] * (1 + 0.5 * self.df.loc[i, "s_cone"])
     # else:
+
     self.df.loc[i, "Qs"] = (
         self.C_A
         * self.RHO_A
