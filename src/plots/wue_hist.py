@@ -39,9 +39,9 @@ if __name__ == "__main__":
                         Line2D([0], [0], color=mypal[2], lw=4, label='IN21'),
                        Line2D([0], [0], marker='.', color='w', label='Unscheduled',
                               markerfacecolor='k', markersize=15),
-                       Line2D([0], [0], marker='X', color='w', label='MIV Scheduled',
+                       Line2D([0], [0], marker='X', color='w', label='Weather-sensitive',
                               markerfacecolor='k', markersize=10),
-                       Line2D([0], [0], marker='*', color='w', label='MWE Scheduled',
+                       Line2D([0], [0], marker='*', color='w', label='Water-sensitive',
                               markerfacecolor='k', markersize=15),
                        Line2D([0], [0], marker='o', color='k', label='Experiment',
                               markerfacecolor='w', markersize=10, lw=0),
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     SITE, FOLDER = config(loc, spray="unscheduled_field")
 
     objs = ["unscheduled_field", "scheduled_icv", "scheduled_wue"]
-    labels = ["Unscheduled", "Scheduled HIV", "Scheduled WUE"]
+    labels = ["Unscheduled", "Weather-sensitive", "Water-sensitive"]
     styles=['.', 'x']
 
     mypal = sns.color_palette("Set1", 3)

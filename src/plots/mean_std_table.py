@@ -32,8 +32,8 @@ if __name__ == "__main__":
     logger.setLevel("ERROR")
 
 
-    # locations = ['gangles21',  'guttannen21']
-    locations = ['guttannen20', 'guttannen21', 'guttannen22']
+    # locations = ['guttannen20', 'guttannen21', 'guttannen22']
+    locations = ['guttannen21', 'guttannen22']
     spray = 'unscheduled_field'
 
     print("Comparing weather of different locations")
@@ -47,7 +47,8 @@ if __name__ == "__main__":
             "temp",
             "RH",
             "wind",
-            "SW_global",
+            "SW_direct",
+            "SW_diffuse",
             "ppt",
             "press",
         ]
@@ -63,8 +64,9 @@ if __name__ == "__main__":
         print(f'\n\tSpray radius {icestupa.R_F}\n')
 
     # locations = ['gangles21',  'guttannen21']
-    locations = ['guttannen22', 'guttannen21']
-    # sprays = ['scheduled_field', 'unscheduled_field']
+    # locations = ['guttannen22']
+    locations = ['guttannen21', 'guttannen22']
+    # sprays = ['unscheduled_field', 'scheduled_field']
     sprays = ['unscheduled_field']
     print("Comparing processes of same location")
     for location in locations:
@@ -82,28 +84,10 @@ if __name__ == "__main__":
             icestupa.df["fountain_froze"] /= 60
             # print(icestupa.df.fountain_froze.max())
 
-            # icestupa.df = icestupa.df.rename(
-            #     {
-            #         "SW": "$q_{SW}$",
-            #         "LW": "$q_{LW}$",
-            #         "Qs": "$q_S$",
-            #         "Ql": "$q_L$",
-            #         "Qf": "$q_{F}$",
-            #         "Qg": "$q_{G}$",
-            #         "Qsurf": "$q_{surf}$",
-            #         "Qmelt": "$q_{melt}$",
-            #         "Qfreeze": "$q_{freeze}$",
-            #         "Qt": "$q_{T}$",
-            #     },
-            #     axis=1,
-            # )
-
             separate_periods_index = icestupa.df.loc[icestupa.df.Discharge > 0].index[-1]
             df_ac = icestupa.df[icestupa.df.index <= separate_periods_index]
             df_ab = icestupa.df[icestupa.df.index > separate_periods_index]
 
-            # cols = ["$q_{SW}$", "$q_{LW}$","$q_S$","$q_L$","$q_{F}$","$q_{G}$","$q_{surf}$", "$q_{freeze}$", "$q_{melt}$",
-            #     "$q_{T}$", "SA", "fountain_froze", "melted"]
             cols = [
                 "SW",
                 "LW",

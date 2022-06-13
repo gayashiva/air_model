@@ -87,9 +87,9 @@ if __name__ == "__main__":
                 df_swiss = df_swiss.set_index("time")
                 df = df.set_index("time")
 
-                # for col in ["ppt"]:
                 # for col in ["vp_a", "ppt", "wind"]:
-                for col in ["vp_a", "ppt"]:
+                # for col in ["vp_a", "ppt"]:
+                for col in ["ppt"]:
                     logger.info("%s from meteoswiss" % col)
                     df[col] = df_swiss[col]
                 df_swiss = df_swiss.reset_index()

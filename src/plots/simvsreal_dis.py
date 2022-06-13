@@ -29,7 +29,8 @@ if __name__ == "__main__":
     SITE, FOLDER = config(loc, spray="unscheduled_field")
     icestupa = Icestupa(loc, spray="unscheduled_field")
     icestupa.read_output()
-    df = icestupa.df
+    separate_periods_index = icestupa.df.loc[icestupa.df.Discharge > 0].index[-1]
+    df = icestupa.df[icestupa.df.index <= separate_periods_index]
 
     # df_f = pd.read_csv(FOLDER['input'] + "discharge_types.csv", sep=",", header=0, parse_dates=["time"])
     # df_f = df_f[["time", "unscheduled_field", "scheduled_icv"]]
@@ -47,7 +48,9 @@ if __name__ == "__main__":
     df["fountain_froze"] /=60 
     # df["fountain_froze"]=np.where(df["fountain_froze"] ==0, np.nan, df["fountain_froze"])
     df1 = Icestupa(loc, spray=objs[0]).df
+    df1 = df1[df1.index <= separate_periods_index]
     df2 = Icestupa(loc, spray=objs[1]).df
+    df2 = df2[df2.index <= separate_periods_index]
     # df1["Discharge"]=np.where(df1["Discharge"]<2, np.nan, df1["Discharge"])
 
     mask = df["fountain_froze"] < df1["Discharge"]

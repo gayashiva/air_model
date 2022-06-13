@@ -247,53 +247,53 @@ if __name__ == "__main__":
     plt.savefig("data/figs/paper3/validation.png", bbox_inches="tight", dpi=300)
     plt.clf()
 
-    mypal[1] = default
-    sprays = ['scheduled_field', 'scheduled_icv']
-    # sprays = ['scheduled_icv']
-    fig, ax = plt.subplots()
-    ax.axhline(y=2, color='k', linestyle='--', alpha=0.5)
-    # location = 'gangles21'
-    for i, spray in enumerate(sprays):
-        SITE, FOLDER = config(location, spray)
-        icestupa = Icestupa(location, spray)
-        icestupa.read_output()
-        df=icestupa.df
+    # mypal[1] = default
+    # sprays = ['scheduled_field', 'scheduled_icv']
+    # # sprays = ['scheduled_icv']
+    # fig, ax = plt.subplots()
+    # ax.axhline(y=2, color='k', linestyle='--', alpha=0.5)
+    # # location = 'gangles21'
+    # for i, spray in enumerate(sprays):
+    #     SITE, FOLDER = config(location, spray)
+    #     icestupa = Icestupa(location, spray)
+    #     icestupa.read_output()
+    #     df=icestupa.df
 
-        # df["Discharge"] = np.where(df.Discharge== 0, np.nan, df.Discharge)
-        # print(f'Median discharge of {spray} is {df.Discharge.median()}')
+    #     # df["Discharge"] = np.where(df.Discharge== 0, np.nan, df.Discharge)
+    #     # print(f'Median discharge of {spray} is {df.Discharge.median()}')
 
-        if spray == "scheduled_field":
-            spray = "Automation system"
-        else:
-            spray = "Model simulated"
+    #     if spray == "scheduled_field":
+    #         spray = "Automation system"
+    #     else:
+    #         spray = "Model simulated"
 
-        x = df.time[1:]
-        y1 = df.Discharge[1:]
-        ax.set_ylabel("Scheduled discharge rate [$l/min$]")
-        ax.plot(
-            x,
-            y1,
-            label=spray,
-            linewidth=1,
-            color=mypal[i],
-        )
-        ax.set_ylim([0,15])
-        ax.spines["right"].set_visible(False)
-        ax.spines["top"].set_visible(False)
-        ax.spines["left"].set_color("grey")
-        ax.spines["bottom"].set_color("grey")
-        ax.xaxis.set_major_locator(mdates.WeekdayLocator())
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax.xaxis.set_minor_locator(mdates.DayLocator())
-        fig.autofmt_xdate()
+    #     x = df.time[1:]
+    #     y1 = df.Discharge[1:]
+    #     ax.set_ylabel("Scheduled discharge rate [$l/min$]")
+    #     ax.plot(
+    #         x,
+    #         y1,
+    #         label=spray,
+    #         linewidth=1,
+    #         color=mypal[i],
+    #     )
+    #     ax.set_ylim([0,15])
+    #     ax.spines["right"].set_visible(False)
+    #     ax.spines["top"].set_visible(False)
+    #     ax.spines["left"].set_color("grey")
+    #     ax.spines["bottom"].set_color("grey")
+    #     ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+    #     ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    #     ax.xaxis.set_minor_locator(mdates.DayLocator())
+    #     fig.autofmt_xdate()
 
-    legend_elements = [Line2D([0], [0], color=mypal[0], lw=2, label='Measured'),
-                        Line2D([0], [0], color=mypal[1], lw=2, label='Modelled'),
-                        Line2D([0], [0], color='k', lw=2, ls='--', alpha=0.5, label='Minimum'),
-                       ]
-    ax.legend(handles=legend_elements, prop={"size": 8}, title='Type')
-    plt.savefig("data/figs/paper3/simvsreal.png", bbox_inches="tight", dpi=300)
-    plt.clf()
+    # legend_elements = [Line2D([0], [0], color=mypal[0], lw=2, label='Measured'),
+    #                     Line2D([0], [0], color=mypal[1], lw=2, label='Modelled'),
+    #                     Line2D([0], [0], color='k', lw=2, ls='--', alpha=0.5, label='Minimum'),
+    #                    ]
+    # ax.legend(handles=legend_elements, prop={"size": 8}, title='Type')
+    # plt.savefig("data/figs/paper3/simvsreal.png", bbox_inches="tight", dpi=300)
+    # plt.clf()
 
 
     location = 'guttannen22'

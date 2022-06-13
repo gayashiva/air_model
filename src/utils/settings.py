@@ -33,7 +33,7 @@ def config(loc=None, spray=None):
             utc = 1, #Initialise ice height at start
             cld=0.5,
             # Calibrated values
-            DX=45e-03,  # Surface layer thickness [m]
+            DX=50e-03,  # Surface layer thickness [m]
             T_F = 0.5, # TODO Update to mean ground temp
         )
 
@@ -44,6 +44,7 @@ def config(loc=None, spray=None):
                         fountain_off_date=datetime(2022, 4, 1),
                         R_F = 4.8,
                         dis_crit = 0,
+                        DX=90e-03,  # Surface layer thickness [m]
                     )
                 if spray.split('_')[1] in ["field"]:
                     add= dict(
