@@ -45,12 +45,13 @@ if __name__ == "__main__":
         icestupa.read_output()
         cols = [
             "temp",
-            "RH",
             "wind",
+            "ppt",
+            "Qtotal",
             "SW_direct",
             "SW_diffuse",
-            "ppt",
-            "press",
+            # "RH",
+            # "press",
         ]
         separate_periods_index = icestupa.df.loc[icestupa.df.Discharge > 0].index[-1]
         df_jan = icestupa.df.loc[icestupa.df.time.dt.month == 1]

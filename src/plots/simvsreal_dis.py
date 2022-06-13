@@ -86,7 +86,7 @@ if __name__ == "__main__":
     lims = [0,4]
 
     # now plot both limits against eachother
-    ax1.plot(lims, lims, "--k", alpha=0.25, zorder=1)
+    # ax1.plot(lims, lims, "--k", alpha=0.25, zorder=1)
     ax1.set_aspect("equal")
     ax1.set_xlim(lims)
     ax1.set_ylim(lims)
