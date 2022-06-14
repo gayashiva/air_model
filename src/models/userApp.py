@@ -31,16 +31,17 @@ if __name__ == "__main__":
 
     # location = "Guttannen 2020"
     # location = "Guttannen 2021"
-    # location = "Guttannen 2022"
-    location = "Gangles 2021"
+    location = "Guttannen 2022"
+    # location = "Gangles 2021"
 
-    sprays = ["scheduled_icv", "scheduled_wue"]
+    # sprays = ["scheduled_icv", "scheduled_wue"]
     # sprays = ["unscheduled_field", "scheduled_field"]
-    # sprays = ["scheduled_field"]
+    sprays = ["scheduled_field"]
     # sprays = ["scheduled_wue", "scheduled_icv"]
 
     for spray in sprays:
         icestupa = Icestupa(location, spray)
+        # icestupa.R_F = 6.9
 
         if test:
             icestupa.gen_input()

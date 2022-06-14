@@ -296,13 +296,27 @@ if __name__ == "__main__":
     # plt.clf()
 
 
+    icestupa = Icestupa('guttannen21')
+    icestupa.read_output()
+    df2=icestupa.df
+    df2_winter= df2.loc[(df2.time.dt.month <4) | (df2.time.dt.month ==12)]
+    # df2_winter['time'] = df2_winter.time.apply(lambda dt: dt.replace(year=2021))
+
+    df2_c = pd.read_csv('/home/suryab/work/air_model/data/guttannen21/interim/drone.csv')
+    df2_c = df2_c[["time", "rad"]]
+    df2_c['time'] = pd.to_datetime(df2_c['time'])
+    df2_c['time'] = df2_c.time.apply(lambda dt: dt.replace(year=2021))
+    df2_c.loc[df2_c.time.dt.month <4, 'time'] = df2_c[df2_c.time.dt.month <4].time.apply(lambda dt: dt.replace(year=2022))
+    df2_c= df2_c.loc[(df2_c.time.dt.month <4) | (df2_c.time.dt.month ==12)]
+    print(df2_c)
+
     location = 'guttannen22'
-    sprays = ['scheduled_field', 'unscheduled_field']
-    dias = [5,7]
-    # sprays = ['scheduled_field']
+    # sprays = ['scheduled_field', 'unscheduled_field']
+    dias = [10,7]
+    sprays = ['scheduled_field']
     mypal = sns.color_palette("Set1", 2)
-    legend_elements = [Line2D([0], [0], color=mypal[0], lw=4, label='Scheduled'),
-                        Line2D([0], [0], color=mypal[1], lw=4, label='Unscheduled'),
+    legend_elements = [Line2D([0], [0], color=mypal[0], lw=4, label='CH22'),
+                        Line2D([0], [0], color=mypal[1], lw=4, label='CH21'),
                        ]
 
     fig, ax = plt.subplots(1, 1)
@@ -310,37 +324,59 @@ if __name__ == "__main__":
         SITE, FOLDER = config(location, spray)
         icestupa = Icestupa(location, spray)
         icestupa.read_output()
-
         df=icestupa.df
+
         for j in range(0,df.shape[0]):
             if df.Discharge[j] !=0:
-                df.loc[j,'radf'] = get_projectile(h_f=4, dia=dias[i]/1000, dis=df.Discharge[j])
+                df.loc[j,'radf'], df.loc[j,'flight_time'] = get_projectile(h_f=4, dia=dias[i]/1000,
+                        dis=df.Discharge[j], theta_f=60)
             else:
                 # df.loc[j,'radf'] = np.nan
                 df.loc[j,'radf'] = 0
+                df.loc[j,'flight_time'] = 0
 
         df_c = pd.read_hdf(FOLDER["input_sim"]  + "/input.h5", "df_c")
         df_c = df_c[["time", "rad"]]
+        df_c= df_c.loc[(df_c.time.dt.month <4) | (df_c.time > SITE['start_date'])]
+        df_winter= df.loc[(df.time.dt.month <4) | (df.time > SITE['start_date'])]
+        df_winter = df_winter.reset_index()
+        df2_winter = df2_winter.reset_index()
+        df_c= df_c.reset_index()
+        df2_c= df2_c.reset_index()
+        # print(df_winter.shape[0], df2_winter.shape[0])
+        # print(df_winter.head(), df2_winter.head())
 
-        x = df.time[1:-1]
-        y1 = df.radf[1:-1]
-        y3 = df.h_cone[1:-1]
+        x = df_winter.time[1:-1]
+        y1 = df_winter.radf[1:-1] + df_winter.flight_time[1:-1] * df_winter.wind[1:-1]
+        y3 = df_winter.radf[1:-1] + df_winter.flight_time[1:-1] * df2_winter.wind[1:-1]
+        # y3 = df.h_cone[1:-1]
         x2 = df_c.time
         y2 = df_c.rad
+        x4 = df2_c.time
+        y4 = df2_c.rad
         ax.plot(
             x,
             y1,
             linewidth=0.8,
             color=mypal[i],
         )
+        ax.plot(
+            x,
+            y3,
+            linewidth=0.8,
+            color=mypal[i+1],
+        )
         ax.scatter(
             x2,
             y2,
-            # linewidth=0.8,
             s=10,
-            # color=default,
             color=mypal[i],
-            # label=spray,
+        )
+        ax.scatter(
+            x4,
+            y4,
+            s=10,
+            color=mypal[i + 1],
         )
         ax.set_ylabel("Spray Radius [$m$]")
         # ax.axhline(y=icestupa.R_F, linewidth=0.8, linestyle='--', color=mypal[i])
@@ -353,6 +389,6 @@ if __name__ == "__main__":
     ax.set_ylim([0,14])
     fig.subplots_adjust(hspace=None, wspace=None)
     fig.autofmt_xdate()
-    ax.legend(handles=legend_elements, prop={"size": 8}, title='Fountain')
+    ax.legend(handles=legend_elements, prop={"size": 8}, title='Wind influence')
     plt.savefig("data/figs/paper3/radf.png", bbox_inches="tight", dpi=300)
     plt.close()

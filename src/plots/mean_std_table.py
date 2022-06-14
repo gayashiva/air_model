@@ -31,7 +31,6 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("ERROR")
 
-
     # locations = ['guttannen20', 'guttannen21', 'guttannen22']
     locations = ['guttannen21', 'guttannen22']
     spray = 'unscheduled_field'

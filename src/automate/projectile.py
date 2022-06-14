@@ -55,7 +55,7 @@ def get_projectile(
             data_ry.append((r, y))
             t += 0.01
         # logger.warning("Spray radius is %s" % (r))
-        return r
+        return r,t
     else:
         v = math.sqrt(
             G ** 2
