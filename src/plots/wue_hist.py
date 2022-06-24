@@ -112,6 +112,16 @@ if __name__ == "__main__":
     df3 = df3[SITE["start_date"] : datetime(2021, 4, 13)]
     df3 = df3.reset_index()
 
+    mask = (df1.Discharge == 0) & (df1.time < SITE["fountain_off_date"])
+    mask2 = (df2.Discharge > df2.Discharge.quantile(0.0)) & (df2.time < SITE["fountain_off_date"]) 
+    # print(df2.time[mask2].isin(df2.time[mask]).value_counts())
+    print(df2.Discharge[mask].mean())
+    print(df2.Discharge.quantile(0.5))
+    print(df3.Discharge[mask].mean())
+    print(df3.Discharge.quantile(0.5))
+    # print(df2.Discharge[mask].size)
+    # print(df2.Discharge[mask2].size)
+    # print(df2.Discharge[mask2].isin(df2.Discharge[mask]).count())
 
     x = df1.time[1:]
     y1 = df1.Discharge[1:]

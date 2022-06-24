@@ -329,7 +329,7 @@ if __name__ == "__main__":
         for j in range(0,df.shape[0]):
             if df.Discharge[j] !=0:
                 df.loc[j,'radf'], df.loc[j,'flight_time'] = get_projectile(h_f=4, dia=dias[i]/1000,
-                        dis=df.Discharge[j], theta_f=60)
+                        dis=df.Discharge[j], theta_f=45)
             else:
                 # df.loc[j,'radf'] = np.nan
                 df.loc[j,'radf'] = 0
