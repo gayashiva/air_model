@@ -75,7 +75,7 @@ if __name__ == "__main__":
     y3 = df2.Discharge[1:]
     ax1.scatter(y1, y2, marker='+', s=30, color="crimson", label="Weather-sensitive")
     ax1.scatter(y1, y3, marker='x', s=20, color='limegreen', label="Water-sensitive")
-    ax1.set_xlabel("Freezing rate [$l/min$]")
+    ax1.set_xlabel("Unscheduled fountain freezing rate [$l/min$]")
     ax1.set_ylabel("Modelled discharge rate [$l/min$]")
     # ax1.grid()
 

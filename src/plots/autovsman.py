@@ -48,25 +48,26 @@ if __name__ == "__main__":
         icestupa.read_output()
         df=icestupa.df
 
+        x = df.time[1:]
         if spray == "scheduled_field":
             spray = "Scheduled"
+            y1 = df.temp[1:]
+            ax[0].plot(
+                x,
+                y1,
+                linewidth=0.8,
+                color=default,
+            )
+            ax[0].axhline(y=0, color = 'k', linestyle = '--', alpha = 0.5, linewidth=0.9)
+            ax[0].spines["right"].set_visible(False)
+            ax[0].spines["top"].set_visible(False)
+            ax[0].spines["left"].set_color("grey")
+            ax[0].spines["bottom"].set_color("grey")
+            ax[0].set_ylabel("Temperature [$\degree C$]")
+            ax[0].set_ylim([-20,20])
         else:
             spray = "Unscheduled"
 
-        x = df.time[1:]
-        y1 = df.temp[1:]
-        ax[0].plot(
-            x,
-            y1,
-            linewidth=0.8,
-            color=default,
-        )
-        ax[0].spines["right"].set_visible(False)
-        ax[0].spines["top"].set_visible(False)
-        ax[0].spines["left"].set_color("grey")
-        ax[0].spines["bottom"].set_color("grey")
-        ax[0].set_ylabel("Temperature [$\degree C$]")
-        ax[0].set_ylim([-20,20])
 
         # y2 = df.ppt[1:]
         # ax[1].plot(

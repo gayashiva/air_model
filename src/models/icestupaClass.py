@@ -271,7 +271,8 @@ class Icestupa:
         else:
             for j in range(last_hour, self.total_hours):
                 for col in self.df.columns:
-                    self.df.loc[j, col] = 0
+                    if col not in ["temp"]:
+                        self.df.loc[j, col] = 0
                     if col in ["iceV"]:
                         self.df.loc[j, col] = self.V_dome
                     if col in ["time"]:
