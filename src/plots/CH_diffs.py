@@ -61,6 +61,7 @@ if __name__ == "__main__":
     ax[0].set_ylabel("Estimated Volume change [$m^3$]")
     ax[0].set_xlabel("Median january temperature [$\degree\,C$]")
     ax[0].set_ylim([0,160])
+    ax[0].set_xlim([-4,1])
     # handles, labels = ax[0].get_legend_handles_labels()
     # ax[0].get_legend().remove()
 
@@ -72,6 +73,7 @@ if __name__ == "__main__":
     ax[1].set_ylabel("Observed spray radius [$m$]")
     ax[1].set_xlabel("Median january wind speed [$m/s$]")
     ax[1].set_ylim([0,10])
+    ax[1].set_xlim([0,1.4])
 
     at = AnchoredText("(b)", prop=dict(size=10), frameon=True, loc="upper left")
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
