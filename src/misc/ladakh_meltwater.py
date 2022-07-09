@@ -61,6 +61,7 @@ if __name__ == "__main__":
 
     result = pd.concat([df, df2])
     result= result.set_index('time', drop=True).sort_index()
+    print(result)
     result['meltwater'] /=1000
     df1 = result[result.index>datetime(2018, 1, 1)].reset_index()
     df2 = result[result.index<datetime(2018, 1, 1)].reset_index()
@@ -82,23 +83,35 @@ if __name__ == "__main__":
     icestupa.read_output()
 
     dfd = icestupa.df.set_index("time").resample("D").sum().reset_index()
-    dfd = dfd[dfd.time > datetime(2021, 4, 1)]
+    dfd = dfd[(dfd.time > datetime(2021, 4, 15)) & (dfd.time < datetime(2021, 6, 15))]
+    df1 = df1[(df1.time > datetime(2021, 4, 15)) & (df1.time < datetime(2021, 6, 15))]
+    df2 = df2[(df2.time > datetime(2021, 4, 15)) & (df2.time < datetime(2021, 6, 15))]
+    df2 = df2.fillna(0)
+    ix = pd.date_range(start=datetime(2021, 4, 15), end=datetime(2021, 6, 15), freq='D')
+    df2 = df2.set_index('time').reindex(ix)
+    df2 = df2.fillna(0)
+    df1 = df1.set_index('time').reindex(ix)
+    df1 = df1.fillna(0)
+    print(f'IN18 median is {df1.meltwater.median()}')
+    print(f'IN17 median is {df2.meltwater.median()}')
+    print(f'IN21 median is {dfd.melted.median()/1000}')
 
     fig, ax = plt.subplots(1, 1)
-    x1 = df1.time
+    x1 = df1.index
     y1 = df1.meltwater
-    x2 = df2.time
+    x2 = df2.index
     y2 = df2.meltwater
     x3 = dfd.time
     y3 = dfd.melted/1000
-    ax.plot(x1,y1, label='IN18')
     ax.plot(x2,y2, label='IN17')
+    ax.plot(x1,y1, label='IN18')
     ax.plot(x3,y3, label='IN21')
     ax.spines["right"].set_visible(False)
     ax.spines["top"].set_visible(False)
     ax.spines["left"].set_color("grey")
     ax.spines["bottom"].set_color("grey")
-    ax.set_ylabel("Daily melt [$m^3$]")
+    ax.set_ylabel("Daily meltwater [$m^3$]")
+    ax.set_ylim([0,50])
     ax.legend()
 
     ax.xaxis.set_major_locator(mdates.WeekdayLocator())
