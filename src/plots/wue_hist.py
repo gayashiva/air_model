@@ -34,15 +34,16 @@ if __name__ == "__main__":
     styles=['.', 'x' , '*']
 
     mypal = sns.color_palette("Set1", len(locations))
-    legend_elements = [Line2D([0], [0], color=mypal[0], lw=4, label='CH22'),
-                        Line2D([0], [0], color=mypal[1], lw=4, label='CH21'),
-                        Line2D([0], [0], color=mypal[2], lw=4, label='IN21'),
-                       Line2D([0], [0], marker='.', color='w', label='Unscheduled',
+    legend_elements = [
+                       Line2D([0], [0], marker='.', color='w', label='CH21',
                               markerfacecolor='k', markersize=15),
-                       Line2D([0], [0], marker='X', color='w', label='Weather-sensitive',
+                       Line2D([0], [0], marker='X', color='w', label='CH22',
                               markerfacecolor='k', markersize=10),
-                       Line2D([0], [0], marker='*', color='w', label='Water-sensitive',
+                       Line2D([0], [0], marker='*', color='w', label='IN21',
                               markerfacecolor='k', markersize=15),
+            Line2D([0], [0], color=mypal[0], lw=4, label='Unscheduled'),
+            Line2D([0], [0], color=mypal[1], lw=4, label='Weather-sensitive'),
+            Line2D([0], [0], color=mypal[2], lw=4, label='Water-sensitive'),
                        Line2D([0], [0], marker='o', color='k', label='Experiment',
                               markerfacecolor='w', markersize=10, lw=0),
                        Line2D([0], [0], marker='s', color='k', label='Simulation',
@@ -54,7 +55,7 @@ if __name__ == "__main__":
     with open(FOLDER["output"] +  "/results.json") as f:
         results = json.load(f, object_hook=keystoint)
     ax.scatter(results["WUE"], results["iceV_max"], color='k', marker='.', s=500, facecolors='none')
-    ax.scatter(results["WUE"], results["iceV_max"], color=mypal[0], marker=styles[1])
+    ax.scatter(results["WUE"], results["iceV_max"], color=mypal[1], marker=styles[1])
 
     for i, loc in enumerate(locations):
         for j, spray in enumerate(sprays):
@@ -68,7 +69,7 @@ if __name__ == "__main__":
                 else:
                     ax.scatter(results["WUE"], results["iceV_max"], color='k', marker='s', s=100,
                                facecolors='none')
-                ax.scatter(results["WUE"], results["iceV_max"], color=mypal[i], marker=styles[j])
+                ax.scatter(results["WUE"], results["iceV_max"], color=mypal[j], marker=styles[i])
 
 
             except FileNotFoundError:
@@ -133,7 +134,7 @@ if __name__ == "__main__":
         y1,
         label= labels[0],
         linewidth=1,
-        color=mypal[1],
+        color=mypal[0],
     )
     ax1.spines["right"].set_visible(False)
     ax1.spines["top"].set_visible(False)
@@ -145,13 +146,13 @@ if __name__ == "__main__":
         y2,
         label= labels[1],
         linewidth=1,
-        color=mypal[0],
+        color=mypal[1],
     )
     ax1.spines["right"].set_visible(False)
     ax1.spines["top"].set_visible(False)
     ax1.spines["left"].set_color("grey")
     ax1.spines["bottom"].set_color("grey")
-    ax1.set_ylabel("Discharge rate [$l/min$]")
+    ax1.set_ylabel("IN21 Discharge rate [$l/min$]")
     at = AnchoredText("(b)", prop=dict(size=15), frameon=True, loc="upper left")
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
     ax1.add_artist(at)
@@ -165,7 +166,7 @@ if __name__ == "__main__":
     )
 
 
-    ax1.legend(prop={"size": 8}, title="IN21 Fountain type", loc="upper right")
+    # ax1.legend(prop={"size": 8}, title="IN21 Fountain type", loc="upper right")
     ax1.xaxis.set_major_locator(mdates.WeekdayLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     fig.autofmt_xdate()

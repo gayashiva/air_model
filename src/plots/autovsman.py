@@ -236,7 +236,7 @@ if __name__ == "__main__":
         ax.spines["bottom"].set_color("grey")
         ax.xaxis.set_major_locator(mdates.WeekdayLocator())
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        ax.xaxis.set_minor_locator(mdates.DayLocator())
+        # ax.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
 
     legend_elements = [Line2D([0], [0], color=mypal[0], lw=4, label='Automatic'),
