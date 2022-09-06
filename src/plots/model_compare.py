@@ -192,7 +192,8 @@ if __name__ == "__main__":
             label="CosiStupa Model",
             linewidth=1,
             # color=CB91_Blue,
-            color=CB91_Green,
+                linestyle="--",
+            color=CB91_Amber,
             zorder=10,
         )
         ax[i].errorbar(

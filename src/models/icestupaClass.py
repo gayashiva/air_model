@@ -257,11 +257,10 @@ class Icestupa:
         for variable in results:
             results_dict[variable] = float(round(eval(variable), 1))
 
-        print("Summary of results for %s with scheduler %s  :" %(self.name, self.spray))
-        print()
+        logger.warning("Summary of results for %s with scheduler %s  :" %(self.name, self.spray))
         for var in sorted(results_dict.keys()):
-            print("\t%s: %r" % (var, results_dict[var]))
-        print()
+            logger.warning("\t%s: %r" % (var, results_dict[var]))
+        # print()
 
         with open(self.output + "results.json", "w") as f:
             json.dump(results_dict, f, sort_keys=True, indent=4)
