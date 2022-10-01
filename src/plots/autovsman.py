@@ -239,8 +239,8 @@ if __name__ == "__main__":
         # ax.xaxis.set_minor_locator(mdates.DayLocator())
         fig.autofmt_xdate()
 
-    legend_elements = [Line2D([0], [0], color=mypal[0], lw=4, label='Automatic'),
-                        Line2D([0], [0], color=mypal[1], lw=4, label='Traditional'),
+    legend_elements = [Line2D([0], [0], color=mypal[0], lw=4, label='Automated'),
+                        Line2D([0], [0], color=mypal[1], lw=4, label='Manual'),
                        Line2D([0], [0], marker='.', color='w', label='Measured',
                               markerfacecolor='k', markersize=15),
                        ]
@@ -303,7 +303,7 @@ if __name__ == "__main__":
     df2_winter= df2.loc[(df2.time.dt.month <4) | (df2.time.dt.month ==12)]
     # df2_winter['time'] = df2_winter.time.apply(lambda dt: dt.replace(year=2021))
 
-    df2_c = pd.read_csv('/home/suryab/work/air_model/data/guttannen21/interim/drone.csv')
+    df2_c = pd.read_csv('/home/bsurya/work/air_model/data/guttannen21/interim/drone.csv')
     df2_c = df2_c[["time", "rad"]]
     df2_c['time'] = pd.to_datetime(df2_c['time'])
     df2_c['time'] = df2_c.time.apply(lambda dt: dt.replace(year=2021))
