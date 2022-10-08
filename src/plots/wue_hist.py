@@ -35,9 +35,9 @@ if __name__ == "__main__":
 
     mypal = sns.color_palette("Set1", len(locations))
     legend_elements = [
-                       Line2D([0], [0], marker='.', color='w', label='CH21',
+                       Line2D([0], [0], marker='.', color='w', label='CH22',
                               markerfacecolor='k', markersize=15),
-                       Line2D([0], [0], marker='X', color='w', label='CH22',
+                       Line2D([0], [0], marker='X', color='w', label='CH21',
                               markerfacecolor='k', markersize=10),
                        Line2D([0], [0], marker='*', color='w', label='IN21',
                               markerfacecolor='k', markersize=15),
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     with open(FOLDER["output"] +  "/results.json") as f:
         results = json.load(f, object_hook=keystoint)
     ax.scatter(results["WUE"], results["iceV_max"], color='k', marker='.', s=500, facecolors='none')
-    ax.scatter(results["WUE"], results["iceV_max"], color=mypal[1], marker=styles[1])
+    ax.scatter(results["WUE"], results["iceV_max"], color=mypal[1], marker=styles[0])
 
     for i, loc in enumerate(locations):
         for j, spray in enumerate(sprays):
