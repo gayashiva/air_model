@@ -41,7 +41,7 @@ if __name__ == "__main__":
                               markerfacecolor='k', markersize=10),
                        Line2D([0], [0], marker='*', color='w', label='IN21',
                               markerfacecolor='k', markersize=15),
-            Line2D([0], [0], color=mypal[0], lw=4, label='Unscheduled'),
+            Line2D([0], [0], color=mypal[0], lw=4, label='Non-scheduled'),
             Line2D([0], [0], color=mypal[1], lw=4, label='Weather-sensitive'),
             Line2D([0], [0], color=mypal[2], lw=4, label='Water-sensitive'),
                        Line2D([0], [0], marker='o', color='k', label='Experiment',
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     SITE, FOLDER = config(loc, spray="unscheduled_field")
 
     objs = ["unscheduled_field", "scheduled_icv", "scheduled_wue"]
-    labels = ["Unscheduled", "Weather-sensitive", "Water-sensitive"]
+    labels = ["Non-scheduled", "Weather-sensitive", "Water-sensitive"]
     styles=['.', 'x']
 
     mypal = sns.color_palette("Set1", 3)

@@ -34,7 +34,7 @@ if __name__ == "__main__":
     default = "#284D58"
     grey = "#ced4da"
     legend_elements = [Line2D([0], [0], color=mypal[0], lw=4, label='Scheduled'),
-                        Line2D([0], [0], color=mypal[1], lw=4, label='Unscheduled'),
+                        Line2D([0], [0], color=mypal[1], lw=4, label='Non-scheduled'),
                         Line2D([0], [0], color=default, lw=4, label='Measured Temperature'),
                        Line2D([0], [0], marker='.', color='w', label='Measured Volume',
                               markerfacecolor='k', markersize=15),
@@ -66,7 +66,7 @@ if __name__ == "__main__":
             ax[0].set_ylabel("Temperature [$\degree C$]")
             ax[0].set_ylim([-20,20])
         else:
-            spray = "Unscheduled"
+            spray = "Non-scheduled"
 
 
         # y2 = df.ppt[1:]
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         if spray == "scheduled_field":
             spray = "Scheduled"
         else:
-            spray = "Unscheduled"
+            spray = "Non-scheduled"
 
         x = dfd.time[1:]
         y1 = dfd.alb[1:]
@@ -211,7 +211,7 @@ if __name__ == "__main__":
         if spray == "scheduled_field":
             spray = "Scheduled"
         else:
-            spray = "Unscheduled"
+            spray = "Non-scheduled"
 
         x = df.time[1:]
         y1 = df.iceV[1:]
