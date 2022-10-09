@@ -140,23 +140,23 @@ def get_field(loc="schwarzsee19"):
         df_temp = df[cols_temp]
         df_temp['T_bulk'] = (df["T_2"] + df["T_3"] + df["T_4"]+ df["T_5"]+ df["T_6"])/5
 
-        df_temp.to_csv("/home/suryab/work/cosipy/data/input/guttannen22_scheduled/"+ "thermistor.csv", index=False)
+        # df_temp.to_csv("/home/bsurya/work/cosipy/data/input/guttannen22_scheduled/"+ "thermistor.csv", index=False)
 
-        # fig, ax = plt.subplots()
-        # x = df.time
-        # ax.plot(x,df["T_3"])
-        # ax.set_ylim([-3,0.1])
-        # ax.legend()
-        # ax.xaxis.set_major_locator(mdates.WeekdayLocator())
-        # ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-        # ax.xaxis.set_minor_locator(mdates.DayLocator())
-        # fig.autofmt_xdate()
-        # plt.savefig(
-        #     FOLDER['fig'] + "temps.png",
-        #     bbox_inches="tight",
-        #     dpi=300,
-        # )
-        # plt.clf()
+        fig, ax = plt.subplots()
+        x = df.time
+        ax.plot(x,df["T_G"])
+        # ax.set_ylim([-1,1])
+        ax.legend()
+        ax.xaxis.set_major_locator(mdates.WeekdayLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax.xaxis.set_minor_locator(mdates.DayLocator())
+        fig.autofmt_xdate()
+        plt.savefig(
+            FOLDER['fig'] + "temps.png",
+            bbox_inches="tight",
+            dpi=300,
+        )
+        plt.clf()
 
         return df_out
 
