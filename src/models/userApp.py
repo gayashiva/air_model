@@ -23,8 +23,8 @@ if __name__ == "__main__":
 
     # Main logger
     logger = logging.getLogger(__name__)
-    logger.setLevel("ERROR")
-    # logger.setLevel("INFO")
+    # logger.setLevel("ERROR")
+    logger.setLevel("INFO")
 # get the start time
     st = time.time()
 
@@ -34,12 +34,14 @@ if __name__ == "__main__":
     # location = "Guttannen 2020"
     # location = "Guttannen 2021"
     # location = "Guttannen 2022"
-    location = "Gangles 2021"
+    # location = "Gangles 2021"
+    location = "sibinacocha21"
 
     # sprays = ["scheduled_icv", "scheduled_wue"]
     # sprays = ["unscheduled_field", "scheduled_field"]
-    sprays = ["unscheduled_field"]
+    # sprays = ["unscheduled_field"]
     # sprays = ["scheduled_wue", "scheduled_icv"]
+    sprays = ["none_none"]
 
     for spray in sprays:
         icestupa = Icestupa(location, spray)
@@ -51,7 +53,7 @@ if __name__ == "__main__":
             icestupa.sim_air()
             icestupa.gen_output()
             # icestupa.read_output()
-            # icestupa.summary_figures()
+            icestupa.summary_figures()
             # print(icestupa.df.s_cone.max())
 # get the end time
             et = time.time()

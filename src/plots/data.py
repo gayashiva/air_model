@@ -73,10 +73,10 @@ def plot_input(df, folder, name):
         folder + "input.png",
         bbox_inches="tight",
     )
-    plt.savefig(
-        "data/figs/paper3/input.png",
-        bbox_inches="tight",
-    )
+    # plt.savefig(
+    #     "data/figs/paper3/input.png",
+    #     bbox_inches="tight",
+    # )
     plt.clf()
 
     plt.close("all")

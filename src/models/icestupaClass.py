@@ -45,23 +45,29 @@ class Icestupa:
 
         # Initialize input dataset
         self.df = pd.read_csv(self.input + "aws.csv", sep=",", header=0, parse_dates=["time"])
-        df_f = pd.read_csv(self.input + "discharge_types.csv", sep=",", header=0, parse_dates=["time"])
-        df_f["Discharge"] = df_f[self.spray]
-        df_f = df_f[["time", "Discharge"]]
-        if np.count_nonzero(df_f["Discharge"]) <= 24:
-            logger.error("Less than 24 hours of spray")
-            sys.exit()
+        print(self.df.columns)
+        if "Discharge" not in list(self.df.columns):
+            df_f = pd.read_csv(self.input + "discharge_types.csv", sep=",", header=0, parse_dates=["time"])
+            df_f["Discharge"] = df_f[self.spray]
+            df_f = df_f[["time", "Discharge"]]
+            if np.count_nonzero(df_f["Discharge"]) <= 24:
+                logger.error("Less than 24 hours of spray")
+                sys.exit()
 
-        # Perform discharge atleast one night check
-        self.df = self.df.set_index("time")
-        df_f = df_f.set_index("time")
-        self.df["Discharge"] = df_f["Discharge"]
-        self.df["Discharge"] = self.df["Discharge"].replace(np.NaN, 0)
-        self.df = self.df.reset_index()
+            # Perform discharge atleast one night check
+            self.df = self.df.set_index("time")
+            df_f = df_f.set_index("time")
+            self.df["Discharge"] = df_f["Discharge"]
+            self.df["Discharge"] = self.df["Discharge"].replace(np.NaN, 0)
+            self.df = self.df.reset_index()
 
-        self.D_F = df_f.Discharge[df_f.Discharge != 0].mean()
-        print("\n") 
-        logger.warning("Discharge mean of %s method is %.1f\n" % (self.spray, self.D_F))
+            self.D_F = df_f.Discharge[df_f.Discharge != 0].mean()
+            print("\n") 
+            logger.warning("Discharge mean of %s method is %.1f\n" % (self.spray, self.D_F))
+        else:
+            self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
+            print("\n") 
+            logger.warning("Discharge mean of %s method is %.1f\n" % (self.spray, self.D_F))
 
         # Reset date range
         self.df = self.df.set_index("time")

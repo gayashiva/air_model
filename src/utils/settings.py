@@ -19,8 +19,26 @@ logging.getLogger('PIL').setLevel(logging.CRITICAL)
 # Module logger
 logger = logging.getLogger("__main__")
 
-def config(loc=None, spray=None):
+def config(loc='None', spray='none_none'):
     logger.warning(f"Site {loc} with scheduler {spray}")
+
+
+    if loc == "Sibinacocha 2021" or loc == "sibinacocha21":
+
+        SITE = dict(
+            name="sibinacocha21",
+            start_date=datetime(2021, 7, 1),
+            expiry_date=datetime(2021, 7, 30),
+            alt=4880,
+            coords=[-13.865592292674531, -71.01995814364372],
+            utc=-5,
+
+            # Calibrated values
+            R_F=6,
+            V_dome=0,
+            cld=0,
+            T_F=0,
+        )
 
     if loc== "Guttannen 2022" or loc == "guttannen22":
         SITE = dict(
@@ -37,7 +55,7 @@ def config(loc=None, spray=None):
             T_F = 0.5, # TODO Update to mean ground temp
         )
 
-        if spray != None:
+        if spray != 'none_none':
             if spray.split('_')[0] == "scheduled":
                 if spray.split('_')[1] in ["wue", "icv"]:
                     add= dict(
@@ -89,7 +107,7 @@ def config(loc=None, spray=None):
             DX=65e-03,  # Surface layer thickness [m]
         )
 
-        if spray != None:
+        if spray != 'none_none':
             if spray.split('_')[0] == "scheduled":
                 if spray.split('_')[1] in ["wue", "icv"]:
                     add= dict(
@@ -132,7 +150,7 @@ def config(loc=None, spray=None):
             DX=45e-03,  # Surface layer thickness [m]
         )
 
-        if spray != None:
+        if spray != 'none_none':
             if spray.split('_')[0] == "scheduled":
                 if spray.split('_')[1] in ["wue", "icv"]:
                     add= dict(
@@ -175,7 +193,7 @@ def config(loc=None, spray=None):
             DX=45e-03,  # Surface layer thickness [m]
         )
 
-        if spray != None:
+        if spray != 'none_none':
 
             if spray == "dynamic" or spray == "static":
                 add= dict(
@@ -205,7 +223,7 @@ def config(loc=None, spray=None):
 
 
     # Define directory structure
-    if spray != None:
+    if spray != 'none_none':
         FOLDER = dict(
             raw="data/" + SITE["name"] + "/raw/",
             input="data/" + SITE["name"] + "/interim/",
@@ -217,6 +235,7 @@ def config(loc=None, spray=None):
         FOLDER = dict(
             raw="data/" + SITE["name"] + "/raw/",
             input="data/" + SITE["name"] + "/interim/",
+            input_sim="data/" + SITE["name"] + "/interim/",
             output="data/" + SITE["name"] + "/processed/",
             fig="data/" + SITE["name"] + "/figs/",
         )
