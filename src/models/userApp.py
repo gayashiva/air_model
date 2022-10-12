@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
     for spray in sprays:
         icestupa = Icestupa(location, spray)
-        # icestupa.R_F = 6.9
+        icestupa.R_F = 10.0
 
         if test:
             icestupa.gen_input()
