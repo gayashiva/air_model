@@ -23,18 +23,35 @@ def config(loc='None', spray='none_none'):
     logger.warning(f"Site {loc} with scheduler {spray}")
 
 
-    if loc == "Sibinacocha 2021" or loc == "sibinacocha21":
+    if loc == "Sibinacocha 2022" or loc == "sibinacocha22":
 
         SITE = dict(
-            name="sibinacocha21",
-            start_date=datetime(2021, 7, 1),
-            expiry_date=datetime(2021, 7, 30),
+            name="sibinacocha22",
+            start_date=datetime(2022, 6, 1),
+            expiry_date=datetime(2022, 8, 30),
             alt=4880,
             coords=[-13.865592292674531, -71.01995814364372],
             utc=-5,
 
             # Calibrated values
-            R_F=6,
+            R_F=7,
+            V_dome=0,
+            cld=0,
+            T_F=0,
+        )
+
+    if loc == "Sibinacocha 2021" or loc == "sibinacocha21":
+
+        SITE = dict(
+            name="sibinacocha21",
+            start_date=datetime(2021, 6, 1),
+            expiry_date=datetime(2021, 8, 30),
+            alt=4880,
+            coords=[-13.865592292674531, -71.01995814364372],
+            utc=-5,
+
+            # Calibrated values
+            R_F=7,
             V_dome=0,
             cld=0,
             T_F=0,

@@ -34,8 +34,9 @@ if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
     logger.setLevel("WARNING")
+    # logger.setLevel("INFO")
 
-    loc = "sibinacocha21"
+    loc = "sibinacocha22"
     SITE, FOLDER = config(loc)
     file = FOLDER["raw"] + loc + ".csv"
 
@@ -47,11 +48,11 @@ if __name__ == "__main__":
     df = df[df.columns.drop(['Date', 'Hour', 'Wind_direction'])]
 # converting the string to datetime format
     df['time'] = pd.to_datetime(df['time'], format='%Y/%m/%d %H')
-    df['RH'] = df['RH'].replace(['S/D', 100])
+    df = df.replace(['S/D', np.nan]).fillna(method='ffill')
 
     df.rename(
         columns={
-            "Wind_speed ": "wind",
+            "Wind_speed": "wind",
             "Temperature": "temp",
             "Precipitation": "ppt",
         },
@@ -70,7 +71,7 @@ if __name__ == "__main__":
     df["press"] = atmosphere.alt2pres(SITE["alt"]) / 100
     logger.info(df.head())
 
-    if SITE["name"] in ["sibinacocha21"]:
+    if SITE["name"] in ["sibinacocha21", "sibinacocha22"]:
         cols = [
             "time",
             "Discharge",
