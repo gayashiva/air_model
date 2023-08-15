@@ -102,7 +102,7 @@ def get_era5(location="schwarzsee19"):
 
     if location in ["diavolezza21"]:
         df_in3 = pd.read_csv(
-            "/home/suryab/work/ERA5/outputs/" + location[:-2] + "_2021.csv",
+            "/home/bsurya/Projects/ERA5/outputs/" + location[:-2] + "_2021.csv",
             sep=",",
             header=0,
             parse_dates=["When"],
@@ -113,7 +113,7 @@ def get_era5(location="schwarzsee19"):
 
     if location in ["ravat20"]:
         df_in3 = pd.read_csv(
-            "/home/suryab/work/ERA5/outputs/" + location[:-2] + "_2020.csv",
+            "/home/bsurya/Projects/ERA5/outputs/" + location[:-2] + "_2020.csv",
             sep=",",
             header=0,
             parse_dates=["When"],
@@ -145,10 +145,10 @@ def get_era5(location="schwarzsee19"):
         columns={
             "t2m": "temp",
             "sp": "press",
-            # "tp": "ppt",
-            "ssrd": "SW_global",
-            "fdir": "SW_direct",
-            "strd": "LW_in",
+            "tp": "ppt",
+            # "ssrd": "SW_global",
+            # "fdir": "SW_direct",
+            # "strd": "LW_in",
         },
         inplace=True,
     )
@@ -157,13 +157,13 @@ def get_era5(location="schwarzsee19"):
         [
             "temp",
             "RH",
-            # "ppt",
+            "ppt",
             "wind",
             "SW_global",
             # "SW_diffuse",
-            "LW_in",
+            # "LW_in",
             "press",
-            "tcc",
+            # "tcc",
         ]
     ]
 

@@ -17,6 +17,7 @@ from src.utils.settings import config
 from src.utils import setup_logger
 from src.utils.eff_criterion import nse
 import logging, coloredlogs
+from src.plots.data import plot_input
 
 
 if __name__ == "__main__":
@@ -36,7 +37,8 @@ if __name__ == "__main__":
     # location = "Guttannen 2022"
     # location = "Gangles 2021"
     # location = "sibinacocha21"
-    location = "sibinacocha22"
+    # location = "sibinacocha22"
+    location = "altiplano20"
 
     # sprays = ["scheduled_icv", "scheduled_wue"]
     # sprays = ["unscheduled_field", "scheduled_field"]
@@ -46,10 +48,12 @@ if __name__ == "__main__":
 
     for spray in sprays:
         icestupa = Icestupa(location, spray)
+        SITE, FOLDER = config(location)
         # icestupa.R_F = 10.0
 
         if test:
             icestupa.gen_input()
+            plot_input(icestupa.df, FOLDER['fig'], SITE["name"])
             # icestupa.sim_air(test)
             icestupa.sim_air()
             icestupa.gen_output()

@@ -22,6 +22,23 @@ logger = logging.getLogger("__main__")
 def config(loc='None', spray='none_none'):
     logger.warning(f"Site {loc} with scheduler {spray}")
 
+    if loc == "altiplano20":
+
+        SITE = dict(
+            name="altiplano20",
+            start_date=datetime(2019, 5, 1),
+            fountain_off_date=datetime(2020, 1, 1),
+            expiry_date=datetime(2020, 5, 1),
+            alt=4432,
+            coords=[-17.14375, -69.997917],
+            utc=-5,
+
+            # Calibrated values
+            R_F=10,
+            V_dome=0,
+            cld=0.2,
+            T_F=0,
+        )
 
     if loc == "Sibinacocha 2022" or loc == "sibinacocha22":
 

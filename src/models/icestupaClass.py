@@ -45,7 +45,6 @@ class Icestupa:
 
         # Initialize input dataset
         self.df = pd.read_csv(self.input + "aws.csv", sep=",", header=0, parse_dates=["time"])
-        print(self.df.columns)
         if "Discharge" not in list(self.df.columns):
             df_f = pd.read_csv(self.input + "discharge_types.csv", sep=",", header=0, parse_dates=["time"])
             df_f["Discharge"] = df_f[self.spray]
@@ -119,7 +118,7 @@ class Icestupa:
 
         self.df = pd.merge(solar_df, self.df, on="time", how="left")
 
-        if "SW_global" not in list(self.df.columns):
+        if "SW_global" in unknown:
             self.df["SW_global"] = self.df["ghi"]
             logger.warning(f"Estimated global solar from pvlib\n")
 
