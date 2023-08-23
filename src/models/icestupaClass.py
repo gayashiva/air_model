@@ -24,7 +24,7 @@ logger = logging.getLogger("__main__")
 logger.propagate = False
 
 class Icestupa:
-    def __init__(self, location="Guttannen 2021", spray="unscheduled_field"):
+    def __init__(self, location="Guttannen 2021", spray="none_none"):
 
         self.spray = spray
 
@@ -303,7 +303,7 @@ class Icestupa:
 
     def read_output(self):  # Reads output
 
-        self.df = pd.read_hdf(self.output + "/output.h5", "df")
+        self.df = pd.read_hdf(self.output + "output.h5", "df")
 
         self.self_attributes()
 
