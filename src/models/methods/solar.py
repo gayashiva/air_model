@@ -21,7 +21,7 @@ def get_offset(lat, lng, date):
     # ATTENTION: tz_target could be None! handle error case
     today_target = tz_target.localize(date)
     today_utc = utc.localize(date) # Note that utc is now 1 for guttannen due to winter time
-    return (today_utc - today_target).total_seconds() / (60 * 60)
+    return (today_utc - today_target.tz_convert(tz=utc)).total_seconds() / (60 * 60)
 
 def get_solar(coords, start, end, DT, alt):  
     """

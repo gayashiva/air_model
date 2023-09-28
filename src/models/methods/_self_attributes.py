@@ -15,7 +15,7 @@ logger = logging.getLogger("__main__")
 def self_attributes(self):
     logger.info("Initialising Icestupa attributes")
 
-    if self.name in ["sibinacocha21", "sibinacocha22", "altiplano20"]:
+    if self.name in ["sibinacocha21", "sibinacocha22"] or self.spray == "ERA5_":
         logger.error("Arbitrary spray radius of %s" % self.R_F)
         logger.error("Arbitrary dome volume of %s" % self.V_dome)
     else:

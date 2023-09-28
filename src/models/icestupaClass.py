@@ -12,6 +12,7 @@ import pytz
 from tqdm import tqdm
 from codetiming import Timer
 from datetime import timedelta
+from pvlib import atmosphere
 
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -32,9 +33,6 @@ class Icestupa:
             CONSTANTS = json.load(f)
 
         SITE, FOLDER = config(location, spray)
-        diff = SITE["expiry_date"] - SITE["start_date"]
-        days, seconds = diff.days, diff.seconds
-        self.total_hours = days * 24 + seconds // 3600
 
         initialize = [CONSTANTS, SITE, FOLDER]
 
@@ -45,6 +43,14 @@ class Icestupa:
 
         # Initialize input dataset
         self.df = pd.read_csv(self.input + "aws.csv", sep=",", header=0, parse_dates=["time"])
+        if self.spray == "ERA5_":
+            self.start_date = self.df.time[0]
+            self.expiry_date = self.df.time[self.df.shape[0]-1]
+            self.fountain_off_date = self.df.time[10*24]
+
+        diff = self.expiry_date - self.start_date
+        days, seconds = diff.days, diff.seconds
+        self.total_hours = days * 24 + seconds // 3600
         if "Discharge" not in list(self.df.columns):
             df_f = pd.read_csv(self.input + "discharge_types.csv", sep=",", header=0, parse_dates=["time"])
             df_f["Discharge"] = df_f[self.spray]
@@ -70,7 +76,7 @@ class Icestupa:
 
         # Reset date range
         self.df = self.df.set_index("time")
-        self.df = self.df[SITE["start_date"] : SITE["expiry_date"]]
+        self.df = self.df[self.start_date : self.expiry_date]
         self.df = self.df.reset_index()
 
         logger.debug(self.df.head())
@@ -96,6 +102,7 @@ class Icestupa:
             "vp_a",
             "LW_in",
             "SW_global",
+            "press",
             # "T_F",
         ]  # Possible unknown variables
 
@@ -121,6 +128,10 @@ class Icestupa:
         if "SW_global" in unknown:
             self.df["SW_global"] = self.df["ghi"]
             logger.warning(f"Estimated global solar from pvlib\n")
+
+        if "press" in unknown:
+            self.df["press"] = atmosphere.alt2pres(self.alt) / 100
+            logger.warning(f"Estimated pressure from altitude\n")
 
         # self.df["SW_diffuse"]= np.where(self.df.ppt > 0, self.df["SW_global"], 0)
         # self.df["SW_direct"] = self.df["SW_global"] - self.df["SW_diffuse"]
@@ -570,6 +581,6 @@ class Icestupa:
             ) / (self.df.loc[i, "A_cone"])
 
             if test and not ice_melted:
-                logger.info(f"time {self.df.time[i]}, rho_air {self.df.rho_air[i+1]}, iceV {self.df.iceV[i]}")
+                logger.info(f"time {self.df.time[i]}, iceV {self.df.iceV[i+1]}, iceV {self.df.iceV[i]}")
         # else:
             # print(self.df.loc[i, "time"], self.df.loc[i, "iceV"])

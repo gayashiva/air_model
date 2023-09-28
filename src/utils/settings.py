@@ -22,16 +22,136 @@ logger = logging.getLogger("__main__")
 def config(loc='None', spray='none_none'):
     logger.warning(f"Site {loc} with scheduler {spray}")
 
+    if loc == "tarata20":
+
+        SITE = dict(
+            name=loc,
+            alt=3100,
+            coords=[-17.268017,-70.254089],
+
+            # Calibrated values
+            R_F=10,
+            V_dome=0,
+            cld=0.2,
+            T_F=0,
+        )
+
+    if loc == "candarave20":
+
+        SITE = dict(
+            name=loc,
+            alt=3410,
+            coords=[-17.268017,-70.254089],
+
+            # Calibrated values
+            R_F=10,
+            V_dome=0,
+            cld=0.2,
+            T_F=0,
+        )
+
+    if loc == "chuapalca20":
+
+        SITE = dict(
+            name=loc,
+            alt=4250,
+            coords=[ -17.308833, -69.661778],
+
+            # Calibrated values
+            R_F=10,
+            V_dome=0,
+            cld=0.2,
+            T_F=0,
+        )
+
+    if loc == "leh20":
+
+        SITE = dict(
+            name=loc,
+            alt=4009,
+            coords=[34.216638,77.606949],
+
+            # Calibrated values
+            R_F=10,
+            V_dome=0,
+            cld=0.2,
+            T_F=0,
+        )
+
+    if loc == "europe20":
+
+        SITE = dict(
+            name=loc,
+            alt=1013,
+            coords=[67.25, 17.75],
+
+            # Calibrated values
+            R_F=10,
+            V_dome=0,
+            cld=0.2,
+            T_F=0,
+        )
+
+    if loc == "central_asia20":
+
+        SITE = dict(
+            name=loc,
+            alt=998,
+            coords=[69.25, 95.25],
+
+            # Calibrated values
+            R_F=10,
+            V_dome=0,
+            cld=0.2,
+            T_F=0,
+        )
+
+    if loc == "south_america20":
+
+        SITE = dict(
+            name="south_america20",
+            # start_date=datetime(2019, 5, 1),
+            # fountain_off_date=datetime(2020, 1, 1),
+            # expiry_date=datetime(2020, 5, 1),
+            alt=3877,
+            coords=[-29.75, -69.75],
+            # utc=-5,
+
+            # Calibrated values
+            R_F=10,
+            V_dome=0,
+            cld=0.2,
+            T_F=0,
+        )
+
+    if loc == "north_america20":
+
+        SITE = dict(
+            name=loc,
+            # start_date=datetime(2019, 5, 1),
+            # fountain_off_date=datetime(2020, 1, 1),
+            # expiry_date=datetime(2020, 5, 1),
+            alt=1439,
+            coords=[-29.75, -69.75],
+            # utc=-5,
+
+            # Calibrated values
+            R_F=10,
+            V_dome=0,
+            cld=0.2,
+            T_F=0,
+        )
+
     if loc == "altiplano20":
 
         SITE = dict(
             name="altiplano20",
-            start_date=datetime(2019, 5, 1),
-            fountain_off_date=datetime(2020, 1, 1),
-            expiry_date=datetime(2020, 5, 1),
+            # start_date=datetime(2019, 5, 1),
+            # fountain_off_date=datetime(2020, 1, 1),
+            # expiry_date=datetime(2020, 5, 1),
             alt=4432,
             coords=[-17.14375, -69.997917],
-            utc=-5,
+            # utc=-5,
 
             # Calibrated values
             R_F=10,
@@ -257,7 +377,7 @@ def config(loc='None', spray='none_none'):
 
 
     # Define directory structure
-    if spray != 'none_none':
+    if spray not in ['none_none', 'ERA5_']:
         FOLDER = dict(
             raw="data/" + SITE["name"] + "/raw/",
             input="data/" + SITE["name"] + "/interim/",

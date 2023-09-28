@@ -42,63 +42,94 @@ if __name__ == "__main__":
 
     # locations = ["gangles21", "guttannen20", "guttannen21", "guttannen22"]
     # locations = ["guttannen22"]
-    locations = ["altiplano20"]
+    # locations = ["altiplano20"]
+    # locations = ["leh20"]
+    # locations = ["central_asia20"]
+    locations = ["leh20", "south_america20", "north_america20", "europe20", "central_asia20"]
+    spray="ERA5_"
     # locations = ["gangles21"]
 
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
 
-    only_ERA5 = True
-
-    if only_ERA5:
+    if spray == "ERA5_":
         for loc in locations:
-            SITE, FOLDER = config(loc)
+            SITE, FOLDER = config(loc, spray)
 
-            if loc in ["altiplano20"]:
-                df1= pd.read_csv(
-                    "/home/bsurya/Projects/ERA5/outputs/" + loc[:-2] + "_2019.csv",
-                    sep=",",
-                    header=0,
-                    parse_dates=["time"],
-                )
-                df2= pd.read_csv(
-                    "/home/bsurya/Projects/ERA5/outputs/" + loc[:-2] + "_2020.csv",
-                    sep=",",
-                    header=0,
-                    parse_dates=["time"],
-                )
-                # Combine DataFrames
-                df = pd.concat([df1, df2])
-                df['time'] = pd.to_datetime(df['time'])
-                df = df.set_index("time")
-                df = df[SITE["start_date"] : SITE["expiry_date"]]
-                df = df.reset_index()
+            df1= pd.read_csv(
+                "/home/bsurya/Projects/ERA5/outputs/" + loc[:-2] + "_2019.csv",
+                sep=",",
+                header=0,
+                parse_dates=["time"],
+            )
+            df2= pd.read_csv(
+                "/home/bsurya/Projects/ERA5/outputs/" + loc[:-2] + "_2020.csv",
+                sep=",",
+                header=0,
+                parse_dates=["time"],
+            )
+            # Combine DataFrames
+            df = pd.concat([df1, df2])
+            df['time'] = pd.to_datetime(df['time'])
+            df = df.set_index("time")
 
-                df["Discharge"] = 60
-                cols = [
-                    "time",
-                    "temp",
-                    "RH",
-                    "wind",
-                    "ppt",
-                    "press",
-                    "Discharge",
-                ]
-                df_out = df[cols]
+            # Resample to daily minimum temperature
+            daily_min_temps = df['temp'].resample('D').min()
 
-                if df_out.isna().values.any():
-                    logger.warning(df_out[cols].isna().sum())
-                    df_out = df_out.interpolate(method='ffill', axis=0)
+            # Find longest consecutive period
+            longest_period = 0
+            current_period = 0
+            start_date = None
+            crit_temp = 0
 
-                df_out = df_out.round(3)
-                if len(df_out[df_out.index.duplicated()]):
-                    logger.error("Duplicate indexes")
+            for date, temp in daily_min_temps.iteritems():
+                if temp < crit_temp:
+                    current_period += 1
+                    if current_period > longest_period:
+                        longest_period = current_period
+                        start_date = date - pd.DateOffset(days=current_period - 1)
+                else:
+                    current_period = 0
 
-                logger.info(df_out.head())
-                logger.info(df_out.tail())
-                # plot_input(df_out, FOLDER['fig'], SITE["name"])
+            print("Start Date:", start_date)
+            print("Longest Consecutive Days:", longest_period)
+            expiry_date = start_date + timedelta(days=longest_period*2)
 
-                df_out.to_csv(FOLDER["input"]  + "aws.csv", index=False)
+            df = df[start_date : expiry_date]
+            df = df.reset_index()
+
+            df["Discharge"] = 1000000
+
+            cols = [
+                "time",
+                "temp",
+                "RH",
+                "wind",
+                "ppt",
+                "Discharge",
+            ]
+            df_out = df[cols]
+
+            if df_out.isna().values.any():
+                logger.warning(df_out[cols].isna().sum())
+                df_out = df_out.interpolate(method='ffill', axis=0)
+
+            df_out = df_out.round(3)
+            if len(df_out[df_out.index.duplicated()]):
+                logger.error("Duplicate indexes")
+
+            logger.info(df_out.head())
+            logger.info(df_out.tail())
+            # plot_input(df_out, FOLDER['fig'], SITE["name"])
+
+            if not os.path.exists(dirname + "/data/" + loc):
+                logger.warning("Creating folders")
+                os.mkdir(dirname + "/data/" + loc)
+                os.mkdir(dirname + "/" + FOLDER["input"])
+                os.mkdir(dirname + "/" + FOLDER["output"])
+                os.mkdir(dirname + "/" + FOLDER["fig"])
+
+            df_out.to_csv(FOLDER["input"]  + "aws.csv", index=False)
     else:
 
         for loc in locations:

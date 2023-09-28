@@ -208,7 +208,9 @@ def summary_figures(self):
     plt.clf()
 
     """Ice Volume Fig"""
-    if self.name not in ["sibinacocha21", "sibinacocha22", "altiplano20"]:
+    # if self.name not in ["sibinacocha21", "sibinacocha22"] or self.spray == "ERA5_":
+    if self.name in ["guttannen21", "guttannen20", "gangles21"]:
+        print(self.spray)
         if self.name in ["guttannen22"]:
             df_c = pd.read_hdf(self.input_sim + "/input.h5", "df_c")
         elif ["guttannen21", "gangles21", "guttannen20"]:
@@ -258,7 +260,7 @@ def summary_figures(self):
         linewidth=1,
         color=CB91_Blue,
     )
-    if self.name not in ["sibinacocha21", "sibinacocha22", "altiplano20"]:
+    if self.name in ["guttannen21", "guttannen20", "gangles21"]:
         y2 = df_c.DroneV
         yerr = df_c.DroneVError
         ax.fill_between(x, y1=self.V_dome, y2=0, color=grey, label="Dome Volume")

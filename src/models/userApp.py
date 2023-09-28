@@ -25,7 +25,7 @@ if __name__ == "__main__":
     # Main logger
     logger = logging.getLogger(__name__)
     # logger.setLevel("ERROR")
-    logger.setLevel("INFO")
+    logger.setLevel("WARNING")
 # get the start time
     st = time.time()
 
@@ -38,54 +38,64 @@ if __name__ == "__main__":
     # location = "Gangles 2021"
     # location = "sibinacocha21"
     # location = "sibinacocha22"
-    location = "altiplano20"
+    # location = "altiplano20"
+    # location = "north_america20"
+    locations = ["europe20"]
+
+    # locations = ["central_asia20"]
+    # locations = ["chuapalca20"]
+    # locations = ["candarave20"]
+    # locations = ["leh20", "south_america20", "north_america20", "europe20", "central_asia20"]
 
     # sprays = ["scheduled_icv", "scheduled_wue"]
     # sprays = ["unscheduled_field", "scheduled_field"]
     # sprays = ["unscheduled_field"]
     # sprays = ["scheduled_wue", "scheduled_icv"]
-    sprays = ["none_none"]
+    # sprays = ["none_none"]
+    sprays = ["ERA5_"]
 
-    for spray in sprays:
-        icestupa = Icestupa(location, spray)
-        SITE, FOLDER = config(location)
-        # icestupa.R_F = 10.0
+    for location in locations:
 
-        if test:
-            icestupa.gen_input()
-            plot_input(icestupa.df, FOLDER['fig'], SITE["name"])
-            # icestupa.sim_air(test)
-            icestupa.sim_air()
-            icestupa.gen_output()
-            # icestupa.read_output()
-            icestupa.summary_figures()
-            # print(icestupa.df.s_cone.max())
-# get the end time
-            et = time.time()
+        for spray in sprays:
+            icestupa = Icestupa(location, spray)
+            SITE, FOLDER = config(location)
+            # icestupa.R_F = 10.0
 
-# get the execution time
-            elapsed_time = et - st
-            print('Execution time:', elapsed_time, 'seconds')
+            if test:
+                icestupa.gen_input()
+                plot_input(icestupa.df, FOLDER['fig'], SITE["name"])
+                # icestupa.sim_air(test)
+                icestupa.sim_air()
+                icestupa.gen_output()
+                # icestupa.read_output()
+                icestupa.summary_figures()
+                # print(icestupa.df.s_cone.max())
+    # get the end time
+                et = time.time()
 
-        else:
-            # For web app
-            src = "/home/suryab/work/air_model/data/" + icestupa.name + "/"
-            dst = "/home/suryab/work/air_app/data/" + icestupa.name + "/"
-            for dir in ["processed", "figs"]:
-                try:
-                    #if path already exists, remove it before copying with copytree()
-                    if os.path.exists(dst + dir):
-                        shutil.rmtree(dst + dir)
-                        shutil.copytree(src + dir, dst + dir)
-                    else:
-                        shutil.copytree(src + dir, dst + dir)
-                    print('Directory copied.')
-                except OSError as e:
-                    # If the error was caused because the source wasn't a directory
-                    if e.errno == errno.ENOTDIR:
-                       shutil.copy(source_dir_prompt, destination_dir_prompt)
-                    else:
-                        print('Directory not copied. Error: %s' % e)
+    # get the execution time
+                elapsed_time = et - st
+                print('Execution time:', elapsed_time, 'seconds')
 
-            icestupa.read_output()
+            else:
+                # For web app
+                src = "/home/suryab/work/air_model/data/" + icestupa.name + "/"
+                dst = "/home/suryab/work/air_app/data/" + icestupa.name + "/"
+                for dir in ["processed", "figs"]:
+                    try:
+                        #if path already exists, remove it before copying with copytree()
+                        if os.path.exists(dst + dir):
+                            shutil.rmtree(dst + dir)
+                            shutil.copytree(src + dir, dst + dir)
+                        else:
+                            shutil.copytree(src + dir, dst + dir)
+                        print('Directory copied.')
+                    except OSError as e:
+                        # If the error was caused because the source wasn't a directory
+                        if e.errno == errno.ENOTDIR:
+                           shutil.copy(source_dir_prompt, destination_dir_prompt)
+                        else:
+                            print('Directory not copied. Error: %s' % e)
+
+                icestupa.read_output()
 

@@ -81,7 +81,7 @@ def get_temp(self, i):
         )
 
         if self.df.loc[i, "wasted"] < 0:
-            logger.info("Water not enough. Mean discharge exceeded")
+            logger.error("Water not enough. Mean discharge exceeded by %f" %(self.df.loc[i, "wasted"]))
             self.df.loc[i, "Qfreeze"] -= (
                 self.df.loc[i, "wasted"]
                 * (self.L_F)
