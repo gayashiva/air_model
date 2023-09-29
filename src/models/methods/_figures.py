@@ -175,9 +175,9 @@ def summary_figures(self):
     at = AnchoredText("(b)", prop=dict(size=10), frameon=True, loc="upper left")
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
     ax2.add_artist(at)
-    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax2.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax2.xaxis.set_minor_locator(mdates.DayLocator())
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
+    ax2.xaxis.set_major_locator(mdates.MonthLocator())
+    ax2.xaxis.set_minor_locator(mdates.WeekdayLocator())
 
     ax4 = fig.add_subplot(3, 1, 3)
     ax4.bar(
@@ -194,9 +194,9 @@ def summary_figures(self):
     at = AnchoredText("(c)", prop=dict(size=10), frameon=True, loc="upper left")
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
     ax4.add_artist(at)
-    ax4.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax4.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax4.xaxis.set_minor_locator(mdates.DayLocator())
+    ax4.xaxis.set_major_locator(mdates.MonthLocator())
+    ax4.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
+    ax4.xaxis.set_minor_locator(mdates.WeekdayLocator())
     fig.autofmt_xdate()
     plt.xticks(rotation=45)
     plt.tight_layout()
@@ -208,47 +208,6 @@ def summary_figures(self):
     plt.clf()
 
     """Ice Volume Fig"""
-    # if self.name not in ["sibinacocha21", "sibinacocha22"] or self.spray == "ERA5_":
-    if self.name in ["guttannen21", "guttannen20", "gangles21"]:
-        print(self.spray)
-        if self.name in ["guttannen22"]:
-            df_c = pd.read_hdf(self.input_sim + "/input.h5", "df_c")
-        elif ["guttannen21", "gangles21", "guttannen20"]:
-            df_c = pd.read_hdf(self.input + "input.h5", "df_c")
-
-        df_c = df_c[["time", "DroneV", "DroneVError"]]
-        if self.name in ["guttannen21", "guttannen20", "gangles21"]:
-            df_c = df_c[1:]
-
-        tol = pd.Timedelta("15T")
-        df_c = df_c.set_index("time")
-        self.df = self.df.set_index("time")
-        df_c = pd.merge_asof(
-            left=self.df,
-            right=df_c,
-            right_index=True,
-            left_index=True,
-            direction="nearest",
-            tolerance=tol,
-        )
-        df_c = df_c[["DroneV", "DroneVError", "iceV"]]
-        self.df = self.df.reset_index()
-
-    # if self.name in ["guttannen21", "guttannen20"]:
-    #     df_cam = pd.read_hdf(self.input + "input.h5", "df_cam")
-    #     tol = pd.Timedelta("15T")
-    #     self.df = self.df.set_index("time")
-    #     df_cam = pd.merge_asof(
-    #         left=self.df,
-    #         right=df_cam,
-    #         right_index=True,
-    #         left_index=True,
-    #         direction="nearest",
-    #         tolerance=tol,
-    #     )
-    #     df_cam = df_cam[["cam_temp", "T_s", "T_bulk"]]
-    #     self.df = self.df.reset_index()
-
     fig, ax = plt.subplots()
     x = self.df.time
     y1 = self.df.iceV
@@ -256,21 +215,15 @@ def summary_figures(self):
     ax.plot(
         x,
         y1,
-        label="Modelled Volume",
+        label=self.name,
         linewidth=1,
         color=CB91_Blue,
     )
-    if self.name in ["guttannen21", "guttannen20", "gangles21"]:
-        y2 = df_c.DroneV
-        yerr = df_c.DroneVError
-        ax.fill_between(x, y1=self.V_dome, y2=0, color=grey, label="Dome Volume")
-        ax.scatter(x, y2, color=CB91_Green, label="Measured Volume")
-        ax.errorbar(x, y2, yerr=df_c.DroneVError, color=CB91_Green)
     ax.set_ylim(bottom=0)
     plt.legend()
-    ax.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax.xaxis.set_minor_locator(mdates.DayLocator())
+    ax.xaxis.set_major_locator(mdates.MonthLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
+    ax.xaxis.set_minor_locator(mdates.WeekdayLocator())
     fig.autofmt_xdate()
     plt.savefig(
         self.fig + "/Vol_Validation.png",
@@ -290,9 +243,9 @@ def summary_figures(self):
         color=CB91_Blue,
     )
     plt.legend()
-    ax.xaxis.set_major_locator(mdates.WeekdayLocator())
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax.xaxis.set_minor_locator(mdates.DayLocator())
+    ax.xaxis.set_major_locator(mdates.MonthLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
+    ax.xaxis.set_minor_locator(mdates.WeekdayLocator())
     fig.autofmt_xdate()
     plt.savefig(
         self.fig + "/Discharge.png",

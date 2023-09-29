@@ -20,7 +20,7 @@ logging.getLogger('PIL').setLevel(logging.CRITICAL)
 logger = logging.getLogger("__main__")
 
 def config(loc='None', spray='none_none'):
-    logger.warning(f"Site {loc} with scheduler {spray}")
+    # logger.warning(f"Site {loc} with scheduler {spray}")
 
     if loc == "tarata20":
 
@@ -110,12 +110,8 @@ def config(loc='None', spray='none_none'):
 
         SITE = dict(
             name="south_america20",
-            # start_date=datetime(2019, 5, 1),
-            # fountain_off_date=datetime(2020, 1, 1),
-            # expiry_date=datetime(2020, 5, 1),
             alt=3877,
             coords=[-29.75, -69.75],
-            # utc=-5,
 
             # Calibrated values
             R_F=10,

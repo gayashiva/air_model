@@ -26,7 +26,6 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     # logger.setLevel("ERROR")
     logger.setLevel("WARNING")
-# get the start time
     st = time.time()
 
     test = True
@@ -40,12 +39,13 @@ if __name__ == "__main__":
     # location = "sibinacocha22"
     # location = "altiplano20"
     # location = "north_america20"
-    locations = ["europe20"]
+    # locations = ["south_america20"]
+    # locations = ["leh20"]
 
     # locations = ["central_asia20"]
     # locations = ["chuapalca20"]
     # locations = ["candarave20"]
-    # locations = ["leh20", "south_america20", "north_america20", "europe20", "central_asia20"]
+    locations = [ "north_america20", "europe20", "central_asia20","leh20", "south_america20"]
 
     # sprays = ["scheduled_icv", "scheduled_wue"]
     # sprays = ["unscheduled_field", "scheduled_field"]
@@ -59,23 +59,23 @@ if __name__ == "__main__":
         for spray in sprays:
             icestupa = Icestupa(location, spray)
             SITE, FOLDER = config(location)
-            # icestupa.R_F = 10.0
 
             if test:
-                icestupa.gen_input()
-                plot_input(icestupa.df, FOLDER['fig'], SITE["name"])
+                # icestupa.gen_input()
+                icestupa.read_input()
+                # plot_input(icestupa.df, FOLDER['fig'], SITE["name"])
                 # icestupa.sim_air(test)
                 icestupa.sim_air()
                 icestupa.gen_output()
                 # icestupa.read_output()
                 icestupa.summary_figures()
                 # print(icestupa.df.s_cone.max())
-    # get the end time
+                # get the end time
                 et = time.time()
 
-    # get the execution time
-                elapsed_time = et - st
-                print('Execution time:', elapsed_time, 'seconds')
+                # get the execution time
+                elapsed_time = (et - st)/60
+                print('Execution time:', round(elapsed_time), 'min')
 
             else:
                 # For web app

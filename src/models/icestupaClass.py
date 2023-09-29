@@ -46,11 +46,7 @@ class Icestupa:
         if self.spray == "ERA5_":
             self.start_date = self.df.time[0]
             self.expiry_date = self.df.time[self.df.shape[0]-1]
-            self.fountain_off_date = self.df.time[10*24]
 
-        diff = self.expiry_date - self.start_date
-        days, seconds = diff.days, diff.seconds
-        self.total_hours = days * 24 + seconds // 3600
         if "Discharge" not in list(self.df.columns):
             df_f = pd.read_csv(self.input + "discharge_types.csv", sep=",", header=0, parse_dates=["time"])
             df_f["Discharge"] = df_f[self.spray]
@@ -193,7 +189,6 @@ class Icestupa:
 
         logger.warning(f"Variable fountain water temp mean is {self.df.T_F.mean()}\n")
 
-        self.self_attributes()
 
         if "alb" in unknown:
             self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
@@ -243,59 +238,58 @@ class Icestupa:
             "D_F",
             "WUE",
         ]
-        iceV_max = self.df["iceV"].max()
-        M_input = self.df["input"].iloc[-1]
-        M_F = self.df["Discharge"].sum() * self.DT / 60 + self.df.loc[0, "input"]
-        M_ppt = self.df["snow2ice"].sum()
-        M_dep = self.df["dep"].sum()
-        M_water = self.df["meltwater"].iloc[-1]
-        M_waste = self.df["wastewater"].iloc[-1]
-        M_sub = self.df["vapour"].iloc[-1]
-        M_ice = self.df["ice"].iloc[-1]
-        last_hour = self.df.shape[0]
-        R_F = self.R_F
-        D_F = self.D_F
-        WUE = int((M_ice + M_water) / M_input * 100)
+        # iceV_max = self.df["iceV"].max()
+        # M_input = self.df["input"].iloc[-1]
+        # M_F = self.df["Discharge"].sum() * self.DT / 60 + self.df.loc[0, "input"]
+        # M_ppt = self.df["snow2ice"].sum()
+        # M_dep = self.df["dep"].sum()
+        # M_water = self.df["meltwater"].iloc[-1]
+        # M_waste = self.df["wastewater"].iloc[-1]
+        # M_sub = self.df["vapour"].iloc[-1]
+        # M_ice = self.df["ice"].iloc[-1]
+        # last_hour = self.df.shape[0]
+        # R_F = self.R_F
+        # D_F = self.D_F
+        # WUE = int((M_ice + M_water) / M_input * 100)
 
-        if self.spray.split('_')[1] == 'field':
-            results.append("RMSE")
-            if self.name in ["guttannen22"]:
-                df_c = pd.read_hdf(self.input_sim  + "/input.h5", "df_c")
-            else:
-                df_c = pd.read_hdf(self.input  + "/input.h5", "df_c")
-            df_c = df_c[["time", "DroneV", "DroneVError"]]
+        # if self.spray.split('_')[1] == 'field':
+        #     results.append("RMSE")
+        #     if self.name in ["guttannen22"]:
+        #         df_c = pd.read_hdf(self.input_sim  + "/input.h5", "df_c")
+        #     else:
+        #         df_c = pd.read_hdf(self.input  + "/input.h5", "df_c")
+        #     df_c = df_c[["time", "DroneV", "DroneVError"]]
 
-            df_c = df_c.set_index("time")
-            df = self.df.set_index("time")
-            RMSE = ((df['iceV'].subtract(df_c['DroneV'],axis=0))**2).mean()**.5
+        #     df_c = df_c.set_index("time")
+        #     df = self.df.set_index("time")
+        #     RMSE = ((df['iceV'].subtract(df_c['DroneV'],axis=0))**2).mean()**.5
 
-        # For web app
-        for variable in results:
-            results_dict[variable] = float(round(eval(variable), 1))
+        # # For web app
+        # for variable in results:
+        #     results_dict[variable] = float(round(eval(variable), 1))
 
-        logger.warning("Summary of results for %s with scheduler %s  :" %(self.name, self.spray))
-        for var in sorted(results_dict.keys()):
-            logger.warning("\t%s: %r" % (var, results_dict[var]))
-        # print()
+        # logger.warning("Summary of results for %s with scheduler %s  :" %(self.name, self.spray))
+        # for var in sorted(results_dict.keys()):
+        #     logger.warning("\t%s: %r" % (var, results_dict[var]))
 
-        with open(self.output + "results.json", "w") as f:
-            json.dump(results_dict, f, sort_keys=True, indent=4)
+        # with open(self.output + "results.json", "w") as f:
+        #     json.dump(results_dict, f, sort_keys=True, indent=4)
 
-        if last_hour > self.total_hours + 1:
-            self.df = self.df[: self.total_hours]
-        else:
-            for j in range(last_hour, self.total_hours):
-                for col in self.df.columns:
-                    if col not in ["temp"]:
-                        self.df.loc[j, col] = 0
-                    if col in ["iceV"]:
-                        self.df.loc[j, col] = self.V_dome
-                    if col in ["time"]:
-                        self.df.loc[j, col] = self.df.loc[j - 1, col] + timedelta(
-                            hours=1
-                        )
+        # if last_hour > self.total_hours + 1:
+        #     self.df = self.df[: self.total_hours]
+        # else:
+        #     for j in range(last_hour, self.total_hours):
+        #         for col in self.df.columns:
+        #             if col not in ["temp"]:
+        #                 self.df.loc[j, col] = 0
+        #             if col in ["iceV"]:
+        #                 self.df.loc[j, col] = self.V_dome
+        #             if col in ["time"]:
+        #                 self.df.loc[j, col] = self.df.loc[j - 1, col] + timedelta(
+        #                     hours=1
+        #                 )
 
-        self.df = self.df.reset_index(drop=True)
+        # self.df = self.df.reset_index(drop=True)
 
         # Full Output
         self.df.to_csv(self.output + "/output.csv", sep=",")
@@ -374,52 +368,102 @@ class Icestupa:
             else:
                 self.df[column] = 0
 
+        # Resample to daily minimum temperature
+        daily_min_temps = self.df.set_index("time")['temp'].resample('D').min()
+
+        # Find longest consecutive period
+        minimum_period = 7
+        current_period = 0
+        start_date_list = []
+        crit_temp = 0
+
+        for date, temp in daily_min_temps.iteritems():
+            if temp < crit_temp:
+                current_period += 1
+                if current_period == minimum_period:
+                    start_date_list.append(date - pd.DateOffset(days=current_period - 1))
+            else:
+                current_period = 0
+
+        logger.warning(f"Cold windows: {start_date_list}")
+        self.self_attributes()
+
+
+        day_index = self.df.index[self.df['time']==start_date_list[0]][0]
+
         # Initialise first model time step
-        self.df.loc[0, "h_cone"] = self.h_i
-        self.df.loc[0, "r_cone"] = self.R_F
-        self.df.loc[0, "dr"] = self.DX
-        self.df.loc[0, "s_cone"] = self.df.loc[0, "h_cone"] / self.df.loc[0, "r_cone"]
+        self.df.loc[day_index, "h_cone"] = self.h_i
+        self.df.loc[day_index, "r_cone"] = self.R_F
+        self.df.loc[day_index, "dr"] = self.DX
+        self.df.loc[day_index, "s_cone"] = self.df.loc[day_index, "h_cone"] / self.df.loc[day_index, "r_cone"]
         V_initial = math.pi / 3 * self.R_F ** 2 * self.h_i
-        self.df.loc[1, "rho_air"] = self.RHO_I
-        self.df.loc[1, "ice"] = V_initial* self.df.loc[1, "rho_air"]
-        self.df.loc[1, "iceV"] = V_initial
-        self.df.loc[1, "input"] = self.df.loc[1, "ice"]
+        self.df.loc[day_index +1, "rho_air"] = self.RHO_I
+        self.df.loc[day_index + 1, "ice"] = V_initial* self.df.loc[day_index + 1, "rho_air"]
+        self.df.loc[day_index + 1, "iceV"] = V_initial
+        self.df.loc[day_index + 1, "input"] = self.df.loc[day_index + 1, "ice"]
 
         logger.warning(
             "Initialise: time %s, radius %.3f, height %.3f, iceV %.3f\n"
             % (
-                self.df.loc[0, "time"],
-                self.df.loc[0, "r_cone"],
-                self.df.loc[0, "h_cone"],
-                self.df.loc[1, "iceV"],
+                self.df.loc[day_index, "time"],
+                self.df.loc[day_index, "r_cone"],
+                self.df.loc[day_index, "h_cone"],
+                self.df.loc[day_index + 1, "iceV"],
             )
         )
 
-        t = tqdm(
-            self.df[1:-1].itertuples(),
-            total=self.total_hours,
-        )
+        pbar = tqdm(total = self.df.shape[0])
+        pbar.set_description("%s AIR" % self.name)
 
-        t.set_description("Simulating %s Icestupa" % self.name)
+        i = day_index+1
+        pbar.update(i)
+        end = self.df.shape[0]-1
 
-        for row in t:
-            i = row.Index
+        while i <= end:
 
+        # t = tqdm(range(day_index+1, self.df.shape[0]))
+
+        # t.set_description("%s AIR" % self.name)
+
+        # for day in start_date_list:
+
+        #     for i in t:
+                
             ice_melted = self.df.loc[i, "iceV"] < self.V_dome
 
             if ice_melted:
-                if (
-                    self.df.loc[i - 1, "time"] < self.fountain_off_date
-                    and self.df.loc[i - 1, "melted"] > 0
-                ):
-                    logger.error("Skipping %s" % self.df.loc[i, "time"])
+                # No further cold windows
+                if self.df.loc[i, "time"] > start_date_list[-1]:
+                    logger.warning("\tNo further cold windows after %s\n" %self.df.loc[i, "time"] )
 
-                    # Initialise first model time step
-                    for column in all_cols:
-                        if column in ["event"]:
-                            self.df[column] = np.nan
-                        else:
-                            self.df[column] = 0
+                    col_list = [
+                        "dep",
+                        "snow2ice",
+                        "fountain_froze",
+                        "wasted",
+                        "sub",
+                        "melted",
+                    ]
+                    for column in col_list:
+                        self.df.loc[i - 1, column] = 0
+
+                    # last_hour = i - 1
+                    # self.df = self.df[1:i]
+                    # self.df = self.df.reset_index(drop=True)
+                    pbar.update(end - i)
+                    break
+                else:
+                    for day in start_date_list:
+                        if day >= self.df.loc[i+1, "time"]: 
+                            day_index = self.df.index[self.df['time']==day][0]
+                            pbar.update(day_index - i)
+                            i = day_index
+                            logger.warning("\tNext cold window at %s\n" % self.df.loc[day_index, "time"])
+                            break
+
+                    # if self.df.loc[i, "time"] < day:
+                    #     logger.error("Skipping %s" % self.df.loc[i, "time"])
+                    #     continue
 
                     # Initialise first model time step
                     self.df.loc[i-1, "h_cone"] = self.h_i
@@ -441,43 +485,6 @@ class Icestupa:
                             self.df.loc[i, "iceV"],
                         )
                     )
-
-                    # self.df.loc[i - 1, "h_cone"] = self.h_i
-                    # self.df.loc[i - 1, "r_cone"] = self.R_F
-                    # self.df.loc[i - 1, "s_cone"] = (
-                    #     self.df.loc[i - 1, "h_cone"] / self.df.loc[i - 1, "r_cone"]
-                    # )
-                    # self.df.loc[i, "ice"] = V_initial * self.RHO_I
-                    # self.df.loc[i, "iceV"] = V_initial
-                    # self.df.loc[i, "input"] = self.df.loc[i, "ice"]
-
-                    # logger.warning(
-                    #     "Initialise again: time %s, radius %.3f, height %.3f, iceV %.3f\n"
-                    #     % (
-                    #         self.df.loc[i - 1, "time"],
-                    #         self.df.loc[i - 1, "r_cone"],
-                    #         self.df.loc[i - 1, "h_cone"],
-                    #         self.df.loc[i, "iceV"],
-                    #     )
-                    # )
-
-                else:
-
-                    col_list = [
-                        "dep",
-                        "snow2ice",
-                        "fountain_froze",
-                        "wasted",
-                        "sub",
-                        "melted",
-                    ]
-                    for column in col_list:
-                        self.df.loc[i - 1, column] = 0
-
-                    last_hour = i - 1
-                    self.df = self.df[1:i]
-                    self.df = self.df.reset_index(drop=True)
-                    break
 
             self.get_area(i)
 
@@ -554,10 +561,6 @@ class Icestupa:
                 self.df.loc[i, "wastewater"] + self.df.loc[i, "wasted"]
             )
 
-            # if self.df.loc[:i, "fountain_froze"].sum() + self.df.loc[:i,"dep"].sum() + self.df.loc[:i,"snow2ice"].sum() == 0:
-            #     self.df.loc[i + 1, "rho_air"] = self.RHO_I
-            # else:
-
             if self.name in ['guttannen21', 'gangles21']:
                 self.df.loc[i + 1, "rho_air"] = self.RHO_I
             else:
@@ -581,6 +584,8 @@ class Icestupa:
             ) / (self.df.loc[i, "A_cone"])
 
             if test and not ice_melted:
-                logger.info(f"time {self.df.time[i]}, iceV {self.df.iceV[i+1]}, iceV {self.df.iceV[i]}")
+                logger.error(f"time {self.df.time[i]}, iceV {self.df.iceV[i+1]},i {i},end {self.df.shape[0]}")
+            i = i+1
+            pbar.update(1)
         # else:
             # print(self.df.loc[i, "time"], self.df.loc[i, "iceV"])
