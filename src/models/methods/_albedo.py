@@ -9,7 +9,6 @@ import coloredlogs
 
 logger = logging.getLogger(__name__)
 
-
 def get_albedo(self, i, s=0, f=0):  # Albedo Scheme described in
     
     # Discharge event

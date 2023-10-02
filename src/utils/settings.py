@@ -76,6 +76,7 @@ def config(loc='None', spray='none_none'):
             V_dome=0,
             cld=0.2,
             T_F=0,
+            minimum_period=7,
         )
 
     if loc == "europe20":
@@ -90,6 +91,7 @@ def config(loc='None', spray='none_none'):
             V_dome=0,
             cld=0.2,
             T_F=0,
+            minimum_period=7,
         )
 
     if loc == "central_asia20":
@@ -104,6 +106,7 @@ def config(loc='None', spray='none_none'):
             V_dome=0,
             cld=0.2,
             T_F=0,
+            minimum_period=7,
         )
 
     if loc == "south_america20":
@@ -118,76 +121,22 @@ def config(loc='None', spray='none_none'):
             V_dome=0,
             cld=0.2,
             T_F=0,
+            minimum_period=7,
         )
 
     if loc == "north_america20":
 
         SITE = dict(
             name=loc,
-            # start_date=datetime(2019, 5, 1),
-            # fountain_off_date=datetime(2020, 1, 1),
-            # expiry_date=datetime(2020, 5, 1),
             alt=1439,
             coords=[-29.75, -69.75],
-            # utc=-5,
 
             # Calibrated values
             R_F=10,
             V_dome=0,
             cld=0.2,
             T_F=0,
-        )
-
-    if loc == "altiplano20":
-
-        SITE = dict(
-            name="altiplano20",
-            # start_date=datetime(2019, 5, 1),
-            # fountain_off_date=datetime(2020, 1, 1),
-            # expiry_date=datetime(2020, 5, 1),
-            alt=4432,
-            coords=[-17.14375, -69.997917],
-            # utc=-5,
-
-            # Calibrated values
-            R_F=10,
-            V_dome=0,
-            cld=0.2,
-            T_F=0,
-        )
-
-    if loc == "Sibinacocha 2022" or loc == "sibinacocha22":
-
-        SITE = dict(
-            name="sibinacocha22",
-            start_date=datetime(2022, 6, 1),
-            expiry_date=datetime(2022, 8, 30),
-            alt=4880,
-            coords=[-13.865592292674531, -71.01995814364372],
-            utc=-5,
-
-            # Calibrated values
-            R_F=7,
-            V_dome=0,
-            cld=0,
-            T_F=0,
-        )
-
-    if loc == "Sibinacocha 2021" or loc == "sibinacocha21":
-
-        SITE = dict(
-            name="sibinacocha21",
-            start_date=datetime(2021, 6, 1),
-            expiry_date=datetime(2021, 8, 30),
-            alt=4880,
-            coords=[-13.865592292674531, -71.01995814364372],
-            utc=-5,
-
-            # Calibrated values
-            R_F=7,
-            V_dome=0,
-            cld=0,
-            T_F=0,
+            minimum_period=7,
         )
 
     if loc== "Guttannen 2022" or loc == "guttannen22":

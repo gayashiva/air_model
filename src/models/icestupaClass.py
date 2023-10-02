@@ -29,7 +29,7 @@ class Icestupa:
 
         self.spray = spray
 
-        with open("data/common/constants.json") as f:
+        with open("constants.json") as f:
             CONSTANTS = json.load(f)
 
         SITE, FOLDER = config(location, spray)
@@ -88,156 +88,25 @@ class Icestupa:
     from src.models.methods._energy import get_energy, test_get_energy
     from src.models.methods._figures import summary_figures
 
-    @Timer(
-        text="Preprocessed data in {:.2f} seconds",
-        logger=logging.getLogger("__main__").warning,
-    )
-    def gen_input(self):  # Use processed input dataset
-        unknown = [
-            "alb",
-            "vp_a",
-            "LW_in",
-            "SW_global",
-            "press",
-            # "T_F",
-        ]  # Possible unknown variables
-
-        for i in range(len(unknown)):
-            if unknown[i] in list(self.df.columns):
-                unknown[i] = np.NaN  # Removes known variable
-            else:
-                logger.warning(" %s is unknown\n" % (unknown[i]))
-                self.df[unknown[i]] = 0
-
-        solar_df = get_solar(
-            coords=self.coords,
-            start=self.start_date,
-            end=self.df["time"].iloc[-1],
-            DT=self.DT,
-            alt=self.alt,
-            # ghi=self.df.set_index("time")["SW_global"],
-            # press=self.df["press"].mean(),
-        )
-
-        self.df = pd.merge(solar_df, self.df, on="time", how="left")
-
-        if "SW_global" in unknown:
-            self.df["SW_global"] = self.df["ghi"]
-            logger.warning(f"Estimated global solar from pvlib\n")
-
-        if "press" in unknown:
-            self.df["press"] = atmosphere.alt2pres(self.alt) / 100
-            logger.warning(f"Estimated pressure from altitude\n")
-
-        # self.df["SW_diffuse"]= np.where(self.df.ppt > 0, self.df["SW_global"], 0)
-        # self.df["SW_direct"] = self.df["SW_global"] - self.df["SW_diffuse"]
-        # logger.warning(f"Estimated solar components using precipitation\n")
-
-        if 'cld' in list(self.df.columns):
-            self.df["SW_direct"] = (1- self.df["cld"]) * self.df["SW_global"]
-            self.df["SW_diffuse"] = self.df["cld"] * self.df["SW_global"]
-            logger.warning(f"Estimated solar components with ERA5 cloudiness with mean {self.df.cld.mean()}\n")
-        else:
-            self.df["SW_direct"] = (1- self.cld) * self.df["SW_global"]
-            self.df["SW_diffuse"] = self.cld * self.df["SW_global"]
-            logger.warning(f"Estimated solar components with constant cloudiness of {self.cld}\n")
-
-        if "T_G" in list(self.df.columns):
-            self.df["T_F"] = self.df["T_G"]
-            logger.warning(f"Measured ground temp is fountain water temp with mean {self.df.T_F.mean()}\n")
-        else:
-            self.df["T_F"] = float(self.T_F)
-            logger.warning(f"Estimated constant fountain water temp is {self.T_F}\n")
-
-            
-        for row in tqdm(
-            self.df[1:].itertuples(),
-            total=self.df.shape[0],
-            desc="Creating AIR input...",
-        ):
-            i = row.Index
-
-            """ Vapour Pressure"""
-            if "vp_a" in unknown:
-
-                self.df.loc[i, "vp_a"] = np.exp(
-                    34.494 - 4924.99/ (row.temp + 237.1)
-                ) / ((row.temp + 105) ** 1.57 * 100)
-                self.df.loc[i, "vp_a"] *= row.RH/100
-
-            """LW incoming"""
-            if "LW_in" in unknown:
-
-                self.df.loc[i, "e_a"] = (
-                    1.24
-                    * math.pow(abs(self.df.loc[i, "vp_a"] / (row.temp + 273.15)), 1 / 7)
-                )
-
-                if 'cld' in list(self.df.columns):
-                    self.df.loc[i, "e_a"] *= (1 + 0.22 * math.pow(self.df.loc[i,"cld"], 2))
-                else:
-                    self.df.loc[i, "e_a"] *= (1 + 0.22 * math.pow(self.cld, 2))
-
-
-                self.df.loc[i, "LW_in"] = (
-                    self.df.loc[i, "e_a"] * self.sigma * math.pow(row.temp + 273.15, 4)
-                )
-
-            """Water temperature"""
-            if row.temp < 0:
-                self.df.loc[i,"T_F"] = 0
-
-        logger.warning(f"Variable fountain water temp mean is {self.df.T_F.mean()}\n")
-
-
-        if "alb" in unknown:
-            self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
-            s = 0
-            f = 1
-            for row in self.df.itertuples():
-                i = row.Index
-                s, f = self.get_albedo(i, s, f)
-
-        self.df = self.df.round(3)
-
-        if self.df.isnull().values.any():
-            for column in self.df.columns:
-                if self.df[column].isna().sum() > 0:
-                    logger.warning(" Null values interpolated in %s" % column)
-                    self.df.loc[:, column] = self.df[column].interpolate()
-
-        self.df.to_csv(
-            self.input_sim + "/input.csv",
-        )
-        self.df.to_hdf(
-            self.input_sim + "/input.h5",
-            key="df",
-            mode="a",
-        )
-        logger.debug(self.df.head())
-        logger.debug(self.df.tail())
-        if 'index' in self.df.columns:
-            logger.error("Index present")
-
     def gen_output(self):  # Use processed input dataset
 
-        results_dict = {}
-        results = [
-            "iceV_max",
-            "last_hour",
-            "M_input",
-            "M_F",
-            "M_ppt",
-            "M_dep",
-            "M_water",
-            "M_waste",
-            "M_sub",
-            "M_ice",
-            "last_hour",
-            "R_F",
-            "D_F",
-            "WUE",
-        ]
+        # results_dict = {}
+        # results = [
+        #     "iceV_max",
+        #     "last_hour",
+        #     "M_input",
+        #     "M_F",
+        #     "M_ppt",
+        #     "M_dep",
+        #     "M_water",
+        #     "M_waste",
+        #     "M_sub",
+        #     "M_ice",
+        #     "last_hour",
+        #     "R_F",
+        #     "D_F",
+        #     "WUE",
+        # ]
         # iceV_max = self.df["iceV"].max()
         # M_input = self.df["input"].iloc[-1]
         # M_F = self.df["Discharge"].sum() * self.DT / 60 + self.df.loc[0, "input"]
@@ -292,7 +161,7 @@ class Icestupa:
         # self.df = self.df.reset_index(drop=True)
 
         # Full Output
-        self.df.to_csv(self.output + "/output.csv", sep=",")
+        # self.df.to_csv(self.output + "/output.csv", sep=",")
         self.df.to_hdf(
             self.output  + "/output.h5",
             key="df",
@@ -324,8 +193,38 @@ class Icestupa:
     # @Timer(text="Simulation executed in {:.2f} seconds", logger=logging.NOTSET)
     def sim_air(self, test=False):
 
+        """Solar radiation"""
+        solar_df = get_solar(
+            coords=self.coords,
+            start=self.start_date,
+            end=self.df["time"].iloc[-1],
+            DT=self.DT,
+            alt=self.alt,
+        )
+        self.df = pd.merge(solar_df, self.df, on="time", how="left")
+        self.df= self.df.rename(columns={"ghi": "SW_global",})
+        logger.warning(f"Estimated global solar from pvlib\n")
+        self.df["SW_direct"] = (1- self.cld) * self.df["SW_global"]
+        self.df["SW_diffuse"] = self.cld * self.df["SW_global"]
+        logger.warning(f"Estimated solar components with constant cloudiness of {self.cld}\n")
+
+        """Pressure"""
+        self.df["press"] = atmosphere.alt2pres(self.alt) / 100
+        logger.warning(f"Estimated pressure from altitude\n")
+
+        """Albedo"""
+        self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
+        s = 0
+        f = 1
+        for row in self.df.itertuples():
+            i = row.Index
+            s, f = self.get_albedo(i, s, f)
+
+        self.df = self.df.round(3)
+
         # Initialisaton for sites
         all_cols = [
+            "T_F",
             "T_s",
             "T_bulk",
             "f_cone",
@@ -372,15 +271,14 @@ class Icestupa:
         daily_min_temps = self.df.set_index("time")['temp'].resample('D').min()
 
         # Find longest consecutive period
-        minimum_period = 7
         current_period = 0
         start_date_list = []
         crit_temp = 0
 
-        for date, temp in daily_min_temps.iteritems():
+        for date, temp in daily_min_temps.items():
             if temp < crit_temp:
                 current_period += 1
-                if current_period == minimum_period:
+                if current_period == self.minimum_period:
                     start_date_list.append(date - pd.DateOffset(days=current_period - 1))
             else:
                 current_period = 0
@@ -421,14 +319,6 @@ class Icestupa:
 
         while i <= end:
 
-        # t = tqdm(range(day_index+1, self.df.shape[0]))
-
-        # t.set_description("%s AIR" % self.name)
-
-        # for day in start_date_list:
-
-        #     for i in t:
-                
             ice_melted = self.df.loc[i, "iceV"] < self.V_dome
 
             if ice_melted:
@@ -451,6 +341,13 @@ class Icestupa:
                     # self.df = self.df[1:i]
                     # self.df = self.df.reset_index(drop=True)
                     pbar.update(end - i)
+
+                    # Full Output
+                    self.df.to_hdf(
+                        self.output  + "/output.h5",
+                        key="df",
+                        mode="w",
+                    )
                     break
                 else:
                     for day in start_date_list:
@@ -587,5 +484,11 @@ class Icestupa:
                 logger.error(f"time {self.df.time[i]}, iceV {self.df.iceV[i+1]},i {i},end {self.df.shape[0]}")
             i = i+1
             pbar.update(1)
-        # else:
+        else:
+            # Full Output
+            self.df.to_hdf(
+                self.output  + "/output.h5",
+                key="df",
+                mode="w",
+            )
             # print(self.df.loc[i, "time"], self.df.loc[i, "iceV"])

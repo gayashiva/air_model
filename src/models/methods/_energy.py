@@ -20,6 +20,11 @@ def get_energy(self, i):
         43.494 - 6545.8 / (self.df.loc[i, "T_s"] + 278)
     ) / ((self.df.loc[i, "T_s"] + 868) ** 2 * 100)
 
+    self.df.loc[i, "vp_a"] = np.exp(
+        34.494 - 4924.99/ (self.df.loc[i, "temp"]+ 237.1)
+    ) / ((self.df.loc[i, "temp"]+ 105) ** 1.57 * 100)
+    self.df.loc[i, "vp_a"] *= self.df.loc[i, "RH"]/100
+
     self.df.loc[i, "Ql"] = (
         0.623
         * self.L_S
@@ -33,10 +38,6 @@ def get_energy(self, i):
     )
 
     # Sensible Heat Qs
-    # if "Qs_meas" in list(self.df.columns):
-    #     self.df.loc[i, "Qs"] = - self.df.loc[i, "Qs_meas"] * (1 + 0.5 * self.df.loc[i, "s_cone"])
-    # else:
-
     self.df.loc[i, "Qs"] = (
         self.C_A
         * self.RHO_A
@@ -56,6 +57,17 @@ def get_energy(self, i):
     )
 
     # Long Wave Radiation LW
+    self.df.loc[i, "e_a"] = (
+        1.24
+        * math.pow(abs(self.df.loc[i, "vp_a"] / (self.df.loc[i, "temp"] + 273.15)), 1 / 7)
+    )
+
+    self.df.loc[i, "e_a"] *= (1 + 0.22 * math.pow(self.cld, 2))
+
+    self.df.loc[i, "LW_in"] = (
+        self.df.loc[i, "e_a"] * self.sigma * math.pow(self.df.loc[i, "temp"]+ 273.15, 4)
+    )
+
     self.df.loc[i, "LW"] = self.df.loc[i, "LW_in"] - self.IE * self.sigma * math.pow(
         self.df.loc[i, "T_s"] + 273.15, 4
     )

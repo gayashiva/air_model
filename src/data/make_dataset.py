@@ -29,7 +29,7 @@ if __name__ == "__main__":
     # locations = ["leh20"]
     spray="ERA5_"
 
-    with open("data/common/constants.json") as f:
+    with open("constants.json") as f:
         CONSTANTS = json.load(f)
 
     if spray == "ERA5_":

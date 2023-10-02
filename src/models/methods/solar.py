@@ -28,7 +28,7 @@ def get_solar(coords, start, end, DT, alt):
     returns solar angle for each time step
     """
 
-    with open("data/common/constants.json") as f:
+    with open("constants.json") as f:
         CONSTANTS = json.load(f)
 
     site_location = location.Location(coords[0], coords[1], altitude=alt)
