@@ -46,6 +46,7 @@ def get_solar(coords, start, end, DT, alt):
     # clearsky = site_location.get_clearsky(times=times, model = 'ineichen')
     # clearness = irradiance.erbs(ghi = clearsky["ghi"], zenith = solar_position['zenith'],
     #                                   datetime_or_doy= times)
+    dni_extra = irradiance.get_extra_radiation(datetime_or_doy= times)
 
     solar_df = pd.DataFrame(
         {
@@ -53,6 +54,7 @@ def get_solar(coords, start, end, DT, alt):
             # "SW_diffuse": clearness["dhi"],
             # "cld": 1 - clearness["kt"],
             "sea": np.radians(solar_position["elevation"]),
+            "SW_extra": irradiance.get_extra_radiation(datetime_or_doy= times)
         }
     )
 
@@ -73,6 +75,8 @@ def get_solar(coords, start, end, DT, alt):
 if __name__ == "__main__":
     tf = TimezoneFinder()
     coords=[46.65549,8.29149]
+    site_location = location.Location(coords[0], coords[1])
+    print(site_location.lookup_altitude(*coords))
     # coords=[34.216638,77.606949]
     # print(timezone(tf.certain_timezone_at(lat=coords[0], lng=coords[1])))
     # print(get_offset(lat=coords[0], lng=coords[1]))

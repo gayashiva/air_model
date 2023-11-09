@@ -28,7 +28,8 @@ if __name__ == "__main__":
     logger.setLevel("WARNING")
     st = time.time()
 
-    locations = ["south_america20"]
+    # locations = ["north_america20"]
+    locations = ["leh20"]
 
     # locations = ["central_asia20"]
     # locations = ["chuapalca20"]
@@ -44,7 +45,7 @@ if __name__ == "__main__":
         icestupa.sim_air()
         # icestupa.gen_output()
         # icestupa.read_output()
-        # icestupa.summary_figures()
+        icestupa.summary_figures()
         # get the end time
         et = time.time()
 

@@ -52,6 +52,7 @@ def plot_input(df, folder, name):
     ax3.set_ylabel("Humidity [$\\%$]")
 
     y4 = df.SW_global
+    # y4 = df.ghi
     ax4.plot(x, y4, linestyle="-", color=default, linewidth=1)
     ax4.set_ylabel("Shortwave Radiation [$W\\,m^{-2}$]")
 

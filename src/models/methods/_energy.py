@@ -57,19 +57,22 @@ def get_energy(self, i):
     )
 
     # Long Wave Radiation LW
-    self.df.loc[i, "e_a"] = (
-        1.24
-        * math.pow(abs(self.df.loc[i, "vp_a"] / (self.df.loc[i, "temp"] + 273.15)), 1 / 7)
-    )
 
-    self.df.loc[i, "e_a"] *= (1 + 0.22 * math.pow(self.cld, 2))
+    # self.df.loc[i, "e_a"] = (
+    #     1.24
+    #     * math.pow(abs(self.df.loc[i, "vp_a"] / (self.df.loc[i, "temp"] + 273.15)), 1 / 7)
+    # )
 
+    # self.df.loc[i, "e_a"] *= (1 + 0.22 * math.pow(self.cld, 2))
+
+    # self.df.loc[i, "LW_in"] = (
+    #     self.df.loc[i, "e_a"] * self.sigma * math.pow(self.df.loc[i, "temp"]+ 273.15, 4)
+    # )
+
+    tau_atm = self.df.loc[i, "SW_global"]/self.df.loc[i, "SW_extra"]
     self.df.loc[i, "LW_in"] = (
-        self.df.loc[i, "e_a"] * self.sigma * math.pow(self.df.loc[i, "temp"]+ 273.15, 4)
-    )
-
-    self.df.loc[i, "LW"] = self.df.loc[i, "LW_in"] - self.IE * self.sigma * math.pow(
-        self.df.loc[i, "T_s"] + 273.15, 4
+        1.15 * self.sigma * math.pow((self.df.loc[i, "vp_a"] / (self.df.loc[i, "temp"]+ 273.15)), 1.7) 
+        * (1.67 - tau_atm * 0.83) * math.pow(self.df.loc[i, "temp"]+ 273.15, 4)
     )
 
 

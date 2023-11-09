@@ -19,6 +19,7 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 sys.path.append(dirname)
 from src.models.methods.solar import get_solar
 from src.utils.settings import config
+from src.plots.data import plot_input
 
 # Module logger
 logger = logging.getLogger("__main__")
@@ -72,7 +73,7 @@ class Icestupa:
 
         # Reset date range
         self.df = self.df.set_index("time")
-        self.df = self.df[self.start_date : self.expiry_date]
+        # self.df = self.df[self.start_date : self.expiry_date]
         self.df = self.df.reset_index()
 
         logger.debug(self.df.head())
@@ -202,7 +203,8 @@ class Icestupa:
             alt=self.alt,
         )
         self.df = pd.merge(solar_df, self.df, on="time", how="left")
-        self.df= self.df.rename(columns={"ghi": "SW_global",})
+        # self.df= self.df.rename(columns={"ghi": "SW_global"})
+        # plot_input(self.df, self.fig, self.name)
         logger.warning(f"Estimated global solar from pvlib\n")
         self.df["SW_direct"] = (1- self.cld) * self.df["SW_global"]
         self.df["SW_diffuse"] = self.cld * self.df["SW_global"]
