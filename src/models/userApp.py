@@ -17,7 +17,6 @@ from src.utils.settings import config
 from src.utils import setup_logger
 from src.utils.eff_criterion import nse
 import logging, coloredlogs
-from src.plots.data import plot_input
 
 
 if __name__ == "__main__":
@@ -33,8 +32,9 @@ if __name__ == "__main__":
 
     # locations = ["central_asia20"]
     # locations = ["chuapalca20"]
-    # locations = ["candarave20"]
     # locations = [ "north_america20", "europe20", "central_asia20","leh20", "south_america20"]
+    # locations = [ "north_america20", "europe20", "central_asia20","leh20"]
+    locations = ["north_america20"]
 
     spray = "ERA5_"
 
@@ -42,10 +42,10 @@ if __name__ == "__main__":
 
         icestupa = Icestupa(location, spray)
         SITE, FOLDER = config(location)
-        icestupa.sim_air()
-        # icestupa.gen_output()
-        # icestupa.read_output()
+        icestupa.sim_air(test=True)
         icestupa.summary_figures()
+        # icestupa.read_output()
+        # print(icestupa.df.LW.min())
         # get the end time
         et = time.time()
 

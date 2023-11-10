@@ -69,10 +69,18 @@ def get_energy(self, i):
     #     self.df.loc[i, "e_a"] * self.sigma * math.pow(self.df.loc[i, "temp"]+ 273.15, 4)
     # )
 
-    tau_atm = self.df.loc[i, "SW_global"]/self.df.loc[i, "SW_extra"]
+    if self.df.loc[i, "SW_extra"] !=0:
+        self.df.loc[i, "tau_atm"]= self.df.loc[i, "SW_global"]/self.df.loc[i, "SW_extra"]
+    else:
+        self.df.loc[i, "tau_atm"]=self.df.loc[i-1, "tau_atm"]
     self.df.loc[i, "LW_in"] = (
         1.15 * self.sigma * math.pow((self.df.loc[i, "vp_a"] / (self.df.loc[i, "temp"]+ 273.15)), 1.7) 
-        * (1.67 - tau_atm * 0.83) * math.pow(self.df.loc[i, "temp"]+ 273.15, 4)
+        * (1.67 - self.df.loc[i, "tau_atm"]* 0.83) * math.pow(self.df.loc[i, "temp"]+ 273.15, 4)
+    )
+
+    # Long Wave Radiation LW
+    self.df.loc[i, "LW"] = self.df.loc[i, "LW_in"] - self.IE * self.sigma * math.pow(
+        self.df.loc[i, "T_s"] + 273.15, 4
     )
 
 
@@ -132,7 +140,7 @@ def test_get_energy(self, i):
 
     if np.isnan(self.df.loc[i, "LW"]):
         logger.error(
-            f"time {self.df.time[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i]}"
+            f"time {self.df.time[i]},LW {self.df.LW[i]}, LW_in {self.df.LW_in[i]}, T_s {self.df.T_s[i]}, i {i}, SW_global {self.df.SW_global[i]}"
         )
         sys.exit("LW nan")
 

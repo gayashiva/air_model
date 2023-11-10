@@ -42,15 +42,15 @@ def get_solar(coords, start, end, DT, alt):
     )
 
     solar_position = site_location.get_solarposition(times=times, method="ephemeris")
-    clearsky = site_location.get_clearsky(times=times, model = 'simplified_solis')
+    # clearsky = site_location.get_clearsky(times=times, model = 'simplified_solis')
     # clearsky = site_location.get_clearsky(times=times, model = 'ineichen')
     # clearness = irradiance.erbs(ghi = clearsky["ghi"], zenith = solar_position['zenith'],
     #                                   datetime_or_doy= times)
-    dni_extra = irradiance.get_extra_radiation(datetime_or_doy= times)
+    # dni_extra = irradiance.get_extra_radiation(datetime_or_doy= times)
 
     solar_df = pd.DataFrame(
         {
-            "ghi": clearsky["ghi"],
+            # "ghi": clearsky["ghi"],
             # "SW_diffuse": clearness["dhi"],
             # "cld": 1 - clearness["kt"],
             "sea": np.radians(solar_position["elevation"]),

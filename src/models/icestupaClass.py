@@ -83,91 +83,10 @@ class Icestupa:
     from src.models.methods._freq import change_freq
     from src.models.methods._self_attributes import self_attributes
     from src.models.methods._albedo import get_albedo
-    # from src.models.methods._discharge import get_discharge
     from src.models.methods._area import get_area
     from src.models.methods._temp import get_temp, test_get_temp
     from src.models.methods._energy import get_energy, test_get_energy
     from src.models.methods._figures import summary_figures
-
-    def gen_output(self):  # Use processed input dataset
-
-        # results_dict = {}
-        # results = [
-        #     "iceV_max",
-        #     "last_hour",
-        #     "M_input",
-        #     "M_F",
-        #     "M_ppt",
-        #     "M_dep",
-        #     "M_water",
-        #     "M_waste",
-        #     "M_sub",
-        #     "M_ice",
-        #     "last_hour",
-        #     "R_F",
-        #     "D_F",
-        #     "WUE",
-        # ]
-        # iceV_max = self.df["iceV"].max()
-        # M_input = self.df["input"].iloc[-1]
-        # M_F = self.df["Discharge"].sum() * self.DT / 60 + self.df.loc[0, "input"]
-        # M_ppt = self.df["snow2ice"].sum()
-        # M_dep = self.df["dep"].sum()
-        # M_water = self.df["meltwater"].iloc[-1]
-        # M_waste = self.df["wastewater"].iloc[-1]
-        # M_sub = self.df["vapour"].iloc[-1]
-        # M_ice = self.df["ice"].iloc[-1]
-        # last_hour = self.df.shape[0]
-        # R_F = self.R_F
-        # D_F = self.D_F
-        # WUE = int((M_ice + M_water) / M_input * 100)
-
-        # if self.spray.split('_')[1] == 'field':
-        #     results.append("RMSE")
-        #     if self.name in ["guttannen22"]:
-        #         df_c = pd.read_hdf(self.input_sim  + "/input.h5", "df_c")
-        #     else:
-        #         df_c = pd.read_hdf(self.input  + "/input.h5", "df_c")
-        #     df_c = df_c[["time", "DroneV", "DroneVError"]]
-
-        #     df_c = df_c.set_index("time")
-        #     df = self.df.set_index("time")
-        #     RMSE = ((df['iceV'].subtract(df_c['DroneV'],axis=0))**2).mean()**.5
-
-        # # For web app
-        # for variable in results:
-        #     results_dict[variable] = float(round(eval(variable), 1))
-
-        # logger.warning("Summary of results for %s with scheduler %s  :" %(self.name, self.spray))
-        # for var in sorted(results_dict.keys()):
-        #     logger.warning("\t%s: %r" % (var, results_dict[var]))
-
-        # with open(self.output + "results.json", "w") as f:
-        #     json.dump(results_dict, f, sort_keys=True, indent=4)
-
-        # if last_hour > self.total_hours + 1:
-        #     self.df = self.df[: self.total_hours]
-        # else:
-        #     for j in range(last_hour, self.total_hours):
-        #         for col in self.df.columns:
-        #             if col not in ["temp"]:
-        #                 self.df.loc[j, col] = 0
-        #             if col in ["iceV"]:
-        #                 self.df.loc[j, col] = self.V_dome
-        #             if col in ["time"]:
-        #                 self.df.loc[j, col] = self.df.loc[j - 1, col] + timedelta(
-        #                     hours=1
-        #                 )
-
-        # self.df = self.df.reset_index(drop=True)
-
-        # Full Output
-        # self.df.to_csv(self.output + "/output.csv", sep=",")
-        self.df.to_hdf(
-            self.output  + "/output.h5",
-            key="df",
-            mode="w",
-        )
 
     def read_input(self):  # Use processed input dataset
 
@@ -182,13 +101,13 @@ class Icestupa:
 
         self.self_attributes()
 
-        with open(self.output + "/results.json", "r") as read_file:
-            results_dict = json.load(read_file)
+        # with open(self.output + "/results.json", "r") as read_file:
+        #     results_dict = json.load(read_file)
 
-        # Initialise all variables of dictionary
-        for key in results_dict:
-            setattr(self, key, results_dict[key])
-            logger.warning(f"%s -> %s" % (key, str(results_dict[key])))
+        # # Initialise all variables of dictionary
+        # for key in results_dict:
+        #     setattr(self, key, results_dict[key])
+        #     logger.warning(f"%s -> %s" % (key, str(results_dict[key])))
 
 
     # @Timer(text="Simulation executed in {:.2f} seconds", logger=logging.NOTSET)
@@ -203,9 +122,12 @@ class Icestupa:
             alt=self.alt,
         )
         self.df = pd.merge(solar_df, self.df, on="time", how="left")
+        if self.df.isna().values.any():
+            logger.warning(self.df[self.df.columns].isna().sum())
+            self.df= self.df.interpolate(method='ffill', axis=0)
         # self.df= self.df.rename(columns={"ghi": "SW_global"})
         # plot_input(self.df, self.fig, self.name)
-        logger.warning(f"Estimated global solar from pvlib\n")
+        # logger.warning(f"Estimated global solar from pvlib\n")
         self.df["SW_direct"] = (1- self.cld) * self.df["SW_global"]
         self.df["SW_diffuse"] = self.cld * self.df["SW_global"]
         logger.warning(f"Estimated solar components with constant cloudiness of {self.cld}\n")
@@ -261,6 +183,7 @@ class Icestupa:
             "input",
             "event",
             "rho_air",
+            "tau_atm",
         ]
 
         for column in all_cols:
@@ -288,8 +211,9 @@ class Icestupa:
         logger.warning(f"Cold windows: {start_date_list}")
         self.self_attributes()
 
+        logger.error(f"time {self.df.time[2137]},SW {self.df.SW_global[2137]}")
 
-        day_index = self.df.index[self.df['time']==start_date_list[0]][0]
+        day_index = self.df.index[self.df['time'].dt.date==start_date_list[0]][0]
 
         # Initialise first model time step
         self.df.loc[day_index, "h_cone"] = self.h_i
@@ -354,15 +278,11 @@ class Icestupa:
                 else:
                     for day in start_date_list:
                         if day >= self.df.loc[i+1, "time"]: 
-                            day_index = self.df.index[self.df['time']==day][0]
+                            day_index = self.df.index[self.df['time'].dt.date==day][0]
                             pbar.update(day_index - i)
                             i = day_index
                             logger.warning("\tNext cold window at %s\n" % self.df.loc[day_index, "time"])
                             break
-
-                    # if self.df.loc[i, "time"] < day:
-                    #     logger.error("Skipping %s" % self.df.loc[i, "time"])
-                    #     continue
 
                     # Initialise first model time step
                     self.df.loc[i-1, "h_cone"] = self.h_i
@@ -482,8 +402,8 @@ class Icestupa:
                 self.df.loc[i + 1, "iceV"] - self.df.loc[i, "iceV"]
             ) / (self.df.loc[i, "A_cone"])
 
-            if test and not ice_melted:
-                logger.error(f"time {self.df.time[i]}, iceV {self.df.iceV[i+1]},i {i},end {self.df.shape[0]}")
+            # if test and not ice_melted:
+                # logger.error(f"time {self.df.time[i]}, iceV {self.df.iceV[i+1]}")
             i = i+1
             pbar.update(1)
         else:
