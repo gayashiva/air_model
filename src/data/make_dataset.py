@@ -56,7 +56,7 @@ if __name__ == "__main__":
         df = df.set_index("time")
 
         time_steps = 60 * 60 
-        df["msdwswrf"] = df["msdwswrf"].fillna(0)
+        # df["msdwswrf"] = df["msdwswrf"].fillna(0)
         df["ssrd"] = df.ssrd.diff().fillna(0)
         df["ssrd"] /= time_steps
         df["ssrd"] = df["ssrd"].clip(lower=0)

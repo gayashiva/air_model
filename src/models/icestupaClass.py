@@ -125,12 +125,18 @@ class Icestupa:
         if self.df.isna().values.any():
             logger.warning(self.df[self.df.columns].isna().sum())
             self.df= self.df.interpolate(method='ffill', axis=0)
+            logger.warning(f"Filling nan values created by solar module\n")
+
+        self.df["tau_atm"]= self.df["SW_global"]/self.df["SW_extra"]
         # self.df= self.df.rename(columns={"ghi": "SW_global"})
         # plot_input(self.df, self.fig, self.name)
         # logger.warning(f"Estimated global solar from pvlib\n")
-        self.df["SW_direct"] = (1- self.cld) * self.df["SW_global"]
-        self.df["SW_diffuse"] = self.cld * self.df["SW_global"]
-        logger.warning(f"Estimated solar components with constant cloudiness of {self.cld}\n")
+        # self.df["SW_direct"] = (1- self.cld) * self.df["SW_global"]
+        # self.df["SW_diffuse"] = self.cld * self.df["SW_global"]
+        # logger.warning(f"Estimated solar components with constant cloudiness of {self.cld}\n")
+        self.df["SW_direct"] = self.df["tau_atm"] * self.df["SW_global"]
+        self.df["SW_diffuse"] = self.df["SW_global"] - self.df["SW_direct"]
+        logger.warning(f"Estimated solar components with mean atmospheric transmittivity of {self.df.tau_atm.mean()}\n")
 
         """Pressure"""
         self.df["press"] = atmosphere.alt2pres(self.alt) / 100
@@ -210,8 +216,6 @@ class Icestupa:
 
         logger.warning(f"Cold windows: {start_date_list}")
         self.self_attributes()
-
-        logger.error(f"time {self.df.time[2137]},SW {self.df.SW_global[2137]}")
 
         day_index = self.df.index[self.df['time'].dt.date==start_date_list[0]][0]
 

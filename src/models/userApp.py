@@ -6,8 +6,6 @@ import os, sys, shutil, time
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import pandas as pd
-# from sklearn.metrics import mean_squared_error
-
 
 # Locals
 dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -23,8 +21,8 @@ if __name__ == "__main__":
 
     # Main logger
     logger = logging.getLogger(__name__)
-    # logger.setLevel("ERROR")
-    logger.setLevel("WARNING")
+    logger.setLevel("ERROR")
+    # logger.setLevel("WARNING")
     st = time.time()
 
     # locations = ["north_america20"]
@@ -33,8 +31,8 @@ if __name__ == "__main__":
     # locations = ["central_asia20"]
     # locations = ["chuapalca20"]
     # locations = [ "north_america20", "europe20", "central_asia20","leh20", "south_america20"]
-    # locations = [ "north_america20", "europe20", "central_asia20","leh20"]
-    locations = ["north_america20"]
+    locations = [ "north_america20", "europe20", "central_asia20","leh20"]
+    # locations = ["north_america20"]
 
     spray = "ERA5_"
 
@@ -42,7 +40,7 @@ if __name__ == "__main__":
 
         icestupa = Icestupa(location, spray)
         SITE, FOLDER = config(location)
-        icestupa.sim_air(test=True)
+        icestupa.sim_air(test=False)
         icestupa.summary_figures()
         # icestupa.read_output()
         # print(icestupa.df.LW.min())

@@ -69,10 +69,6 @@ def get_energy(self, i):
     #     self.df.loc[i, "e_a"] * self.sigma * math.pow(self.df.loc[i, "temp"]+ 273.15, 4)
     # )
 
-    if self.df.loc[i, "SW_extra"] !=0:
-        self.df.loc[i, "tau_atm"]= self.df.loc[i, "SW_global"]/self.df.loc[i, "SW_extra"]
-    else:
-        self.df.loc[i, "tau_atm"]=self.df.loc[i-1, "tau_atm"]
     self.df.loc[i, "LW_in"] = (
         1.15 * self.sigma * math.pow((self.df.loc[i, "vp_a"] / (self.df.loc[i, "temp"]+ 273.15)), 1.7) 
         * (1.67 - self.df.loc[i, "tau_atm"]* 0.83) * math.pow(self.df.loc[i, "temp"]+ 273.15, 4)
