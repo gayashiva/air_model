@@ -39,9 +39,12 @@ def plot_input(df, folder, name):
 
     x = df.time
 
-    y1 = df.ppt
+    # y1 = df.ppt
+    # ax1.plot(x, y1, linestyle="-", color=default, linewidth=1)
+    # ax1.set_ylabel("Precipitation [$mm$]")
+    y1 = df.tcc
     ax1.plot(x, y1, linestyle="-", color=default, linewidth=1)
-    ax1.set_ylabel("Precipitation [$mm$]")
+    ax1.set_ylabel("Cloud")
 
     y2 = df.temp
     ax2.plot(x, y2, linestyle="-", color=default, linewidth=1)

@@ -16,7 +16,8 @@ def get_temp(self, i):
     self.df.loc[i, "Qt"] = self.df.loc[i, "Ql"]
 
     if (
-        (self.df.loc[i, "Discharge"]+self.df.loc[i, "rain2ice"]) > 0
+        # (self.df.loc[i, "Discharge"]+self.df.loc[i, "rain2ice"]) > 0
+        self.df.loc[i, "Discharge"] > 0
         and freezing_energy < 0
         and self.df.loc[i, "Qtotal"] < 0
     ):
@@ -77,7 +78,8 @@ def get_temp(self, i):
         ) / (self.L_F)
 
         self.df.loc[i, "wasted"] = (
-            self.df.Discharge.loc[i] * self.DT / 60 + self.df.rain2ice.loc[i] - self.df.loc[i, "fountain_froze"]
+            # self.df.Discharge.loc[i] * self.DT / 60 + self.df.rain2ice.loc[i] - self.df.loc[i, "fountain_froze"]
+            self.df.Discharge.loc[i] * self.DT / 60 - self.df.loc[i, "fountain_froze"]
         )
 
         if self.df.loc[i, "wasted"] < 0:
@@ -95,7 +97,8 @@ def get_temp(self, i):
                 -self.df.loc[i, "Qfreeze"] * self.DT * self.df.loc[i, "A_cone"]
             ) / (self.L_F)
     else:
-        self.df.loc[i, "wasted"] = self.df.Discharge.loc[i] * self.DT / 60 + self.df.rain2ice.loc[i]
+        # self.df.loc[i, "wasted"] = self.df.Discharge.loc[i] * self.DT / 60 + self.df.rain2ice.loc[i]
+        self.df.loc[i, "wasted"] = self.df.Discharge.loc[i] * self.DT / 60
         self.df.loc[i, "fountain_froze"] = 0
 
     if np.isnan(self.df.loc[i, "Qmelt"]):
@@ -131,7 +134,8 @@ def test_get_temp(self, i):
         sys.exit("fountain runoff nan")
 
     if (
-        self.df.loc[i, "wasted"] - self.df.loc[i, "Discharge"] * self.DT / 60 - self.df.loc[i, "rain2ice"]
+        # self.df.loc[i, "wasted"] - self.df.loc[i, "Discharge"] * self.DT / 60 - self.df.loc[i, "rain2ice"]
+        self.df.loc[i, "wasted"] - self.df.loc[i, "Discharge"] * self.DT / 60
         > 2
     ):
 

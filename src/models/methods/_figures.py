@@ -54,7 +54,7 @@ def summary_figures(self):
         [
             "time",
             "fountain_froze",
-            "ppt",
+            # "ppt",
             "dep",
             "melted",
             "sub",
@@ -73,20 +73,20 @@ def summary_figures(self):
                 )
                 dfds.loc[i, "melted"] *= -1 / (self.df.loc[i, "A_cone"] * self.RHO_I)
                 dfds.loc[i, "sub"] *= -1 / (self.df.loc[i, "A_cone"] * self.RHO_I)
-                dfds.loc[i, "ppt"] *= 1 / (self.df.loc[i, "A_cone"] * self.RHO_I)
+                # dfds.loc[i, "ppt"] *= 1 / (self.df.loc[i, "A_cone"] * self.RHO_I)
                 dfds.loc[i, "dep"] *= 1 / (self.df.loc[i, "A_cone"] * self.RHO_I)
             else:
                 dfds.loc[i, "Ice"] = 0
                 dfds.loc[i, "melted"] *= 0
                 dfds.loc[i, "sub"] *= 0
-                dfds.loc[i, "ppt"] *= 0
+                # dfds.loc[i, "ppt"] *= 0
                 dfds.loc[i, "dep"] *= 0
 
     dfds = dfds.set_index("time").resample("D").sum().reset_index()
 
     dfds = dfds.rename(
         columns={
-            "ppt": "Snow",
+            # "ppt": "Snow",
             "melted": "Melt",
             "sub": "Sublimation",
             "dep": "Deposition",
@@ -97,7 +97,7 @@ def summary_figures(self):
         [
             "time",
             "Ice",
-            "Snow",
+            # "Snow",
             "Deposition",
             "Sublimation",
             "Melt",

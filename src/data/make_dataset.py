@@ -32,10 +32,9 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel("INFO")
 
-    # locations = ["south_america20", "north_america20", "europe20", "central_asia20", "leh20"]
+    locations = ["south_america20", "north_america20", "europe20", "central_asia20", "leh20"]
     # locations = ["north_america20", "europe20", "central_asia20", "leh20"]
-    # locations = ["north_america20"]
-    locations = ["europe20"]
+    # locations = ["leh20", "south_america20"]
     spray="ERA5_"
 
     with open("constants.json") as f:
@@ -56,10 +55,7 @@ if __name__ == "__main__":
         df = df.set_index("time")
 
         time_steps = 60 * 60 
-        # df["msdwswrf"] = df["msdwswrf"].fillna(0)
-        df["ssrd"] = df.ssrd.diff().fillna(0)
         df["ssrd"] /= time_steps
-        df["ssrd"] = df["ssrd"].clip(lower=0)
         df['wind'] = np.sqrt(df.u10**2 + df.v10**2)
         # Derive RH
         df["t2m"] -= 273.15
@@ -69,25 +65,15 @@ if __name__ == "__main__":
         df= df.apply(lambda x: e_sat(x) if x.name == "t2m_RH" else x)
         df= df.apply(lambda x: e_sat(x) if x.name == "d2m_RH" else x)
         df["RH"] = 100 * df["d2m_RH"] / df["t2m_RH"]
-        # df["sp"] /= 100
-        df["tp"] *= 1000 #ppt in mm
-        # df.loc[df.ppt.isna(), "ppt"] = 0
-        df["ppt"] = df.tp.diff().fillna(0)
-        df.loc[df.ppt<0, "ppt"] = 0
-        df = df.drop(['u10', 'v10', 't2m_RH', 'd2m_RH', 'd2m', 'tp'], axis=1)
+        df = df.drop(['u10', 'v10', 't2m_RH', 'd2m_RH', 'd2m'], axis=1)
         df = df.reset_index()
 
 
         # CSV output
         df.rename(
             columns={
-                # "time": "TIMESTAMP",
                 "t2m": "temp",
-                "sp": "press",
                 "ssrd": "SW_global",
-                # "msdwswrf": "SW_global",
-                # "fdir": "SW_direct",
-                # "strd": "LW_in",
             },
             inplace=True,
         )
@@ -103,8 +89,7 @@ if __name__ == "__main__":
             "temp",
             "RH",
             "wind",
-            "ppt",
-            # "tcc",
+            "tcc",
             "SW_global",
             "Discharge",
         ]

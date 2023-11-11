@@ -82,7 +82,7 @@ class Icestupa:
     # Imported methods
     from src.models.methods._freq import change_freq
     from src.models.methods._self_attributes import self_attributes
-    from src.models.methods._albedo import get_albedo
+    # from src.models.methods._albedo import get_albedo
     from src.models.methods._area import get_area
     from src.models.methods._temp import get_temp, test_get_temp
     from src.models.methods._energy import get_energy, test_get_energy
@@ -131,24 +131,25 @@ class Icestupa:
         # self.df= self.df.rename(columns={"ghi": "SW_global"})
         # plot_input(self.df, self.fig, self.name)
         # logger.warning(f"Estimated global solar from pvlib\n")
-        # self.df["SW_direct"] = (1- self.cld) * self.df["SW_global"]
-        # self.df["SW_diffuse"] = self.cld * self.df["SW_global"]
+        self.df["SW_direct"] = (1- self.df["tcc"]) * self.df["SW_global"]
+        self.df["SW_diffuse"] = self.df["tcc"] * self.df["SW_global"]
+        logger.error(f"Estimated solar components with average cloudiness of {self.df.tcc.mean():.2f}\n")
         # logger.warning(f"Estimated solar components with constant cloudiness of {self.cld}\n")
-        self.df["SW_direct"] = self.df["tau_atm"] * self.df["SW_global"]
-        self.df["SW_diffuse"] = self.df["SW_global"] - self.df["SW_direct"]
-        logger.warning(f"Estimated solar components with mean atmospheric transmittivity of {self.df.tau_atm.mean()}\n")
+        # self.df["SW_direct"] = self.df["tau_atm"] * self.df["SW_global"]
+        # self.df["SW_diffuse"] = self.df["SW_global"] - self.df["SW_direct"]
+        # logger.warning(f"Estimated solar components with mean atmospheric transmittivity of {self.df.tau_atm.mean()}\n")
 
         """Pressure"""
         self.df["press"] = atmosphere.alt2pres(self.alt) / 100
         logger.warning(f"Estimated pressure from altitude\n")
 
-        """Albedo"""
-        self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
-        s = 0
-        f = 1
-        for row in self.df.itertuples():
-            i = row.Index
-            s, f = self.get_albedo(i, s, f)
+        # """Albedo"""
+        # self.A_DECAY = self.A_DECAY * 24 * 60 * 60 / self.DT
+        # s = 0
+        # f = 1
+        # for row in self.df.itertuples():
+        #     i = row.Index
+        #     s, f = self.get_albedo(i, s, f)
 
         self.df = self.df.round(3)
 
@@ -177,8 +178,8 @@ class Icestupa:
             "h_cone",
             "r_cone",
             "dr",
-            "snow2ice",
-            "rain2ice",
+            # "snow2ice",
+            # "rain2ice",
             "dep",
             "j_cone",
             "wasted",
@@ -258,7 +259,7 @@ class Icestupa:
 
                     col_list = [
                         "dep",
-                        "snow2ice",
+                        # "snow2ice",
                         "fountain_froze",
                         "wasted",
                         "sub",
@@ -311,31 +312,31 @@ class Icestupa:
 
             self.get_area(i)
 
-            # Precipitation 
-            if self.df.loc[i, "ppt"] > 0:
+            # # Precipitation 
+            # if self.df.loc[i, "ppt"] > 0:
 
-                if self.df.loc[i, "temp"] < self.T_PPT:
-                    self.df.loc[i, "snow2ice"] = (
-                        self.RHO_W
-                        * self.df.loc[i, "ppt"]
-                        / 1000
-                        * math.pi
-                        * math.pow(self.df.loc[i, "r_cone"], 2)
-                    )
-                else:
-                # If rain add to discharge and change temperature
-                    self.df.loc[i, "rain2ice"] = (
-                        self.RHO_W
-                        * self.df.loc[i, "ppt"]
-                        / 1000
-                        * math.pi
-                        * math.pow(self.df.loc[i, "r_cone"], 2)
-                    )
-                    # self.df.loc[i, "Discharge"] += self.df.loc[i, "rain2ice"]/60
-                    self.df.loc[i, "snow2ice"] = 0
-                    logger.info(f"Rain event on {self.df.time.loc[i]} with temp {self.df.temp.loc[i]}")
-            else:
-                self.df.loc[i, "snow2ice"] = 0
+            #     if self.df.loc[i, "temp"] < self.T_PPT:
+            #         self.df.loc[i, "snow2ice"] = (
+            #             self.RHO_W
+            #             * self.df.loc[i, "ppt"]
+            #             / 1000
+            #             * math.pi
+            #             * math.pow(self.df.loc[i, "r_cone"], 2)
+            #         )
+            #     else:
+            #     # If rain add to discharge and change temperature
+            #         self.df.loc[i, "rain2ice"] = (
+            #             self.RHO_W
+            #             * self.df.loc[i, "ppt"]
+            #             / 1000
+            #             * math.pi
+            #             * math.pow(self.df.loc[i, "r_cone"], 2)
+            #         )
+            #         # self.df.loc[i, "Discharge"] += self.df.loc[i, "rain2ice"]/60
+            #         self.df.loc[i, "snow2ice"] = 0
+            #         logger.info(f"Rain event on {self.df.time.loc[i]} with temp {self.df.temp.loc[i]}")
+            # else:
+            #     self.df.loc[i, "snow2ice"] = 0
 
             if test:
                 self.test_get_energy(i)
@@ -372,7 +373,7 @@ class Icestupa:
                 self.df.loc[i, "ice"]
                 + self.df.loc[i, "fountain_froze"]
                 + self.df.loc[i, "dep"]
-                + self.df.loc[i, "snow2ice"]
+                # + self.df.loc[i, "snow2ice"]
                 - self.df.loc[i, "sub"]
                 - self.df.loc[i, "melted"]
             )
@@ -388,17 +389,19 @@ class Icestupa:
                 self.df.loc[i + 1, "rho_air"] = self.RHO_I
             else:
                 self.df.loc[i + 1, "rho_air"] =(
-                        (self.df.loc[1, "ice"] + self.df.loc[:i, "fountain_froze"].sum()+self.df.loc[:i,"dep"].sum()+self.df.loc[:i,"snow2ice"].sum())
-                        /(( self.df.loc[1, "ice"] + self.df.loc[:i, "fountain_froze"].sum()+self.df.loc[:i, "dep"].sum())/self.RHO_I
-                        +(self.df.loc[:i, "snow2ice"].sum()/self.RHO_S))
+                        # (self.df.loc[1, "ice"] + self.df.loc[:i, "fountain_froze"].sum()+self.df.loc[:i,"dep"].sum()+self.df.loc[:i,"snow2ice"].sum())
+                        (self.df.loc[1, "ice"] + self.df.loc[:i, "fountain_froze"].sum()+self.df.loc[:i,"dep"].sum())
+                        /(( self.df.loc[1, "ice"] + self.df.loc[:i, "fountain_froze"].sum()+self.df.loc[:i,
+                                                                                                        "dep"].sum())/self.RHO_I)
+                        # +(self.df.loc[:i, "snow2ice"].sum()/self.RHO_S))
                 )
 
             self.df.loc[i + 1, "iceV"] = self.df.loc[i + 1, "ice"]/self.df.loc[i+1, "rho_air"]
 
             self.df.loc[i + 1, "input"] = (
                 self.df.loc[i, "input"]
-                + self.df.loc[i, "snow2ice"]
-                + self.df.loc[i, "rain2ice"]
+                # + self.df.loc[i, "snow2ice"]
+                # + self.df.loc[i, "rain2ice"]
                 + self.df.loc[i, "dep"]
                 + self.df.loc[i, "Discharge"] * self.DT / 60
             )

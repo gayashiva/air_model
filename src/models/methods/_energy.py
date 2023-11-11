@@ -51,7 +51,8 @@ def get_energy(self, i):
     )
 
     # Short Wave Radiation SW
-    self.df.loc[i, "SW"] = (1 - self.df.loc[i, "alb"]) * (
+    # self.df.loc[i, "SW"] = (1 - self.df.loc[i, "alb"]) * (
+    self.df.loc[i, "SW"] = (1 - self.A_I) * (
         self.df.loc[i, "SW_direct"] * self.df.loc[i, "f_cone"]
         + self.df.loc[i, "SW_diffuse"]
     )
@@ -89,13 +90,13 @@ def get_energy(self, i):
     )
 
     # self.df.loc[i, "Qr"] = 0
-    self.df.loc[i, "Qr"] = (
-        (self.df.loc[i, "rain2ice"])
-        * self.C_W
-        # * (self.df.loc[i, "temp"]-self.df.loc[i, "T_s"])
-        * self.df.loc[i, "temp"]
-        / (self.DT * self.df.loc[i, "A_cone"])
-    )
+    # self.df.loc[i, "Qr"] = (
+    #     (self.df.loc[i, "rain2ice"])
+    #     * self.C_W
+    #     # * (self.df.loc[i, "temp"]-self.df.loc[i, "T_s"])
+    #     * self.df.loc[i, "temp"]
+    #     / (self.DT * self.df.loc[i, "A_cone"])
+    # )
 
     # # snows heats temp to zero
     # if self.df.loc[i, "snow2ice"] > 0:
@@ -126,7 +127,7 @@ def get_energy(self, i):
         + self.df.loc[i, "Ql"]
         + self.df.loc[i, "Qf"]
         + self.df.loc[i, "Qg"]
-        + self.df.loc[i, "Qr"]
+        # + self.df.loc[i, "Qr"]
     )
 
 

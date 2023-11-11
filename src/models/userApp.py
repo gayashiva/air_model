@@ -26,13 +26,13 @@ if __name__ == "__main__":
     st = time.time()
 
     # locations = ["north_america20"]
-    locations = ["leh20"]
+    # locations = ["leh20"]
 
     # locations = ["central_asia20"]
     # locations = ["chuapalca20"]
-    # locations = [ "north_america20", "europe20", "central_asia20","leh20", "south_america20"]
-    locations = [ "north_america20", "europe20", "central_asia20","leh20"]
-    # locations = ["north_america20"]
+    locations = [ "north_america20", "europe20", "central_asia20","leh20", "south_america20"]
+    # locations = [ "north_america20", "europe20", "central_asia20","leh20"]
+    # locations = ["leh20", "south_america20"]
 
     spray = "ERA5_"
 
@@ -41,12 +41,12 @@ if __name__ == "__main__":
         icestupa = Icestupa(location, spray)
         SITE, FOLDER = config(location)
         icestupa.sim_air(test=False)
-        icestupa.summary_figures()
         # icestupa.read_output()
+        icestupa.summary_figures()
         # print(icestupa.df.LW.min())
         # get the end time
         et = time.time()
 
         # get the execution time
         elapsed_time = (et - st)/60
-        print('Execution time:', round(elapsed_time,2), 'min')
+        print('\n\tExecution time:', round(elapsed_time,2), 'min\n')
