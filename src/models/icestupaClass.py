@@ -420,4 +420,23 @@ class Icestupa:
                 key="df",
                 mode="w",
             )
+            results_dict = {}
+            results = [
+                "iceV_max",
+                "iceV_sum",
+                "survival_days",
+            ]
+            iceV_max = self.df["iceV"].max()
+            iceV_sum = self.df["iceV"].sum()
+            survival_days= self.df.iceV[self.df["iceV"]>0].sum()/24
+
+            for var in results:
+                results_dict[var] = float(round(eval(var), 1))
+
+            print("Summary of results for %s :" %(self.name))
+            for var in sorted(results_dict.keys()):
+                print("\t%s: %r" % (var, results_dict[var]))
+
+            with open(self.output + "results.json", "w") as f:
+                json.dump(results_dict, f, sort_keys=True, indent=4)
             # print(self.df.loc[i, "time"], self.df.loc[i, "iceV"])
