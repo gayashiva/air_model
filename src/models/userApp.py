@@ -40,8 +40,8 @@ if __name__ == "__main__":
 
         icestupa = Icestupa(location, spray)
         SITE, FOLDER = config(location)
-        icestupa.sim_air(test=False)
-        # icestupa.read_output()
+        # icestupa.sim_air(test=False)
+        icestupa.read_output()
         icestupa.summary_figures()
         # print(icestupa.df.LW.min())
         # get the end time

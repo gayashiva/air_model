@@ -22,10 +22,10 @@ def format_number(value):
         return f"{value:.0f}"
 
 
-@Timer(text="%s executed in {:.2f} seconds" % __name__, logger=logging.warning)
+# @Timer(text="%s executed in {:.2f} seconds" % __name__, logger=logging.warning)
 def summary_figures(self):
 
-    np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
+    # np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
     CB91_Blue = "#2CBDFE"
 
@@ -75,6 +75,30 @@ def summary_figures(self):
     # Save the modified figure
     plt.savefig(
         self.fig + "/IRVol_with_results.png",
+        bbox_inches="tight",
+        dpi=300,
+    )
+    plt.clf()
+
+    fig, ax = plt.subplots()
+    x = self.df.time
+    y1 = self.df.tau_atm
+    ax.set_ylabel("Transmittivity []")
+    ax.plot(
+        x,
+        y1,
+        label=self.name,
+        linewidth=1,
+        # s=1,
+        color=CB91_Blue,
+    )
+    plt.legend()
+    ax.xaxis.set_major_locator(mdates.MonthLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
+    ax.xaxis.set_minor_locator(mdates.WeekdayLocator())
+    fig.autofmt_xdate()
+    plt.savefig(
+        self.fig + "/tau_atm.png",
         bbox_inches="tight",
         dpi=300,
     )

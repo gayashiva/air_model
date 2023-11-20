@@ -51,40 +51,12 @@ def get_energy(self, i):
     )
 
     # Short Wave Radiation SW
-    # Hock, Regine, and Björn Holmgren. “A Distributed Surface Energy-Balance Model for Complex Topography and Its Application to Storglaciären, Sweden.” Journal of Glaciology 51, no. 172 (January 2005): 25–36. https://doi.org/10.3189/172756505781829566.
-    if self.df.loc[i, "tau_atm"] >= 0.8:
-        self.df.loc[i, "SW_diffuse"] = 0.15 * self.df.loc[i, "SW_global"]
-    elif (self.df.loc[i, "tau_atm"]<= 0.15) & (self.df.loc[i, "tau_atm"] != 0):
-        self.df.loc[i, "SW_diffuse"] = self.df.loc[i, "SW_global"]
-    elif self.df.loc[i, "tau_atm"] == 0:
-        self.df.loc[i, "SW_diffuse"] = self.df.loc[i-1, "SW_diffuse"]
-    else:
-        self.df.loc[i, "SW_diffuse"] = 0.929 + 1.134*self.df.loc[i, "tau_atm"] 
-        - 5.111 * self.df.loc[i,"tau_atm"]**2 + 3.106 * self.df.loc[i,"tau_atm"]**3
-        self.df.loc[i, "SW_diffuse"] *= self.df.loc[i, "SW_global"]
-
-    self.df["SW_direct"] = self.df["SW_global"] - self.df["SW_diffuse"]
-
-    # self.df["SW_diffuse"] = self.df["tcc"] * self.df["SW_global"]
-    # self.df= self.df.rename(columns={"ghi": "SW_global"})
-    # plot_input(self.df, self.fig, self.name)
-    # logger.warning(f"Estimated global solar from pvlib\n")
-    # self.df["SW_direct"] = (1- self.df["tcc"]) * self.df["SW_global"]
-    # self.df["SW_diffuse"] = self.df["tcc"] * self.df["SW_global"]
-    # logger.error(f"Estimated solar components with average cloudiness of {self.df.tcc.mean():.2f}\n")
-    # logger.warning(f"Estimated solar components with constant cloudiness of {self.cld}\n")
-    # self.df["SW_direct"] = self.df["tau_atm"] * self.df["SW_global"]
-    # self.df["SW_diffuse"] = self.df["SW_global"] - self.df["SW_direct"]
-
     self.df.loc[i, "SW"] = (1 - self.A_I) * (
         self.df.loc[i, "SW_direct"] * self.df.loc[i, "f_cone"]
         + self.df.loc[i, "SW_diffuse"]
     )
 
-
-
     # Long Wave Radiation LW
-
     # self.df.loc[i, "e_a"] = (
     #     1.24
     #     * math.pow(abs(self.df.loc[i, "vp_a"] / (self.df.loc[i, "temp"] + 273.15)), 1 / 7)

@@ -18,8 +18,8 @@ def self_attributes(self):
     if self.spray == "ERA5_":
         self.R_F = 10
         self.V_dome = 0
-        logger.error("Arbitrary spray radius of %s" % self.R_F)
-        logger.error("Arbitrary dome volume of %s" % self.V_dome)
+        logger.warning("Arbitrary spray radius of %s" % self.R_F)
+        logger.warning("Arbitrary dome volume of %s" % self.V_dome)
 
     # Get initial height
     self.h_i = self.DX + 3 * self.V_dome / (math.pi * self.R_F ** 2)

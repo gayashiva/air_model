@@ -49,24 +49,6 @@ class Icestupa:
             self.expiry_date = self.df.time[self.df.shape[0]-1]
 
         if "Discharge" not in list(self.df.columns):
-            df_f = pd.read_csv(self.input + "discharge_types.csv", sep=",", header=0, parse_dates=["time"])
-            df_f["Discharge"] = df_f[self.spray]
-            df_f = df_f[["time", "Discharge"]]
-            if np.count_nonzero(df_f["Discharge"]) <= 24:
-                logger.error("Less than 24 hours of spray")
-                sys.exit()
-
-            # Perform discharge atleast one night check
-            self.df = self.df.set_index("time")
-            df_f = df_f.set_index("time")
-            self.df["Discharge"] = df_f["Discharge"]
-            self.df["Discharge"] = self.df["Discharge"].replace(np.NaN, 0)
-            self.df = self.df.reset_index()
-
-            self.D_F = df_f.Discharge[df_f.Discharge != 0].mean()
-            print("\n") 
-            logger.warning("Discharge mean of %s method is %.1f\n" % (self.spray, self.D_F))
-        else:
             self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
             print("\n") 
             logger.warning("Discharge mean of %s method is %.1f\n" % (self.spray, self.D_F))
@@ -80,9 +62,7 @@ class Icestupa:
         logger.debug(self.df.tail())
 
     # Imported methods
-    from src.models.methods._freq import change_freq
     from src.models.methods._self_attributes import self_attributes
-    # from src.models.methods._albedo import get_albedo
     from src.models.methods._area import get_area
     from src.models.methods._temp import get_temp, test_get_temp
     from src.models.methods._energy import get_energy, test_get_energy
@@ -127,8 +107,39 @@ class Icestupa:
             self.df= self.df.interpolate(method='ffill', axis=0)
             logger.warning(f"Filling nan values created by solar module\n")
 
-        self.df["tau_atm"]= self.df["SW_global"]/self.df["SW_extra"]
-        logger.error(f"Estimated solar components with mean atmospheric transmittivity of {self.df.tau_atm.mean()}\n")
+        self.df.loc[0, "tau_atm"] = 0
+        for i in range(1, self.df.shape[0]):
+            if (self.df.loc[i, "SW_global"] > 20): #Night time 
+                self.df.loc[i, "tau_atm"] = self.df.loc[i,"SW_global"]/self.df.loc[i,"SW_extra"]
+                # logger.error(f"Time {self.df.loc[i, "time"]:.0f}, SW_global {self.df.loc[i, "SW_global"]:.0f}, SW_extra {self.df.loc[i,"SW_extra"]:.0f}, transmittivity {self.df.loc[i, "tau_atm"]:.0f}\n")
+            else:
+                self.df.loc[i, "tau_atm"] = self.df.loc[i-1, "tau_atm"]
+            # print(f"Time {self.df.time[i]}, transmittivity {self.df.tau_atm[i]:.2f}\n")
+
+
+            # Hock, Regine, and Björn Holmgren. “A Distributed Surface Energy-Balance Model for Complex Topography and Its Application to Storglaciären, Sweden.” Journal of Glaciology 51, no. 172 (January 2005): 25–36. https://doi.org/10.3189/172756505781829566.
+            if self.df.loc[i, "tau_atm"] >= 0.8:
+                self.df.loc[i, "SW_diffuse"] = 0.15 * self.df.loc[i, "SW_global"]
+            elif (self.df.loc[i, "tau_atm"]<= 0.15):
+                self.df.loc[i, "SW_diffuse"] = self.df.loc[i, "SW_global"]
+            else:
+                self.df.loc[i, "SW_diffuse"] = 0.929 + 1.134*self.df.loc[i, "tau_atm"] 
+                - 5.111 * self.df.loc[i,"tau_atm"]**2 + 3.106 * self.df.loc[i,"tau_atm"]**3
+                self.df.loc[i, "SW_diffuse"] *= self.df.loc[i, "SW_global"]
+
+        logger.warning(f"Estimated atmospheric transmittivity {self.df.tau_atm.mean():.2f}\n")
+        self.df["SW_direct"] = self.df["SW_global"] - self.df["SW_diffuse"]
+
+        # self.df["SW_diffuse"] = self.df["tcc"] * self.df["SW_global"]
+        # self.df= self.df.rename(columns={"ghi": "SW_global"})
+        # plot_input(self.df, self.fig, self.name)
+        # logger.warning(f"Estimated global solar from pvlib\n")
+        # self.df["SW_direct"] = (1- self.df["tcc"]) * self.df["SW_global"]
+        # self.df["SW_diffuse"] = self.df["tcc"] * self.df["SW_global"]
+        # logger.error(f"Estimated solar components with average cloudiness of {self.df.tcc.mean():.2f}\n")
+        # logger.warning(f"Estimated solar components with constant cloudiness of {self.cld}\n")
+        # self.df["SW_direct"] = self.df["tau_atm"] * self.df["SW_global"]
+        # self.df["SW_diffuse"] = self.df["SW_global"] - self.df["SW_direct"]
 
         """Pressure"""
         self.df["press"] = atmosphere.alt2pres(self.alt) / 100
@@ -181,7 +192,6 @@ class Icestupa:
             "input",
             "event",
             "rho_air",
-            "tau_atm",
         ]
 
         for column in all_cols:
