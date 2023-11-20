@@ -34,34 +34,34 @@ def plot_input(df, folder, name):
     CB91_Violet = "#661D98"
     CB91_Amber = "#F5B14C"
 
-    fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(
-        nrows=5, ncols=1, sharex="col", figsize=(10, 14))
+    fig, (ax1, ax2, ax3, ax4) = plt.subplots(
+        nrows=4, ncols=1, sharex="col", figsize=(10, 14))
 
     x = df.time
 
     # y1 = df.ppt
     # ax1.plot(x, y1, linestyle="-", color=default, linewidth=1)
     # ax1.set_ylabel("Precipitation [$mm$]")
-    y1 = df.tcc
+    # y1 = df.tcc
+    # ax1.plot(x, y1, linestyle="-", color=default, linewidth=1)
+    # ax1.set_ylabel("Cloud")
+
+    y1 = df.temp
     ax1.plot(x, y1, linestyle="-", color=default, linewidth=1)
-    ax1.set_ylabel("Cloud")
+    ax1.set_ylabel("Temperature [$\\degree C$]")
 
-    y2 = df.temp
+    y2 = df.RH
     ax2.plot(x, y2, linestyle="-", color=default, linewidth=1)
-    ax2.set_ylabel("Temperature [$\\degree C$]")
+    ax2.set_ylabel("Humidity [$\\%$]")
 
-    y3 = df.RH
-    ax3.plot(x, y3, linestyle="-", color=default, linewidth=1)
-    ax3.set_ylabel("Humidity [$\\%$]")
-
-    y4 = df.SW_global
+    y3 = df.SW_global
     # y4 = df.ghi
-    ax4.plot(x, y4, linestyle="-", color=default, linewidth=1)
-    ax4.set_ylabel("Shortwave Radiation [$W\\,m^{-2}$]")
+    ax3.plot(x, y3, linestyle="-", color=default, linewidth=1)
+    ax3.set_ylabel("Shortwave Radiation [$W\\,m^{-2}$]")
 
-    y5 = df.wind
-    ax5.plot(x, y5, linestyle="-", color=default, linewidth=1)
-    ax5.set_ylabel("Wind speed [$m\\,s^{-1}$]")
+    y4 = df.wind
+    ax4.plot(x, y4, linestyle="-", color=default, linewidth=1)
+    ax4.set_ylabel("Wind speed [$m\\,s^{-1}$]")
 
     # ax1.spines[["top", "right"]].set_visible(False)
     # ax2.spines[["top", "right"]].set_visible(False)

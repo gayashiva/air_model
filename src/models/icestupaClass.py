@@ -128,16 +128,7 @@ class Icestupa:
             logger.warning(f"Filling nan values created by solar module\n")
 
         self.df["tau_atm"]= self.df["SW_global"]/self.df["SW_extra"]
-        # self.df= self.df.rename(columns={"ghi": "SW_global"})
-        # plot_input(self.df, self.fig, self.name)
-        # logger.warning(f"Estimated global solar from pvlib\n")
-        self.df["SW_direct"] = (1- self.df["tcc"]) * self.df["SW_global"]
-        self.df["SW_diffuse"] = self.df["tcc"] * self.df["SW_global"]
-        logger.error(f"Estimated solar components with average cloudiness of {self.df.tcc.mean():.2f}\n")
-        # logger.warning(f"Estimated solar components with constant cloudiness of {self.cld}\n")
-        # self.df["SW_direct"] = self.df["tau_atm"] * self.df["SW_global"]
-        # self.df["SW_diffuse"] = self.df["SW_global"] - self.df["SW_direct"]
-        # logger.warning(f"Estimated solar components with mean atmospheric transmittivity of {self.df.tau_atm.mean()}\n")
+        logger.error(f"Estimated solar components with mean atmospheric transmittivity of {self.df.tau_atm.mean()}\n")
 
         """Pressure"""
         self.df["press"] = atmosphere.alt2pres(self.alt) / 100
@@ -223,6 +214,7 @@ class Icestupa:
         # Initialise first model time step
         self.df.loc[day_index, "h_cone"] = self.h_i
         self.df.loc[day_index, "r_cone"] = self.R_F
+        self.df.loc[day_index, "SW_diffuse"] = 0
         self.df.loc[day_index, "dr"] = self.DX
         self.df.loc[day_index, "s_cone"] = self.df.loc[day_index, "h_cone"] / self.df.loc[day_index, "r_cone"]
         V_initial = math.pi / 3 * self.R_F ** 2 * self.h_i
@@ -413,30 +405,30 @@ class Icestupa:
                 # logger.error(f"time {self.df.time[i]}, iceV {self.df.iceV[i+1]}")
             i = i+1
             pbar.update(1)
-        else:
-            # Full Output
-            self.df.to_hdf(
-                self.output  + "/output.h5",
-                key="df",
-                mode="w",
-            )
-            results_dict = {}
-            results = [
-                "iceV_max",
-                "iceV_sum",
-                "survival_days",
-            ]
-            iceV_max = self.df["iceV"].max()
-            iceV_sum = self.df["iceV"].sum()
-            survival_days= self.df.iceV[self.df["iceV"]>0].sum()/24
 
-            for var in results:
-                results_dict[var] = float(round(eval(var), 1))
+        # Processing full output
+        self.df.to_hdf(
+            self.output  + "/output.h5",
+            key="df",
+            mode="w",
+        )
+        results_dict = {}
+        results = [
+            "iceV_max",
+            "iceV_sum",
+            "survival_days",
+        ]
+        iceV_max = self.df["iceV"].max()
+        iceV_sum = self.df["iceV"].sum()
+        survival_days= self.df.iceV.gt(0).sum()/24
 
-            print("Summary of results for %s :" %(self.name))
-            for var in sorted(results_dict.keys()):
-                print("\t%s: %r" % (var, results_dict[var]))
+        for var in results:
+            results_dict[var] = float(round(eval(var), 1))
 
-            with open(self.output + "results.json", "w") as f:
-                json.dump(results_dict, f, sort_keys=True, indent=4)
-            # print(self.df.loc[i, "time"], self.df.loc[i, "iceV"])
+        print("Summary of results for %s :" %(self.name))
+        for var in sorted(results_dict.keys()):
+            print("\t%s: %r" % (var, results_dict[var]))
+
+        with open(self.output + "results.json", "w") as f:
+            json.dump(results_dict, f, sort_keys=True, indent=4)
+        # print(self.df.loc[i, "time"], self.df.loc[i, "iceV"])

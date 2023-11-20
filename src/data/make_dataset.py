@@ -89,7 +89,7 @@ if __name__ == "__main__":
             "temp",
             "RH",
             "wind",
-            "tcc",
+            # "tcc",
             "SW_global",
             "Discharge",
         ]
@@ -103,9 +103,9 @@ if __name__ == "__main__":
         if len(df_out[df_out.index.duplicated()]):
             logger.error("Duplicate indexes")
 
-        logger.error(df_out.SW_global.loc[2137])
-        logger.error(df_out.SW_global.mean())
-        logger.error(df_out.SW_global.max())
+        # logger.error(df_out.SW_global.loc[2137])
+        # logger.error(df_out.SW_global.mean())
+        # logger.error(df_out.SW_global.max())
         logger.info(df_out.head(10))
         logger.info(df_out.tail())
         plot_input(df_out, FOLDER['fig'], SITE["name"])
