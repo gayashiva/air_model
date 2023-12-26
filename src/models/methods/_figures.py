@@ -102,6 +102,52 @@ def summary_figures(self):
         bbox_inches="tight",
         dpi=300,
     )
+
+    fig, ax = plt.subplots()
+    x = self.df.time
+    y1 = self.df.SW_extra
+    ax.set_ylabel("SW_extra []")
+    ax.plot(
+        x,
+        y1,
+        label=self.name,
+        linewidth=1,
+        # s=1,
+        color=CB91_Blue,
+    )
+    plt.legend()
+    ax.xaxis.set_major_locator(mdates.MonthLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
+    ax.xaxis.set_minor_locator(mdates.WeekdayLocator())
+    fig.autofmt_xdate()
+    plt.savefig(
+        self.fig + "/SW_extra.png",
+        bbox_inches="tight",
+        dpi=300,
+    )
+
+    fig, ax = plt.subplots()
+    x = self.df.time
+    y1 = self.df.SW_global
+    ax.set_ylabel("SW_global []")
+    ax.plot(
+        x,
+        y1,
+        label=self.name,
+        linewidth=1,
+        # s=1,
+        color=CB91_Blue,
+    )
+    plt.legend()
+    ax.xaxis.set_major_locator(mdates.MonthLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
+    ax.xaxis.set_minor_locator(mdates.WeekdayLocator())
+    fig.autofmt_xdate()
+    plt.savefig(
+        self.fig + "/SW_global.png",
+        bbox_inches="tight",
+        dpi=300,
+    )
     plt.clf()
 
     plt.close("all")

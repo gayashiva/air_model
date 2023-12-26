@@ -33,16 +33,13 @@ if __name__ == "__main__":
     logger.setLevel("INFO")
 
     locations = ["south_america20", "north_america20", "europe20", "central_asia20", "leh20"]
-    # locations = ["north_america20", "europe20", "central_asia20", "leh20"]
-    # locations = ["leh20", "south_america20"]
-    spray="ERA5_"
 
     with open("constants.json") as f:
         CONSTANTS = json.load(f)
 
     for loc in locations:
         print(loc)
-        SITE, FOLDER = config(loc, spray)
+        SITE, FOLDER = config(loc)
 
         df= pd.read_csv(
             "data/era5/" + loc + ".csv",
