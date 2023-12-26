@@ -20,26 +20,32 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Command line interface to create or display Icestupa class")
 
     parser.add_argument("--location", required=True, help="Specify the location (e.g., leh20)")
-    parser.add_argument("--spray", default="ERA5_", help="Specify the spray parameter (default: ERA5_)")
 
     # Add more arguments as needed, such as start date, end date, altitude, etc.
+    parser.add_argument("--start_year", required=True, help="Specify the location (e.g., leh20)")
+    parser.add_argument("--end_year", required=True, help="Specify the location (e.g., leh20)")
+    parser.add_argument("--alt", required=True, help="Specify the location (e.g., leh20)")
+    parser.add_argument("--coords", required=True, help="Specify the location (e.g., leh20)")
 
     return parser.parse_args()
 
 def merge_with_settings(args):
     # Merge command-line arguments with settings file
-    SITE, FOLDER = config(args.location, args.spray)
+    SITE, FOLDER = config(args.location)
 
     # If the argument is not provided, use the value from the settings file
     # You can extend this logic for other parameters
-    if not hasattr(args, 'start_date') or args.start_date is None:
-        args.start_date = SITE.get('start_date', None)
+    if not hasattr(args, 'start_year') or args.start_year is None:
+        args.start_date = SITE.get('start_year', None)
 
-    if not hasattr(args, 'end_date') or args.end_date is None:
-        args.end_date = SITE.get('end_date', None)
+    if not hasattr(args, 'end_year') or args.end_year is None:
+        args.end_date = SITE.get('end_year', None)
 
-    if not hasattr(args, 'altitude') or args.altitude is None:
+    if not hasattr(args, 'alt') or args.alt is None:
         args.altitude = SITE.get('alt', None)
+
+    if not hasattr(args, 'coords') or args.alt is None:
+        args.altitude = SITE.get('coords', None)
 
     return args, SITE, FOLDER
 
@@ -48,8 +54,8 @@ if __name__ == "__main__":
 
     # Main logger
     logger = logging.getLogger(__name__)
-    logger.setLevel("ERROR")
-    # logger.setLevel("WARNING")
+    # logger.setLevel("ERROR")
+    logger.setLevel("WARNING")
     st = time.time()
 
     args = parse_args()
@@ -58,24 +64,19 @@ if __name__ == "__main__":
     args, SITE, FOLDER = merge_with_settings(args)
 
     # locations = ["north_america20"]
-    locations = ["leh20"]
+    # locations = ["leh20"]
 
-    # locations = ["central_asia20"]
-    # locations = ["chuapalca20"]
     # locations = [ "north_america20", "europe20", "central_asia20","leh20", "south_america20"]
-    # locations = [ "north_america20", "europe20", "central_asia20","leh20"]
-    # locations = ["leh20", "south_america20"]
 
-    spray = "ERA5_"
+    # spray = "ERA5_"
 
     # for location in locations:
 
-    icestupa = Icestupa(args.location, args.spray)
-    SITE, FOLDER = config(location)
-    # icestupa.sim_air(test=False)
-    icestupa.read_output()
+    icestupa = Icestupa(args.location)
+    SITE, FOLDER = config(args.location, start_year=args.start_year, end_year=args.end_year, alt=args.alt, coords=args.coords)
+    icestupa.sim_air(test=False)
+    # icestupa.read_output()
     icestupa.summary_figures()
-    # print(icestupa.df.LW.min())
     # get the end time
     et = time.time()
 

@@ -26,14 +26,12 @@ logger = logging.getLogger("__main__")
 logger.propagate = False
 
 class Icestupa:
-    def __init__(self, location="Guttannen 2021", spray="none_none"):
-
-        self.spray = spray
+    def __init__(self, location=None):
 
         with open("constants.json") as f:
             CONSTANTS = json.load(f)
 
-        SITE, FOLDER = config(location, spray)
+        SITE, FOLDER = config(location)
 
         initialize = [CONSTANTS, SITE, FOLDER]
 
@@ -44,19 +42,8 @@ class Icestupa:
 
         # Initialize input dataset
         self.df = pd.read_csv(self.input + "aws.csv", sep=",", header=0, parse_dates=["time"])
-        if self.spray == "ERA5_":
-            self.start_date = self.df.time[0]
-            self.expiry_date = self.df.time[self.df.shape[0]-1]
-
-        if "Discharge" not in list(self.df.columns):
-            self.D_F = self.df.Discharge[self.df.Discharge != 0].mean()
-            print("\n") 
-            logger.warning("Discharge mean of %s method is %.1f\n" % (self.spray, self.D_F))
-
-        # Reset date range
-        self.df = self.df.set_index("time")
-        # self.df = self.df[self.start_date : self.expiry_date]
-        self.df = self.df.reset_index()
+        self.start_date = self.df.time[0]
+        self.expiry_date = self.df.time[self.df.shape[0]-1]
 
         logger.debug(self.df.head())
         logger.debug(self.df.tail())
@@ -219,7 +206,7 @@ class Icestupa:
         logger.warning(f"Cold windows: {start_date_list}")
         self.self_attributes()
 
-        day_index = self.df.index[self.df['time'].dt.date==start_date_list[0]][0]
+        day_index = self.df.index[self.df['time'].dt.strftime('%Y-%m-%d')==start_date_list[0].strftime('%Y-%m-%d')][0]
 
         # Initialise first model time step
         self.df.loc[day_index, "h_cone"] = self.h_i
@@ -285,7 +272,7 @@ class Icestupa:
                 else:
                     for day in start_date_list:
                         if day >= self.df.loc[i+1, "time"]: 
-                            day_index = self.df.index[self.df['time'].dt.date==day][0]
+                            day_index = self.df.index[self.df['time'].dt.strftime('%Y-%m-%d')==day.strftime('%Y-%m-%d')][0]
                             pbar.update(day_index - i)
                             i = day_index
                             logger.warning("\tNext cold window at %s\n" % self.df.loc[day_index, "time"])

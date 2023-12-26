@@ -1,4 +1,4 @@
-"""loc specific settings used to initialise icestupa object
+"""location specific settings used to initialise icestupa object
 """
 
 # External modules
@@ -16,48 +16,47 @@ logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
 logging.getLogger("numexpr").setLevel(logging.CRITICAL)
 logging.getLogger('PIL').setLevel(logging.CRITICAL)
 
-# Module logger
-logger = logging.getLogger("__main__")
+# Module logger = logging.getLogger("__main__")
 
-def config(loc=None, start_date=None, end_date=None, alt=None):
-    # logger.warning(f"Site {loc} with scheduler {spray}")
+def config(location=None, start_year=None, end_year=None, coords=None, alt=None):
+    # logger.warning(f"Site {location}")
 
-    if loc == "leh20":
+    if location == "leh":
 
         SITE = dict(
-            name=loc,
+            name=location,
             alt=4009 if alt is None else alt,
             coords=[34.216638,77.606949] if coords is None else coords,
         )
 
-    else if loc == "europe20":
+    elif location == "europe":
 
         SITE = dict(
-            name=loc,
+            name=location,
             alt=1013 if alt is None else alt,
             coords=[67.25, 17.75] if coords is None else coords,
         )
 
-    else if loc == "central_asia20":
+    elif location == "central_asia":
 
         SITE = dict(
-            name=loc,
+            name=location,
             alt=998 if alt is None else alt,
             coords=[69.25, 95.25]  if coords is None else coords,
         )
 
-    else if loc == "south_america20":
+    elif location == "south_america":
 
         SITE = dict(
-            name="south_america20",
+            name=location,
             alt=3877 if alt is None else alt,
             coords=[-29.75, -69.75]  if coords is None else coords,
         )
 
-    else if loc == "north_america20":
+    elif location == "north_america":
 
         SITE = dict(
-            name=loc,
+            name=location,
             alt=1439 if alt is None else alt,
             coords=[-29.75, -69.75]  if coords is None else coords,
         )
@@ -65,36 +64,30 @@ def config(loc=None, start_date=None, end_date=None, alt=None):
     else:
 
         SITE = dict(
-            name=loc,
+            name=location,
             alt=alt,
             coords=coords,
         )
 
     add = dict(
         # Calibrated values
-        start_date=datetime(2021, 1, 1) if start_date is None else start_date,
-        expiry_date =datetime(2022, 12, 31) if expiry_date is None else expiry_date,
+        start_date=datetime(2019, 1, 1) if start_year is None else datetime(int(start_year),1,1),
+        expiry_date =datetime(2020, 8, 31) if end_year is None else datetime(int(end_year)+1,1,1),
         R_F=10,
         V_dome=0,
         T_F=0,
         # cld=0.2,
-        minimum_period=7 if minimum_period is None else minimum_period,
+        minimum_period=7,
     )
 
     SITE = dict(SITE, **add)
+    # print(SITE)
 
     FOLDER = dict(
-        raw="data/" + SITE["name"] + "/raw/",
-        input="data/" + SITE["name"] + "/interim/",
-        output="data/" + SITE["name"] + "/processed/",
-        fig="data/" + SITE["name"] + "/figs/",
+        raw="data/" + location + "/raw/",
+        input="data/" + location + "/interim/",
+        output="data/" + location + "/processed/",
+        fig="data/" + location + "/figs/",
     )
-
-    if not os.path.exists(dirname + "data/" + SITE["name"]):
-        os.mkdir(dirname + FOLDER["raw"])
-        os.mkdir(dirname + FOLDER["input"])
-        os.mkdir(dirname + FOLDER["output"])
-        os.mkdir(dirname + FOLDER["fig"])
-
 
     return SITE, FOLDER

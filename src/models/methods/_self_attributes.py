@@ -15,11 +15,10 @@ logger = logging.getLogger("__main__")
 def self_attributes(self):
     logger.info("Initialising Icestupa attributes")
 
-    if self.spray == "ERA5_":
-        self.R_F = 10
-        self.V_dome = 0
-        logger.warning("Arbitrary spray radius of %s" % self.R_F)
-        logger.warning("Arbitrary dome volume of %s" % self.V_dome)
+    # self.R_F = 10
+    # self.V_dome = 0
+    logger.warning("Arbitrary spray radius of %s" % self.R_F)
+    logger.warning("Arbitrary dome volume of %s" % self.V_dome)
 
     # Get initial height
     self.h_i = self.DX + 3 * self.V_dome / (math.pi * self.R_F ** 2)

@@ -16,7 +16,7 @@ logger = logging.getLogger("__main__")
 @Timer(text="%s executed in {:.2f} seconds" % __name__, logger=logging.warning)
 def plot_input(df, folder, name):
 
-    np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
+    # np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
     blue = "#0a4a97"
     red = "#e23028"
     purple = "#9673b9"
