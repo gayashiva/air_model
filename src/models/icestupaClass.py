@@ -89,6 +89,7 @@ class Icestupa:
             alt=self.alt,
         )
         self.df = pd.merge(solar_df, self.df, on="time", how="left")
+        # self.df["tau_atm"] = self.df["tau_atm"] * self.df["SW_global"]/self.df["ghi"]
         if self.df.isna().values.any():
             logger.warning(self.df[self.df.columns].isna().sum())
             self.df= self.df.interpolate(method='ffill', axis=0)
@@ -115,6 +116,7 @@ class Icestupa:
                 self.df.loc[i, "SW_diffuse"] *= self.df.loc[i, "SW_global"]
 
         logger.warning(f"Estimated atmospheric transmittivity {self.df.tau_atm.mean():.2f}\n")
+        # logger.error(f"Min TOA {self.df.SW_extra.min():.2f}\n")
         self.df["SW_direct"] = self.df["SW_global"] - self.df["SW_diffuse"]
 
         # self.df["SW_diffuse"] = self.df["tcc"] * self.df["SW_global"]

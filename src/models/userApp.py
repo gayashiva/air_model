@@ -22,10 +22,10 @@ def parse_args():
     parser.add_argument("--location", required=True, help="Specify the location (e.g., leh20)")
 
     # Add more arguments as needed, such as start date, end date, altitude, etc.
-    parser.add_argument("--start_year", required=True, help="Specify the location (e.g., leh20)")
-    parser.add_argument("--end_year", required=True, help="Specify the location (e.g., leh20)")
-    parser.add_argument("--alt", required=True, help="Specify the location (e.g., leh20)")
-    parser.add_argument("--coords", required=True, help="Specify the location (e.g., leh20)")
+    parser.add_argument("--start_year", required=True, help="Specify the location (e.g., 2019)")
+    parser.add_argument("--end_year", required=True, help="Specify the location (e.g., 2020)")
+    parser.add_argument("--alt", required=False, help="Specify the location (e.g., 4000)")
+    parser.add_argument("--coords", required=False, help="Specify the location (e.g.,[43,108] )")
 
     return parser.parse_args()
 
@@ -37,15 +37,19 @@ def merge_with_settings(args):
     # You can extend this logic for other parameters
     if not hasattr(args, 'start_year') or args.start_year is None:
         args.start_date = SITE.get('start_year', None)
+        logger.warning(f"Default Start Year {args.start_date}")
 
     if not hasattr(args, 'end_year') or args.end_year is None:
         args.end_date = SITE.get('end_year', None)
+        logger.warning(f"Default End Year {args.end_date}")
 
     if not hasattr(args, 'alt') or args.alt is None:
         args.altitude = SITE.get('alt', None)
+        logger.warning(f"Default Altitude {args.altitude}")
 
     if not hasattr(args, 'coords') or args.alt is None:
-        args.altitude = SITE.get('coords', None)
+        args.coords= SITE.get('coords', None)
+        logger.warning(f"Default coords {args.coords}")
 
     return args, SITE, FOLDER
 
