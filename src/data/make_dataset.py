@@ -27,20 +27,48 @@ def e_sat(T, surface="water", a1=611.21, a3=17.502, a4=32.19):
         a4 = -0.7  # K
     return a1 * np.exp(a3 * (T - 273.16) / (T - a4))
 
+# def parse_args():
+#     parser = argparse.ArgumentParser(description="Command line interface to create or display Icestupa class")
+
+#     parser.add_argument("--location", required=True, help="Specify the location as lat_long_alt.csv")
+
+#     # Add more arguments as needed, such as start date, end date, altitude, etc.
+#     parser.add_argument("--start_year", required=True, help="Specify the location (e.g., leh20)")
+#     parser.add_argument("--end_year", required=True, help="Specify the location (e.g., leh20)")
+#     parser.add_argument("--alt", required=True, help="Specify the location (e.g., leh20)")
+#     parser.add_argument("--coords", required=True, help="Specify the location (e.g., leh20)")
+
+#     return parser.parse_args()
 def parse_args():
     parser = argparse.ArgumentParser(description="Command line interface to create or display Icestupa class")
 
-    parser.add_argument("--location", required=True, help="Specify the location (e.g., leh20)")
-
-    # Add more arguments as needed, such as start date, end date, altitude, etc.
-    parser.add_argument("--start_year", required=True, help="Specify the location (e.g., leh20)")
-    parser.add_argument("--end_year", required=True, help="Specify the location (e.g., leh20)")
-    parser.add_argument("--alt", required=True, help="Specify the location (e.g., leh20)")
-    parser.add_argument("--coords", required=True, help="Specify the location (e.g., leh20)")
+    parser.add_argument("--location", required=True, help="Specify the location filename as lat_long_alt (e.g., 34.216_77.606_4009.csv)")
+    parser.add_argument("--start_year", required=True, help="Specify the start year (e.g., 2019)")
+    parser.add_argument("--end_year", required=True, help="Specify the end year (e.g., 2020)")
 
     return parser.parse_args()
 
+def extract_location_details(location):
+    # Strip the file extension if present
+    if location.endswith('.csv'):
+        location = location
+
+    # Split the string based on underscore
+    try:
+        lat, long, alt = location.split('_')
+        coords = [float(lat), float(long)]
+        alt = int(alt)
+    except ValueError:
+        raise ValueError("Location should be in the format lat_long_alt.csv (e.g., 34.216_77.606_4009.csv)")
+
+    return coords, alt
+
 def merge_with_settings(args):
+    # Extract coordinates and altitude from the location filename
+    coords, alt = extract_location_details(args.location)
+    args.coords = coords
+    args.alt = alt
+
     # Merge command-line arguments with settings file
     SITE, FOLDER = config(args.location)
 
@@ -52,11 +80,11 @@ def merge_with_settings(args):
     if not hasattr(args, 'end_year') or args.end_year is None:
         args.end_date = SITE.get('end_year', None)
 
-    if not hasattr(args, 'alt') or args.alt is None:
-        args.altitude = SITE.get('alt', None)
+    # if not hasattr(args, 'alt') or args.alt is None:
+    #     args.altitude = SITE.get('alt', None)
 
-    if not hasattr(args, 'coords') or args.alt is None:
-        args.altitude = SITE.get('coords', None)
+    # if not hasattr(args, 'coords') or args.coords is None:
+    #     args.coords = SITE.get('coords', None)
 
     return args, SITE, FOLDER
 
@@ -86,7 +114,7 @@ if __name__ == "__main__":
         header=0,
         parse_dates=["time"],
     )
-    df = df.drop(['Unnamed: 0'], axis=1)
+    # df = df.drop(['Unnamed: 0'], axis=1)
 
     df = df.set_index("time")
     df = df[SITE["start_date"]:SITE["expiry_date"]]
@@ -142,7 +170,6 @@ if __name__ == "__main__":
 
     logger.info(df_out.head())
     logger.info(df_out.tail())
-    plot_input(df_out, FOLDER['fig'], SITE["name"])
 
     if not os.path.exists(dirname + "/data/" + loc):
         logger.warning("Creating folders")
@@ -152,3 +179,4 @@ if __name__ == "__main__":
         os.mkdir(dirname + "/" + FOLDER["fig"])
 
     df_out.to_csv(FOLDER["input"]  + "aws.csv", index=False)
+    plot_input(df_out, FOLDER['fig'], SITE["name"])

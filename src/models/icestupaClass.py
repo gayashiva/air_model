@@ -26,12 +26,13 @@ logger = logging.getLogger("__main__")
 logger.propagate = False
 
 class Icestupa:
-    def __init__(self, location=None):
+    # def __init__(self, location=None):
+    def __init__(self, SITE, FOLDER):
 
         with open("constants.json") as f:
             CONSTANTS = json.load(f)
 
-        SITE, FOLDER = config(location)
+        # SITE, FOLDER = config(location)
 
         initialize = [CONSTANTS, SITE, FOLDER]
 
