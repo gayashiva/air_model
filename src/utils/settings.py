@@ -18,7 +18,7 @@ logging.getLogger('PIL').setLevel(logging.CRITICAL)
 
 # Module logger = logging.getLogger("__main__")
 
-def config(location=None, start_year=None, end_year=None, coords=None, alt=None):
+def config(location=None, start_year=None, end_year=None, coords=None, alt=None, datadir=None):
     # logger.warning(f"Site {location}")
 
     if location == "leh":
@@ -83,11 +83,19 @@ def config(location=None, start_year=None, end_year=None, coords=None, alt=None)
     SITE = dict(SITE, **add)
     # print(SITE)
 
-    FOLDER = dict(
-        raw="data/" + location + "/raw/",
-        input="data/" + location + "/interim/",
-        output="data/" + location + "/processed/",
-        fig="data/" + location + "/figs/",
-    )
+    if datadir == None:
+        FOLDER = dict(
+            raw="data/" + location + "/raw/",
+            input="data/" + location + "/interim/",
+            output="data/" + location + "/processed/",
+            fig="data/" + location + "/figs/",
+        )
+    else:
+        FOLDER = dict(
+            raw=datadir + "/era5/",
+            input=datadir + location + "/interim/",
+            output=datadir + location + "/processed/",
+            fig=datadir +  location + "/figs/",
+        )
 
     return SITE, FOLDER

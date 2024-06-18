@@ -43,8 +43,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Command line interface to create or display Icestupa class")
 
     parser.add_argument("--location", required=True, help="Specify the location filename as lat_long_alt (e.g., 34.216_77.606_4009.csv)")
-    parser.add_argument("--start_year", required=True, help="Specify the start year (e.g., 2019)")
-    parser.add_argument("--end_year", required=True, help="Specify the end year (e.g., 2020)")
+    parser.add_argument("--start_year", required=False, help="Specify the start year (e.g., 2019)")
+    parser.add_argument("--end_year", required=False, help="Specify the end year (e.g., 2020)")
+    parser.add_argument("--datadir", required=False, help="Specify the data folder")
 
     return parser.parse_args()
 
@@ -63,22 +64,23 @@ def extract_location_details(location):
 
     return coords, alt
 
-def merge_with_settings(args):
-    # Extract coordinates and altitude from the location filename
-    coords, alt = extract_location_details(args.location)
-    args.coords = coords
-    args.alt = alt
+# def merge_with_settings(args):
+#     # Extract coordinates and altitude from the location filename
+#     coords, alt = extract_location_details(args.location)
+#     args.coords = coords
+#     args.alt = alt
 
-    # Merge command-line arguments with settings file
-    SITE, FOLDER = config(args.location)
+    # # Merge command-line arguments with settings file
+    # SITE, FOLDER = config(location=args.location, start_year=args.start_year, end_year=args.end_year,
+    #                       coords=args.coords, alt=args.alt, datadir=args.datadir)
 
     # If the argument is not provided, use the value from the settings file
     # You can extend this logic for other parameters
-    if not hasattr(args, 'start_year') or args.start_year is None:
-        args.start_date = SITE.get('start_year', None)
+    # if not hasattr(args, 'start_year') or args.start_year is None:
+    #     args.start_date = SITE.get('start_year', None)
 
-    if not hasattr(args, 'end_year') or args.end_year is None:
-        args.end_date = SITE.get('end_year', None)
+    # if not hasattr(args, 'end_year') or args.end_year is None:
+    #     args.end_date = SITE.get('end_year', None)
 
     # if not hasattr(args, 'alt') or args.alt is None:
     #     args.altitude = SITE.get('alt', None)
@@ -86,7 +88,7 @@ def merge_with_settings(args):
     # if not hasattr(args, 'coords') or args.coords is None:
     #     args.coords = SITE.get('coords', None)
 
-    return args, SITE, FOLDER
+    # return args, SITE, FOLDER
 
 if __name__ == "__main__":
     # Main logger
@@ -95,8 +97,11 @@ if __name__ == "__main__":
 
     args = parse_args()
 
-    # Merge command-line arguments with settings file
-    args, SITE, FOLDER = merge_with_settings(args)
+    coords, alt = extract_location_details(args.location)
+    args.coords = coords
+    args.alt = alt
+    # # Merge command-line arguments with settings file
+    # args, SITE, FOLDER = merge_with_settings(args)
 
     # locations = ["south_america20", "north_america20", "europe20", "central_asia20", "leh20"]
 
@@ -106,10 +111,12 @@ if __name__ == "__main__":
     # for loc in locations:
     loc= args.location
     # print(*args)
-    SITE, FOLDER = config(args.location, start_year=args.start_year, end_year=args.end_year, alt=args.alt, coords=args.coords)
+    SITE, FOLDER = config(args.location, start_year=args.start_year, end_year=args.end_year, alt=args.alt,
+                          coords=args.coords, datadir = args.datadir)
 
     df= pd.read_csv(
-        "data/era5/" + loc + ".csv",
+        # "data/era5/" + loc + ".csv",
+        FOLDER["raw"] + loc + ".csv",
         sep=",",
         header=0,
         parse_dates=["time"],
@@ -171,12 +178,18 @@ if __name__ == "__main__":
     logger.info(df_out.head())
     logger.info(df_out.tail())
 
-    if not os.path.exists(dirname + "/data/" + loc):
+    # if not os.path.exists(dirname + "/data/" + loc):
+    #     logger.warning("Creating folders")
+    #     os.mkdir(dirname + "/data/" + loc)
+    #     os.mkdir(dirname + "/" + FOLDER["input"])
+    #     os.mkdir(dirname + "/" + FOLDER["output"])
+    #     os.mkdir(dirname + "/" + FOLDER["fig"])
+    if not os.path.exists(args.datadir + loc):
         logger.warning("Creating folders")
-        os.mkdir(dirname + "/data/" + loc)
-        os.mkdir(dirname + "/" + FOLDER["input"])
-        os.mkdir(dirname + "/" + FOLDER["output"])
-        os.mkdir(dirname + "/" + FOLDER["fig"])
+        os.mkdir(args.datadir+ loc)
+        os.mkdir(args.datadir+ loc+ "/interim/")
+        os.mkdir(args.datadir+ loc+ "/processed/")
+        os.mkdir(args.datadir+ loc+ "/figs/")
 
     df_out.to_csv(FOLDER["input"]  + "aws.csv", index=False)
     plot_input(df_out, FOLDER['fig'], SITE["name"])
