@@ -20,7 +20,8 @@ sys.path.append(
 )
 from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
-from src.automate.autoDischarge import TempFreeze, SunMelt
+# from src.automate.autoDischarge import TempFreeze, SunMelt
+from src.automate.autoDischarge import Scheduler, SunMelt
 from src.automate.gen_coeffs import line
 
 def autoLinear(a, b, c, d, e, f, temp, rh, wind, alt, cld):
@@ -88,7 +89,7 @@ if __name__ == "__main__":
                     for alt in da.alt.values:
                         for cld in da.cld.values:
                             for spray_r in da.spray_r.values: 
-                                da.sel(temp=temp, rh=rh, wind=wind, alt=alt, cld=cld, spray_r = spray_r).data +=TempFreeze(temp, rh, wind, alt, cld)
+                                da.sel(temp=temp, rh=rh, wind=wind, alt=alt, cld=cld, spray_r = spray_r).data+=Scheduler(temp, rh, wind, alt, cld)
                                 da.sel(temp=temp, rh=rh, wind=wind, alt=alt, cld=cld, spray_r = spray_r).data *= math.pi * spray_r * spray_r
 
         da.to_netcdf("data/common/alt_sims.nc")

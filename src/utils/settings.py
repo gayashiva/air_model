@@ -256,6 +256,7 @@ def config(loc='None', spray='none_none'):
             T_F=0,
             # h_f=9,
             # perimeter=82.3, # On 3 Mar
+            fountain_off_date=datetime(2021, 4, 1),
 
             # Calibrated values
             DX=65e-03,  # Surface layer thickness [m]

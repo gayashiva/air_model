@@ -1,7 +1,7 @@
 """Generate coefficients for fountain scheduler"""
 import pandas as pd
 import multiprocessing
-# import xarray as xr
+import xarray as xr
 import numpy as np
 import os, sys
 import json
@@ -19,8 +19,9 @@ dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 sys.path.append(dirname)
 from src.utils.settings import config
 from src.models.icestupaClass import Icestupa
-from src.models.methods.metadata import get_parameter_metadata
-from src.automate.autoDischarge import TempFreeze, SunMelt
+# from src.models.methods.metadata import get_parameter_metadata
+# from src.automate.autoDischarge import TempFreeze, SunMelt
+from src.automate.autoDischarge import Scheduler, SunMelt
 from src.models.methods.solar import get_offset
 # from src.automate.projectile import get_projectile
 
@@ -51,7 +52,8 @@ if __name__ == "__main__":
 
     # locations = ["guttannen21"]
     # locations = ["gangles21", "guttannen21"]
-    locations = ["guttannen22", "gangles21"]
+    # locations = ["guttannen22", "gangles21"]
+    locations = ["gangles21"]
     # locations = ["guttannen21", "guttannen22", "guttannen20", "gangles21"]
 
     for loc in locations:
@@ -62,15 +64,18 @@ if __name__ == "__main__":
 
         SITE, FOLDER = config(loc)
 
-        with open(FOLDER["output"] + "manual/results.json", "r") as read_file:
-            results = json.load(read_file)
+        # with open(FOLDER["output"] + "manual/results.json", "r") as read_file:
+        #     results = json.load(read_file)
 
         if "-json" in opts:
 
-            for obj in ["wue", "icv"]:
+            # for obj in ["wue", "icv"]:
+            for obj in ["WUE", "ICV"]:
                 logger.warning(f"=> Objective {obj}")
                 logger.info("=> Calculation of solar coeffs")
-                utc = get_offset(*SITE["coords"], date=SITE["start_date"])
+                # utc = get_offset(*SITE["coords"], date=SITE["start_date"])
+                utc = 5.5
+                R_F = 10
                 result = SunMelt(time = SITE["fountain_off_date"], coords = SITE["coords"], utc = utc, alt =SITE["alt"], obj = obj)
 
                 sun_params = dict(result.best_values)
@@ -86,47 +91,49 @@ if __name__ == "__main__":
                 with open(FOLDER["input"] + "scheduled/" + obj + "/solar_coeffs.json", "w") as f:
                     json.dump(sun_params, f, indent=4)
 
-                # logger.info("=> Performing regression analysis")
-                # da = xr.open_dataarray("data/common/alt_obj_sims.nc")
-                # x = []
-                # y = []
-                # for temp in da.temp.values:
-                #     for rh in da.rh.values:
-                #         for wind in da.wind.values:
-                #             aws = [temp, rh, wind]
-                #             x.append(aws)
-                #             if obj == "WUE":
-                #                 y.append(da.sel(
-                #                              temp=temp, 
-                #                              rh=rh, 
-                #                              wind=wind,
-                #                              alt=round(SITE["alt"]/1000,0),
-                #                              obj=obj,
-                #                              spray_r=round(results["R_F"],0)).data/(math.pi * round(results["R_F"],0))**2)
-                #             else:
-                #                 y.append(da.sel(
-                #                              temp=temp, 
-                #                              rh=rh, 
-                #                              wind=wind,
-                #                              alt=round(SITE["alt"]/1000,0),
-                #                              obj=obj,
-                #                              spray_r=round(results["R_F"],0)).data/(math.sqrt(2)*math.pi * round(results["R_F"],0))**2)
+                logger.info("=> Performing regression analysis")
+                da = xr.open_dataarray("data/common/alt_obj_sims.nc")
+                x = []
+                y = []
+                for temp in da.temp.values:
+                    for rh in da.rh.values:
+                        for wind in da.wind.values:
+                            aws = [temp, rh, wind]
+                            x.append(aws)
+                            if obj == "WUE":
+                                y.append(da.sel(
+                                             temp=temp, 
+                                             rh=rh, 
+                                             wind=wind,
+                                             alt=round(SITE["alt"]/1000,0),
+                                             obj=obj,
+                                             spray_r=round(R_F,0)).data/(math.pi * round(R_F,0))**2)
+                                             # spray_r=round(results["R_F"],0)).data/(math.pi * round(results["R_F"],0))**2)
+                            else:
+                                y.append(da.sel(
+                                             temp=temp, 
+                                             rh=rh, 
+                                             wind=wind,
+                                             alt=round(SITE["alt"]/1000,0),
+                                             obj=obj,
+                                             spray_r=round(R_F,0)).data/(math.sqrt(2)*math.pi * round(R_F,0))**2)
+                                             # spray_r=round(results["R_F"],0)).data/(math.sqrt(2)*math.pi * round(results["R_F"],0))**2)
 
-                # popt, pcov = curve_fit(line, x, y)
-                # a, b, c, d = popt
-                # print("j_cone = %.5f * temp + %.5f * rh + %.5f * wind + %.5f" % (a, b, c, d))
+                popt, pcov = curve_fit(line, x, y)
+                a, b, c, d = popt
+                print("j_cone = %.5f * temp + %.5f * rh + %.5f * wind + %.5f" % (a, b, c, d))
 
-                # """Combine all coeffs"""
-                # params= {}
-                # params["a"] = a
-                # params["b"] = b
-                # params["c"] = c
-                # params["d"] = d
+                """Combine all coeffs"""
+                params= {}
+                params["a"] = a
+                params["b"] = b
+                params["c"] = c
+                params["d"] = d
 
-                # params = dict(params, **sun_params)
+                params = dict(params, **sun_params)
 
-                # with open(FOLDER["input"] + "dynamic/coeffs_" + obj + ".json", "w") as f:
-                #     json.dump(params, f, indent=4)
+                with open(FOLDER["input"] + "dynamic/coeffs_" + obj + ".json", "w") as f:
+                    json.dump(params, f, indent=4)
 
         if "-test" in opts:
 
@@ -136,14 +143,16 @@ if __name__ == "__main__":
             for loc in locations:
                 print(loc)
 
-                SITE, FOLDER = config(loc, spray="manual")
+                # SITE, FOLDER = config(loc, spray="manual")
+                SITE, FOLDER = config(loc)
 
                 for obj in ["WUE", "ICV"]:
+                # for obj in ["wue", "icv"]:
                     print(obj)
                     with open(FOLDER["input"] + "dynamic/coeffs_" + obj + ".json") as f:
                         params = json.load(f)
 
-                    max_freeze = autoDis(**params, time=1, temp=-20, rh=50, wind=0)
+                    max_freeze = autoDis(**params, time=10, temp=-5, rh=20, wind=3)
                     max_freeze *= math.pi * 7**2
                     print(
                         "Max freezing rate: %0.1f for loc %s"%(max_freeze, loc)

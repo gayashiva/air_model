@@ -24,10 +24,12 @@ def Scheduler(time, temp, rh, wind, r, alt, coords, utc, obj="icv"):
     #Assumptions
     temp_i = 0
 
-    if obj == "wue":
+    # if obj == "wue":
+    if obj == "WUE":
         cld = 1
         mu_cone = 1
-    elif obj== "icv":
+    # elif obj== "icv":
+    elif obj== "ICV":
         cld = 0
         mu_cone = 1.5
     else:
@@ -149,10 +151,12 @@ def SunMelt(time, coords, utc, alt, obj="wue"):
     with open("data/common/constants.json") as f:
         CONSTANTS = json.load(f)
 
-    if obj== "wue":
+    # if obj== "wue":
+    if obj== "WUE":
         cld = 0
         alpha = CONSTANTS["A_I"]
-    elif obj== "icv":
+    # elif obj== "icv":
+    elif obj== "ICV":
         cld = 1
         alpha = CONSTANTS["A_S"]
     else:
@@ -196,9 +200,11 @@ def SunMelt(time, coords, utc, alt, obj="wue"):
     df["f_cone"] = 0
 
     for i in range(0, df.shape[0]):
-        if obj == "wue":
+        # if obj == "wue":
+        if obj == "WUE":
             df.loc[i, "f_cone"] = math.sin(df.loc[i, "sea"])/2
-        elif obj == "icv":
+        # elif obj == "icv":
+        elif obj == "ICV":
             df.loc[i, "f_cone"] = (math.cos(df.loc[i, "sea"]) + math.pi * math.sin(df.loc[i, "sea"]))/(2*math.sqrt(2)*math.pi)
         else:
             logger.error("Wrong Objective")
@@ -217,9 +223,10 @@ if __name__ == "__main__":
 
     loc="gangles21"
     SITE, FOLDER = config(loc)
-    # utc = get_offset(*SITE["coords"], date=SITE["start_date"])
-    # result = DayMelt(time=SITE["fountain_off_date"], coords = SITE["coords"], utc = utc, alt=SITE["alt"])
-    # param_values = dict(result.best_values)
-    # print(param_values)
-    print(Scheduler(time=datetime(2021, 4, 10,12), temp=-10, rh=80, wind=5, r=7, coords = SITE["coords"], alt=SITE["alt"]))
+    utc = get_offset(*SITE["coords"], date=SITE["start_date"])
+    result = DayMelt(time=SITE["fountain_off_date"], coords = SITE["coords"], utc = utc, alt=SITE["alt"])
+    param_values = dict(result.best_values)
+    print(param_values)
+    print(Scheduler(time=datetime(2021, 4, 10,12), temp=-10, rh=80, wind=5, r=7, coords = SITE["coords"],
+                    utc=utc, alt=SITE["alt"]))
 
