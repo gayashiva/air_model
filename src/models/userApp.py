@@ -100,12 +100,10 @@ def get_data_filenames(country=None):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Command line interface to create or display Icestupa class and consolidate by country")
-
     parser.add_argument("--start_year", required=False, help="Specify the start year (e.g., 2019)")
     parser.add_argument("--end_year", required=False, help="Specify the end year (e.g., 2020)")
     parser.add_argument("--country", required=True, help="Specify the country name (used as data/country)")
     parser.add_argument("--list_countries", action="store_true", help="List all available countries")
-
     return parser.parse_args()
 
 def list_available_countries():
